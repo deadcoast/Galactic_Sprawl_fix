@@ -6,11 +6,11 @@
  */
 
 import {
-    FlowConnection,
-    FlowNode,
-    ResourceState,
-    ResourceTransfer,
-    ResourceType
+  FlowConnection,
+  FlowNode,
+  ResourceState,
+  ResourceTransfer,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
 
 // Input message types that can be sent to the worker

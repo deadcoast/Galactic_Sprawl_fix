@@ -269,20 +269,20 @@ export function GalaxyMap() {
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=3000')] bg-cover opacity-20" />
 
       {/* Controls */}
-      <div className="absolute left-6 right-6 top-6 z-10 flex items-center justify-between">
+      <div className="absolute top-6 right-6 left-6 z-10 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search systems..."
-              className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
           </div>
           <select
-            className="rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none"
             value={filter}
             onChange={e => setFilter(e.target.value)}
           >
@@ -459,18 +459,18 @@ export function GalaxyMap() {
                   className={`h-20 w-20 rounded-full bg-${getSystemColor(system.status)}-500/20 animate-pulse`}
                 >
                   <div
-                    className={`absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-400/30`}
+                    className={`absolute top-1/2 left-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-400/30`}
                   >
                     <div
-                      className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-300/40`}
+                      className={`absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-300/40`}
                     >
                       <div
-                        className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-200`}
+                        className={`absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-200`}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+                <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
                   <div className={`text-${getSystemColor(system.status)}-200 font-medium`}>
                     {system.name}
                   </div>
@@ -488,10 +488,10 @@ export function GalaxyMap() {
 
       {/* System Details Panel */}
       {view.selectedSystem && (
-        <div className="absolute right-6 top-20 w-96 rounded-lg border border-gray-700 bg-gray-800/95 p-6 backdrop-blur-sm">
+        <div className="absolute top-20 right-6 w-96 rounded-lg border border-gray-700 bg-gray-800/95 p-6 backdrop-blur-sm">
           <button
             onClick={() => setView(prev => ({ ...prev, selectedSystem: null }))}
-            className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-white"
+            className="absolute top-4 right-4 text-gray-400 transition-colors hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>

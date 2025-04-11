@@ -1,15 +1,15 @@
 /**
  * @context: ui-system, component-library, testing
- * 
+ *
  * Vitest setup file
- * 
+ *
  * This file sets up the testing environment for Vitest tests,
  * including mocks and global configuration needed across all tests.
  */
 
-import { expect, afterEach, afterAll, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
 import matchers from '@testing-library/jest-dom/matchers';
+import { cleanup } from '@testing-library/react';
+import { afterAll, afterEach, expect, vi } from 'vitest';
 
 // Extend Vitest's expect with Jest DOM matchers
 expect.extend(matchers);
@@ -55,10 +55,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 const originalConsoleError = console.error;
 console.error = (...args: unknown[]) => {
   // Fail tests on prop type errors
-  if (
-    typeof args[0] === 'string' && 
-    args[0].includes('Warning: Failed prop type')
-  ) {
+  if (typeof args[0] === 'string' && args[0].includes('Warning: Failed prop type')) {
     throw new Error(args[0]);
   }
   originalConsoleError(...args);
@@ -76,6 +73,6 @@ export const testUtils = {
     clearErrors: vi.fn(),
     getErrors: vi.fn().mockReturnValue([]),
   },
-  
+
   // Add more test utilities as needed
-}; 
+};

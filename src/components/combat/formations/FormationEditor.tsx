@@ -208,7 +208,7 @@ export function FormationEditor({ initialFormation, onSaveFormation }: Formation
           type="checkbox"
           checked={formation.adaptiveSpacing}
           onChange={e => handleAdaptiveSpacingChange(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-opacity-25"
+          className="focus:ring-opacity-25 h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
         />
         <label htmlFor="adaptive-spacing" className="ml-2 text-sm font-medium text-gray-300">
           Adaptive Spacing

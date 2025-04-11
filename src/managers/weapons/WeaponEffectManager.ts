@@ -181,8 +181,14 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
       position: position,
       spread: config.spread * 10,
       initialVelocity: {
-        min: { x: Math.cos(direction) * config.speed * 80, y: Math.sin(direction) * config.speed * 80 },
-        max: { x: Math.cos(direction) * config.speed * 90, y: Math.sin(direction) * config.speed * 90 },
+        min: {
+          x: Math.cos(direction) * config.speed * 80,
+          y: Math.sin(direction) * config.speed * 80,
+        },
+        max: {
+          x: Math.cos(direction) * config.speed * 90,
+          y: Math.sin(direction) * config.speed * 90,
+        },
       },
       acceleration: { x: 0, y: 0 },
       size: {
@@ -190,8 +196,8 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
         max: config.size * 1.3,
       },
       life: {
-        min: config.duration / 1000 * 0.9,
-        max: config.duration / 1000 * 1.1,
+        min: (config.duration / 1000) * 0.9,
+        max: (config.duration / 1000) * 1.1,
       },
       color: config.color,
       blendMode: 'normal',
@@ -228,8 +234,14 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
       position: position,
       spread: config.spread * 50,
       initialVelocity: {
-        min: { x: Math.cos(direction) * config.speed * 50, y: Math.sin(direction) * config.speed * 50 },
-        max: { x: Math.cos(direction) * config.speed * 60, y: Math.sin(direction) * config.speed * 60 },
+        min: {
+          x: Math.cos(direction) * config.speed * 50,
+          y: Math.sin(direction) * config.speed * 50,
+        },
+        max: {
+          x: Math.cos(direction) * config.speed * 60,
+          y: Math.sin(direction) * config.speed * 60,
+        },
       },
       acceleration: { x: 0, y: 0 },
       size: {
@@ -237,7 +249,7 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
         max: config.size * 1.2,
       },
       life: {
-        min: config.duration / 1000 * 0.5,
+        min: (config.duration / 1000) * 0.5,
         max: config.duration / 1000,
       },
       color: config.color,
@@ -284,8 +296,8 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
         max: config.size * 2.5,
       },
       life: {
-        min: config.duration / 1000 * 0.2,
-        max: config.duration / 1000 * 0.5,
+        min: (config.duration / 1000) * 0.2,
+        max: (config.duration / 1000) * 0.5,
       },
       color: config.color,
       blendMode: 'additive',
@@ -323,8 +335,14 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
       position: position,
       spread: config.spread * 30,
       initialVelocity: {
-        min: { x: Math.cos(direction) * config.speed * 10, y: Math.sin(direction) * config.speed * 10 },
-        max: { x: Math.cos(direction) * config.speed * 15, y: Math.sin(direction) * config.speed * 15 },
+        min: {
+          x: Math.cos(direction) * config.speed * 10,
+          y: Math.sin(direction) * config.speed * 10,
+        },
+        max: {
+          x: Math.cos(direction) * config.speed * 15,
+          y: Math.sin(direction) * config.speed * 15,
+        },
       },
       acceleration: { x: 0, y: 0 },
       size: {
@@ -332,8 +350,8 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
         max: config.size * 1.1,
       },
       life: {
-        min: config.duration / 1000 * 0.8,
-        max: config.duration / 1000 * 1.2,
+        min: (config.duration / 1000) * 0.8,
+        max: (config.duration / 1000) * 1.2,
       },
       color: config.color,
       blendMode: 'normal',

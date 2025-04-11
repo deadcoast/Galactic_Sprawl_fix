@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import {
-    Frown,
-    Heart,
-    Home,
-    Meh,
-    Shield,
-    Smile,
-    ThumbsDown,
-    ThumbsUp,
-    Utensils,
-    Zap,
+  Frown,
+  Heart,
+  Home,
+  Meh,
+  Shield,
+  Smile,
+  ThumbsDown,
+  ThumbsUp,
+  Utensils,
+  Zap,
 } from 'lucide-react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
@@ -26,11 +26,7 @@ interface SatisfactionMeterProps {
   onFactorClick?: (factorType: SatisfactionFactor['type']) => void;
 }
 
-export function SatisfactionMeter({
-  colonyId: _colonyId,
-  factors,
-  onFactorClick,
-}: SatisfactionMeterProps) {
+export function SatisfactionMeter({ factors, onFactorClick }: SatisfactionMeterProps) {
   // Calculate overall satisfaction
   const overallSatisfaction = factors.reduce(
     (sum, factor) => sum + factor.value * factor.weight,

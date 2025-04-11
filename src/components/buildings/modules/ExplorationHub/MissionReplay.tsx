@@ -56,16 +56,12 @@ function getPositionFromEventData(event: GameEvent): Position | null {
   if (!event || !event.data) {
     return null;
   }
-  
-  const {data} = event;
-  
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    'position' in data
-  ) {
-    const {position} = data;
-    
+
+  const { data } = event;
+
+  if (typeof data === 'object' && data !== null && 'position' in data) {
+    const { position } = data;
+
     if (
       typeof position === 'object' &&
       position !== null &&
@@ -77,7 +73,7 @@ function getPositionFromEventData(event: GameEvent): Position | null {
       return position as Position;
     }
   }
-  
+
   return null;
 }
 
@@ -221,7 +217,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
           <div className="absolute inset-0">{renderEvents(currentEvents)}</div>
 
           {/* Event Timeline */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
+          <div className="absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
             <div className="mb-4 flex items-center space-x-4">
               {currentEvents.map((event: GameEvent, index: number) => (
                 <div

@@ -865,7 +865,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   if (!data || data?.length === 0) {
     return (
       <div
-        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        className={`${className} border-opacity-10 flex flex-col items-center justify-center rounded border border-solid`}
         style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
@@ -960,7 +960,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
         {/* Controls for interactive mode */}
         {interactive && (
-          <div className="absolute bottom-2 right-2 flex gap-1">
+          <div className="absolute right-2 bottom-2 flex gap-1">
             <button
               className="flex h-8 w-8 items-center justify-center rounded bg-white/80 text-gray-700 shadow hover:bg-white"
               onClick={() => setZoom(prev => Math.min(prev * 1.2, 10))}

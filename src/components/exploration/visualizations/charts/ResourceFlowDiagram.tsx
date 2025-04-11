@@ -2,26 +2,25 @@ import * as d3 from 'd3';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../../hooks/ui/useComponentRegistration';
-import { moduleEventBus } from '../../../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
-import { EventType } from '../../../../types/events/EventTypes';
+import { moduleEventBus } from '../../../../lib/events/ModuleEventBus';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../../services/ErrorLoggingService';
+import { BaseEvent, EventType } from '../../../../types/events/EventTypes';
 import {
   FlowConnection,
   FlowNode,
   FlowNodeType as ResourceFlowNodeType,
   ResourceState,
   ResourceType,
-  ResourceTypeHelpers
+  ResourceTypeInfo,
 } from '../../../../types/resources/ResourceTypes';
-import {
-  NetworkData
-} from '../../../../types/visualization/CommonTypes';
-import {
-  isResourceType,
-  ResourceTypeConverter
-} from '../../../utils/resources/resourceValidation';
+import { NetworkData } from '../../../../types/visualization/CommonTypes';
+import { ResourceTypeConverter } from '../../../../utils/resources/ResourceTypeConverter';
 import DataTransitionParticleSystem, {
-  DataPoint
+  DataPoint,
 } from '../../../ui/visualization/DataTransitionParticleSystem';
 
 interface ResourceFlowDiagramProps {
@@ -58,11 +57,17 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
   onConnectionClick,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [networkData, setNetworkData] = useState<NetworkData<FlowNode, FlowConnection>>({ nodes: [], links: [] });
+  const [networkData, setNetworkData] = useState<NetworkData<FlowNode, FlowConnection>>({
+    nodes: [],
+    links: [],
+  });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const simulationRef = useRef<d3.Simulation<FlowNode, FlowConnection> | null>(null);
-  const [previousNetworkData, setPreviousNetworkData] = useState<NetworkData<FlowNode, FlowConnection> | null>(null);
+  const [previousNetworkData, setPreviousNetworkData] = useState<NetworkData<
+    FlowNode,
+    FlowConnection
+  > | null>(null);
 
   // Register with component registry
   useComponentRegistration({
@@ -83,24 +88,29 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       console.warn('ResourceFlowDiagram mounted');
       fetchResourceFlowData();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-unknownnown
-      return moduleEventBus.subscribe('*' as unknownnown, (eveunknown unknown) => {
-              if (!event || typeof event.type === 'undefined') {
-                return;
-              }
-              const eventType = event.type as EventType;
-              if (
-                eventType === EventType.RESOURCE_FLOW_UPDATED ||
-                eventType === EventType.RESOURCE_NODE_ADDED ||
-                eventType === EventType.RESOURCE_NODE_REMOVED ||
-                eventType === EventType.RESOURCE_CONNECTION_ADDED ||
-                eventType === EventType.RESOURCE_CONNECTION_REMOVED ||
-                eventType === EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED
-              ) {
-                console.warn(`Resource flow event received: ${eventType}`);
-                fetchResourceFlowData();
-              }
-            });
+      // Define the handler function
+      const handleResourceFlowUpdate = (event: BaseEvent) => {
+        console.warn(`Resource flow event received: ${event.type}`);
+        fetchResourceFlowData();
+      };
+
+      // Subscribe to specific events individually
+      const subscriptions = [
+        moduleEventBus.subscribe(EventType.RESOURCE_FLOW_UPDATED, handleResourceFlowUpdate),
+        moduleEventBus.subscribe(EventType.RESOURCE_NODE_ADDED, handleResourceFlowUpdate),
+        moduleEventBus.subscribe(EventType.RESOURCE_NODE_REMOVED, handleResourceFlowUpdate),
+        moduleEventBus.subscribe(EventType.RESOURCE_CONNECTION_ADDED, handleResourceFlowUpdate),
+        moduleEventBus.subscribe(EventType.RESOURCE_CONNECTION_REMOVED, handleResourceFlowUpdate),
+        moduleEventBus.subscribe(
+          EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED,
+          handleResourceFlowUpdate
+        ),
+      ];
+
+      // Return a cleanup function that unsubscribes from all
+      return () => {
+        subscriptions.forEach(unsubscribe => unsubscribe());
+      };
     },
     onUnmount: () => {
       console.warn('ResourceFlowDiagram unmounted');
@@ -114,22 +124,16 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     setLoading(true);
     setError(null);
 
-    // Store current data as previous before updating
     if (networkData.nodes.length > 0) {
       setPreviousNetworkData(networkData);
     }
 
-    // In a real implementation, this would call the resourceManager API
     setTimeout(() => {
       try {
         // TODO: Replace mock data with actual API call using ResourceFlowManager
-        // Example:
-        // const manager = ManagerRegistry.getInstance().getManager(ResourceManager);
-        // const nodes = manager.getNodes();
-        // const links = manager.getConnections();
-        // setNetworkData({ nodes, links });
-        const mockData = generateMockFlowData(); // Keep mock for now
-        setNetworkData(mockData);
+        // const mockData = generateMockFlowData(); // Removed usage
+        // Set empty data as placeholder until real data fetching is implemented
+        setNetworkData({ nodes: [], links: [] });
         setLoading(false);
       } catch (err) {
         setError('Failed to load resource flow data');
@@ -141,24 +145,27 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           { componentName: 'ResourceFlowDiagram', action: 'fetchResourceFlowData' }
         );
       }
-    }, 500);
-  }, [networkData]);
+    }, []); // Keep dependencies empty for now
+  }, []);
 
   // Convert network data to particle data points
-  const getParticleDataPoints = useCallback((data: NetworkData<FlowNode, FlowConnection>): DataPoint[] => {
-    return data?.nodes.map(node => {
-      const resourceKeys = Object.keys(node.resources) as ResourceType[];
-      const firstResource = resourceKeys.length > 0 ? resourceKeys[0] : undefined;
-      return {
-        id: node.id,
-        position: { x: node.x ?? 0, y: node.y ?? 0 }, // Assuming FlowNode has x/y from D3
-        value: resourceKeys.length, // Value based on number of resources managed
-        resourceType: firstResource, // Use the first resource type, or handle undefined
-        size: 15, // Adjust size based on node properties if needed
-        opacity: node.active ? 0.8 : 0.4,
-      };
-    });
-  }, []);
+  const getParticleDataPoints = useCallback(
+    (data: NetworkData<FlowNode, FlowConnection>): DataPoint[] => {
+      return data?.nodes.map(node => {
+        const resourceKeys = Object.keys(node.resources) as ResourceType[];
+        const firstResource = resourceKeys.length > 0 ? resourceKeys[0] : undefined;
+        return {
+          id: node.id,
+          position: { x: node.x ?? 0, y: node.y ?? 0 }, // Assuming FlowNode has x/y from D3
+          value: resourceKeys.length, // Value based on number of resources managed
+          resourceType: firstResource, // Use the first resource type, or handle undefined
+          size: 15, // Adjust size based on node properties if needed
+          opacity: node.active ? 0.8 : 0.4,
+        };
+      });
+    },
+    []
+  );
 
   // Handle transition completion - Use original name matching prop
   const handleTransitionComplete = useCallback(() => {
@@ -200,7 +207,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           .id(d => d.id)
           .distance(100)
       )
-      .force('charge', d3.forceMunknownnownBody().strength(-300))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(40));
 
@@ -213,7 +220,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       .selectAll('marker')
       .data([
         'default', // Keep default marker?
-        ...Object.values(ResourceType) // Use all resource types
+        ...Object.values(ResourceType), // Use all resource types
       ])
       .enter()
       .append('marker')
@@ -318,14 +325,17 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       const nodeData = d_node as FlowNode;
       const resourceKeys = Object.keys(nodeData.resources);
 
-      // Filter and validate keys using the type guard
-      const validResourceTypeStrings = resourceKeys.filter(isResourceType);
+      // Filter and validate keys - check existence in converter map
+      const validResourceTypeStrings = resourceKeys.filter(
+        key => key in ResourceTypeConverter.STRING_TO_ENUM_MAP
+      );
 
       validResourceTypeStrings.forEach((resourceTypeString, i) => {
-        // Convert string back to enum member
+        // Convert string back to enum member using the converter
         const resourceTypeEnum = ResourceTypeConverter.stringToEnum(resourceTypeString);
-        
-        if (resourceTypeEnum) { // Check if conversion was successful
+
+        if (resourceTypeEnum) {
+          // Should always be true if filter worked
           // Calculate position based on the index of valid resources
           const angle = i * ((2 * Math.PI) / validResourceTypeStrings.length);
           const x = Math.cos(angle) * 20;
@@ -388,11 +398,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           .attr('r', 8)
           .attr('fill', d => getNodeFill(tempNode as FlowNode));
 
-        typeGroup
-          .append('text')
-          .attr('x', 15)
-          .attr('y', 5)
-          .text(type);
+        typeGroup.append('text').attr('x', 15).attr('y', 5).text(type);
       });
 
       // Resource type legend
@@ -417,45 +423,54 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           .append('text')
           .attr('x', 20)
           .attr('y', 5)
-          .text(ResourceTypeHelpers.getDisplayName(type));
+          .text(ResourceTypeInfo[type]?.displayName ?? type);
       });
     }
 
     // Simulation tick handler
     simulation.on('tick', () => {
-      link
-        .attr('d', d => {
-          // Use unknown cast before FlowNode cast
-          const sourceNode = d.source as unknown as FlowNode;
-          const targetNode = d.target as unknown as FlowNode;
-          // Defensive checks for undefined positions remain useful
-          if (typeof sourceNode.x === 'undefined' || typeof sourceNode.y === 'undefined' ||
-              typeof targetNode.x === 'undefined' || typeof targetNode.y === 'undefined') {
-            return null;
-          }
-          return `M${sourceNode.x},${sourceNode.y} L${targetNode.x},${targetNode.y}`;
-        });
+      link.attr('d', d => {
+        // Use unknown cast before FlowNode cast
+        const sourceNode = d.source as unknown as FlowNode;
+        const targetNode = d.target as unknown as FlowNode;
+        // Defensive checks for undefined positions remain useful
+        if (
+          typeof sourceNode.x === 'undefined' ||
+          typeof sourceNode.y === 'undefined' ||
+          typeof targetNode.x === 'undefined' ||
+          typeof targetNode.y === 'undefined'
+        ) {
+          return null;
+        }
+        return `M${sourceNode.x},${sourceNode.y} L${targetNode.x},${targetNode.y}`;
+      });
 
-      node
-        .attr('transform', d => {
-          // Defensive checks for undefined positions remain useful
-          if (typeof d.x === 'undefined' || typeof d.y === 'undefined') {
-            return 'translate(0,0)';
-          }
-          return `translate(${d.x},${d.y})`;
-        });
+      node.attr('transform', d => {
+        // Defensive checks for undefined positions remain useful
+        if (typeof d.x === 'undefined' || typeof d.y === 'undefined') {
+          return 'translate(0,0)';
+        }
+        return `translate(${d.x},${d.y})`;
+      });
     });
 
     // Cleanup simulation on component unmount
     return () => {
       simulation.stop();
     };
-  }, [networkData, width, height, interactive, showLabels, showLegend, focusedResourceType, selectedNodeId, onNodeClick, onConnectionClick, loading]); // Added loading
-
-  // Render particles if previous data exists
-  const previousParticles = useMemo(() => {
-    return previousNetworkData ? getParticleDataPoints(previousNetworkData) : [];
-  }, [previousNetworkData, getParticleDataPoints]);
+  }, [
+    networkData,
+    width,
+    height,
+    interactive,
+    showLabels,
+    showLegend,
+    focusedResourceType,
+    selectedNodeId,
+    onNodeClick,
+    onConnectionClick,
+    loading,
+  ]); // Added loading
 
   const currentParticles = useMemo(() => {
     return networkData ? getParticleDataPoints(networkData) : [];
@@ -499,27 +514,99 @@ const generateMockFlowData = (): NetworkData<FlowNode, FlowConnection> => {
   });
 
   // Helper to create a full resources record for a node
-  const createNodeResources = (specificResources: Partial<Record<ResourceType, Partial<ResourceState>>>): Record<ResourceType, ResourceState> => {
+  const createNodeResources = (
+    specificResources: Partial<Record<ResourceType, Partial<ResourceState>>>
+  ): Record<ResourceType, ResourceState> => {
     const allResources = {} as Record<ResourceType, ResourceState>;
     for (const resType of Object.values(ResourceType)) {
-        allResources[resType] = createDefaultResourceState(specificResources[resType]);
+      allResources[resType] = createDefaultResourceState(specificResources[resType]);
     }
     return allResources;
   };
 
   const nodes: FlowNode[] = [
-    { id: 'producer1', type: ResourceFlowNodeType.PRODUCER, resources: createNodeResources({ [ResourceType.MINERALS]: { production: 10 } }), active: true, x: 100, y: 100 },
-    { id: 'consumer1', type: ResourceFlowNodeType.CONSUMER, resources: createNodeResources({ [ResourceType.MINERALS]: { consumption: 5 } }), active: true, x: 300, y: 100 },
-    { id: 'storage1', type: ResourceFlowNodeType.STORAGE, resources: createNodeResources({ [ResourceType.MINERALS]: { current: 500 } }), active: true, x: 100, y: 300 },
-    { id: 'converter1', type: ResourceFlowNodeType.CONVERTER, resources: createNodeResources({ [ResourceType.MINERALS]: { consumption: 2 }, [ResourceType.ENERGY]: { production: 1 } }), active: true, x: 300, y: 300 },
-    { id: 'producer2', type: ResourceFlowNodeType.PRODUCER, resources: createNodeResources({ [ResourceType.ENERGY]: { production: 10 } }), active: true, x: 500, y: 100 },
+    {
+      id: 'producer1',
+      type: ResourceFlowNodeType.PRODUCER,
+      resources: createNodeResources({ [ResourceType.MINERALS]: { production: 10 } }),
+      active: true,
+      x: 100,
+      y: 100,
+    },
+    {
+      id: 'consumer1',
+      type: ResourceFlowNodeType.CONSUMER,
+      resources: createNodeResources({ [ResourceType.MINERALS]: { consumption: 5 } }),
+      active: true,
+      x: 300,
+      y: 100,
+    },
+    {
+      id: 'storage1',
+      type: ResourceFlowNodeType.STORAGE,
+      resources: createNodeResources({ [ResourceType.MINERALS]: { current: 500 } }),
+      active: true,
+      x: 100,
+      y: 300,
+    },
+    {
+      id: 'converter1',
+      type: ResourceFlowNodeType.CONVERTER,
+      resources: createNodeResources({
+        [ResourceType.MINERALS]: { consumption: 2 },
+        [ResourceType.ENERGY]: { production: 1 },
+      }),
+      active: true,
+      x: 300,
+      y: 300,
+    },
+    {
+      id: 'producer2',
+      type: ResourceFlowNodeType.PRODUCER,
+      resources: createNodeResources({ [ResourceType.ENERGY]: { production: 10 } }),
+      active: true,
+      x: 500,
+      y: 100,
+    },
   ];
 
   const links: FlowConnection[] = [
-    { id: 'link1', source: 'producer1', target: 'consumer1', resourceTypes: [ResourceType.MINERALS], maxRate: 5, currentRate: 5, active: true },
-    { id: 'link2', source: 'producer1', target: 'storage1', resourceTypes: [ResourceType.MINERALS], maxRate: 10, currentRate: 5, active: true },
-    { id: 'link3', source: 'storage1', target: 'converter1', resourceTypes: [ResourceType.MINERALS], maxRate: 2, currentRate: 2, active: true },
-    { id: 'link4', source: 'producer2', target: 'converter1', resourceTypes: [ResourceType.ENERGY], maxRate: 10, currentRate: 1, active: true },
+    {
+      id: 'link1',
+      source: 'producer1',
+      target: 'consumer1',
+      resourceTypes: [ResourceType.MINERALS],
+      maxRate: 5,
+      currentRate: 5,
+      active: true,
+    },
+    {
+      id: 'link2',
+      source: 'producer1',
+      target: 'storage1',
+      resourceTypes: [ResourceType.MINERALS],
+      maxRate: 10,
+      currentRate: 5,
+      active: true,
+    },
+    {
+      id: 'link3',
+      source: 'storage1',
+      target: 'converter1',
+      resourceTypes: [ResourceType.MINERALS],
+      maxRate: 2,
+      currentRate: 2,
+      active: true,
+    },
+    {
+      id: 'link4',
+      source: 'producer2',
+      target: 'converter1',
+      resourceTypes: [ResourceType.ENERGY],
+      maxRate: 10,
+      currentRate: 1,
+      active: true,
+    },
   ];
 
   // Assign x, y positions for nodes if not already set by D3
@@ -535,76 +622,81 @@ const generateMockFlowData = (): NetworkData<FlowNode, FlowConnection> => {
   return { nodes, links };
 };
 
-// --- Local Helper Functions --- 
+// --- Local Helper Functions ---
 
 /**
  * Gets the fill color for a flow node based on its type and active status.
  */
 function getNodeFill(node: FlowNode): string {
-    const active = node.active ?? true;
-    // Use colors similar to ResourceVisualization.tsx if desired
-    const colorMap = {
-        [ResourceFlowNodeType.PRODUCER]: active ? '#4CAF50' : '#81C784', // Green
-        [ResourceFlowNodeType.CONSUMER]: active ? '#F44336' : '#E57373', // Red
-        [ResourceFlowNodeType.STORAGE]: active ? '#2196F3' : '#64B5F6', // Blue
-        [ResourceFlowNodeType.CONVERTER]: active ? '#FF9800' : '#FFB74D', // Orange
-        [ResourceFlowNodeType.SOURCE]: active ? '#00ACC1' : '#4DD0E1', // Cyan
-        [ResourceFlowNodeType.SINK]: active ? '#7E57C2' : '#B39DDB'  // Deep Purple
-    };
-    return colorMap[node.type] || (active ? '#9E9E9E' : '#E0E0E0'); // Default Grey
+  const active = node.active ?? true;
+  // Use colors similar to ResourceVisualization.tsx if desired
+  const colorMap = {
+    [ResourceFlowNodeType.PRODUCER]: active ? '#4CAF50' : '#81C784', // Green
+    [ResourceFlowNodeType.CONSUMER]: active ? '#F44336' : '#E57373', // Red
+    [ResourceFlowNodeType.STORAGE]: active ? '#2196F3' : '#64B5F6', // Blue
+    [ResourceFlowNodeType.CONVERTER]: active ? '#FF9800' : '#FFB74D', // Orange
+    [ResourceFlowNodeType.SOURCE]: active ? '#00ACC1' : '#4DD0E1', // Cyan
+    [ResourceFlowNodeType.SINK]: active ? '#7E57C2' : '#B39DDB', // Deep Purple
+  };
+  return colorMap[node.type] || (active ? '#9E9E9E' : '#E0E0E0'); // Default Grey
 }
 
 /**
  * Gets an icon character for a flow node type.
  */
 function getNodeIcon(type: ResourceFlowNodeType): string {
-    // Using emojis as simple icons
-    const iconMap = {
-        [ResourceFlowNodeType.PRODUCER]: '🏭', // Factory
-        [ResourceFlowNodeType.CONSUMER]: '🏠', // House
-        [ResourceFlowNodeType.STORAGE]: '📦', // Package
-        [ResourceFlowNodeType.CONVERTER]: '🔧', // Wrench
-        [ResourceFlowNodeType.SOURCE]: '▶️', // Play
-        [ResourceFlowNodeType.SINK]: '⏹️'   // Stop
-    };
-    return iconMap[type] || '?';
+  // Using emojis as simple icons
+  const iconMap = {
+    [ResourceFlowNodeType.PRODUCER]: '🏭', // Factory
+    [ResourceFlowNodeType.CONSUMER]: '🏠', // House
+    [ResourceFlowNodeType.STORAGE]: '📦', // Package
+    [ResourceFlowNodeType.CONVERTER]: '🔧', // Wrench
+    [ResourceFlowNodeType.SOURCE]: '▶️', // Play
+    [ResourceFlowNodeType.SINK]: '⏹️', // Stop
+  };
+  return iconMap[type] || '?';
 }
 
 /**
  * Gets the display label for a flow node.
  */
 function getNodeLabel(node: FlowNode): string {
-    return node.id; // Use id as label for now
+  return node.id; // Use id as label for now
 }
 
 /**
  * Gets a color for a resource type.
  */
-function getResourceColor(resourceType: ResourceType): string {
-    // Use colors similar to ResourceVisualization.tsx
-    const colorMap: Record<ResourceType, string> = {
-      [ResourceType.MINERALS]: '#8B4513', // SaddleBrown from ResourceTypeUtils example
-      [ResourceType.ENERGY]: '#FFD700', // Gold
-      [ResourceType.POPULATION]: '#32CD32', // LimeGreen
-      [ResourceType.RESEARCH]: '#1E90FF', // DodgerBlue
-      [ResourceType.PLASMA]: '#FF1493', // DeepPink
-      [ResourceType.GAS]: '#00FFFF', // Cyan
-      [ResourceType.EXOTIC]: '#9932CC', // DarkOrchid
-      [ResourceType.ORGANIC]: '#228B22', // ForestGreen
-      [ResourceType.FOOD]: '#FFA500', // Orange
-      [ResourceType.IRON]: '#A52A2A', // Brown
-      [ResourceType.COPPER]: '#B87333', // Copper
-      [ResourceType.TITANIUM]: '#C0C0C0', // Silver
-      [ResourceType.URANIUM]: '#7FFF00', // Chartreuse
-      [ResourceType.WATER]: '#1E90FF', // DodgerBlue 
-      [ResourceType.HELIUM]: '#87CEFA', // LightSkyBlue
-      [ResourceType.DEUTERIUM]: '#00BFFF', // DeepSkyBlue
-      [ResourceType.ANTIMATTER]: '#FF00FF', // Magenta
-      [ResourceType.DARK_MATTER]: '#4B0082', // Indigo
-      [ResourceType.EXOTIC_MATTER]: '#800080' // Purple
-    };
-    return colorMap[resourceType] || '#808080'; // Default gray
+function getResourceColor(resourceType: ResourceType | string): string {
+  // Use colors similar to ResourceVisualization.tsx
+  const colorMap: Record<ResourceType, string> = {
+    [ResourceType.MINERALS]: '#8B4513', // SaddleBrown from ResourceTypeUtils example
+    [ResourceType.ENERGY]: '#FFD700', // Gold
+    [ResourceType.POPULATION]: '#32CD32', // LimeGreen
+    [ResourceType.RESEARCH]: '#1E90FF', // DodgerBlue
+    [ResourceType.PLASMA]: '#FF1493', // DeepPink
+    [ResourceType.GAS]: '#00FFFF', // Cyan
+    [ResourceType.EXOTIC]: '#9932CC', // DarkOrchid
+    [ResourceType.ORGANIC]: '#228B22', // ForestGreen
+    [ResourceType.FOOD]: '#FFA500', // Orange
+    [ResourceType.IRON]: '#A52A2A', // Brown
+    [ResourceType.COPPER]: '#B87333', // Copper
+    [ResourceType.TITANIUM]: '#C0C0C0', // Silver
+    [ResourceType.URANIUM]: '#7FFF00', // Chartreuse
+    [ResourceType.WATER]: '#1E90FF', // DodgerBlue
+    [ResourceType.HELIUM]: '#87CEFA', // LightSkyBlue
+    [ResourceType.DEUTERIUM]: '#00BFFF', // DeepSkyBlue
+    [ResourceType.ANTIMATTER]: '#FF00FF', // Magenta
+    [ResourceType.DARK_MATTER]: '#4B0082', // Indigo
+    [ResourceType.EXOTIC_MATTER]: '#800080', // Purple
+  };
+  return colorMap[resourceType as ResourceType] || '#808080'; // Default gray
 }
+
+// Temporary type guard - replace or remove
+// function isResourceType(value: string): value is string {
+//     return Object.keys(ResourceType).includes(value);
+// }
 
 // --- End Helper Functions ---
 

@@ -3,13 +3,14 @@ import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/Er
 import { EventType } from '../../types/events/EventTypes';
 import {
   FlowConnection,
-  FlowNode, FlowNodeType,
+  FlowNode,
+  FlowNodeType,
   ResourcePriorityConfig,
   ResourceState,
   ResourceTransfer,
-  ResourceType
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
-import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
+import { validateResourceTransfer } from '../../utils/typeGuards/resourceTypeGuards';
 import { ResourceFlowWorkerUtil } from '../../utils/workers/ResourceFlowWorkerUtil';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 
@@ -296,7 +297,12 @@ export class ResourceFlowSubsystem {
           new Error(`Invalid resource key "${resourceKey}" found in node ${node.id}`),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
-          { componentName: 'ResourceFlowSubsystem', action: 'registerNode', nodeId: node.id, resourceKey }
+          {
+            componentName: 'ResourceFlowSubsystem',
+            action: 'registerNode',
+            nodeId: node.id,
+            resourceKey,
+          }
         );
       }
     }
@@ -359,10 +365,17 @@ export class ResourceFlowSubsystem {
       } else {
         // Log potential issue if key wasn't a valid ResourceType during removal
         errorLoggingService.logError(
-          new Error(`Attempted to unregister node ${id} with potentially invalid resource key "${resourceKey}"`),
+          new Error(
+            `Attempted to unregister node ${id} with potentially invalid resource key "${resourceKey}"`
+          ),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
-          { componentName: 'ResourceFlowSubsystem', action: 'unregisterNode', nodeId: id, resourceKey }
+          {
+            componentName: 'ResourceFlowSubsystem',
+            action: 'unregisterNode',
+            nodeId: id,
+            resourceKey,
+          }
         );
       }
     }
@@ -410,12 +423,14 @@ export class ResourceFlowSubsystem {
 
     // Ensure source node has the resource type
     const sourceNode = this.nodes.get(connection.source);
-    const hasRequiredResourceType = connection.resourceTypes.some(rt => 
-      sourceNode?.resources && Object.prototype.hasOwnProperty.call(sourceNode.resources, rt)
+    const hasRequiredResourceType = connection.resourceTypes.some(
+      rt => sourceNode?.resources && Object.prototype.hasOwnProperty.call(sourceNode.resources, rt)
     );
     if (!sourceNode || !hasRequiredResourceType) {
       errorLoggingService.logError(
-        new Error(`Source node ${connection.source} does not have required resource type(s): ${connection.resourceTypes.join(', ')}`),
+        new Error(
+          `Source node ${connection.source} does not have required resource type(s): ${connection.resourceTypes.join(', ')}`
+        ),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
         { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
@@ -473,7 +488,9 @@ export class ResourceFlowSubsystem {
 
     if (!source || !target) {
       errorLoggingService.logError(
-        new Error(`Cannot register flow: source or target node not found (Source: ${sourceId}, Target: ${targetId})`),
+        new Error(
+          `Cannot register flow: source or target node not found (Source: ${sourceId}, Target: ${targetId})`
+        ),
         ErrorType.VALIDATION,
         ErrorSeverity.MEDIUM,
         { componentName: 'ResourceFlowSubsystem', action: 'registerResourceFlow' }
@@ -482,7 +499,10 @@ export class ResourceFlowSubsystem {
     }
 
     // Check if source produces this resource
-    if (!source.resources || !Object.prototype.hasOwnProperty.call(source.resources, resourceType)) {
+    if (
+      !source.resources ||
+      !Object.prototype.hasOwnProperty.call(source.resources, resourceType)
+    ) {
       errorLoggingService.logError(
         new Error(`Source node ${sourceId} does not produce ${resourceType}`),
         ErrorType.VALIDATION,
@@ -493,7 +513,10 @@ export class ResourceFlowSubsystem {
     }
 
     // Check if target accepts this resource
-    if (!target.resources || !Object.prototype.hasOwnProperty.call(target.resources, resourceType)) {
+    if (
+      !target.resources ||
+      !Object.prototype.hasOwnProperty.call(target.resources, resourceType)
+    ) {
       errorLoggingService.logError(
         new Error(`Target node ${targetId} does not accept ${resourceType}`),
         ErrorType.VALIDATION,
@@ -623,7 +646,7 @@ export class ResourceFlowSubsystem {
               maxRate: conn.maxRate,
               currentRate: conn.currentRate,
               active: conn.active,
-              priority: conn.priority
+              priority: conn.priority,
             })),
             // Convert Map to expected parameter type
             new Map(
@@ -758,7 +781,7 @@ export class ResourceFlowSubsystem {
   private processAdvancedConverter(
     converter: FlowNode,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _activeConnections: FlowConnection[] 
+    _activeConnections: FlowConnection[]
   ): void {
     // Implementation of advanced converter logic will go here
     console.warn(`Processing advanced converter: ${converter.id}`);
@@ -795,14 +818,18 @@ export class ResourceFlowSubsystem {
           const outgoingConnections = activeConnections.filter(
             conn => conn.source === producer.id && conn.resourceTypes.includes(resourceType)
           );
-          const maxOutflow = outgoingConnections.reduce((sum, conn) => sum + (conn.maxRate ?? 0), 0); // Add null check
-          availability[resourceType] = (availability[resourceType] ?? 0) + Math.min(state.production, maxOutflow); // Use production rate
+          const maxOutflow = outgoingConnections.reduce(
+            (sum, conn) => sum + (conn.maxRate ?? 0),
+            0
+          ); // Add null check
+          availability[resourceType] =
+            (availability[resourceType] ?? 0) + Math.min(state.production, maxOutflow); // Use production rate
         }
       }
     }
     for (const storage of storages) {
-       // Iterate over keys of the storage's resources
-       for (const resourceType of Object.keys(storage.resources) as ResourceType[]) {
+      // Iterate over keys of the storage's resources
+      for (const resourceType of Object.keys(storage.resources) as ResourceType[]) {
         const state = storage.resources[resourceType];
         if (state) {
           availability[resourceType] = (availability[resourceType] ?? 0) + state.current; // Add current stored amount
@@ -821,7 +848,8 @@ export class ResourceFlowSubsystem {
             conn => conn.target === consumer.id && conn.resourceTypes.includes(resourceType)
           );
           const maxInflow = incomingConnections.reduce((sum, conn) => sum + (conn.maxRate ?? 0), 0); // Add null check
-          demand[resourceType] = (demand[resourceType] ?? 0) + Math.min(state.consumption, maxInflow); // Use consumption rate
+          demand[resourceType] =
+            (demand[resourceType] ?? 0) + Math.min(state.consumption, maxInflow); // Use consumption rate
         }
       }
     }
@@ -1026,12 +1054,15 @@ export class ResourceFlowSubsystem {
     }
 
     // Prepare resources map - ensure all ResourceTypes are present
-    const resourcesMap: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>; // Initialize with assertion
+    const resourcesMap: Record<ResourceType, ResourceState> = {} as Record<
+      ResourceType,
+      ResourceState
+    >; // Initialize with assertion
     for (const resTypeEnum of Object.values(ResourceType)) {
-        // Assign a default state if not provided in the event
-        // const providedState = eventData.resources?.includes(resTypeEnum); // Removed unused variable
-        // TODO: Get default state more dynamically if possible
-        resourcesMap[resTypeEnum] = { current: 0, max: 1000, min: 0, production: 0, consumption: 0 };
+      // Assign a default state if not provided in the event
+      // const providedState = eventData.resources?.includes(resTypeEnum); // Removed unused variable
+      // TODO: Get default state more dynamically if possible
+      resourcesMap[resTypeEnum] = { current: 0, max: 1000, min: 0, production: 0, consumption: 0 };
     }
 
     // Create and register node
@@ -1047,8 +1078,8 @@ export class ResourceFlowSubsystem {
       },
       active: true,
       // Initialize D3 properties as FlowNode requires them
-      x: 0, 
-      y: 0, 
+      x: 0,
+      y: 0,
     };
 
     this.registerNode(node);
@@ -1088,16 +1119,22 @@ export class ResourceFlowSubsystem {
       // Add new resource types with default state
       for (const resType of newResourceTypes) {
         if (!node.resources[resType]) {
-           // TODO: Get default state more dynamically
-           node.resources[resType] = { current: 0, max: 1000, min: 0, production: 0, consumption: 0 };
+          // TODO: Get default state more dynamically
+          node.resources[resType] = {
+            current: 0,
+            max: 1000,
+            min: 0,
+            production: 0,
+            consumption: 0,
+          };
         }
       }
 
       // Remove resource types no longer present
       for (const resType of currentResourceTypes) {
-         if (!newResourceTypes.has(resType)) {
-             delete node.resources[resType];
-         }
+        if (!newResourceTypes.has(resType)) {
+          delete node.resources[resType];
+        }
       }
     }
 
@@ -1114,7 +1151,8 @@ export class ResourceFlowSubsystem {
 
     // Invalidate cache for affected resources
     for (const resourceKey of Object.keys(node.resources)) {
-      if (this.isValidResourceType(resourceKey)) { // Use the type guard
+      if (this.isValidResourceType(resourceKey)) {
+        // Use the type guard
         this.invalidateCache(resourceKey);
       }
     }
@@ -1159,7 +1197,8 @@ export class ResourceFlowSubsystem {
 
     // Invalidate cache for affected resources
     for (const resourceKey of Object.keys(node.resources)) {
-      if (this.isValidResourceType(resourceKey)) { // Use the type guard
+      if (this.isValidResourceType(resourceKey)) {
+        // Use the type guard
         this.invalidateCache(resourceKey);
       }
     }
@@ -1177,10 +1216,14 @@ export class ResourceFlowSubsystem {
           id: wc.id,
           source: wc.source,
           target: wc.target,
-          resourceTypes: wc.resourceTypes || (wc.resourceType ? [wc.resourceType as ResourceType] : []),
+          resourceTypes:
+            wc.resourceTypes || (wc.resourceType ? [wc.resourceType as ResourceType] : []),
           maxRate: wc.maxRate ?? existingConn?.maxRate ?? 0,
           currentRate: wc.currentRate ?? existingConn?.currentRate ?? 0,
-          priority: typeof wc.priority === 'number' ? existingConn?.priority : wc.priority as ResourcePriorityConfig,
+          priority:
+            typeof wc.priority === 'number'
+              ? existingConn?.priority
+              : (wc.priority as ResourcePriorityConfig),
           active: wc.active ?? existingConn?.active ?? false,
         } as FlowConnection;
       }),
@@ -1189,9 +1232,4 @@ export class ResourceFlowSubsystem {
 }
 
 // Use export type for isolatedModules
-export type {
-  FlowConnection,
-  FlowNode,
-  FlowNodeType
-};
-
+export type { FlowConnection, FlowNode, FlowNodeType };

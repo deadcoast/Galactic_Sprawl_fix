@@ -243,7 +243,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             callback: (eventData: unknown) => {
               const event = eventData as ResourceEvent;
               const resources = event?.data?.resources;
-              const {current} = resources;
+              const { current } = resources;
 
               return {
                 resourceId: event?.moduleId,
@@ -360,7 +360,7 @@ const GameLayoutWrapper = () => {
   const _profiler = useComponentProfiler('GameLayoutWrapper', {
     enabled: process.env.NODE_ENV === 'development',
     logToConsole: true,
-    slowRenderThreshold: 16
+    slowRenderThreshold: 16,
   });
 
   return (
@@ -375,7 +375,7 @@ const GameLayoutWrapper = () => {
 export default function App() {
   // Enable app-level profiling with React Profiler API
   // const profilerRef = React.createRef<typeof Profiler>(); // Removed unused ref
-  
+
   // Set up callback for the React Profiler
   const handleProfilerRender = (
     id: string,
@@ -388,7 +388,7 @@ export default function App() {
     if (process.env.NODE_ENV === 'development') {
       console.debug(
         `[Profiler] ${id} ${phase}: actual=${actualDuration.toFixed(2)}ms, ` +
-        `base=${baseDuration.toFixed(2)}ms, at ${new Date(commitTime).toLocaleTimeString()}`
+          `base=${baseDuration.toFixed(2)}ms, at ${new Date(commitTime).toLocaleTimeString()}`
       );
     }
   };
@@ -453,7 +453,5 @@ export const ResourceProvider: React.FC<ResourceProviderProps> = ({
 }) => {
   // Access the singleton instance directly
   const resourceManager = getResourceManager();
-  return (
-    <ResourceContext.Provider value={resourceManager}>{children}</ResourceContext.Provider>
-  );
+  return <ResourceContext.Provider value={resourceManager}>{children}</ResourceContext.Provider>;
 };

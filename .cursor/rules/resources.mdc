@@ -1,22 +1,14 @@
 ---
 description: 
-globs: src/types/events/**/*.ts,src/components/**/*.tsx,src/services/**/*.ts,src/hooks/**/*.ts
+globs: src/types/resources/**/*.ts, src/managers/resource/**/*.ts, src/components/**/*Resource*.tsx, src/hooks/**/*Resource*.ts, src/resource/**/*.ts, src/services/resource*.ts
 alwaysApply: false
 ---
-# GALACTIC SPRAWL (GS) - Resource Rules and Path Specifics
+---
+description: When implementing code related to resources, you must always use the ResourceType enum instead of string literals. Resource types should be accessed through the enum to ensure type safety and consistency across the codebase.
+globs: src/types/resources/**/*.ts, src/managers/resource/**/*.ts, src/components/**/*Resource*.tsx, src/hooks/**/*Resource*.ts, src/resource/**/*.ts, src/services/resource*.ts
+---
 
 ## Resource Types Rule
-
-// .cursor/rules/resource-types-rule.json
-
-```json
-{
-  "name": "Resource Types Rule",
-  "description": "Enforces the use of ResourceType enum instead of string literals for resource types",
-  "filePattern": ["src/types/resources/**/*.ts", "src/managers/resources/**/*.ts"],
-  "content": "When implementing code related to resources, you must always use the ResourceType enum instead of string literals. Resource types should be accessed through the enum to ensure type safety and consistency across the codebase."
-}
-```
 
 Example of correct implementation:
 
@@ -369,4 +361,167 @@ registry.register('serviceName', () => serviceName, {
 });
 ```
 
-Always follow these patterns to ensure proper type-safety and integration with the service system.
+## Resource Registry Implementation
+
+Registry for centralized resource metadata access.
+
+```typescript
+typescript// src/registry/ResourceRegistry.ts
+
+export class ResourceRegistry {
+  private static _instance: ResourceRegistry | null = null;
+
+  // Storage maps for resource metadata
+  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> = new Map();
+  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> = new Map();
+  private resourcesByTag: Map<string, Set<ResourceType>> = new Map();
+
+  // Private constructor
+  private constructor() {
+    this.initializeRegistry();
+  }
+
+  // Singleton access
+  public static getInstance(): ResourceRegistry {
+    if (!ResourceRegistry._instance) {
+      ResourceRegistry._instance = new ResourceRegistry();
+    }
+    return ResourceRegistry._instance;
+  }
+
+  // Initialization method
+  private initializeRegistry(): void {
+    // Register built-in resource types
+    Object.values(ResourceType).forEach(type => {
+      this.registerResource({
+        metadata: RESOURCE_METADATA[type] || {
+          id: type,
+          displayName: type.toString(),
+          description: `Resource of type ${type}`,
+          category: ResourceCategory.BASIC,
+          defaultMax: 1000,
+          icon: 'default-resource-icon',
+          tags: [],
+        }
+      });
+    });
+  }
+
+  // Registry methods
+  public getResourceMetadata(resourceType: ResourceType): ExtendedResourceMetadata | undefined {
+    return this.resourceMetadata.get(resourceType);
+  }
+
+  public registerResource(options: ResourceRegistrationOptions): boolean {
+    // Implementation details...
+    return true;
+  }
+
+  // Additional methods...
+}
+
+// Export the singleton instance
+export const resourceRegistry = ResourceRegistry.getInstance();
+```
+
+## Registry Usage Patterns
+
+Examples of how to use the registry pattern in different contexts.
+
+### In Manager Classes
+
+```typescript
+typescript; // src/managers/resource/ResourceThresholdManager.ts
+import { getResourceManager } from '../ManagerRegistry';
+
+export class ResourceThresholdManager {
+  // Class implementation...
+
+  private handleResourceUpdate(event: BaseEvent): void {
+    if (!isResourceUpdateEvent(event)) return;
+
+    // Access other managers through the registry
+    const resourceManager = getResourceManager();
+    const resourceState = resourceManager.getResource(event.data.resourceType);
+
+    // Use the manager's methods
+    if (resourceState) {
+      // Implementation details...
+    }
+  }
+}
+```
+
+### In React Components
+
+```typescript
+typescript; // src/components/resources/ResourceDisplay.tsx
+import { getResourceManager } from '../../managers/ManagerRegistry';
+
+export function ResourceDisplay({ resourceType }: { resourceType: ResourceType }) {
+  const [resourceState, setResourceState] = useState<ResourceState | null>(null);
+
+  useEffect(() => {
+    // Access manager through registry
+    const resourceManager = getResourceManager();
+    const state = resourceManager.getResource(resourceType);
+    setResourceState(state || null);
+
+    // Subscribe to updates using the manager
+    const unsubscribe = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
+      if (isResourceUpdateEvent(event) && event.data.resourceType === resourceType) {
+        setResourceState(resourceManager.getResource(resourceType) || null);
+      }
+    });
+
+    return unsubscribe;
+  }, [resourceType]);
+
+  // Component rendering...
+}
+```
+
+### In Custom Hooks
+
+```typescript
+typescript; // src/hooks/useResourceData.ts
+import { getResourceManager } from '../managers/ManagerRegistry';
+
+export function useResourceData(resourceType: ResourceType) {
+  const [data, setData] = useState<ResourceState | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    try {
+      // Access manager through registry
+      const resourceManager = getResourceManager();
+      const resourceState = resourceManager.getResource(resourceType);
+      setData(resourceState || null);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error(String(e)));
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+
+    // Set up subscription for updates
+    const unsubscribe = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
+      if (isResourceUpdateEvent(event) && event.data.resourceType === resourceType) {
+        try {
+          const resourceManager = getResourceManager();
+          setData(resourceManager.getResource(resourceType) || null);
+          setError(null);
+        } catch (e) {
+          setError(e instanceof Error ? e : new Error(String(e)));
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [resourceType]);
+
+  return { data, loading, error };
+}
+```

@@ -4,9 +4,9 @@ import { useModulesWithStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { ExtendedModuleStatus } from '../../../managers/module/ModuleStatusManager';
 import { BaseModule, ModuleType } from '../../../types/buildings/ModuleTypes';
+import { useVirtualization } from '../../../utils/performance/ComponentOptimizer';
 import { ModuleCard } from './ModuleCard';
 import './ModuleGrid.css';
-import { useVirtualization } from '../../../utils/performance/ComponentOptimizer';
 
 interface ModuleGridProps {
   title?: string;
@@ -17,7 +17,7 @@ interface ModuleGridProps {
   compact?: boolean;
   maxItems?: number;
   buildingId?: string;
-  /** 
+  /**
    * Whether to enable virtualization for large module lists
    * @default true
    */
@@ -71,9 +71,9 @@ export function ModuleGrid({
         const { height } = entries[0].contentRect;
         setContainerHeight(height);
       });
-      
+
       resizeObserver.observe(containerRef.current);
-      
+
       return () => {
         if (containerRef.current) {
           resizeObserver.unobserve(containerRef.current);
@@ -174,12 +174,12 @@ export function ModuleGrid({
     if (!virtualized) {
       return null;
     }
-    
+
     return useVirtualization({
       itemCount: filteredModules.length,
       itemHeight: moduleHeight,
       containerHeight,
-      overscan: 2
+      overscan: 2,
     });
   }, [virtualized, filteredModules.length, moduleHeight, containerHeight]);
 
@@ -228,25 +228,25 @@ export function ModuleGrid({
       const visibleModules = filteredModules.slice(startIndex, endIndex + 1);
 
       return (
-        <div 
+        <div
           className="module-grid-virtual-container"
           style={{ height: `${containerHeight}px`, position: 'relative', overflow: 'auto' }}
           onScroll={virtualization.handleScroll}
         >
-          <div 
+          <div
             className="module-grid-virtual-content"
             style={{ height: `${totalHeight}px`, position: 'relative' }}
           >
-            <div 
+            <div
               className="module-grid-virtual-items"
-              style={{ 
-                position: 'absolute', 
-                top: `${offsetY}px`, 
-                left: 0, 
+              style={{
+                position: 'absolute',
+                top: `${offsetY}px`,
+                left: 0,
                 right: 0,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '16px'
+                gap: '16px',
               }}
             >
               {visibleModules.map(module => (

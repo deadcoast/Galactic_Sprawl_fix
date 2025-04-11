@@ -15,18 +15,6 @@ export interface DataPoint {
   opacity?: number;
 }
 
-interface DataTransitionConfig {
-  sourceData: DataPoint[];
-  targetData: DataPoint[];
-  duration?: number;
-  easing?: (t: number) => number;
-  staggerDelay?: number;
-  trailEffect?: boolean;
-  blendMode?: 'normal' | 'additive';
-  onTransitionComplete?: () => void;
-  onTransitionProgress?: (progress: number) => void;
-}
-
 interface DataTransitionParticleSystemProps {
   width: number;
   height: number;
@@ -135,7 +123,6 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
     // Create transition particles
     sourceData.forEach((source, index) => {
       const target = targetData[index] || targetData[targetData.length - 1];
-      const _delay = index * staggerDelay;
 
       particleSystemRef.current?.createParticleSystem(`transition-${index}`, {
         ...particleConfig,
@@ -161,11 +148,6 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
       sourceData.forEach((source, index) => {
         const target = targetData[index] || targetData[targetData.length - 1];
         const particleProgress = easing(progress);
-
-        const _currentPosition = {
-          x: source.position.x + (target.position.x - source.position.x) * particleProgress,
-          y: source.position.y + (target.position.y - source.position.y) * particleProgress,
-        };
 
         particleSystemRef.current?.update(1 / 60);
       });

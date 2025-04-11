@@ -9,23 +9,29 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 // Define specific event types used in rules for clarity - Placeholder strings
 // TODO: Define these properly in ModuleEventType enum
 const INCREASE_POPULATION_EVENT: ModuleEventType = 'INCREASE_POPULATION' as ModuleEventType;
-const INCREASE_FOOD_PRODUCTION_EVENT: ModuleEventType = 'INCREASE_FOOD_PRODUCTION' as ModuleEventType;
+const INCREASE_FOOD_PRODUCTION_EVENT: ModuleEventType =
+  'INCREASE_FOOD_PRODUCTION' as ModuleEventType;
 const INFRASTRUCTURE_NEEDED_EVENT: ModuleEventType = 'INFRASTRUCTURE_NEEDED' as ModuleEventType;
 const BUILD_INFRASTRUCTURE_EVENT: ModuleEventType = 'BUILD_INFRASTRUCTURE' as ModuleEventType;
 const TRADE_OPPORTUNITY_EVENT: ModuleEventType = 'TRADE_OPPORTUNITY' as ModuleEventType;
 const ESTABLISH_TRADE_ROUTE_EVENT: ModuleEventType = 'ESTABLISH_TRADE_ROUTE' as ModuleEventType;
 const THREAT_DETECTED_EVENT: ModuleEventType = 'THREAT_DETECTED' as ModuleEventType;
-const ACTIVATE_DEFENSE_SYSTEMS_EVENT: ModuleEventType = 'ACTIVATE_DEFENSE_SYSTEMS' as ModuleEventType;
+const ACTIVATE_DEFENSE_SYSTEMS_EVENT: ModuleEventType =
+  'ACTIVATE_DEFENSE_SYSTEMS' as ModuleEventType;
 const RESOURCE_IMBALANCE_EVENT: ModuleEventType = 'RESOURCE_IMBALANCE' as ModuleEventType;
-const OPTIMIZE_RESOURCE_DISTRIBUTION_EVENT: ModuleEventType = 'OPTIMIZE_RESOURCE_DISTRIBUTION' as ModuleEventType;
+const OPTIMIZE_RESOURCE_DISTRIBUTION_EVENT: ModuleEventType =
+  'OPTIMIZE_RESOURCE_DISTRIBUTION' as ModuleEventType;
 const RESEARCH_OPPORTUNITY_EVENT: ModuleEventType = 'RESEARCH_OPPORTUNITY' as ModuleEventType;
 const INITIATE_RESEARCH_EVENT: ModuleEventType = 'INITIATE_RESEARCH' as ModuleEventType;
 const ENERGY_SHORTAGE_EVENT: ModuleEventType = 'ENERGY_SHORTAGE' as ModuleEventType;
-const INCREASE_ENERGY_PRODUCTION_EVENT: ModuleEventType = 'INCREASE_ENERGY_PRODUCTION' as ModuleEventType;
+const INCREASE_ENERGY_PRODUCTION_EVENT: ModuleEventType =
+  'INCREASE_ENERGY_PRODUCTION' as ModuleEventType;
 const HAPPINESS_DECLINE_EVENT: ModuleEventType = 'HAPPINESS_DECLINE' as ModuleEventType;
-const IMPROVE_LIVING_CONDITIONS_EVENT: ModuleEventType = 'IMPROVE_LIVING_CONDITIONS' as ModuleEventType;
+const IMPROVE_LIVING_CONDITIONS_EVENT: ModuleEventType =
+  'IMPROVE_LIVING_CONDITIONS' as ModuleEventType;
 const EMERGENCY_SITUATION_EVENT: ModuleEventType = 'EMERGENCY_SITUATION' as ModuleEventType;
-const ACTIVATE_EMERGENCY_PROTOCOLS_EVENT: ModuleEventType = 'ACTIVATE_EMERGENCY_PROTOCOLS' as ModuleEventType;
+const ACTIVATE_EMERGENCY_PROTOCOLS_EVENT: ModuleEventType =
+  'ACTIVATE_EMERGENCY_PROTOCOLS' as ModuleEventType;
 
 /**
  * Automation rules for colony management

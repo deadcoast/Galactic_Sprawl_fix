@@ -1,16 +1,16 @@
 /**
  * @context: ui-system, resource-system, component-library
- * 
+ *
  * ResourceBar component for displaying resource levels with visual bars
  * Follows type safety patterns from GS-TYPE-DEFINITIONS
  */
 import React from 'react';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceIcon } from './ResourceIcon';
-import { getResourceDisplayName } from '../../../utils/resources/resourceUtils';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { getResourceDisplayName } from '../../../utils/resources/resourceUtils';
+import { ResourceIcon } from './ResourceIcon';
 
 interface ResourceBarProps {
   /**
@@ -73,12 +73,12 @@ interface ResourceEventData {
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
   return Boolean(
     event &&
-    event.data &&
-    typeof event.data === 'object' &&
-    'resourceType' in event.data &&
-    'amount' in event.data &&
-    typeof event.data.amount === 'number' &&
-    Object.values(ResourceType).includes(event.data.resourceType as ResourceType)
+      event.data &&
+      typeof event.data === 'object' &&
+      'resourceType' in event.data &&
+      'amount' in event.data &&
+      typeof event.data.amount === 'number' &&
+      Object.values(ResourceType).includes(event.data.resourceType as ResourceType)
   );
 }
 
@@ -89,7 +89,7 @@ function safelyExtractAmount(event: ModuleEvent): number {
   if (!event || !event.data) {
     return 0;
   }
-  
+
   return typeof event.data.amount === 'number' ? event.data.amount : 0;
 }
 
@@ -147,7 +147,7 @@ export function ResourceBar({
 
   // Calculate percentage
   const percentage = Math.min(Math.max((amount / capacity) * 100, 0), 100);
-  
+
   // Determine bar color based on percentage
   let barColor = 'bg-blue-500';
   if (percentage <= 25) {
@@ -161,14 +161,14 @@ export function ResourceBar({
   return (
     <div className={`resource-bar flex flex-col ${className}`} data-testid="resource-bar">
       {showLabel && (
-        <div className="resource-bar-label flex items-center mb-1">
-          <ResourceIcon resourceType={resourceType} className="h-4 w-4 mr-1" />
+        <div className="resource-bar-label mb-1 flex items-center">
+          <ResourceIcon resourceType={resourceType} className="mr-1 h-4 w-4" />
           <span className="text-sm font-medium">{getResourceDisplayName(resourceType)}</span>
         </div>
       )}
       <div className="resource-bar-container flex items-center">
-        <div 
-          className="resource-bar-background bg-gray-200 rounded-full overflow-hidden"
+        <div
+          className="resource-bar-background overflow-hidden rounded-full bg-gray-200"
           style={{ width: width, height: height }}
         >
           <div
@@ -177,7 +177,7 @@ export function ResourceBar({
             data-testid="resource-bar-fill"
           />
         </div>
-        
+
         <div className="resource-bar-info ml-2 flex items-center">
           {showAmount && (
             <span className="resource-bar-amount text-sm font-medium">
@@ -185,7 +185,7 @@ export function ResourceBar({
             </span>
           )}
           {showPercentage && (
-            <span className="resource-bar-percentage text-sm text-gray-500 ml-1">
+            <span className="resource-bar-percentage ml-1 text-sm text-gray-500">
               ({Math.floor(percentage)}%)
             </span>
           )}
@@ -193,4 +193,4 @@ export function ResourceBar({
       </div>
     </div>
   );
-} 
+}

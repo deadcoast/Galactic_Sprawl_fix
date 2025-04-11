@@ -1,9 +1,9 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-    ResourceState as StringResourceState,
-    ResourceType as StringResourceType,
-    toEnumResourceType,
+  ResourceState as StringResourceState,
+  ResourceType as StringResourceType,
+  toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -89,7 +89,9 @@ export class ResourceThresholdSubsystem {
       this.isInitialized = true;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize ResourceThresholdSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error('Failed to initialize ResourceThresholdSubsystem'),
         ErrorType.INITIALIZATION,
         ErrorSeverity.CRITICAL,
         { componentName: 'ResourceThresholdSubsystem', action: 'initialize' }

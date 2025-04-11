@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon, BarChart4, ChevronDown, ChevronUp } from 'lucide-react';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAllResourceRates, useResourceRate } from '../../../contexts/ResourceRatesContext';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 import { useTooltipContext } from '../tooltip-context';
 
 // Resource type colors matching existing styles
@@ -168,6 +168,10 @@ const ResourceRateItem: React.FC<ResourceRateItemProps> = ({
   // Colors for this resource
   const colors = resourceColors[resourceType] || resourceColors[ResourceType.EXOTIC];
 
+  const getTitle = useCallback(() => {
+    return `${ResourceTypeInfo[resourceType]?.displayName ?? resourceType} Rates`;
+  }, [resourceType]);
+
   // Handle tooltip display
   const handleMouseEnter = (e: React.MouseEvent) => {
     const tooltipContent = (
@@ -176,9 +180,7 @@ const ResourceRateItem: React.FC<ResourceRateItemProps> = ({
           <div className={`mr-2 rounded p-1 ${colors.bg}`}>
             <BarChart4 className={`h-4 w-4 ${colors.base}`} />
           </div>
-          <h3 className="text-lg font-bold capitalize text-white">
-            {ResourceTypeHelpers.getDisplayName(resourceType)} Rates
-          </h3>
+          <h3 className="text-lg font-bold text-white capitalize">{getTitle()}</h3>
         </div>
 
         <div className="space-y-2 text-sm">
@@ -220,7 +222,7 @@ const ResourceRateItem: React.FC<ResourceRateItemProps> = ({
       >
         <div className="flex flex-1 items-center">
           <span className={`font-medium ${colors.base}`}>
-            {ResourceTypeHelpers.getDisplayName(resourceType)}
+            {ResourceTypeInfo[resourceType]?.displayName ?? resourceType}
           </span>
 
           <span
@@ -252,7 +254,7 @@ const ResourceRateItem: React.FC<ResourceRateItemProps> = ({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className={`mt-1 rounded-md border p-3 ${colors.border} bg-black bg-opacity-20`}>
+            <div className={`mt-1 rounded-md border p-3 ${colors.border} bg-opacity-20 bg-black`}>
               <div className="space-y-3">
                 {/* Production Bar */}
                 <div className="space-y-1">

@@ -64,6 +64,9 @@ const HookPerformanceDashboard: React.FC<HookPerformanceDashboardProps> = ({
   const [sortBy, setSortBy] = useState<SortOption>('renders');
   const [filterText, setFilterText] = useState(filterByHook ?? '');
   const [showOnlySlowHooks, setShowOnlySlowHooks] = useState(false);
+  const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_showDetails, _setShowDetails] = useState<boolean>(false);
 
   // Refresh performance data
   useEffect(() => {

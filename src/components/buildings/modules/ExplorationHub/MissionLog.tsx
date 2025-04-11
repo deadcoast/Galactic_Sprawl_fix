@@ -182,11 +182,11 @@ export function MissionLog({ onClose }: MissionLogProps) {
             <input
               type="text"
               placeholder="Search mission logs..."
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:outline-none"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
           </div>
 
           <div className="flex items-center space-x-2">
@@ -196,7 +196,7 @@ export function MissionLog({ onClose }: MissionLogProps) {
               onChange={e =>
                 setFilter(e.target.value as 'all' | 'discoveries' | 'anomalies' | 'completions')
               }
-              className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
             >
               <option value="all">All Entries</option>
               <option value="discoveries">Discoveries</option>

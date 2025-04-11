@@ -28,4 +28,4 @@ export const HangarBayList = ({ bays }: HangarBayListProps) => {
   );
 };
 
-export default HangarBayList; 
+export default HangarBayList;

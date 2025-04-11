@@ -1,0 +1,481 @@
+---
+description: 
+globs: src/types/**/*.ts, **/*.d.ts, **/*.ts, **/*.tsx
+alwaysApply: false
+---
+---
+description: This document provides critical type definitions used throughout the Galactic Sprawl codebase. These types form the foundation of the type safety system and must be used consistently across all implementations.
+globs: src/types/**/*.ts, **/*.d.ts, **/*.ts, **/*.tsx
+---
+
+## Enum Types
+
+Enums must be used instead of string literals throughout the codebase.
+
+### ResourceType
+
+```typescript
+/**
+ * ResourceType as an enum for better type safety and intellisense support
+ * IMPORTANT: Always use enum values instead of string literals for resource types
+ */
+export enum ResourceType {
+  MINERALS = 'MINERALS',
+  ENERGY = 'ENERGY',
+  POPULATION = 'POPULATION',
+  RESEARCH = 'RESEARCH',
+  PLASMA = 'PLASMA',
+  GAS = 'GAS',
+  EXOTIC = 'EXOTIC',
+  ORGANIC = 'ORGANIC',
+  FOOD = 'FOOD',
+  IRON = 'IRON',
+  COPPER = 'COPPER',
+  TITANIUM = 'TITANIUM',
+  URANIUM = 'URANIUM',
+  WATER = 'WATER',
+  HELIUM = 'HELIUM',
+  DEUTERIUM = 'DEUTERIUM',
+  ANTIMATTER = 'ANTIMATTER',
+  DARK_MATTER = 'DARK_MATTER',
+  EXOTIC_MATTER = 'EXOTIC_MATTER',
+}
+
+### EventType
+
+/**
+ * EventType enum defines all possible event types in the system
+ * Replaces string literal event types for type safety
+ */
+export enum EventType {
+  // Lifecycle events
+  MODULE_CREATED = 'MODULE_CREATED',
+  MODULE_ATTACHED = 'MODULE_ATTACHED',
+  MODULE_DETACHED = 'MODULE_DETACHED',
+  MODULE_UPGRADED = 'MODULE_UPGRADED',
+  MODULE_ACTIVATED = 'MODULE_ACTIVATED',
+  MODULE_DEACTIVATED = 'MODULE_DEACTIVATED',
+  MODULE_UPDATED = 'MODULE_UPDATED',
+  MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED',
+  MODULE_ALERT_ADDED = 'MODULE_ALERT_ADDED',
+  MODULE_REMOVED = 'MODULE_REMOVED',
+
+  // Resource events
+  RESOURCE_PRODUCED = 'RESOURCE_PRODUCED',
+  RESOURCE_CONSUMED = 'RESOURCE_CONSUMED',
+  RESOURCE_TRANSFERRED = 'RESOURCE_TRANSFERRED',
+  RESOURCE_PRODUCTION_REGISTERED = 'RESOURCE_PRODUCTION_REGISTERED',
+  RESOURCE_PRODUCTION_UNREGISTERED = 'RESOURCE_PRODUCTION_UNREGISTERED',
+  RESOURCE_CONSUMPTION_REGISTERED = 'RESOURCE_CONSUMPTION_REGISTERED',
+  RESOURCE_CONSUMPTION_UNREGISTERED = 'RESOURCE_CONSUMPTION_UNREGISTERED',
+  RESOURCE_FLOW_REGISTERED = 'RESOURCE_FLOW_REGISTERED',
+  RESOURCE_FLOW_UNREGISTERED = 'RESOURCE_FLOW_UNREGISTERED',
+  RESOURCE_SHORTAGE = 'RESOURCE_SHORTAGE',
+  RESOURCE_UPDATED = 'RESOURCE_UPDATED',
+  RESOURCE_DISCOVERED = 'RESOURCE_DISCOVERED',
+
+  // Threshold events
+  RESOURCE_THRESHOLD_CHANGED = 'RESOURCE_THRESHOLD_CHANGED',
+  RESOURCE_THRESHOLD_TRIGGERED = 'RESOURCE_THRESHOLD_TRIGGERED',
+
+  // Combat events
+  COMBAT_UPDATED = 'COMBAT_UPDATED',
+
+  // Game events
+  GAME_STARTED = 'GAME_STARTED',
+  GAME_PAUSED = 'GAME_PAUSED',
+  GAME_RESUMED = 'GAME_RESUMED',
+  GAME_STOPPED = 'GAME_STOPPED',
+
+  // Exploration events
+  EXPLORATION_SECTOR_DISCOVERED = 'EXPLORATION_SECTOR_DISCOVERED',
+  EXPLORATION_SECTOR_SCANNED = 'EXPLORATION_SECTOR_SCANNED',
+  EXPLORATION_ANOMALY_DETECTED = 'EXPLORATION_ANOMALY_DETECTED',
+  EXPLORATION_RESOURCE_DETECTED = 'EXPLORATION_RESOURCE_DETECTED',
+}
+```
+
+### FactionId
+
+```typescript
+/**
+ * Faction identifiers
+ */
+export type FactionId =
+  | 'player'
+  | 'enemy'
+  | 'neutral'
+  | 'ally'
+  | 'space-rats'
+  | 'lost-nova'
+  | 'equator-horizon';
+```
+
+### FlowNodeType
+
+```typescript
+/**
+ * Resource flow node type - strong enum typing
+ */
+export enum FlowNodeType {
+  PRODUCER = 'producer',
+  CONSUMER = 'consumer',
+  STORAGE = 'storage',
+  CONVERTER = 'converter',
+  SOURCE = 'source',
+  SINK = 'sink',
+}
+```
+
+## Interface Definitions
+
+Key interfaces that define data structures throughout the application.
+
+### BaseEvent
+
+```typescript
+/**
+ * Base event interface that all events must implement
+ */
+export interface BaseEvent {
+  type: EventType; // Must use enum, not string
+  timestamp: number;
+  moduleId: string;
+  moduleType: ModuleType; // Must use enum, not string
+  data?: Record<string, unknown>;
+  [key: string]: unknown; // Add index signature for compatibility
+}
+```
+
+### ResourceState
+
+```typescript
+/**
+ * Resource state representing current values and limits
+ */
+export interface ResourceState {
+  current: number;
+  max: number;
+  min: number;
+  production: number;
+  consumption: number;
+  rate?: number;
+  value?: number;
+}
+```
+
+### FlowNode
+
+```typescript
+/**
+ * Flow node in a resource network
+ */
+export interface FlowNode {
+  id: string;
+  type: FlowNodeType; // Must use enum, not string
+  name: string;
+  description?: string;
+  capacity: number;
+  currentLoad: number;
+  efficiency: number;
+  status: 'active' | 'inactive' | 'maintenance' | 'error';
+  resources?: Map<ResourceType, number>; // Use ResourceType enum as keys
+  active?: boolean;
+  inputs?: Array<{
+    type: ResourceType; // Must use enum, not string
+    rate: number;
+    maxCapacity: number;
+  }>;
+  outputs?: Array<{
+    type: ResourceType; // Must use enum, not string
+    rate: number;
+    maxCapacity: number;
+  }>;
+}
+```
+
+### FlowConnection
+
+```typescript
+/**
+ * Flow connection between nodes
+ */
+export interface FlowConnection {
+  id: string;
+  source: string;
+  target: string;
+  resourceTypes: ResourceType[]; // Must use enum, not string
+  maxFlow?: number;
+  metadata?: Record<string, unknown>;
+  maxRate?: number;
+  currentRate?: number;
+  priority?: ResourcePriorityConfig;
+  active?: boolean;
+}
+```
+
+## Type Guards
+
+Type guards for runtime type checking.
+
+### Resource Type Guards
+
+```typescript
+/**
+ * Type guard for resource type validation
+ */
+export function isResourceType(value: unknown): value is ResourceType {
+  return typeof value === 'string' && Object.values(ResourceType).includes(value as ResourceType);
+}
+
+/**
+ * Type guard for flow node type validation
+ */
+export function isFlowNodeType(value: unknown): value is FlowNodeType {
+  return typeof value === 'string' && Object.values(FlowNodeType).includes(value as FlowNodeType);
+}
+```
+
+### Event Type Guards
+
+```typescript
+/**
+ * Type guard for resource update events
+ */
+export function isResourceUpdateEvent(
+  event: ModuleEvent
+): event is ModuleEvent & { data: { resourceAmounts: Partial<Record<ResourceType, number>> } } {
+  return (
+    event?.data !== undefined &&
+    typeof event?.data === 'object' &&
+    event?.data !== null &&
+    'resourceAmounts' in event?.data &&
+    typeof event?.data?.resourceAmounts === 'object' &&
+    event?.data?.resourceAmounts !== null
+  );
+}
+
+/**
+ * Type guard for resource production events
+ */
+export function isResourceProductionEvent(
+  event: ModuleEvent
+): event is ModuleEvent & { data: { resourceType: ResourceType; amount: number } } {
+  return (
+    event?.data !== undefined &&
+    typeof event?.data === 'object' &&
+    event?.data !== null &&
+    'resourceType' in event?.data &&
+    'amount' in event?.data &&
+    typeof event?.data?.amount === 'number'
+  );
+}
+```
+
+## Safe Extraction Utilities
+
+Utilities for safely extracting values from potentially undefined objects.
+
+```typescript
+/**
+ * Safely extract a number from an object
+ */
+export function safelyExtractNumber(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+  defaultValue = 0
+): number {
+  if (!obj) return defaultValue;
+  const value = obj[key];
+  return typeof value === 'number' ? value : defaultValue;
+}
+
+/**
+ * Safely extract a string from an object
+ */
+export function safelyExtractString(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+  defaultValue = ''
+): string {
+  if (!obj) return defaultValue;
+  const value = obj[key];
+  return typeof value === 'string' ? value : defaultValue;
+}
+
+/**
+ * Safely extract a boolean from an object
+ */
+export function safelyExtractBoolean(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+  defaultValue = false
+): boolean {
+  if (!obj) return defaultValue;
+  const value = obj[key];
+  return typeof value === 'boolean' ? value : defaultValue;
+}
+
+/**
+ * Safely extract an array from an object
+ */
+export function safelyExtractArray<T>(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+  defaultValue: T[] = []
+): T[] {
+  if (!obj) return defaultValue;
+  const value = obj[key];
+  return Array.isArray(value) ? value : defaultValue;
+}
+
+/**
+ * Safely extract an object from an object
+ */
+export function safelyExtractObject<T extends Record<string, unknown>>(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+  defaultValue: T
+): T {
+  if (!obj) return defaultValue;
+  const value = obj[key];
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as T)
+    : defaultValue;
+}
+```
+
+## Type Conversion Utilities
+
+Utilities for converting between different type representations.
+
+```typescript
+/**
+ * Convert a string resource type to enum resource type
+ */
+export function stringToEnumResourceType(type: string): ResourceType | undefined {
+  if (isResourceType(type)) {
+    return type;
+  }
+
+  const upperCaseType = type.toUpperCase();
+  if (isResourceType(upperCaseType)) {
+    return upperCaseType as ResourceType;
+  }
+
+  return undefined;
+}
+
+/**
+ * Convert an enum resource type to string resource type
+ */
+export function enumToStringResourceType(type: ResourceType): string {
+  return type;
+}
+
+/**
+ * Convert a string event type to enum event type
+ */
+export function stringToEventType(type: string): EventType | undefined {
+  return Object.values(EventType).find(eventType => eventType === type);
+}
+```
+
+## Type System Best Practices
+
+1. **Always use enum types** instead of string literals for predefined values
+2. **Always use type guards** for runtime validation of data structures
+3. **Always use safe extraction utilities** for accessing properties that might be undefined
+4. **Never perform direct type assertions** without validation
+5. **Never use `any` type** except in specific cases where it's absolutely necessary
+6. **Always provide explicit return types** for functions
+7. **Use union types** for values that can have a limited set of different types
+8. **Use intersection types** for combining different interfaces
+9. **Use generics** for functions that work with various types in a type-safe way
+10. **Use readonly** for values that shouldn't be modified
+
+## Examples of Type Safety Implementation
+
+### Enum Type Example
+
+```typescript
+// ALWAYS: Use enum
+function processResource(resourceType: ResourceType, amount: number) {
+  switch (resourceType) {
+    case ResourceType.ENERGY:
+      return processEnergy(amount);
+    case ResourceType.MINERALS:
+      return processMinerals(amount);
+    //
+```
+
+### Resource Type Example
+
+```typescript
+    case ResourceType.MINERALS:
+      return processMinerals(amount);
+    // Handle all resource types
+    default:
+      return processGenericResource(resourceType, amount);
+  }
+}
+
+// NEVER: Use string literals
+// function processResource(resourceType: string, amount: number) {
+//   if (resourceType === 'energy') {
+//     return processEnergy(amount);
+//   } else if (resourceType === 'minerals') {
+//     return processMinerals(amount);
+//   } else {
+//     return processGenericResource(resourceType, amount);
+//   }
+// }
+```
+
+### Type Guard Example
+
+```typescript
+function handleEvent(event: unknown): void {
+  // Use type guard to verify event structure
+  if (!isValidEvent(event)) {
+    console.error('Invalid event received:', event);
+    return;
+  }
+
+  // Now TypeScript knows event is a valid BaseEvent
+  processEvent(event);
+
+  // Use specific type guards for event data
+  if (isResourceProductionEvent(event)) {
+    // TypeScript knows event.data has resourceType and amount
+    updateResourceProduction(event.data.resourceType, event.data.amount);
+  }
+}
+
+// NEVER: Use type assertions without validation
+// function handleEvent(event: unknown): void {
+//   // Unsafe type assertion
+//   const typedEvent = event as BaseEvent;
+//   processEvent(typedEvent);
+// }
+```
+
+### Safe Extraction Example
+
+```typescript
+function displayResourceInfo(data: unknown): void {
+  // Use safe extraction utilities
+  const resourceType = safelyExtractString(data as Record<string, unknown>, 'type', 'unknown');
+  const amount = safelyExtractNumber(data as Record<string, unknown>, 'amount', 0);
+  const isActive = safelyExtractBoolean(data as Record<string, unknown>, 'active', false);
+
+  // Use the extracted values safely
+  console.log(`Resource: ${resourceType}, Amount: ${amount}, Active: ${isActive}`);
+}
+
+// NEVER: Access properties directly without validation
+// function displayResourceInfo(data: unknown): void {
+//   // Unsafe property access
+//   console.log(`Resource: ${data.type}, Amount: ${data.amount}, Active: ${data.active}`);
+// }
+```

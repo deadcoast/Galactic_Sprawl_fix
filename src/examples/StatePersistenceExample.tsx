@@ -1,11 +1,11 @@
 /**
  * @context: example.state-persistence, component-library
- * 
+ *
  * Example demonstrating how to use state persistence and migration utilities
  */
-import React, { useEffect, useState } from 'react';
-import { createPersistedState } from '../utils/state/statePersistence';
+import { useEffect, useState } from 'react';
 import { createMigrationBuilder } from '../utils/state/stateMigration';
+import { createPersistedState } from '../utils/state/statePersistence';
 
 // ----- VERSION 1 STATE -----
 interface UserPreferencesV1 {
@@ -92,7 +92,7 @@ const migrationManager = createMigrationBuilder<CurrentAppState>(CURRENT_VERSION
     2,
     (oldState: unknown) => {
       const v1State = oldState as AppStateV1;
-      
+
       // Create V2 state from V1
       const v2State: AppStateV2 = {
         version: 2,
@@ -105,7 +105,7 @@ const migrationManager = createMigrationBuilder<CurrentAppState>(CURRENT_VERSION
         },
         lastLogin: v1State.lastUpdated, // Rename field
       };
-      
+
       return v2State as unknown as CurrentAppState;
     },
     'Migrate from v1 to v2: Add email and colorBlindMode'
@@ -115,7 +115,7 @@ const migrationManager = createMigrationBuilder<CurrentAppState>(CURRENT_VERSION
     3,
     (oldState: unknown) => {
       const v2State = oldState as AppStateV2;
-      
+
       // Create V3 state from V2
       const v3State: AppStateV3 = {
         version: 3,
@@ -134,7 +134,7 @@ const migrationManager = createMigrationBuilder<CurrentAppState>(CURRENT_VERSION
         lastLogin: v2State.lastLogin,
         devices: [], // Initialize empty devices array
       };
-      
+
       return v3State;
     },
     'Migrate from v2 to v3: Restructure user data and add notifications'
@@ -171,16 +171,16 @@ const useAppState = createPersistedState<CurrentAppState>(initialState, {
 export function StatePersistenceDemo() {
   const [appState, setAppState] = useAppState();
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     // Simulate loading delay
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Update handlers
   const updateProfile = (updates: Partial<UserProfileV3>) => {
     setAppState({
@@ -191,7 +191,7 @@ export function StatePersistenceDemo() {
       },
     });
   };
-  
+
   const updatePreferences = (updates: Partial<UserPreferencesV3>) => {
     setAppState({
       ...appState,
@@ -201,7 +201,7 @@ export function StatePersistenceDemo() {
       },
     });
   };
-  
+
   const addDevice = (device: string) => {
     setAppState({
       ...appState,
@@ -209,90 +209,98 @@ export function StatePersistenceDemo() {
       lastLogin: Date.now(),
     });
   };
-  
+
   if (loading) {
     return <div>Loading state...</div>;
   }
-  
+
   return (
     <div style={{ fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
       <h1>State Persistence Example</h1>
       <p>This example demonstrates persisted state with schema migration</p>
-      
+
       <div style={{ marginBottom: '20px' }}>
         <h2>User Profile</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '8px' }}>
           <label>Username:</label>
           <input
             value={appState.profile.username}
-            onChange={(e) => updateProfile({ username: e.target.value })}
+            onChange={e => updateProfile({ username: e.target.value })}
           />
-          
+
           <label>Email:</label>
           <input
             value={appState.profile.email}
-            onChange={(e) => updateProfile({ email: e.target.value })}
+            onChange={e => updateProfile({ email: e.target.value })}
           />
-          
+
           <label>Display Name:</label>
           <input
             value={appState.profile.displayName}
-            onChange={(e) => updateProfile({ displayName: e.target.value })}
+            onChange={e => updateProfile({ displayName: e.target.value })}
           />
         </div>
       </div>
-      
+
       <div style={{ marginBottom: '20px' }}>
         <h2>Preferences</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '8px' }}>
           <label>Theme:</label>
           <select
             value={appState.preferences.theme}
-            onChange={(e) => updatePreferences({ 
-              theme: e.target.value as 'light' | 'dark' | 'system' 
-            })}
+            onChange={e =>
+              updatePreferences({
+                theme: e.target.value as 'light' | 'dark' | 'system',
+              })
+            }
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
             <option value="system">System</option>
           </select>
-          
+
           <label>Font Size:</label>
           <input
             type="range"
             min="12"
             max="24"
             value={appState.preferences.fontSize}
-            onChange={(e) => updatePreferences({ 
-              fontSize: parseInt(e.target.value, 10) 
-            })}
+            onChange={e =>
+              updatePreferences({
+                fontSize: parseInt(e.target.value, 10),
+              })
+            }
           />
           <div></div>
           <div>{appState.preferences.fontSize}px</div>
-          
+
           <label>Color Blind Mode:</label>
           <input
             type="checkbox"
             checked={appState.preferences.colorBlindMode}
-            onChange={(e) => updatePreferences({ 
-              colorBlindMode: e.target.checked 
-            })}
+            onChange={e =>
+              updatePreferences({
+                colorBlindMode: e.target.checked,
+              })
+            }
           />
-          
+
           <label>Notifications:</label>
           <input
             type="checkbox"
             checked={appState.preferences.notifications.enabled}
-            onChange={(e) => updatePreferences({
-              notifications: {
-                ...appState.preferences.notifications,
-                enabled: e.target.checked,
-              },
-            })}
+            onChange={e =>
+              updatePreferences({
+                notifications: {
+                  ...appState.preferences.notifications,
+                  enabled: e.target.checked,
+                },
+              })
+            }
           />
         </div>
       </div>
-      
+
       <div style={{ marginBottom: '20px' }}>
         <h2>Devices</h2>
         <div>
@@ -300,13 +308,11 @@ export function StatePersistenceDemo() {
             {appState.devices.length === 0 ? (
               <li>No devices registered</li>
             ) : (
-              appState.devices.map((device, index) => (
-                <li key={index}>{device}</li>
-              ))
+              appState.devices.map((device, index) => <li key={index}>{device}</li>)
             )}
           </ul>
           <button
-            onClick={() => 
+            onClick={() =>
               addDevice(`Device ${appState.devices.length + 1} - ${new Date().toLocaleString()}`)
             }
           >
@@ -314,7 +320,7 @@ export function StatePersistenceDemo() {
           </button>
         </div>
       </div>
-      
+
       <div>
         <h2>Debug Information</h2>
         <div style={{ background: '#f0f0f0', padding: '12px', borderRadius: '4px' }}>
@@ -328,4 +334,4 @@ export function StatePersistenceDemo() {
       </div>
     </div>
   );
-} 
+}

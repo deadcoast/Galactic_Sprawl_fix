@@ -1,2 +1,2 @@
 // Mathematical constants
-const PI_VALUE = 3.14159265359; 
+const PI_VALUE = 3.14159265359;

@@ -1,22 +1,59 @@
+import { v4 as uuidv4 } from 'uuid';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../lib/ai/shipMovement';
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { ThresholdEvent, thresholdEvents } from '../../services/ResourceThresholdMonitor';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import {
+  BaseEvent,
   EventType,
   MiningResourceCollectedEventData,
   MiningShipRegisteredEventData,
   MiningShipStatusChangedEventData,
   MiningShipUnregisteredEventData,
   MiningTaskAssignedEventData,
-  MiningTaskCompletedEventData
+  MiningTaskCompletedEventData,
 } from '../../types/events/EventTypes';
-import {
-  ResourceType
-} from '../../types/resources/ResourceTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { getAsteroidFieldManager } from '../ManagerRegistry'; // Import the registry function
 
-// Export ShipStatus for use by related modules like MiningResourceIntegration
+interface ThresholdAutomateEventData {
+  threshold: {
+    id: string;
+    resourceType: ResourceType | string;
+    thresholdType: string;
+    comparison: string;
+    value: number;
+    action: string;
+    actionData?: Record<string, unknown>;
+    enabled: boolean;
+    cooldownMs?: number;
+    lastTriggered?: number;
+    repeat?: boolean;
+    entityId?: string;
+  };
+  resourceState: {
+    current: number;
+    max: number;
+    min: number;
+    production: number;
+    consumption: number;
+    rate?: number;
+    value?: number;
+  };
+  automationAction: string;
+  parameters: Record<string, unknown>;
+}
+
+function isThresholdAutomateEventData(data: unknown): data is ThresholdAutomateEventData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as ThresholdAutomateEventData).automationAction === 'string' &&
+    typeof (data as ThresholdAutomateEventData).threshold === 'object' &&
+    typeof (data as ThresholdAutomateEventData).threshold.resourceType === 'string'
+  );
+}
+
 export enum ShipStatus {
   IDLE = 'idle',
   MINING = 'mining',
@@ -31,7 +68,7 @@ enum TaskStatus {
   FAILED = 'failed',
 }
 
-interface MiningShip {
+export interface MiningShip {
   id: string;
   name: string;
   type: 'rockBreaker' | 'voidDredger';
@@ -53,100 +90,186 @@ interface MiningTask {
   endTime?: number;
 }
 
-export class MiningShipManagerImpl {
+// Define the expected structure for event data passed to publish
+interface PublishEventData {
+  type: EventType;
+  moduleId: string;
+  moduleType: ModuleType | string; // Allow string for flexibility if needed
+  timestamp: number;
+  data: Record<string, unknown>; // Keep data flexible
+}
+
+// --- Restore local interface definition ---
+interface IAsteroidFieldManager {
+  // Finds node IDs (e.g., "minerals-cluster-1") for a given resource type
+  findAvailableNodesByType(resourceType: ResourceType): string[];
+  // Optional: Could also include getPosition, etc., if needed
+}
+// -----------------------------------------------------------------------------
+
+export class MiningShipManagerImpl /* extends AbstractBaseManager<BaseEvent> */ {
+  private static _instance: MiningShipManagerImpl | null = null;
+
   private ships: Map<string, MiningShip> = new Map();
   private tasks: Map<string, MiningTask> = new Map();
-  private nodeAssignments: Map<string, string> = new Map(); // nodeId -> shipId
+  private nodeAssignments: Map<string, string> = new Map();
 
-  constructor() {
-    // Listen for threshold events
-    thresholdEvents.subscribe((event: ThresholdEvent) => {
-      if (event?.type === 'THRESHOLD_VIOLATED') {
-        this.handleThresholdViolation(event?.resourceId, event?.details);
+  // Use the local interface and definite assignment assertion
+  private asteroidFieldManager!: IAsteroidFieldManager;
+
+  // Remove constructor if not needed, or make it public
+  // public constructor() {
+  //   // Initialization logic if needed
+  // }
+
+  // Revert to the previous getInstance implementation
+  public static getInstance(): MiningShipManagerImpl {
+    if (!MiningShipManagerImpl._instance) {
+      MiningShipManagerImpl._instance = new MiningShipManagerImpl();
+    }
+    return MiningShipManagerImpl._instance;
+  }
+
+  // Placeholder for initialization logic (was onInitialize)
+  public async initialize(dependencies?: {
+    asteroidFieldManager?: IAsteroidFieldManager;
+  }): Promise<void> {
+    // Attempt to get dependency if provided
+    if (dependencies?.asteroidFieldManager) {
+      this.asteroidFieldManager = dependencies.asteroidFieldManager;
+    } else {
+      // Retrieve from ManagerRegistry
+      try {
+        // Explicitly cast the result from the registry
+        this.asteroidFieldManager = getAsteroidFieldManager() as unknown as IAsteroidFieldManager;
+        if (!this.asteroidFieldManager) {
+          throw new Error('AsteroidFieldManager instance not found in registry.');
+        }
+      } catch (error) {
+        console.error(
+          '[MiningShipManager] Failed to retrieve AsteroidFieldManager from registry:',
+          error
+        );
+        // Handle the error appropriately - maybe throw, or use a safe default
+        throw new Error('AsteroidFieldManager dependency is required and could not be obtained.');
+      }
+    }
+
+    this.subscribe('RESOURCE_THRESHOLD_AUTOMATE', (event: BaseEvent) => {
+      if (event.data && isThresholdAutomateEventData(event.data)) {
+        const { threshold, resourceState } = event.data;
+        let violationType: 'below_minimum' | 'above_maximum' | undefined;
+
+        if (threshold.comparison.includes('LESS_THAN')) {
+          if (resourceState.current < threshold.value) {
+            violationType = 'below_minimum';
+          }
+        } else if (threshold.comparison.includes('GREATER_THAN')) {
+          if (resourceState.current > threshold.value) {
+            violationType = 'above_maximum';
+          }
+        }
+
+        if (violationType) {
+          const resourceTypeStr = threshold.resourceType as string;
+          this.handleThresholdViolation(resourceTypeStr, {
+            type: violationType,
+            current: resourceState.current,
+          });
+        }
+      }
+    });
+    console.log('MiningShipManager initialized');
+    await Promise.resolve();
+  }
+
+  // Placeholder for update logic (was onUpdate)
+  public update(deltaTime: number): void {
+    this.ships.forEach(ship => {
+      if (ship.status === ShipStatus.MINING && ship.targetNode) {
+        const task = Array.from(this.tasks.values()).find(
+          t => t.shipId === ship.id && t.status === TaskStatus.IN_PROGRESS
+        );
+
+        if (task) {
+          const collectedAmount = ship.efficiency * deltaTime;
+          ship.currentLoad += collectedAmount;
+
+          const eventData: MiningResourceCollectedEventData = {
+            shipId: ship.id,
+            resourceType: task.resourceType,
+            amount: collectedAmount,
+          };
+          this.publish({
+            type: EventType.MINING_RESOURCE_COLLECTED,
+            moduleId: ship.id,
+            moduleType: 'mining_ship' as ModuleType,
+            timestamp: Date.now(),
+            data: eventData as unknown as Record<string, unknown>,
+          });
+
+          if (ship.currentLoad >= ship.capacity) {
+            this.recallShip(ship.id);
+          }
+        }
       }
     });
   }
 
-  /**
-   * Handles threshold violations by dispatching mining ships
-   */
-  private handleThresholdViolation(
-    resourceId: string,
-    details: { type: 'below_minimum' | 'above_maximum'; current: number }
-  ): void {
-    if (details.type === 'below_minimum') {
-      // Find available mining ship
-      const availableShip = Array.from(this.ships.values()).find(
-        ship => ship.status === ShipStatus.IDLE && ship.currentLoad === 0
-      );
-
-      if (availableShip) {
-        this.dispatchShipToResource(availableShip.id, resourceId);
-      }
-    } else if (details.type === 'above_maximum') {
-      // Recall unknown ships mining this resource
-      const assignedShipId = this.nodeAssignments.get(resourceId);
-      if (assignedShipId) {
-        this.recallShip(assignedShipId);
-      }
-    }
+  protected async onDispose(): Promise<void> {
+    this.ships.clear();
+    this.tasks.clear();
+    this.nodeAssignments.clear();
+    console.log('MiningShipManager disposed');
+    await Promise.resolve();
   }
 
-  /**
-   * Recalls a ship from its current task
-   */
-  private recallShip(shipId: string): void {
-    const ship = this.ships.get(shipId);
-    if (!ship) {
-      return;
-    }
-
-    // Clear current task
-    Array.from(this.tasks.values())
-      .filter(task => task.shipId === shipId && task.status === TaskStatus.IN_PROGRESS)
-      .forEach(task => {
-        task.status = TaskStatus.COMPLETED;
-        task.endTime = Date.now();
-        this.nodeAssignments.delete(task.nodeId);
-        const eventData: MiningTaskCompletedEventData = { task };
-        eventSystem.publish({
-            type: EventType.MINING_TASK_COMPLETED,
-            managerId: 'MiningShipManager',
-            timestamp: Date.now(),
-            data: eventData
-        });
-      });
-
-    // Update ship status
-    this.updateShipStatus(ship, ShipStatus.RETURNING);
-    ship.targetNode = undefined;
-
-    // Move ship back to base
-    shipMovementManager.moveToPosition(shipId, { x: 0, y: 0 }); // Base position
+  // Add placeholder publish method (needed after removing inheritance)
+  private publish(event: PublishEventData): void {
+    // TODO: Implement actual event publishing logic (e.g., using moduleEventBus or similar)
+    console.log('[MiningShipManager] Publishing Event:', event.type, event.data);
   }
 
-  /**
-   * Gets the position of a resource node
-   */
-  private getResourcePosition(resourceId: string): Position {
-    // Use resourceId to seed the random position for consistency
-    const seed = parseInt(resourceId.split('-').pop() || '0', 10);
-    return {
-      x: (seed * 17) % 1000,
-      y: (seed * 23) % 1000,
+  // Add placeholder subscribe method (needed after removing inheritance)
+  private subscribe(
+    eventType: EventType | string,
+    callback: (event: BaseEvent) => void
+  ): () => void {
+    // TODO: Implement actual event subscription logic
+    console.log('[MiningShipManager] Subscribing to Event:', eventType);
+    // Return a dummy unsubscribe function
+    return () => {
+      console.log('[MiningShipManager] Unsubscribing from Event:', eventType);
     };
   }
 
-  /**
-   * Registers a mining ship
-   */
-  registerShip(ship: MiningShip): void {
-    this.ships.set(ship.id, ship);
+  private updateShipStatus(ship: MiningShip, newStatus: ShipStatus): void {
+    const oldStatus = ship.status;
+    if (oldStatus === newStatus) return;
 
-    // Register with behavior system
+    ship.status = newStatus;
+    const eventData: MiningShipStatusChangedEventData = { shipId: ship.id, oldStatus, newStatus };
+    this.publish({
+      type: EventType.MINING_SHIP_STATUS_CHANGED,
+      moduleId: ship.id,
+      moduleType: 'mining_ship' as ModuleType,
+      timestamp: Date.now(),
+      data: eventData as unknown as Record<string, unknown>,
+    });
+  }
+
+  registerShip(shipData: Omit<MiningShip, 'status' | 'currentLoad' | 'targetNode'>): void {
+    const newShip: MiningShip = {
+      ...shipData,
+      status: ShipStatus.IDLE,
+      currentLoad: 0,
+      targetNode: undefined,
+    };
+    this.ships.set(newShip.id, newShip);
+
     shipBehaviorManager.registerShip({
-      id: ship.id,
-      type: ship.type as ResourceType,
+      id: newShip.id,
+      type: newShip.type as ResourceType,
       category: 'mining',
       capabilities: {
         canMine: true,
@@ -154,218 +277,271 @@ export class MiningShipManagerImpl {
         canScan: false,
         canJump: false,
       },
-      position: { x: 0, y: 0 }, // Initial position
+      position: { x: 0, y: 0 },
       stats: {
         health: 100,
         shield: 100,
         speed: 100,
         maneuverability: 1,
-        cargo: ship.capacity,
+        cargo: newShip.capacity,
       },
     });
 
-    // Publish using eventSystem
-    const eventData: MiningShipRegisteredEventData = { ship };
-    eventSystem.publish({
-        type: EventType.MINING_SHIP_REGISTERED,
-        managerId: 'MiningShipManager',
-        timestamp: Date.now(),
-        data: eventData
+    const eventData: MiningShipRegisteredEventData = { ship: newShip };
+    this.publish({
+      type: EventType.MINING_SHIP_REGISTERED,
+      moduleId: newShip.id,
+      moduleType: 'mining_ship' as ModuleType,
+      timestamp: Date.now(),
+      data: eventData as unknown as Record<string, unknown>,
     });
   }
 
-  /**
-   * Unregisters a mining ship
-   */
   unregisterShip(shipId: string): void {
     const ship = this.ships.get(shipId);
-    if (!ship) {
-      return;
-    }
+    if (!ship) return;
 
     this.ships.delete(shipId);
     shipBehaviorManager.unregisterShip(shipId);
 
-    // Clean up unknown tasks
     Array.from(this.tasks.values())
       .filter(task => task.shipId === shipId)
       .forEach(task => {
         this.tasks.delete(task.id);
-        const eventData: MiningTaskCompletedEventData = { task };
-        eventSystem.publish({
-            type: EventType.MINING_TASK_COMPLETED,
-            managerId: 'MiningShipManager',
-            timestamp: Date.now(),
-            data: eventData
+        // Make sure to remove the assignment when a ship is unregistered
+        if (this.nodeAssignments.get(task.nodeId) === shipId) {
+          this.nodeAssignments.delete(task.nodeId);
+        }
+        const eventData: MiningTaskCompletedEventData = {
+          task: { ...task, status: TaskStatus.FAILED },
+        };
+        this.publish({
+          type: EventType.MINING_TASK_COMPLETED,
+          moduleId: shipId,
+          moduleType: 'mining_ship' as ModuleType,
+          timestamp: Date.now(),
+          data: eventData as unknown as Record<string, unknown>,
         });
       });
 
-    // Clean up node assignments
-    Array.from(this.nodeAssignments.entries())
-      .filter(([_, assignedShipId]) => assignedShipId === shipId)
-      .forEach(([nodeId]) => this.nodeAssignments.delete(nodeId));
-
-    // Publish using eventSystem
     const eventData: MiningShipUnregisteredEventData = { shipId };
-    eventSystem.publish({
-        type: EventType.MINING_SHIP_UNREGISTERED,
-        managerId: 'MiningShipManager',
-        timestamp: Date.now(),
-        data: eventData
+    this.publish({
+      type: EventType.MINING_SHIP_UNREGISTERED,
+      moduleId: shipId,
+      moduleType: 'mining_ship' as ModuleType,
+      timestamp: Date.now(),
+      data: eventData as unknown as Record<string, unknown>,
     });
   }
 
-  /**
-   * Updates ship status and emits event
-   */
-  private updateShipStatus(ship: MiningShip, newStatus: ShipStatus): void {
-    const oldStatus = ship.status;
-    ship.status = newStatus;
-    const eventData: MiningShipStatusChangedEventData = { shipId: ship.id, oldStatus, newStatus };
-    eventSystem.publish({
-        type: EventType.MINING_SHIP_STATUS_CHANGED,
-        managerId: 'MiningShipManager',
-        timestamp: Date.now(),
-        data: eventData
-    });
+  private handleThresholdViolation(
+    resourceIdString: string, // This is ResourceType as string
+    details: { type: 'below_minimum' | 'above_maximum'; current: number }
+  ): void {
+    if (details.type === 'below_minimum') {
+      const availableShip = Array.from(this.ships.values()).find(
+        ship => ship.status === ShipStatus.IDLE && ship.currentLoad === 0
+      );
+
+      if (availableShip) {
+        const resourceTypeEnum = this.stringToResourceType(resourceIdString);
+        if (!resourceTypeEnum) {
+          console.error(
+            `[MiningShipManager] Invalid resource type string received: ${resourceIdString}`
+          );
+          return;
+        }
+
+        const availableNodes = this.asteroidFieldManager.findAvailableNodesByType(resourceTypeEnum);
+        const targetNodeId = availableNodes.find(nodeId => !this.nodeAssignments.has(nodeId));
+
+        if (targetNodeId) {
+          console.log(
+            `[MiningShipManager] Dispatching ship ${availableShip.id} to node ${targetNodeId} for resource ${resourceIdString}`
+          );
+          this.dispatchShipToResource(availableShip.id, targetNodeId);
+        } else {
+          console.warn(
+            `[MiningShipManager] No unassigned mining nodes found for resource ${resourceIdString}.`
+          );
+        }
+      } else {
+        console.warn(
+          `[MiningShipManager] No idle mining ship available for resource ${resourceIdString}`
+        );
+      }
+    } else if (details.type === 'above_maximum') {
+      // Filter only by nodeId and resource type, remove unused shipId from filter
+      const nodesToRecall = Array.from(this.nodeAssignments.entries()).filter(
+        // Only destructure the needed nodeId
+        ([nodeId]: [string, string]) =>
+          this.getResourceTypeFromNodeId(nodeId).toString() === resourceIdString
+      );
+
+      if (nodesToRecall.length > 0) {
+        console.log(
+          `[MiningShipManager] Recalling ships for resource ${resourceIdString} due to above_maximum threshold.`
+        );
+        // Use only shipId in forEach, remove unused nodeId
+        nodesToRecall.forEach(([, shipId]) => this.recallShip(shipId));
+      } else {
+        console.log(
+          `[MiningShipManager] Received above_maximum for ${resourceIdString}, but no ships currently assigned to nodes of this type.`
+        );
+      }
+    }
   }
 
-  /**
-   * Dispatches a ship to mine a resource
-   */
-  private dispatchShipToResource(shipId: string, resourceId: string): void {
+  private stringToResourceType(resourceStr: string): ResourceType | undefined {
+    const upperStr = resourceStr.toUpperCase();
+    if (Object.values(ResourceType).includes(upperStr as ResourceType)) {
+      return upperStr as ResourceType;
+    }
+    console.warn(
+      `[MiningShipManager] Could not convert string '${resourceStr}' to ResourceType enum.`
+    );
+    return undefined;
+  }
+
+  private getResourceTypeFromNodeId(nodeId: string): ResourceType {
+    // Example: "minerals-cluster-1" -> "MINERALS"
+    const resourceStr = nodeId.split('-')[0]?.toUpperCase();
+    if (!resourceStr) {
+      console.warn(
+        `[MiningShipManager] Could not determine resource type from nodeId: ${nodeId}. Defaulting to MINERALS.`
+      );
+      return ResourceType.MINERALS;
+    }
+
+    const resourceTypeEnum = this.stringToResourceType(resourceStr);
+    return resourceTypeEnum ?? ResourceType.MINERALS; // Fallback if conversion fails
+  }
+
+  private dispatchShipToResource(shipId: string, resourceNodeId: string): void {
+    // Renamed resourceId to resourceNodeId for clarity
     const ship = this.ships.get(shipId);
     if (!ship) {
-      console.warn(`[MiningShipManager] Ship ${shipId} not found`);
+      console.warn(`[MiningShipManager] Ship ${shipId} not found for dispatch`);
+      return;
+    }
+    if (ship.status !== ShipStatus.IDLE) {
+      console.warn(`[MiningShipManager] Ship ${shipId} is not IDLE, cannot dispatch.`);
+      return;
+    }
+    if (this.nodeAssignments.has(resourceNodeId)) {
+      console.warn(
+        `[MiningShipManager] Resource node ${resourceNodeId} already has ship ${this.nodeAssignments.get(resourceNodeId)} assigned.`
+      );
       return;
     }
 
-    // Create mining task
     const task: MiningTask = {
-      id: `mining-${Date.now()}`,
+      id: `mining-${uuidv4()}`,
       shipId,
-      nodeId: resourceId,
-      resourceType: this.getResourceTypeFromNodeId(resourceId),
-      priority: 1,
+      nodeId: resourceNodeId,
+      resourceType: this.getResourceTypeFromNodeId(resourceNodeId),
+      priority: 1, // Consider making priority dynamic
       status: TaskStatus.QUEUED,
+      startTime: Date.now(),
     };
 
     this.tasks.set(task.id, task);
-    this.nodeAssignments.set(resourceId, shipId);
+    this.nodeAssignments.set(resourceNodeId, shipId); // Assign ship to node
 
-    // Update ship status
     this.updateShipStatus(ship, ShipStatus.MINING);
-    ship.targetNode = resourceId;
+    ship.targetNode = resourceNodeId;
 
-    // Publish using eventSystem
     const eventData: MiningTaskAssignedEventData = { task };
-    eventSystem.publish({
-        type: EventType.MINING_TASK_ASSIGNED,
-        managerId: 'MiningShipManager',
-        timestamp: Date.now(),
-        data: eventData
+    this.publish({
+      type: EventType.MINING_TASK_ASSIGNED,
+      moduleId: shipId,
+      moduleType: 'mining_ship' as ModuleType,
+      timestamp: Date.now(),
+      data: eventData as unknown as Record<string, unknown>,
     });
 
-    // Assign task to behavior system
+    task.status = TaskStatus.IN_PROGRESS; // Update task status after publishing QUEUED event
+
     shipBehaviorManager.assignTask({
       id: task.id,
       type: 'mine',
       target: {
-        id: resourceId,
-        position: this.getResourcePosition(resourceId),
+        id: resourceNodeId,
+        position: this.getResourcePosition(resourceNodeId), // Assuming this returns a valid Position
       },
       priority: task.priority,
       assignedAt: Date.now(),
     });
   }
 
-  /**
-   * Get resource type from node ID
-   */
-  private getResourceTypeFromNodeId(nodeId: string): ResourceType {
-    const resourceStr = nodeId.split('-')[0]?.toUpperCase(); // e.g., "IRON" from "iron-belt-1"
-    switch (resourceStr) {
-      case ResourceType.IRON:
-        return ResourceType.IRON;
-      case ResourceType.COPPER:
-        return ResourceType.COPPER;
-      case ResourceType.GAS:
-        return ResourceType.GAS;
-      case ResourceType.MINERALS: // Keep existing enum cases
-        return ResourceType.MINERALS;
-      case ResourceType.EXOTIC:
-        return ResourceType.EXOTIC;
-      case ResourceType.PLASMA:
-        return ResourceType.PLASMA;
-      case ResourceType.ENERGY:
-        return ResourceType.ENERGY;
-      // Add other expected ResourceType enum values here if needed
-      default: {
-        // Check if the nodeId string matches unknown ResourceType enum value
-        const upperNodeId = resourceStr.toUpperCase(); // Use resourceStr which is nodeId
-        if (Object.values(ResourceType).includes(upperNodeId as ResourceType)) {
-          return upperNodeId as ResourceType;
-        }
-        // Fallback if the string doesn't match unknown known ResourceType
-        console.warn(`[MiningShipManagerImpl] Unknown resource type inferred from nodeId: ${nodeId}. Defaulting to MINERALS.`);
-        return ResourceType.MINERALS;
-      }
+  private recallShip(shipId: string): void {
+    const ship = this.ships.get(shipId);
+    // Allow recalling if MINING or RETURNING (might be recalled again if needed)
+    if (!ship || ship.status === ShipStatus.IDLE || ship.status === ShipStatus.MAINTENANCE) {
+      console.log(
+        `[MiningShipManager] Ship ${shipId} is ${ship?.status ?? 'not found'}, recall skipped.`
+      );
+      return;
     }
+
+    const activeTask = Array.from(this.tasks.values()).find(
+      task => task.shipId === shipId && task.status === TaskStatus.IN_PROGRESS
+    );
+
+    if (activeTask) {
+      activeTask.status = TaskStatus.COMPLETED; // Mark as completed when recalled
+      activeTask.endTime = Date.now();
+      this.nodeAssignments.delete(activeTask.nodeId); // Free up the node
+
+      const eventData: MiningTaskCompletedEventData = { task: activeTask };
+      this.publish({
+        type: EventType.MINING_TASK_COMPLETED,
+        moduleId: shipId,
+        moduleType: 'mining_ship' as ModuleType,
+        timestamp: Date.now(),
+        data: eventData as unknown as Record<string, unknown>,
+      });
+    } else if (ship.status === ShipStatus.MINING) {
+      // Only warn if it was supposed to be mining but had no task
+      console.warn(
+        `[MiningShipManager] No active mining task found for ship ${shipId} (status: ${ship.status}) during recall.`
+      );
+    }
+
+    // Update status only if it wasn't already RETURNING
+    if (ship.status !== ShipStatus.RETURNING) {
+      this.updateShipStatus(ship, ShipStatus.RETURNING);
+    }
+    ship.targetNode = undefined; // Clear target node regardless
+
+    // Optionally, tell the ship to return to base/hangar
+    // Assuming {x: 0, y: 0} is the base position
+    shipMovementManager.moveToPosition(shipId, { x: 0, y: 0 });
+    console.log(`[MiningShipManager] Ship ${shipId} recalled.`);
   }
 
-  /**
-   * Get resource nodes
-   */
-  public getResourceNodes(): Array<{
-    id: string;
-    type: ResourceType;
-    position: Position;
-    thresholds: { min: number; max: number };
-  }> {
-    // Convert node IDs to resource nodes
-    return Array.from(this.nodeAssignments.keys()).map(nodeId => ({
-      id: nodeId,
-      type: this.getResourceTypeFromNodeId(nodeId),
-      position: this.getResourcePosition(nodeId),
-      thresholds: { min: 100, max: 1000 }, // Default thresholds
-    }));
+  private getResourcePosition(resourceNodeId: string): Position {
+    // Simple pseudo-random position based on node ID suffix
+    // Replace with actual lookup if node positions are stored elsewhere
+    const seedPart = resourceNodeId.split('-').pop() || '0';
+    const seed = parseInt(seedPart.replace(/[^0-9]/g, ''), 10) || 0; // Extract numbers only
+    return {
+      x: ((seed * 173 + 89) % 2000) - 1000, // Example pseudo-random coords
+      y: ((seed * 251 + 137) % 2000) - 1000,
+    };
   }
 
-  /**
-   * Updates mining progress
-   */
-  update(deltaTime: number): void {
-    this.ships.forEach(ship => {
-      if (ship.status === ShipStatus.MINING && ship.targetNode) {
-        // Update mining progress
-        const task = Array.from(this.tasks.values()).find(
-          t => t.shipId === ship.id && t.status === TaskStatus.IN_PROGRESS
-        );
+  public getShipData(shipId: string): MiningShip | undefined {
+    return this.ships.get(shipId);
+  }
 
-        if (task) {
-          // Simulate resource collection
-          const collectedAmount = ship.efficiency * deltaTime;
-          ship.currentLoad += collectedAmount;
+  public getAllShips(): MiningShip[] {
+    return Array.from(this.ships.values());
+  }
 
-          // Publish using eventSystem
-          const eventData: MiningResourceCollectedEventData = {
-            shipId: ship.id,
-            resourceType: task.resourceType,
-            amount: collectedAmount,
-          };
-          eventSystem.publish({
-              type: EventType.MINING_RESOURCE_COLLECTED,
-              managerId: 'MiningShipManager',
-              timestamp: Date.now(),
-              data: eventData
-          });
-
-          // Check if cargo is full
-          if (ship.currentLoad >= ship.capacity) {
-            this.recallShip(ship.id);
-          }
-        }
-      }
-    });
+  public getShipTask(shipId: string): MiningTask | undefined {
+    return Array.from(this.tasks.values()).find(
+      t => t.shipId === shipId && t.status === TaskStatus.IN_PROGRESS
+    );
   }
 }

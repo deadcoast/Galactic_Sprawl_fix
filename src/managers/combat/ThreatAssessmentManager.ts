@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../lib/events/EventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { getDistance } from '../../utils/combat/scanRadiusUtils';
 import { DetectableObject } from './ObjectDetectionSystem';
@@ -80,6 +80,7 @@ export interface ThreatAssessmentEventMap extends Record<string, unknown> {
   [ThreatAssessmentEvent.THREAT_UPDATED]: ThreatUpdatedEventData;
   [ThreatAssessmentEvent.THREAT_REMOVED]: ThreatRemovedEventData;
   [ThreatAssessmentEvent.THREAT_LEVEL_CHANGED]: ThreatLevelChangedEventData;
+  [key: string]: unknown; // ADD Index signature
 }
 
 /**
@@ -112,12 +113,12 @@ export interface ThreatAssessmentManager {
     reason: ThreatRemovedEventData['reason'],
     observerId: string
   ): void;
-  on<K extends ThreatAssessmentEvent>(
-    event: K,
+  on<K extends keyof ThreatAssessmentEventMap>(
+    eventName: K,
     callback: (data: ThreatAssessmentEventMap[K]) => void
-  ): void;
-  off<K extends ThreatAssessmentEvent>(
-    event: K,
+  ): () => void;
+  off<K extends keyof ThreatAssessmentEventMap>(
+    eventName: K,
     callback: (data: ThreatAssessmentEventMap[K]) => void
   ): void;
 }
@@ -126,18 +127,16 @@ export interface ThreatAssessmentManager {
  * @context: combat-system.threat-assessment, manager-registry
  * Implementation of the threat assessment manager following the singleton pattern
  */
-export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
-  private static instance: ThreatAssessmentManagerImpl | null = null;
-  
+export class ThreatAssessmentManagerImpl
+  extends BaseTypedEventEmitter<ThreatAssessmentEventMap>
+  implements ThreatAssessmentManager
+{
   // Maps observerId -> targetId -> assessment
   private threatAssessments: Map<string, Map<string, ThreatAssessment>> = new Map();
 
   // Additional data for threat calculation
   private knownCombatUnits: Map<string, CombatUnit> = new Map();
   private environmentalHazards: Map<string, EnvironmentalHazard> = new Map();
-
-  // Emit events when threats change
-  private eventEmitter = new EventEmitter<ThreatAssessmentEventMap>();
 
   // Configuration values
   private readonly CRITICAL_THREAT_DISTANCE = 200;
@@ -146,20 +145,11 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
   private readonly LOW_THREAT_DISTANCE = 2000;
 
   /**
-   * Private constructor to enforce singleton pattern
+   * Change constructor to public
    */
-  private constructor() {
+  public constructor() {
+    super();
     // Initialize unknown required setup
-  }
-  
-  /**
-   * Get the singleton instance of ThreatAssessmentManagerImpl
-   */
-  public static getInstance(): ThreatAssessmentManagerImpl {
-    if (!ThreatAssessmentManagerImpl.instance) {
-      ThreatAssessmentManagerImpl.instance = new ThreatAssessmentManagerImpl();
-    }
-    return ThreatAssessmentManagerImpl.instance;
   }
 
   /**
@@ -277,7 +267,7 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
     observerThreats.delete(targetId);
 
     // Emit event
-    this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_REMOVED, {
+    this.emit(ThreatAssessmentEvent.THREAT_REMOVED, {
       targetId,
       reason,
       sourceId: observerId,
@@ -343,7 +333,7 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
     // Emit appropriate event
     if (existingAssessment) {
       if (existingAssessment.level !== assessment.level) {
-        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_LEVEL_CHANGED, {
+        this.emit(ThreatAssessmentEvent.THREAT_LEVEL_CHANGED, {
           targetId: detectedObject.id,
           previousLevel: existingAssessment.level,
           newLevel: assessment.level,
@@ -351,13 +341,13 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
         });
       }
 
-      this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_UPDATED, {
+      this.emit(ThreatAssessmentEvent.THREAT_UPDATED, {
         assessment,
         previousAssessment: existingAssessment,
         sourceId: observerId,
       });
     } else {
-      this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_DETECTED, {
+      this.emit(ThreatAssessmentEvent.THREAT_DETECTED, {
         assessment,
         sourceId: observerId,
       });
@@ -517,23 +507,25 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
   }
 
   /**
-   * Register event listener
+   * Register event listener - Can rely on inherited 'on' method
+   * Keep method for interface compatibility, but delegate to super.on
    */
-  public on<K extends ThreatAssessmentEvent>(
-    event: K,
+  public on<K extends keyof ThreatAssessmentEventMap>(
+    eventName: K,
     callback: (data: ThreatAssessmentEventMap[K]) => void
-  ): void {
-    this.eventEmitter.on(event, callback);
+  ): () => void {
+    return super.on(eventName, callback);
   }
 
   /**
-   * Remove event listener
+   * Remove event listener - Can rely on inherited 'off' method
+   * Keep method for interface compatibility, but delegate to super.off
    */
-  public off<K extends ThreatAssessmentEvent>(
-    event: K,
+  public off<K extends keyof ThreatAssessmentEventMap>(
+    eventName: K,
     callback: (data: ThreatAssessmentEventMap[K]) => void
   ): void {
-    this.eventEmitter.off(event, callback);
+    super.off(eventName, callback);
   }
 
   /**
@@ -558,7 +550,7 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
     for (const [unitId, threats] of this.threatAssessments.entries()) {
       if (threats.has(hazardId)) {
         threats.delete(hazardId);
-        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_REMOVED, {
+        this.emit(ThreatAssessmentEvent.THREAT_REMOVED, {
           sourceId: unitId,
           targetId: hazardId,
           reason: 'MANUAL',
@@ -620,19 +612,19 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
 
       // Emit appropriate event
       if (!existingAssessment) {
-        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_DETECTED, {
+        this.emit(ThreatAssessmentEvent.THREAT_DETECTED, {
           sourceId: unitId,
           assessment,
         });
       } else if (existingAssessment.level !== assessment.level) {
-        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_LEVEL_CHANGED, {
+        this.emit(ThreatAssessmentEvent.THREAT_LEVEL_CHANGED, {
           sourceId: unitId,
           targetId: hazard.id,
           previousLevel: existingAssessment.level,
           newLevel: assessment.level,
         });
       } else {
-        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_UPDATED, {
+        this.emit(ThreatAssessmentEvent.THREAT_UPDATED, {
           sourceId: unitId,
           assessment,
           previousAssessment: existingAssessment,

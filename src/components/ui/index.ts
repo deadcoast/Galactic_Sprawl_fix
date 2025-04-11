@@ -1,13 +1,13 @@
 /**
  * @context: ui-system, component-library
- * 
+ *
  * Main export file for all game-specific UI components.
  * This file aggregates UI component exports to simplify imports.
  */
 
 // Export existing components
-export { Button } from './Button';
-export { Card } from './Card';
+// export { Button } from './Button';
+// export { Card } from './Card';
 
 // Resource Components
 export { ResourceBar } from './resource/ResourceBar';
@@ -29,20 +29,20 @@ export type { MiniMapStar, ViewportConfig } from './game/MiniMap';
 export { ShipDisplay } from './game/ShipDisplay';
 
 // Visualization Components
-export type {
-  BarChartProps, ChartData, ChartProps, DataPoint,
-  LineGraphProps, NetworkEdge,
-  NetworkGraphProps, NetworkNode, ResourceFlowConnection,
-  ResourceFlowDiagramProps, ResourceFlowNode
-} from './visualization';
 export { BarChart } from './visualization/BarChart';
+export type { BarChartProps } from './visualization/BarChart';
 export { Chart } from './visualization/Chart';
+export type { ChartData, ChartProps } from './visualization/Chart';
+export type { DataPoint } from './visualization/DataTransitionParticleSystem';
 export { LineGraph } from './visualization/LineGraph';
+export type { LineGraphProps } from './visualization/LineGraph';
 export { NetworkGraph } from './visualization/NetworkGraph';
+export type { NetworkEdge, NetworkGraphProps, NetworkNode } from './visualization/NetworkGraph';
 export { ResourceFlowDiagram } from './visualization/ResourceFlowDiagram';
+export type { ResourceFlowDiagramProps } from './visualization/ResourceFlowDiagram';
 
-// Examples
-export * from './examples';
+// Examples -> Showcase (Removed as ./showcase does not exist)
+// export * from './showcase';
 
 /* 
 The following components are commented out until they're implemented:
@@ -101,4 +101,12 @@ export { Timeline } from './data/Timeline';
 export type { ButtonProps } from './Button';
 export type { CardProps } from './Card';
 export type { ResourceDisplayProps } from './resource/ResourceDisplay';
-*/ 
+*/
+
+// Remove default exports for base components
+// export { default as Accordion } from './accordion/Accordion';
+// export { default as Alert } from './alert/Alert';
+// export { default as Avatar } from './avatar/Avatar';
+// export { default as Badge } from './badge/Badge';
+// export { default as Breadcrumb } from './breadcrumb/Breadcrumb';
+// export { default as Checkbox } from './checkbox/Checkbox';

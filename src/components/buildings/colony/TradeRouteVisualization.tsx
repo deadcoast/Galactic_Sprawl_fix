@@ -28,7 +28,6 @@ interface TradeRoute {
 }
 
 interface TradeRouteVisualizationProps {
-  colonyId: string;
   colonyName: string;
   tradePartners: TradePartner[];
   tradeRoutes: TradeRoute[];
@@ -44,7 +43,6 @@ interface TradeRouteVisualizationProps {
  * Shows resource flows, trade efficiency, and allows interaction with routes.
  */
 export function TradeRouteVisualization({
-  colonyId: _colonyId,
   colonyName,
   tradePartners,
   tradeRoutes,
@@ -168,7 +166,7 @@ export function TradeRouteVisualization({
         className="relative mb-4 h-64 rounded-lg border border-gray-700 bg-gray-900"
       >
         {/* Colony (Center) */}
-        <div className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-indigo-900 shadow-lg">
+        <div className="absolute top-1/2 left-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-indigo-900 shadow-lg">
           <div className="text-center">
             <div className="text-xs font-medium text-white">{colonyName}</div>
             <div className="text-[10px] text-indigo-300">{tradeRoutes.length} Routes</div>
@@ -191,7 +189,7 @@ export function TradeRouteVisualization({
               {/* Trade Route Line */}
               {route && (
                 <div
-                  className="absolute left-1/2 top-1/2 h-0.5 origin-left transform"
+                  className="absolute top-1/2 left-1/2 h-0.5 origin-left transform"
                   style={{
                     width: Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)),
                     transform: `rotate(${Math.atan2(y - centerY, x - centerX)}rad) translateX(6px)`,
@@ -259,7 +257,7 @@ export function TradeRouteVisualization({
 
               {/* Partner Label */}
               <div
-                className={`absolute whitespace-nowrap text-center text-xs transition-opacity ${
+                className={`absolute text-center text-xs whitespace-nowrap transition-opacity ${
                   isHovered ? 'opacity-100' : 'opacity-70'
                 }`}
                 style={{

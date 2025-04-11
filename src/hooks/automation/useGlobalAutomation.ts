@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
-  globalAutomationManager,
   GlobalRoutine,
   GlobalRoutineType,
 } from '../../managers/automation/GlobalAutomationManager';
-import { AutomationAction, AutomationCondition } from '../../managers/game/AutomationManager';
+import {
+  AutomationAction,
+  AutomationCondition,
+  AutomationRule,
+} from '../../managers/game/AutomationManager';
+import { getGlobalAutomationManager } from '../../managers/ManagerRegistry';
 import { MessagePriority, SystemId } from '../../utils/events/EventCommunication';
 
 /**
@@ -399,4 +403,24 @@ export function useGlobalAutomation() {
     createEmergencyResponseRoutine,
     createScheduledTaskRoutine,
   };
+}
+
+/**
+ * Custom hook to manage global automation rules.
+ * Registers and unregisters rules with the GlobalAutomationManager.
+ *
+ * @param rules An array of AutomationRule instances to manage.
+ */
+export function useGlobalAutomationRules(rules: AutomationRule[]): void {
+  useEffect(() => {
+    const manager = getGlobalAutomationManager();
+
+    // Register rules on mount
+    rules.forEach(rule => manager.registerRule(rule));
+
+    // Unregister rules on unmount
+    return () => {
+      rules.forEach(rule => manager.removeRule(rule.id));
+    };
+  }, [rules]);
 }

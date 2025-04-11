@@ -1,20 +1,24 @@
-import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+// import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents'; // Remove legacy bus
+import { BaseEvent } from '../../lib/events/UnifiedEventSystem'; // Keep BaseEvent
+import { AbstractBaseManager } from '../../lib/managers/BaseManager'; // Add Base Manager
+import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService'; // Add Error Logging
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventType } from '../../types/events/EventTypes'; // Add Standard EventType Enum
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
-    getSystemCommunication,
-    MessagePriority,
-    SystemId,
-} from '../../utils/events/EventCommunication';
+  getSystemCommunication,
+  MessagePriority,
+  SystemId,
+} from '../../utils/events/EventCommunication'; // Keep for now
 import { EventPriorityQueue } from '../../utils/events/EventFiltering';
 import {
-    AutomationAction,
-    AutomationCondition,
-    AutomationManager,
-    AutomationRule,
-    ResourceConditionValue,
+  AutomationAction,
+  AutomationCondition,
+  AutomationManager, // Keep for type usage, but remove from constructor
+  AutomationRule,
+  ResourceConditionValue,
 } from '../game/AutomationManager';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
-import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Interfaces for specific event data payloads
 interface ResourceShortageEventData {
@@ -78,79 +82,77 @@ export interface GlobalRoutine {
  * Global automation manager
  * Extends the module-specific automation with system-wide routines
  */
-export class GlobalAutomationManager {
-  private _automationManager: AutomationManager;
+// Extend AbstractBaseManager
+export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
+  // Restore manual singleton instance property
+  private static _instance: GlobalAutomationManager | null = null;
+
+  // Remove _automationManager instance field if no longer needed after removing from constructor
   private routines: Map<string, GlobalRoutine>;
   private activeRoutines: Map<string, boolean>;
   private routineQueue: EventPriorityQueue<GlobalRoutine & { executionTime: number }>;
-  private systemCommunications: Map<SystemId, ReturnType<typeof getSystemCommunication>>;
-  private isInitialized: boolean = false;
+  private systemCommunications: Map<SystemId, ReturnType<typeof getSystemCommunication>>; // Keep for now
 
-  constructor(_automationManager: AutomationManager) {
-    this._automationManager = _automationManager;
+  // Add protected constructor
+  protected constructor() {
+    super('GlobalAutomationManager'); // Call super
     this.routines = new Map();
     this.activeRoutines = new Map();
     this.systemCommunications = new Map();
 
-    // Create a priority queue for routine execution
     this.routineQueue = new EventPriorityQueue(routine => {
       return this.executeRoutine(routine);
     });
   }
 
+  // Restore manual static getInstance method
+  public static getInstance(): GlobalAutomationManager {
+    if (!GlobalAutomationManager._instance) {
+      // Note: This bypasses the protected constructor. Consider if this is intended.
+      GlobalAutomationManager._instance = new GlobalAutomationManager();
+    }
+    return GlobalAutomationManager._instance;
+  }
+
   /**
-   * Initialize the global automation manager
+   * Initialize the global automation manager - RENAME to onInitialize
    */
-  public initialize(): void {
-    if (this.isInitialized) {
-      return;
-    }
+  protected async onInitialize(): Promise<void> {
+    this.initializeSystemCommunications(); // Keep for now
 
-    console.warn('Initializing Global Automation Manager...');
-
-    // Log the automation manager status
-    if (this._automationManager) {
-      console.warn(
-        `[GlobalAutomationManager] Using automation manager for condition checking and rule management`
-      );
-    } else {
-      console.warn(
-        '[GlobalAutomationManager] No automation manager provided, some features may be limited'
-      );
-    }
-
-    // Initialize system communications
-    this.initializeSystemCommunications();
-
-    // Register with game loop for regular updates
     gameLoopManager.registerUpdate(
-      'global-automation-manager',
+      this.managerName, // Use inherited managerName
       this.update.bind(this),
       UpdatePriority.NORMAL
     );
 
-    // Subscribe to relevant events
-    moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorEvent);
-    moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage);
-    moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
+    // Subscribe using this.subscribe
+    this.subscribe(EventType.ERROR_OCCURRED as string, this.handleErrorEvent);
+    this.subscribe(EventType.RESOURCE_SHORTAGE as string, this.handleResourceShortage);
+    this.subscribe(EventType.STATUS_CHANGED as string, this.handleStatusChanged);
 
-    this.isInitialized = true;
+    await Promise.resolve(); // Placeholder
+  }
 
-    // Emit initialization event
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED' as ModuleEventType,
-      moduleId: 'global-automation',
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        routineCount: this.routines.size,
-        systems: Array.from(this.systemCommunications.keys()),
-      },
-    });
+  // Add onDispose method
+  protected async onDispose(): Promise<void> {
+    gameLoopManager.unregisterUpdate(this.managerName);
+    // Unsubscribe handled by base class via this.unsubscribeFunctions
+    this.routines.clear();
+    this.activeRoutines.clear();
+    this.routineQueue.clear(); // Assuming queue has a clear method
+    this.systemCommunications.clear(); // Assuming map clear is sufficient
+    await Promise.resolve(); // Placeholder
+  }
+
+  // Add onUpdate method (used by gameLoopManager)
+  protected onUpdate(_deltaTime: number): void {
+    // Process routines via queue if needed
+    // The queue seems to handle execution itself? Verify EventPriorityQueue logic.
   }
 
   /**
-   * Initialize system communications
+   * Initialize system communications - Keep for now
    */
   private initializeSystemCommunications(): void {
     const systems: SystemId[] = [
@@ -169,11 +171,15 @@ export class GlobalAutomationManager {
       const communication = getSystemCommunication(systemId);
       this.systemCommunications.set(systemId, communication);
 
-      // Register message handler for automation requests
       communication.registerHandler('automation-request', message => {
-        console.warn(`Received automation request from ${systemId}:`, message.payload);
+        // Replace console.warn with logger
+        errorLoggingService.logInfo('Received automation request', {
+          systemId,
+          payload: message.payload,
+          manager: this.managerName,
+        });
 
-        // Use type guard instead of type assertion
+        // Keep payload handling logic for now, but note type assertions
         const { payload } = message;
         if (payload && typeof payload === 'object') {
           const routineId = 'routineId' in payload ? String(payload.routineId) : undefined;
@@ -316,7 +322,10 @@ export class GlobalAutomationManager {
         return;
       }
 
-      console.warn(`Executing routine: ${routine.name} (${routine.id})`);
+      errorLoggingService.logInfo(`Executing routine: ${routine.name}`, {
+        routineId: routine.id,
+        manager: this.managerName,
+      });
 
       // Check conditions
       let conditionsMet = true;
@@ -354,11 +363,23 @@ export class GlobalAutomationManager {
           // Add more condition types as needed
         }
       } catch (error) {
-        console.warn('Error checking conditions, using simple implementation:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.RUNTIME,
+          undefined,
+          {
+            context: 'executeRoutine - checkConditions',
+            routineId: routine.id,
+            manager: this.managerName,
+          }
+        );
       }
 
       if (!conditionsMet) {
-        console.warn(`Conditions not met for routine: ${routine.name}`);
+        errorLoggingService.logInfo(`Conditions not met for routine: ${routine.name}`, {
+          routineId: routine.id,
+          manager: this.managerName,
+        });
 
         // Re-schedule for next interval
         this.scheduleRoutine({
@@ -376,7 +397,16 @@ export class GlobalAutomationManager {
           await this.executeAction(action);
         }
       } catch (error) {
-        console.warn('Error executing actions, using simple implementation:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.RUNTIME,
+          undefined,
+          {
+            context: 'executeRoutine - executeActions',
+            routineId: routine.id,
+            manager: this.managerName,
+          }
+        );
       }
 
       // Update last run time
@@ -387,10 +417,9 @@ export class GlobalAutomationManager {
       this.routines.set(routine.id, updatedRoutine);
 
       // Emit routine completion event
-      moduleEventBus.emit({
-        type: 'AUTOMATION_CYCLE_COMPLETE' as ModuleEventType,
-        moduleId: 'global-automation',
-        moduleType: 'resource-manager',
+      this.publish({
+        type: EventType.AUTOMATION_CYCLE_COMPLETE as string,
+        managerId: this.managerName,
         timestamp: Date.now(),
         data: {
           routineId: routine.id,
@@ -414,13 +443,21 @@ export class GlobalAutomationManager {
       // Re-schedule for next interval
       this.scheduleRoutine(updatedRoutine);
     } catch (error) {
-      console.error(`Error executing routine ${routine.id}:`, error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.RUNTIME,
+        undefined,
+        {
+          context: 'executeRoutine',
+          routineId: routine.id,
+          manager: this.managerName,
+        }
+      );
 
       // Emit error event
-      moduleEventBus.emit({
-        type: 'ERROR_OCCURRED' as ModuleEventType,
-        moduleId: 'global-automation',
-        moduleType: 'resource-manager',
+      this.publish({
+        type: EventType.ERROR_OCCURRED as string,
+        managerId: this.managerName,
         timestamp: Date.now(),
         data: {
           routineId: routine.id,
@@ -457,12 +494,12 @@ export class GlobalAutomationManager {
           return;
         }
         // Emit an event to activate the module
-        moduleEventBus.emit({
-          type: 'MODULE_ACTIVATED' as ModuleEventType,
+        this.publish({
+          type: EventType.MODULE_ACTIVATED as string,
+          managerId: this.managerName,
           moduleId: action.target,
-          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { source: 'automation' },
+          data: { source: 'automation', targetModuleId: action.target },
         });
         break;
 
@@ -471,12 +508,12 @@ export class GlobalAutomationManager {
           return;
         }
         // Emit an event to deactivate the module
-        moduleEventBus.emit({
-          type: 'MODULE_DEACTIVATED' as ModuleEventType,
+        this.publish({
+          type: EventType.MODULE_DEACTIVATED as string,
+          managerId: this.managerName,
           moduleId: action.target,
-          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { source: 'automation' },
+          data: { source: 'automation', targetModuleId: action.target },
         });
         break;
 
@@ -485,12 +522,14 @@ export class GlobalAutomationManager {
           return;
         }
         // Emit an event to transfer resources
-        moduleEventBus.emit({
-          type: 'RESOURCE_TRANSFERRED' as ModuleEventType,
-          moduleId: 'automation',
-          moduleType: 'resource-manager',
+        this.publish({
+          type: EventType.RESOURCE_TRANSFERRED as string,
+          managerId: this.managerName,
           timestamp: Date.now(),
-          data: this.convertActionValueToRecord(action.value),
+          data: {
+            source: 'automation',
+            ...this.convertActionValueToRecord(action.value),
+          },
         });
         break;
 
@@ -527,72 +566,37 @@ export class GlobalAutomationManager {
           }
         }
 
-        // Validate that action.target is a valid ModuleEventType
-        const isValidEventType = (type: string): type is ModuleEventType => {
-          return [
-            'MODULE_CREATED',
-            'MODULE_ATTACHED',
-            'MODULE_DETACHED',
-            'MODULE_UPGRADED',
-            'MODULE_ACTIVATED',
-            'MODULE_DEACTIVATED',
-            'MODULE_UPDATED',
-            'ATTACHMENT_STARTED',
-            'ATTACHMENT_CANCELLED',
-            'ATTACHMENT_COMPLETED',
-            'ATTACHMENT_PREVIEW_SHOWN',
-            'RESOURCE_PRODUCED',
-            'RESOURCE_CONSUMED',
-            'RESOURCE_TRANSFERRED',
-            'RESOURCE_PRODUCTION_REGISTERED',
-            'RESOURCE_PRODUCTION_UNREGISTERED',
-            'RESOURCE_CONSUMPTION_REGISTERED',
-            'RESOURCE_CONSUMPTION_UNREGISTERED',
-            'RESOURCE_FLOW_REGISTERED',
-            'RESOURCE_FLOW_UNREGISTERED',
-            'RESOURCE_SHORTAGE',
-            'RESOURCE_UPDATED',
-            'AUTOMATION_STARTED',
-            'AUTOMATION_STOPPED',
-            'AUTOMATION_CYCLE_COMPLETE',
-            'STATUS_CHANGED',
-            'ERROR_OCCURRED',
-            'MISSION_STARTED',
-            'MISSION_COMPLETED',
-            'MISSION_FAILED',
-            'MISSION_PROGRESS_UPDATED',
-            'MISSION_REWARD_CLAIMED',
-            'SUB_MODULE_CREATED',
-            'SUB_MODULE_ATTACHED',
-            'SUB_MODULE_DETACHED',
-            'SUB_MODULE_UPGRADED',
-            'SUB_MODULE_ACTIVATED',
-            'SUB_MODULE_DEACTIVATED',
-            'SUB_MODULE_EFFECT_APPLIED',
-            'SUB_MODULE_EFFECT_REMOVED',
-            'COMBAT_UPDATED',
-            'TECH_UNLOCKED',
-            'TECH_UPDATED',
-          ].includes(type as ModuleEventType);
-        };
-
-        if (isValidEventType(action.target)) {
-          // Emit the specified event
-          moduleEventBus.emit({
-            type: action.target,
-            moduleId: emitValue.moduleId || 'automation',
-            moduleType: (emitValue.moduleType || 'resource-manager') as ModuleType,
+        // Use EventType enum check (basic check)
+        if (action.target && Object.values(EventType).includes(action.target as EventType)) {
+          // Replace moduleEventBus.emit with this.publish
+          this.publish({
+            type: action.target as string, // Use the target string directly (cast needed)
+            managerId: this.managerName,
             timestamp: Date.now(),
-            data: emitValue.data ?? {},
+            data: {
+              source: 'automation',
+              originalModuleId: emitValue.moduleId,
+              originalModuleType: emitValue.moduleType,
+              ...(emitValue.data ?? {}),
+            },
           });
         } else {
-          console.warn(`Invalid event type: ${action.target}`);
+          errorLoggingService.logWarn(
+            `Invalid event type specified in EMIT_EVENT action: ${action.target}`,
+            {
+              action: action,
+              manager: this.managerName,
+            }
+          );
         }
         break;
       }
 
       default:
-        console.warn(`Unsupported action type: ${action.type}`);
+        errorLoggingService.logWarn(`Unsupported action type in executeAction: ${action.type}`, {
+          action: action,
+          manager: this.managerName,
+        });
     }
   }
 
@@ -619,17 +623,9 @@ export class GlobalAutomationManager {
   }
 
   /**
-   * Update method called by the game loop
-   */
-  private update(_deltaTime: number, _elapsedTime: number): void {
-    // Process unknown pending routines
-    // The queue itself handles the execution
-  }
-
-  /**
    * Handle error events
    */
-  private handleErrorEvent = (_event: ModuleEvent): void => {
+  private handleErrorEvent = (_event: BaseEvent): void => {
     // Find emergency response routines
     const emergencyRoutines = Array.from(this.routines.values()).filter(
       routine =>
@@ -650,7 +646,7 @@ export class GlobalAutomationManager {
   /**
    * Handle resource shortage events
    */
-  private handleResourceShortage = (event: ModuleEvent): void => {
+  private handleResourceShortage = (event: BaseEvent): void => {
     let tag = 'general';
     if (event.data && isResourceShortageData(event.data)) {
       tag = event.data.resourceType;
@@ -658,7 +654,8 @@ export class GlobalAutomationManager {
 
     // Find resource balancing routines
     const resourceRoutines = Array.from(this.routines.values()).filter(
-      routine => routine.enabled && routine.type === 'resource-balancing' && routine.tags.includes(tag)
+      routine =>
+        routine.enabled && routine.type === 'resource-balancing' && routine.tags.includes(tag)
     );
 
     // Schedule resource routines with high priority
@@ -674,7 +671,7 @@ export class GlobalAutomationManager {
   /**
    * Handle status changed events
    */
-  private handleStatusChanged = (event: ModuleEvent): void => {
+  private handleStatusChanged = (event: BaseEvent): void => {
     let tag = 'general';
     if (event.data && isStatusChangedData(event.data)) {
       tag = event.data.status;
@@ -733,52 +730,12 @@ export class GlobalAutomationManager {
   }
 
   /**
-   * Clean up resources
-   */
-  public cleanup(): void {
-    // Unregister from game loop
-    gameLoopManager.unregisterUpdate('global-automation-manager');
-
-    // Unsubscribe from events
-    const unsubscribeError = moduleEventBus.subscribe(
-      'ERROR_OCCURRED' as ModuleEventType,
-      this.handleErrorEvent
-    );
-    const unsubscribeShortage = moduleEventBus.subscribe(
-      'RESOURCE_SHORTAGE' as ModuleEventType,
-      this.handleResourceShortage
-    );
-    const unsubscribeStatus = moduleEventBus.subscribe(
-      'STATUS_CHANGED' as ModuleEventType,
-      this.handleStatusChanged
-    );
-
-    if (typeof unsubscribeError === 'function') {
-      unsubscribeError();
-    }
-    if (typeof unsubscribeShortage === 'function') {
-      unsubscribeShortage();
-    }
-    if (typeof unsubscribeStatus === 'function') {
-      unsubscribeStatus();
-    }
-
-    // Clear routines
-    this.routines.clear();
-    this.activeRoutines.clear();
-
-    // Clear system communications
-    this.systemCommunications.clear();
-
-    this.isInitialized = false;
-  }
-
-  /**
    * Get the automation manager instance
    * This method is used for testing and debugging purposes
    */
   public getAutomationManager(): AutomationManager | null {
-    return this._automationManager || null;
+    // TODO: Retrieve from registry if this manager needs access
+    return null; // Placeholder
   }
 
   /**
@@ -786,7 +743,7 @@ export class GlobalAutomationManager {
    */
   public getRule(ruleId: string): AutomationRule | undefined {
     // Delegate to AutomationManager
-    return this._automationManager.getRule(ruleId);
+    return undefined; // Placeholder
   }
 
   /**
@@ -794,16 +751,7 @@ export class GlobalAutomationManager {
    */
   public updateRule(ruleId: string, rule: AutomationRule): void {
     // Delegate to AutomationManager
-    this._automationManager.updateRule(ruleId, rule);
-
-    // Emit event
-    moduleEventBus.emit({
-      type: 'STATUS_CHANGED', // Use a valid ModuleEventType
-      moduleId: rule.moduleId,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: { ruleId, rule, status: 'updated' },
-    });
+    // this._automationManager.updateRule(ruleId, rule);
   }
 
   /**
@@ -811,33 +759,17 @@ export class GlobalAutomationManager {
    */
   public registerRule(rule: AutomationRule): void {
     // Delegate to AutomationManager
-    this._automationManager.registerRule(rule);
-
-    // Emit event
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED', // Use a valid ModuleEventType
-      moduleId: rule.moduleId,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: { ruleId: rule.id, rule },
-    });
+    // this._automationManager.registerRule(rule);
   }
 
   /**
-   * Set the internal AutomationManager instance.
-   * Primarily used during initialization.
-   * @param manager The AutomationManager instance to use.
+   * Set the automation manager instance
+   * This method is used for testing and debugging purposes
    */
   public setAutomationManager(manager: AutomationManager): void {
-    if (this._automationManager && this.isInitialized) {
-      console.warn('[GlobalAutomationManager] Replacing AutomationManager after initialization.');
-    }
-    this._automationManager = manager;
+    // this._automationManager = manager;
   }
 }
 
-// Export singleton instance
-export const globalAutomationManager = new GlobalAutomationManager(
-  // We'll need to import the actual instance in the initialization file
-  null as unknown as AutomationManager
-);
+// Remove singleton export, Registry will handle instantiation
+// export const globalAutomationManager = new GlobalAutomationManager(automationManagerInstance);

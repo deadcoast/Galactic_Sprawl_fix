@@ -2,7 +2,11 @@ import { Typography, useTheme } from '@mui/material';
 import { debounce } from 'lodash';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../../services/ErrorLoggingService';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 
@@ -839,7 +843,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   if (!data || data?.length === 0) {
     return (
       <div
-        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        className={`${className} border-opacity-10 flex flex-col items-center justify-center rounded border border-solid`}
         style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,

@@ -1,8 +1,12 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ResourceType, ResourceTypeHelpers } from '../../../../types/resources/ResourceTypes';
-import { SimulationNodeDatum, d3Accessors } from '../../../../types/visualizations/D3Types';
+import { ResourceType, ResourceTypeInfo } from '../../../../types/resources/ResourceTypes';
+import {
+  SimulationLinkDatum,
+  SimulationNodeDatum,
+  d3Accessors,
+} from '../../../../types/visualizations/D3Types';
 
 /**
  * Interface for resource distribution data
@@ -198,11 +202,20 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     const simulation = d3
       .forceSimulation<ResourceNode>()
       .nodes(nodes)
-      .force('charge', d3.forceMunknownnownBody().strength(-100))
+      .force(
+        'link',
+        d3
+          .forceLink<ResourceNode, SimulationLinkDatum<ResourceNode>>()
+          .id((d: ResourceNode): string => d.id)
+      )
+      .force('charge', d3.forceManyBody().strength(-50))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
-        d3.forceCollide<ResourceNode>().radius(d => d.radius + 2)
+        d3
+          .forceCollide()
+          // Use D3 signature and cast node to ResourceNode to access radius
+          .radius((node: d3.SimulationNodeDatum) => (node as ResourceNode).radius + 1)
       )
       .on('tick', ticked);
 
@@ -237,11 +250,13 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     if (showLabels) {
       node
         .append('text')
+        .attr('class', 'node-label')
+        .attr('dy', '0.35em')
         .attr('text-anchor', 'middle')
-        .attr('dy', '.3em')
-        .attr('font-size', '10px')
-        .attr('pointer-events', 'none')
-        .text(d => ResourceTypeHelpers.getDisplayName(d.resourceType));
+        .style('font-size', '10px')
+        .style('fill', '#333')
+        .style('pointer-events', 'none')
+        .text(d => ResourceTypeInfo[d.resourceType]?.displayName ?? d.resourceType);
 
       // Add amount labels below
       node
@@ -254,8 +269,8 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     }
 
     // (...args: unknown[]) => unknown called on each tick of the simulation
-    function ticked() {
-      node.attr('transform', d => {
+    function ticked(): void {
+      node.attr('transform', (d: ResourceNode): string => {
         // Use safe accessors instead of direct property access
         const x = d3Accessors.getX(d);
         const y = d3Accessors.getY(d);
@@ -273,7 +288,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     function dragStarted(
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
-    ) {
+    ): void {
       if (!event?.active) {
         simulation.alphaTarget(0.3).restart();
       }
@@ -284,7 +299,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     function dragging(
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
-    ) {
+    ): void {
       d.fx = event?.x;
       d.fy = event?.y;
     }
@@ -292,7 +307,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     function dragEnded(
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
-    ) {
+    ): void {
       if (!event?.active) {
         simulation.alphaTarget(0);
       }

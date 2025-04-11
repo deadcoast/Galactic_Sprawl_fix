@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { EventType } from '../../../types/events/EventTypes';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 
 interface ResourceThresholdVisualizationProps {
   resourceType: ResourceType;
@@ -190,11 +190,11 @@ const formatTime = (minutes?: number): string => {
 };
 
 /**
- * Get title for the resource type
+ * Formats a resource type for display.
  */
-const getResourceTitle = (resourceType: ResourceType): string => {
-  return ResourceTypeHelpers.getDisplayName(resourceType);
-};
+function formatResourceType(resourceType: ResourceType): string {
+  return ResourceTypeInfo[resourceType]?.displayName ?? resourceType;
+}
 
 /**
  * ResourceThresholdVisualization component
@@ -224,16 +224,12 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
   useComponentLifecycle({
     onMount: () => {
       console.warn(
-        `ResourceThresholdVisualization mounted for ${ResourceTypeHelpers.getDisplayName(
-          resourceType
-        )}`
+        `ResourceThresholdVisualization mounted for ${formatResourceType(resourceType)}`
       );
     },
     onUnmount: () => {
       console.warn(
-        `ResourceThresholdVisualization unmounted for ${ResourceTypeHelpers.getDisplayName(
-          resourceType
-        )}`
+        `ResourceThresholdVisualization unmounted for ${formatResourceType(resourceType)}`
       );
     },
     eventSubscriptions: [
@@ -263,7 +259,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
       className={`resource-threshold-visualization ${status.level}`}
       style={{ borderColor: status.color }}
     >
-      <h3>{getResourceTitle(resourceType)} Threshold Monitor</h3>
+      <h3>{formatResourceType(resourceType)} Threshold Monitor</h3>
 
       <div className="status-section">
         <p>

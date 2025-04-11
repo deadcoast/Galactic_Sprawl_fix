@@ -23,7 +23,7 @@ export interface HighlightState {
 }
 
 export interface ColorScale {
-  domain: [ number, number ];
+  domain: [number, number];
   range: string[];
   type: 'linear' | 'ordinal';
 }
@@ -153,7 +153,7 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
     eventType: ChartEventType,
     callback: (event: ChartEvent) => void
   ): () => void {
-    const unsubscribe = super.subscribe<ChartEvent>(eventType, (event) => {
+    const unsubscribe = super.subscribe<ChartEvent>(eventType, event => {
       if (event.chartId === chartId) {
         callback(event);
       }

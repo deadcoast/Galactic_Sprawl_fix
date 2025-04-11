@@ -1,11 +1,15 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import {
-    BudgetAdjustmentRecommendation,
-    DynamicBudgetAdjuster,
-    PerformanceStatistics,
-    PerformanceTelemetryConfig,
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
+import {
+  BudgetAdjustmentRecommendation,
+  DynamicBudgetAdjuster,
+  PerformanceStatistics,
+  PerformanceTelemetryConfig,
 } from '../../../utils/performance/benchmarks/DynamicBudgetAdjustment';
 import { PerformanceBudget } from '../../../utils/performance/benchmarks/PerformanceBudgets';
 import { Button } from '../common/Button';
@@ -160,13 +164,13 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
     try {
       // If updateConfig method doesn't exist, this would create a new adjuster instance
       // with the updated configuration in a real implementation
-      console.warn("Applying new telemetry configuration:", updatedConfig);
-      
+      console.warn('Applying new telemetry configuration:', updatedConfig);
+
       // Simulate configuration update by applying relevant settings
       if (updatedConfig.samplingRate !== telemetryConfig.samplingRate) {
         console.warn(`Adjusting sampling rate to ${updatedConfig.samplingRate}`);
       }
-      
+
       if (updatedConfig.budgetBuffer !== telemetryConfig.budgetBuffer) {
         console.warn(`Adjusting budget buffer to ${updatedConfig.budgetBuffer}`);
       }
@@ -243,9 +247,9 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
           <Button variant="secondary" size="small" onClick={handleExportBudgets}>
             Export Budgets
           </Button>
-          <Button 
-            variant="secondary" 
-            size="small" 
+          <Button
+            variant="secondary"
+            size="small"
             onClick={() => setShowConfigPanel(!showConfigPanel)}
           >
             {showConfigPanel ? 'Hide Config' : 'Configure Telemetry'}
@@ -263,10 +267,10 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                 type="checkbox"
                 id="enabled"
                 checked={telemetryConfig.enabled}
-                onChange={(e) => handleConfigChange({ enabled: e.target.checked })}
+                onChange={e => handleConfigChange({ enabled: e.target.checked })}
               />
             </div>
-            
+
             <div className="config-item">
               <label htmlFor="sampling-rate">Sampling Rate</label>
               <input
@@ -276,13 +280,15 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                 max="1"
                 step="0.01"
                 value={telemetryConfig.samplingRate}
-                onChange={(e) => handleConfigChange({ 
-                  samplingRate: parseFloat(e.target.value) 
-                })}
+                onChange={e =>
+                  handleConfigChange({
+                    samplingRate: parseFloat(e.target.value),
+                  })
+                }
               />
               <span>{(telemetryConfig.samplingRate * 100).toFixed(0)}%</span>
             </div>
-            
+
             <div className="config-item">
               <label htmlFor="max-samples">Max Samples Per Category</label>
               <input
@@ -291,24 +297,28 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                 min="10"
                 max="10000"
                 value={telemetryConfig.maxSamplesPerCategory}
-                onChange={(e) => handleConfigChange({ 
-                  maxSamplesPerCategory: parseInt(e.target.value, 10) 
-                })}
+                onChange={e =>
+                  handleConfigChange({
+                    maxSamplesPerCategory: parseInt(e.target.value, 10),
+                  })
+                }
               />
             </div>
-            
+
             <div className="config-item">
               <label htmlFor="record-device">Record Device Info</label>
               <input
                 type="checkbox"
                 id="record-device"
                 checked={telemetryConfig.recordDeviceInfo}
-                onChange={(e) => handleConfigChange({ 
-                  recordDeviceInfo: e.target.checked 
-                })}
+                onChange={e =>
+                  handleConfigChange({
+                    recordDeviceInfo: e.target.checked,
+                  })
+                }
               />
             </div>
-            
+
             <div className="config-item">
               <label htmlFor="budget-buffer">Budget Buffer</label>
               <input
@@ -318,9 +328,11 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                 max="0.5"
                 step="0.05"
                 value={telemetryConfig.budgetBuffer}
-                onChange={(e) => handleConfigChange({ 
-                  budgetBuffer: parseFloat(e.target.value) 
-                })}
+                onChange={e =>
+                  handleConfigChange({
+                    budgetBuffer: parseFloat(e.target.value),
+                  })
+                }
               />
               <span>{(telemetryConfig.budgetBuffer * 100).toFixed(0)}%</span>
             </div>

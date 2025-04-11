@@ -104,11 +104,11 @@ export function OfficersAcademy({
               <input
                 type="text"
                 placeholder="Search officers..."
-                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
             </div>
 
             {/* Filter Toggle */}
@@ -248,7 +248,7 @@ export function OfficersAcademy({
       )}
 
       {tier >= 3 && (
-        <div className="absolute bottom-6 right-6 flex items-center space-x-2 rounded-lg border border-red-700/30 bg-red-900/50 px-4 py-2">
+        <div className="absolute right-6 bottom-6 flex items-center space-x-2 rounded-lg border border-red-700/30 bg-red-900/50 px-4 py-2">
           <AlertTriangle className="h-4 w-4 text-red-400" />
           <span className="text-sm text-red-200">Indoctrination Program Available</span>
         </div>

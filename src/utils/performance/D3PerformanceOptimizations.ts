@@ -355,16 +355,16 @@ export function optimizeVisualization(
 
   // 2. Create optimized ticker with throttled rendering
   return createOptimizedTicker(
-      simulation,
-      () => {
-        // Clear accessor caches on each frame
-        if (mergedConfig.useMemoizedAccessors) {
-          memoizedD3Accessors.clearAllCache();
-        }
-  
-        // Call the selection updater function to render changes
-        selectionUpdater();
-      },
-      mergedConfig
-    );
+    simulation,
+    () => {
+      // Clear accessor caches on each frame
+      if (mergedConfig.useMemoizedAccessors) {
+        memoizedD3Accessors.clearAllCache();
+      }
+
+      // Call the selection updater function to render changes
+      selectionUpdater();
+    },
+    mergedConfig
+  );
 }

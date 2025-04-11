@@ -299,7 +299,7 @@ export function DetectionVisualization({
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <canvas ref={canvasRef} width={size} height={size} className="absolute left-0 top-0" />
+      <canvas ref={canvasRef} width={size} height={size} className="absolute top-0 left-0" />
 
       {/* Confidence Pulse for Selected Object */}
       {renderConfidencePulse()}

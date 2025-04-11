@@ -10,7 +10,7 @@ import {
   ResourceTypeString,
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
-import { ResourceTypeConverter } from '../../utils/ResourceTypeConverter';
+import { ensureEnumResourceType } from '../../utils/ResourceTypeConverter';
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();
@@ -102,7 +102,7 @@ export function useResourceManagement() {
 
   // Get a resource state
   const getResourceState = (type: ResourceType | ResourceTypeString) => {
-    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const enumType = ensureEnumResourceType(type);
     return resourceStates.get(enumType) || defaultResourceState;
   };
 
@@ -117,27 +117,27 @@ export function useResourceManagement() {
 
   // Get resource amount
   const getResourceAmount = (type: ResourceType | ResourceTypeString) => {
-    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const enumType = ensureEnumResourceType(type);
     return resourceStates.get(enumType)?.current ?? 0;
   };
 
   // Check if a resource is available
   const hasResource = (type: ResourceType | ResourceTypeString, amount: number) => {
-    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const enumType = ensureEnumResourceType(type);
     return (resourceStates.get(enumType)?.current ?? 0) >= amount;
   };
 
   // Check if multiple resources are available
   const hasResources = (resources: Record<ResourceType | ResourceTypeString, number>) => {
     return Object.entries(resources).every(([type, amount]) => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       return hasResource(enumType, amount);
     });
   };
 
   // Consume a resource
   const consumeResource = (type: ResourceType | ResourceTypeString, amount: number) => {
-    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const enumType = ensureEnumResourceType(type);
     const currentAmount = resourceStates.get(enumType)?.current ?? 0;
     if (currentAmount < amount) return false;
 
@@ -161,7 +161,7 @@ export function useResourceManagement() {
     setResourceStates(prev => {
       const newStates = new Map(prev);
       Object.entries(resources).forEach(([type, amount]) => {
-        const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+        const enumType = ensureEnumResourceType(type);
         const currentState = newStates.get(enumType) || { ...defaultResourceState };
         const currentAmount = currentState.current;
         newStates.set(enumType, {
@@ -176,7 +176,7 @@ export function useResourceManagement() {
 
   // Add a resource
   const addResource = (type: ResourceType | ResourceTypeString, amount: number) => {
-    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const enumType = ensureEnumResourceType(type);
     setResourceStates(prev => {
       const newStates = new Map(prev);
       const currentState = newStates.get(enumType) || { ...defaultResourceState };
@@ -193,7 +193,7 @@ export function useResourceManagement() {
     setResourceStates(prev => {
       const newStates = new Map(prev);
       Object.entries(resources).forEach(([type, amount]) => {
-        const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+        const enumType = ensureEnumResourceType(type);
         const currentState = newStates.get(enumType) || { ...defaultResourceState };
         newStates.set(enumType, {
           ...currentState,
@@ -207,7 +207,7 @@ export function useResourceManagement() {
   // Get resource production rate
   const getProductionRate = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       return resourceStates.get(enumType)?.production ?? 0;
     },
     [resourceStates]
@@ -216,7 +216,7 @@ export function useResourceManagement() {
   // Get resource consumption rate
   const getConsumptionRate = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       return resourceStates.get(enumType)?.consumption ?? 0;
     },
     [resourceStates]
@@ -225,7 +225,7 @@ export function useResourceManagement() {
   // Set resource production rate
   const setProductionRate = useCallback(
     (type: ResourceType | ResourceTypeString, rate: number): void => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       resourceManager.setResourceProduction(enumType, rate);
     },
     []
@@ -234,7 +234,7 @@ export function useResourceManagement() {
   // Set resource consumption rate
   const setConsumptionRate = useCallback(
     (type: ResourceType | ResourceTypeString, rate: number): void => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       resourceManager.setResourceConsumption(enumType, rate);
     },
     []
@@ -243,7 +243,7 @@ export function useResourceManagement() {
   // Get resource capacity
   const getResourceCapacity = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       return resourceStates.get(enumType)?.max ?? 0;
     },
     [resourceStates]
@@ -252,7 +252,7 @@ export function useResourceManagement() {
   // Get resource percentage
   const getResourcePercentage = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
-      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const enumType = ensureEnumResourceType(type);
       const state = resourceStates.get(enumType);
       if (!state || state.max === 0) {
         return 0;

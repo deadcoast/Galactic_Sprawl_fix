@@ -1,9 +1,9 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
 import {
-    EffectCleanedEventData,
-    EffectStartedEventData,
-    EventType
+  EffectCleanedEventData,
+  EffectStartedEventData,
+  EventType,
 } from '../../types/events/EventTypes';
 import { particleSystemManager } from './ParticleSystemManager';
 
@@ -63,10 +63,10 @@ export class EffectLifecycleManager {
     this.effects.set(id, effect);
     const eventData: EffectStartedEventData = { effectId: id, effectType: type };
     eventSystem.publish({
-        type: EventType.EFFECT_STARTED,
-        managerId: 'EffectLifecycleManager',
-        timestamp: Date.now(),
-        data: eventData
+      type: EventType.EFFECT_STARTED,
+      managerId: 'EffectLifecycleManager',
+      timestamp: Date.now(),
+      data: eventData,
     });
 
     // Schedule cleanup
@@ -118,10 +118,10 @@ export class EffectLifecycleManager {
     this.effects.delete(id);
     const eventData: EffectCleanedEventData = { effectId: id, effectType: effect.type };
     eventSystem.publish({
-        type: EventType.EFFECT_CLEANED,
-        managerId: 'EffectLifecycleManager',
-        timestamp: Date.now(),
-        data: eventData
+      type: EventType.EFFECT_CLEANED,
+      managerId: 'EffectLifecycleManager',
+      timestamp: Date.now(),
+      data: eventData,
     });
   }
 

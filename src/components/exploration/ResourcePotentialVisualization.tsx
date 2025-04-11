@@ -191,14 +191,14 @@ export function ResourcePotentialVisualization({
     return (
       <div className="relative mt-6 h-64">
         {/* Y-axis labels */}
-        <div className="absolute bottom-0 left-0 top-0 flex w-10 flex-col justify-between text-xs text-gray-400">
+        <div className="absolute top-0 bottom-0 left-0 flex w-10 flex-col justify-between text-xs text-gray-400">
           <span>High</span>
           <span>Med</span>
           <span>Low</span>
         </div>
 
         {/* Chart area */}
-        <div ref={chartRef} className="absolute bottom-0 left-10 right-0 top-0 overflow-x-auto">
+        <div ref={chartRef} className="absolute top-0 right-0 bottom-0 left-10 overflow-x-auto">
           <div
             className="flex h-full items-end"
             style={{ width: Math.max(100, filteredSectors.length * (barWidth + barSpacing)) }}
@@ -297,7 +297,7 @@ export function ResourcePotentialVisualization({
 
                   {/* Sector name */}
                   <div
-                    className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-300"
+                    className="mt-2 overflow-hidden text-xs text-ellipsis whitespace-nowrap text-gray-300"
                     style={{ maxWidth: barWidth }}
                   >
                     {sector.sectorName}

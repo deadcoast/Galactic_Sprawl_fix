@@ -14,7 +14,7 @@ import {
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { ensureStringResourceType } from '../../utils/resources/ResourceTypeMigration';
+import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { GameLoopManager } from '../game/GameLoopManager';
 import {
   PerformanceMetrics,
@@ -45,7 +45,7 @@ export interface OptimizationSuggestion {
 interface StatusChangedEventData {
   type: string;
   snapshot?: ResourcePerformanceSnapshot;
-  [ key: string ]: unknown; // Allow other properties
+  [key: string]: unknown; // Allow other properties
 }
 
 // Define a more specific type for the Status Changed event itself
@@ -167,7 +167,7 @@ export class AdaptivePerformanceManager extends AbstractBaseManager<BaseEvent> {
       );
     }
 
-    for (const [ resourceType, metrics ] of snapshot.metrics.entries()) {
+    for (const [resourceType, metrics] of snapshot.metrics.entries()) {
       this.resourcePredictor.addDataPoint({
         timestamp: Date.now(),
         resourceType: resourceType as ResourceType,
@@ -389,7 +389,7 @@ export class AdaptivePerformanceManager extends AbstractBaseManager<BaseEvent> {
 
     if (highPrioritySuggestions.length === 0) return;
 
-    const sortedSuggestions = [ ...highPrioritySuggestions ].sort((a, b) => {
+    const sortedSuggestions = [...highPrioritySuggestions].sort((a, b) => {
       const valueA = a.potentialSavings / a.implementationDifficulty;
       const valueB = b.potentialSavings / b.implementationDifficulty;
       return valueB - valueA;
@@ -405,8 +405,8 @@ export class AdaptivePerformanceManager extends AbstractBaseManager<BaseEvent> {
    */
   private detectDeviceProfile(): DeviceProfile {
     const userAgent = navigator.userAgent;
-    const memory = (navigator as { deviceMemory?: number; }).deviceMemory || 4;
-    const connection = (navigator as { connection?: { type: string; rtt: number; }; }).connection || {
+    const memory = (navigator as { deviceMemory?: number }).deviceMemory || 4;
+    const connection = (navigator as { connection?: { type: string; rtt: number } }).connection || {
       type: 'unknown',
       rtt: 50,
     };
@@ -429,7 +429,7 @@ export class AdaptivePerformanceManager extends AbstractBaseManager<BaseEvent> {
     let batteryLevel: number | undefined;
 
     const navigatorWithBattery = navigator as {
-      getBattery?: () => Promise<{ charging: boolean; level: number; }>;
+      getBattery?: () => Promise<{ charging: boolean; level: number }>;
     };
     if (typeof navigatorWithBattery.getBattery === 'function') {
       navigatorWithBattery.getBattery().then(battery => {
@@ -453,7 +453,7 @@ export class AdaptivePerformanceManager extends AbstractBaseManager<BaseEvent> {
    * Get current optimization suggestions
    */
   public getOptimizationSuggestions(): OptimizationSuggestion[] {
-    return [ ...this.optimizationSuggestions ];
+    return [...this.optimizationSuggestions];
   }
 
   /**

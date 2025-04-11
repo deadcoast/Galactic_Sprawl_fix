@@ -357,7 +357,7 @@ const GalaxyExplorationSystemInner: React.FC<
         viewport: MapViewport,
         settings: MapVisualSettings
       ) => {
-        const {systems} = exploration.state;
+        const { systems } = exploration.state;
 
         systems.forEach(system => {
           const { x, y } = system.coordinates;
@@ -423,7 +423,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const {anomalies} = exploration.state;
+          const { anomalies } = exploration.state;
 
           anomalies.forEach(anomaly => {
             const { x, y } = anomaly.coordinates;
@@ -552,7 +552,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const {resources} = exploration.state;
+          const { resources } = exploration.state;
 
           resources.forEach(resource => {
             const { x, y } = resource.coordinates;
@@ -650,7 +650,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const {tradeRoutes} = exploration.state;
+          const { tradeRoutes } = exploration.state;
 
           tradeRoutes.forEach(route => {
             // Find source and target entities
@@ -964,7 +964,7 @@ const GalaxyExplorationSystemInner: React.FC<
       }
 
       // Check systems
-      const {systems} = exploration.state;
+      const { systems } = exploration.state;
       const clickedSystem = systems.find(system => {
         const { x, y } = system.coordinates;
         const dx = x - worldX;
@@ -1001,7 +1001,7 @@ const GalaxyExplorationSystemInner: React.FC<
       }
 
       // Check anomalies
-      const {anomalies} = exploration.state;
+      const { anomalies } = exploration.state;
       const clickedAnomaly = anomalies.find(anomaly => {
         const { x, y } = anomaly.coordinates;
         const dx = x - worldX;
@@ -1513,8 +1513,8 @@ const GalaxyExplorationSystemInner: React.FC<
   // Cleanup subscriptions on unmount
   useEffect(() => {
     return () => {
-          // unknown cleanup needed for event subscriptions
-        };
+      // unknown cleanup needed for event subscriptions
+    };
   }, []);
 
   return (

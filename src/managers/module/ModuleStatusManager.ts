@@ -1,3 +1,4 @@
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from './ModuleManager';
 
@@ -64,15 +65,60 @@ export interface ModuleStatusDetails {
 }
 
 /**
+ * Events emitted by the ModuleStatusManager
+ */
+export enum ModuleStatusManagerEventType {
+  STATUS_UPDATED = 'STATUS_UPDATED',
+  ALERT_ADDED = 'ALERT_ADDED',
+  METRICS_UPDATED = 'METRICS_UPDATED',
+}
+
+/**
+ * Event data interfaces for ModuleStatusManager events
+ */
+export interface StatusUpdatedEventData {
+  moduleId: string;
+  status: ExtendedModuleStatus;
+  previousStatus?: ExtendedModuleStatus;
+  reason?: string;
+}
+
+export interface AlertAddedEventData {
+  moduleId: string;
+  alert: ModuleAlert;
+}
+
+export interface MetricsUpdatedEventData {
+  moduleId: string;
+  metrics: ModuleStatusDetails['metrics'];
+}
+
+/**
+ * Event map for the ModuleStatusManager
+ */
+export interface ModuleStatusManagerEvents extends Record<string, unknown> {
+  [ModuleStatusManagerEventType.STATUS_UPDATED]: StatusUpdatedEventData;
+  [ModuleStatusManagerEventType.ALERT_ADDED]: AlertAddedEventData;
+  [ModuleStatusManagerEventType.METRICS_UPDATED]: MetricsUpdatedEventData;
+}
+
+/**
  * Module status manager
  * Manages the status tracking, history, and notifications for modules
  */
-export class ModuleStatusManager {
+// Extend BaseTypedEventEmitter
+export class ModuleStatusManager extends BaseTypedEventEmitter<ModuleStatusManagerEvents> {
+  private static instance: ModuleStatusManager | null = null; // Add for singleton
+
   private moduleStatuses: Map<string, ModuleStatusDetails>;
   private statusUpdateInterval: number;
   private intervalId?: NodeJS.Timeout;
+  // Store unsubscribe functions
+  private unsubscribeHandles: (() => void)[] = [];
 
-  constructor(statusUpdateInterval = 60000) {
+  private constructor(statusUpdateInterval = 60000) {
+    // Make private for singleton
+    super(); // Add super call
     // Default to 1 minute updates
     this.moduleStatuses = new Map();
     this.statusUpdateInterval = statusUpdateInterval;
@@ -89,19 +135,40 @@ export class ModuleStatusManager {
    */
   private subscribeToEvents(): void {
     // Module lifecycle events
-    moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated);
-    moduleEventBus.subscribe('MODULE_ATTACHED' as ModuleEventType, this.handleModuleAttached);
-    moduleEventBus.subscribe('MODULE_DETACHED' as ModuleEventType, this.handleModuleDetached);
-    moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
-    moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated);
-    moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, this.handleModuleDeactivated);
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_ATTACHED' as ModuleEventType, this.handleModuleAttached)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_DETACHED' as ModuleEventType, this.handleModuleDetached)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe(
+        'MODULE_DEACTIVATED' as ModuleEventType,
+        this.handleModuleDeactivated
+      )
+    );
 
     // Status events
-    moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
-    moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorOccurred);
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorOccurred)
+    );
 
     // Resource events that might affect status
-    moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage);
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage)
+    );
   }
 
   /**
@@ -230,16 +297,10 @@ export class ModuleStatusManager {
     // Update last updated timestamp
     statusDetails.lastUpdated = Date.now();
 
-    // Emit metrics updated event
-    moduleEventBus.emit({
-      type: 'STATUS_CHANGED' as ModuleEventType,
+    // Emit metrics updated event using this.emit
+    this.emit(ModuleStatusManagerEventType.METRICS_UPDATED, {
       moduleId,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: {
-        status: statusDetails.currentStatus,
-        metrics: statusDetails.metrics,
-      },
+      metrics: statusDetails.metrics,
     });
   }
 
@@ -332,17 +393,12 @@ export class ModuleStatusManager {
       }
     }
 
-    // Emit status changed event
-    moduleEventBus.emit({
-      type: 'STATUS_CHANGED' as ModuleEventType,
+    // Emit status changed event using this.emit
+    this.emit(ModuleStatusManagerEventType.STATUS_UPDATED, {
       moduleId,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: {
-        status,
-        previousStatus: statusDetails.previousStatus,
-        reason,
-      },
+      status,
+      previousStatus: statusDetails.previousStatus,
+      reason,
     });
 
     // Create alert for critical statuses
@@ -360,6 +416,20 @@ export class ModuleStatusManager {
       );
     } else if (['optimized', 'boost'].includes(status)) {
       this.addAlert(moduleId, 'info', `Module performance enhanced${reason ? ': ' + reason : ''}`);
+    }
+
+    const moduleData = moduleManager.getModule(moduleId);
+    if (moduleData) {
+      // Emit alert event using this.emit
+      this.emit(ModuleStatusManagerEventType.ALERT_ADDED, {
+        moduleId,
+        alert: {
+          level: 'error',
+          message: `Module entered ${status} state${reason ? ': ' + reason : ''}`,
+          timestamp: Date.now(),
+          acknowledged: false,
+        },
+      });
     }
 
     return true;
@@ -388,14 +458,12 @@ export class ModuleStatusManager {
     statusDetails.alerts.push(alert);
 
     // Emit alert event
-    const module = moduleManager.getModule(moduleId);
-    if (module) {
-      moduleEventBus.emit({
-        type: 'ERROR_OCCURRED' as ModuleEventType,
+    const moduleData2 = moduleManager.getModule(moduleId);
+    if (moduleData2) {
+      // Emit alert event using this.emit
+      this.emit(ModuleStatusManagerEventType.ALERT_ADDED, {
         moduleId,
-        moduleType: module.type,
-        timestamp: Date.now(),
-        data: { alert },
+        alert,
       });
     }
   }
@@ -590,82 +658,38 @@ export class ModuleStatusManager {
   };
 
   /**
-   * Clean up resources
+   * Clean up resources - Replace with dispose
    */
-  public cleanup(): void {
+  public dispose(): void {
     // Stop interval
     this.stopStatusUpdates();
 
-    // Unsubscribe from events
-    const unsubscribeCreated = moduleEventBus.subscribe(
-      'MODULE_CREATED' as ModuleEventType,
-      this.handleModuleCreated
-    );
-    const unsubscribeAttached = moduleEventBus.subscribe(
-      'MODULE_ATTACHED' as ModuleEventType,
-      this.handleModuleAttached
-    );
-    const unsubscribeDetached = moduleEventBus.subscribe(
-      'MODULE_DETACHED' as ModuleEventType,
-      this.handleModuleDetached
-    );
-    const unsubscribeUpgraded = moduleEventBus.subscribe(
-      'MODULE_UPGRADED' as ModuleEventType,
-      this.handleModuleUpgraded
-    );
-    const unsubscribeActivated = moduleEventBus.subscribe(
-      'MODULE_ACTIVATED' as ModuleEventType,
-      this.handleModuleActivated
-    );
-    const unsubscribeDeactivated = moduleEventBus.subscribe(
-      'MODULE_DEACTIVATED' as ModuleEventType,
-      this.handleModuleDeactivated
-    );
-    const unsubscribeStatusChanged = moduleEventBus.subscribe(
-      'STATUS_CHANGED' as ModuleEventType,
-      this.handleStatusChanged
-    );
-    const unsubscribeErrorOccurred = moduleEventBus.subscribe(
-      'ERROR_OCCURRED' as ModuleEventType,
-      this.handleErrorOccurred
-    );
-    const unsubscribeResourceShortage = moduleEventBus.subscribe(
-      'RESOURCE_SHORTAGE' as ModuleEventType,
-      this.handleResourceShortage
-    );
+    // Unsubscribe from all stored handles
+    this.unsubscribeHandles.forEach(unsubscribe => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    });
+    this.unsubscribeHandles = []; // Clear the array
 
-    if (typeof unsubscribeCreated === 'function') {
-      unsubscribeCreated();
-    }
-    if (typeof unsubscribeAttached === 'function') {
-      unsubscribeAttached();
-    }
-    if (typeof unsubscribeDetached === 'function') {
-      unsubscribeDetached();
-    }
-    if (typeof unsubscribeUpgraded === 'function') {
-      unsubscribeUpgraded();
-    }
-    if (typeof unsubscribeActivated === 'function') {
-      unsubscribeActivated();
-    }
-    if (typeof unsubscribeDeactivated === 'function') {
-      unsubscribeDeactivated();
-    }
-    if (typeof unsubscribeStatusChanged === 'function') {
-      unsubscribeStatusChanged();
-    }
-    if (typeof unsubscribeErrorOccurred === 'function') {
-      unsubscribeErrorOccurred();
-    }
-    if (typeof unsubscribeResourceShortage === 'function') {
-      unsubscribeResourceShortage();
-    }
+    // BaseTypedEventEmitter handles its own listener cleanup
+    this.clearAllListeners();
 
     // Clear data
     this.moduleStatuses.clear();
+    console.warn('[ModuleStatusManager] Disposed and cleaned up subscriptions.');
+  }
+
+  /**
+   * Get the singleton instance
+   */
+  public static getInstance(): ModuleStatusManager {
+    if (!ModuleStatusManager.instance) {
+      ModuleStatusManager.instance = new ModuleStatusManager();
+    }
+    return ModuleStatusManager.instance;
   }
 }
 
 // Export singleton instance
-export const moduleStatusManager = new ModuleStatusManager();
+export const moduleStatusManager = ModuleStatusManager.getInstance(); // Use getInstance for singleton

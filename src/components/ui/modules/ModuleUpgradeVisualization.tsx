@@ -119,17 +119,17 @@ export function ModuleUpgradeVisualization({
     const handleUpgradeProgress = (event: BaseEvent) => {
       // First, check if the event exists
       if (!event) return;
-      
+
       // Check moduleId match
       if (event.moduleId !== moduleId) return;
-      
+
       // Validate data exists and is an object
       if (!event.data || typeof event.data !== 'object') return;
-      
+
       // Check if data has progress property of type number
       const data = event.data;
       if (!('progress' in data) || typeof data.progress !== 'number') return;
-      
+
       // Now it's safe to use the progress value
       const newProgress = data.progress;
       setProgress(newProgress);
@@ -138,7 +138,7 @@ export function ModuleUpgradeVisualization({
       const stageIndex = upgradeStages.findIndex(
         stage => newProgress >= stage.startPercentage && newProgress < stage.endPercentage
       );
-      
+
       if (stageIndex !== -1) {
         setCurrentStage(stageIndex);
       }
@@ -155,7 +155,7 @@ export function ModuleUpgradeVisualization({
       if (newProgress >= 100) {
         setIsUpgrading(false);
         setEstimatedTimeRemaining(null);
-        
+
         // Call onUpgradeComplete callback if provided
         if (onUpgradeComplete) {
           onUpgradeComplete();

@@ -3,7 +3,11 @@ import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeInfo,
+  toStringResourceType,
+} from '../../../types/resources/ResourceTypes';
 
 // Resource type colors matching existing styles
 const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSelected: string }> =
@@ -201,7 +205,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
       return true;
     }
 
-    const resourceKey = ResourceTypeHelpers.enumToString(resourceType).toLowerCase();
+    const resourceKey = toStringResourceType(resourceType).toLowerCase();
     const rate = allResourceRates[resourceKey as keyof typeof allResourceRates];
     if (!rate) {
       return true;
@@ -241,11 +245,22 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
       const stringKey = enumValue as string;
       // Check if the resource exists in the rates data and passes the rate filter
       // Use Object.prototype.hasOwnProperty.call for safe property checking
-      return Object.prototype.hasOwnProperty.call(allResourceRates, stringKey) && passesFilter(enumValue);
+      return (
+        Object.prototype.hasOwnProperty.call(allResourceRates, stringKey) && passesFilter(enumValue)
+      );
     });
   };
 
   const availableResources = getAvailableResources();
+
+  const handleApplyFilter = () => {
+    // Find the resource type enum based on the string input
+    // Assuming filterText needs to be replaced with the correct state variable holding the filter input string
+    // const filterInputString = filterText; // Example: Replace filterText with actual state
+    // const selectedType = ResourceTypeConverter.stringToEnum(filterInputString as keyof typeof ResourceType);
+    console.warn('TODO: Implement handleApplyFilter logic using ResourceTypeConverter');
+    // ... rest of handler ...
+  };
 
   return (
     <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -270,7 +285,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
             className="overflow-hidden"
           >
             {/* Filter types */}
-            <div className="mb-3 mt-4">
+            <div className="mt-4 mb-3">
               <div className="mb-2 text-xs text-gray-400">Filter by rate:</div>
               <div className="flex flex-wrap gap-2">
                 {Object.values(RateFilterType).map(type => (
@@ -321,7 +336,9 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
                       } ${colors.base}`}
                       onClick={() => toggleResource(resourceType)}
                     >
-                      <span>{ResourceTypeHelpers.getDisplayName(resourceType)}</span>
+                      <label htmlFor={`checkbox-${resourceType}`} className="ml-2 text-sm">
+                        <span>{ResourceTypeInfo[resourceType]?.displayName ?? resourceType}</span>
+                      </label>
                       {isSelected && <X size={14} className="ml-1" />}
                     </button>
                   );

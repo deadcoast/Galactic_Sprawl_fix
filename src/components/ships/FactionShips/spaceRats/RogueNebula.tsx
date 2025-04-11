@@ -101,7 +101,7 @@ export function RogueNebula({
       />
 
       {/* Status Effects */}
-      <div className="absolute right-4 top-4 flex flex-col gap-2">
+      <div className="absolute top-4 right-4 flex flex-col gap-2">
         {stealthActive && (
           <div className="flex items-center gap-2 rounded-lg bg-violet-500/20 px-2 py-1 text-sm text-violet-300">
             <EyeOff className="h-4 w-4" />
@@ -118,13 +118,13 @@ export function RogueNebula({
 
       {/* Warning indicator for damaged state */}
       {status === 'damaged' && (
-        <div className="absolute right-0 top-0 p-2">
+        <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className="absolute bottom-4 left-4 right-4 flex gap-2">
+      <div className="absolute right-4 bottom-4 left-4 flex gap-2">
         <button
           onClick={() => {
             setStealthActive(!stealthActive);

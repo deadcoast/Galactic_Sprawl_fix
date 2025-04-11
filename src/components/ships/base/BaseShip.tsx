@@ -194,6 +194,15 @@ function BaseShipContent({
             Retreat
           </button>
         )}
+        {_onSpecialAbility && (
+          <button
+            onClick={_onSpecialAbility}
+            disabled={state.status === 'disabled'}
+            className="flex-1 rounded-lg bg-purple-900/30 px-4 py-2 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-900/50 disabled:opacity-50"
+          >
+            Special Ability
+          </button>
+        )}
       </div>
     </div>
   );

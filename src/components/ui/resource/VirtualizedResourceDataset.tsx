@@ -2,7 +2,11 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {
@@ -317,7 +321,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   const defaultLoadingRenderer = useCallback(
     () => (
       <div className="flex h-full items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
       </div>
     ),
     []

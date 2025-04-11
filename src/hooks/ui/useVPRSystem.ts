@@ -114,16 +114,11 @@ export function useVPRSystem() {
 
   // Error boundary fallback
   const handleError = useCallback((error: Error, moduleId: string) => {
-    errorLoggingService.logError(
-      error,
-      ErrorType.RUNTIME,
-      ErrorSeverity.HIGH,
-      {
-        componentName: 'useVPRSystem',
-        action: 'handleError',
-        moduleId,
-      }
-    );
+    errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, {
+      componentName: 'useVPRSystem',
+      action: 'handleError',
+      moduleId,
+    });
 
     setSystemState(prev => ({
       ...prev,

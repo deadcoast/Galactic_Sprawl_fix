@@ -25,7 +25,7 @@ export interface TypedZoomEvent<
   // @ts-ignore - Element type constraint issue with d3's BaseType
   Element extends d3.BaseType,
   Datum,
-// @ts-ignore - d3's Element constraint is incompatible with TypeScript's Element type
+  // @ts-ignore - d3's Element constraint is incompatible with TypeScript's Element type
 > extends d3.D3ZoomEvent<Element, Datum> {
   // Additional type-safe properties can be added here
   sourceEvent: Event;
@@ -124,7 +124,7 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = unk
   // Set scale extent (min/max zoom level)
   const minScale = config.scaleExtentMin ?? 0.1;
   const maxScale = config.scaleExtentMax ?? 8;
-  zoom.scaleExtent([ minScale, maxScale ]);
+  zoom.scaleExtent([minScale, maxScale]);
 
   // Apply filter if provided
   if (config.filter) {
@@ -153,7 +153,7 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = unk
       // Define the interpolator with a signature matching D3's expectation
       const noopInterpolator = (a: d3.ZoomView, b: d3.ZoomView): ((t: number) => d3.ZoomView) => {
         // Return the identity transform as a ZoomView: [tx, ty, k]
-        return (_t: number) => [ 0, 0, 1 ];
+        return (_t: number) => [0, 0, 1];
       };
       zoom.interpolate(noopInterpolator); // Removed 'as unknown'
     }
@@ -216,7 +216,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
      * Extent of the viewable area [x, y, width, height]
      * Defaults to the element's viewport
      */
-    extent?: [ [ number, number ], [ number, number ] ];
+    extent?: [[number, number], [number, number]];
   } = {}
 ): d3.ZoomBehavior<Element, Datum> {
   // Create base zoom behavior
@@ -289,11 +289,11 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
  */
 function constrainTransform(
   transform: d3.ZoomTransform,
-  extent?: [ [ number, number ], [ number, number ] ]
+  extent?: [[number, number], [number, number]]
 ): d3.ZoomTransform {
   if (!extent) return transform;
 
-  const [ [ x0, y0 ], [ x1, y1 ] ] = extent;
+  const [[x0, y0], [x1, y1]] = extent;
   const width = x1 - x0;
   const height = y1 - y0;
 

@@ -1,7 +1,11 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
 import { SessionPerformanceData } from '../../../services/telemetry/SessionPerformanceTracker';
 import {
   BehaviorPerformanceCorrelation,

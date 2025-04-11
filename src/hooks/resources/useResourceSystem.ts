@@ -13,7 +13,9 @@ ResourceSystem.getInstance()
   .initialize()
   .catch(error => {
     errorLoggingService.logError(
-      error instanceof Error ? error : new Error('Failed to initialize ResourceSystem (global instance)'),
+      error instanceof Error
+        ? error
+        : new Error('Failed to initialize ResourceSystem (global instance)'),
       ErrorType.INITIALIZATION,
       ErrorSeverity.CRITICAL,
       { componentName: 'useResourceSystem (global scope)', action: 'initialize' }

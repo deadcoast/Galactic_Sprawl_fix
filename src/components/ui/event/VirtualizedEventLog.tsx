@@ -3,7 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
 import { EventType } from '../../../types/events/EventTypes';
 
 export interface EventLogProps {
@@ -103,7 +107,22 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
   const infiniteLoaderRef = useRef<InfiniteLoader | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height });
-  const [expandedEventIds, setExpandedEventIds] = useState<Set<string>>(new Set());
+  const [expandedEventIds, setExpandedEventIds] = useState<Set<string>>(() => {
+    // Initialize expanded state based on the showDetails prop
+    if (showDetails) {
+      let initialEvents = [...events];
+      if (eventTypeFilter && eventTypeFilter.length > 0) {
+        initialEvents = initialEvents.filter(event => eventTypeFilter.includes(event?.type));
+      }
+      if (filterEvent) {
+        initialEvents = initialEvents.filter(filterEvent);
+      }
+      initialEvents = initialEvents.slice(0, maxEvents);
+      return new Set(initialEvents.map(e => e.moduleId + e.timestamp));
+    } else {
+      return new Set();
+    }
+  });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreEvents, setHasMoreEvents] = useState(true);
 
@@ -228,13 +247,17 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
     isExpanded: boolean;
   }) => {
     const eventId = event?.moduleId + event?.timestamp;
+    const backgroundColor = index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850';
+    const hoverBackgroundColor = index % 2 === 0 ? 'hover:bg-gray-700' : 'hover:bg-gray-750';
+
     return (
       <div
         style={style}
-        className={`flex flex-col border-b border-gray-700 p-2 transition-colors hover:bg-gray-700 ${
-          isExpanded ? 'bg-gray-700' : ''
+        className={`flex flex-col border-b border-gray-700 p-2 transition-colors ${backgroundColor} ${hoverBackgroundColor} ${
+          isExpanded ? '!bg-gray-700' : ''
         }`}
         onClick={onClick}
+        data-event-id={eventId}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">

@@ -1,14 +1,14 @@
 /**
  * @context: ui-system, component-library, testing, ui-error-handling
- * 
+ *
  * ErrorBoundary component tests
  */
 
 import React from 'react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { renderWithProviders, screen } from '../../utils/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../../../components/ui/errors/ErrorBoundary';
-import { ErrorType, ErrorSeverity } from '../../../services/ErrorLoggingService';
+import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
 vi.mock('../../../services/ErrorLoggingService', () => ({
@@ -46,44 +46,44 @@ describe('ErrorBoundary Component', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
-  
+
   it('renders children when no errors occur', () => {
     renderWithProviders(
       <ErrorBoundary>
         <div>No error content</div>
       </ErrorBoundary>
     );
-    
+
     expect(screen.getByText('No error content')).toBeInTheDocument();
   });
-  
+
   it('renders fallback UI when an error occurs', () => {
     // Suppress console.error for this test to avoid noise
     const originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Render with component that will throw
     renderWithProviders(
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <BuggyComponent />
       </ErrorBoundary>
     );
-    
+
     // Check that fallback is rendered
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    
+
     // Restore console.error
     console.error = originalConsoleError;
   });
-  
+
   it('logs errors to the error service', () => {
     // Suppress console.error for this test
     const originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Render with component that will throw
     renderWithProviders(
-      <ErrorBoundary 
+      <ErrorBoundary
         componentName="TestComponent"
         errorType={ErrorType.RUNTIME}
         errorSeverity={ErrorSeverity.MEDIUM}
@@ -92,7 +92,7 @@ describe('ErrorBoundary Component', () => {
         <BuggyComponent />
       </ErrorBoundary>
     );
-    
+
     // Check that error was logged
     expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
     expect(errorLoggingService.logError).toHaveBeenCalledWith(
@@ -103,28 +103,25 @@ describe('ErrorBoundary Component', () => {
         componentName: 'TestComponent',
       })
     );
-    
+
     // Restore console.error
     console.error = originalConsoleError;
   });
-  
+
   it('calls onError callback when provided', () => {
     // Suppress console.error for this test
     const originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     const handleError = vi.fn();
-    
+
     // Render with component that will throw
     renderWithProviders(
-      <ErrorBoundary 
-        onError={handleError}
-        fallback={<div>Error with callback</div>}
-      >
+      <ErrorBoundary onError={handleError} fallback={<div>Error with callback</div>}>
         <BuggyComponent />
       </ErrorBoundary>
     );
-    
+
     // Check that onError was called
     expect(handleError).toHaveBeenCalledTimes(1);
     expect(handleError).toHaveBeenCalledWith(
@@ -133,45 +130,42 @@ describe('ErrorBoundary Component', () => {
         componentStack: expect.unknown(String),
       })
     );
-    
+
     // Restore console.error
     console.error = originalConsoleError;
   });
-  
+
   it('resets when resetKeys change', () => {
     // Suppress console.error for this test
     const originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Use a function component to test state changes
     const TestComponent = () => {
       const [shouldThrow, setShouldThrow] = React.useState(true);
-      
+
       return (
         <div>
           <button onClick={() => setShouldThrow(false)}>Fix component</button>
-          <ErrorBoundary 
-            fallback={<div>Error state</div>}
-            resetKeys={[shouldThrow]}
-          >
+          <ErrorBoundary fallback={<div>Error state</div>} resetKeys={[shouldThrow]}>
             <BuggyComponent shouldThrow={shouldThrow} />
           </ErrorBoundary>
         </div>
       );
     };
-    
+
     const { user } = renderWithProviders(<TestComponent />);
-    
+
     // Initially shows the error UI
     expect(screen.getByText('Error state')).toBeInTheDocument();
-    
+
     // Click the button to change the resetKey
     user.click(screen.getByText('Fix component')).then(() => {
       // Now should show the success message
       expect(screen.getByText('BuggyComponent rendered successfully')).toBeInTheDocument();
     });
-    
+
     // Restore console.error
     console.error = originalConsoleError;
   });
-}); 
+});

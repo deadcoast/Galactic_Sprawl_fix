@@ -1,3 +1,4 @@
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceManager } from '../game/ResourceManager';
@@ -94,10 +95,59 @@ export interface ModuleUpgradeStatus {
 }
 
 /**
+ * Events emitted by the ModuleUpgradeManager
+ */
+export enum ModuleUpgradeManagerEventType {
+  UPGRADE_STARTED = 'UPGRADE_STARTED',
+  UPGRADE_CANCELLED = 'UPGRADE_CANCELLED',
+  UPGRADE_COMPLETED = 'UPGRADE_COMPLETED',
+}
+
+/**
+ * Event data interfaces for ModuleUpgradeManager events
+ */
+export interface UpgradeStartedEventData {
+  moduleId: string;
+  moduleType: ModuleType;
+  currentLevel: number;
+  targetLevel: number;
+  duration: number;
+  requirements: ModuleUpgradeRequirements;
+  effects: ModuleUpgradeEffect[];
+}
+
+export interface UpgradeCancelledEventData {
+  moduleId: string;
+  moduleType: ModuleType;
+  currentLevel: number;
+  targetLevel: number;
+}
+
+export interface UpgradeCompletedEventData {
+  moduleId: string;
+  moduleType: ModuleType;
+  oldLevel: number;
+  newLevel: number;
+  effects: ModuleUpgradeEffect[];
+  visualChanges?: ModuleVisualChange[];
+}
+
+/**
+ * Event map for the ModuleUpgradeManager
+ */
+export interface ModuleUpgradeManagerEvents extends Record<string, unknown> {
+  [ModuleUpgradeManagerEventType.UPGRADE_STARTED]: UpgradeStartedEventData;
+  [ModuleUpgradeManagerEventType.UPGRADE_CANCELLED]: UpgradeCancelledEventData;
+  [ModuleUpgradeManagerEventType.UPGRADE_COMPLETED]: UpgradeCompletedEventData;
+}
+
+/**
  * Module upgrade manager
  * Manages upgrade paths, requirements, and effects for modules
  */
-export class ModuleUpgradeManager {
+export class ModuleUpgradeManager extends BaseTypedEventEmitter<ModuleUpgradeManagerEvents> {
+  private static instance: ModuleUpgradeManager | null = null; // Add for singleton
+
   private upgradePaths: Map<ModuleType, ModuleUpgradePath>;
   private activeUpgrades: Map<
     string,
@@ -108,8 +158,11 @@ export class ModuleUpgradeManager {
       timer: NodeJS.Timeout;
     }
   >;
+  private unsubscribeHandles: (() => void)[] = []; // Store unsubscribe handles
 
-  constructor() {
+  private constructor() {
+    // Make private for singleton
+    super(); // Add super call
     this.upgradePaths = new Map();
     this.activeUpgrades = new Map();
 
@@ -121,8 +174,12 @@ export class ModuleUpgradeManager {
    * Subscribe to module events
    */
   private subscribeToEvents(): void {
-    moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated);
-    moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded)
+    );
   }
 
   /**
@@ -433,19 +490,15 @@ export class ModuleUpgradeManager {
       timer,
     });
 
-    // Emit upgrade started event
-    moduleEventBus.emit({
-      type: 'MODULE_UPGRADE_STARTED' as ModuleEventType,
+    // Emit upgrade started event using this.emit
+    this.emit(ModuleUpgradeManagerEventType.UPGRADE_STARTED, {
       moduleId,
       moduleType: module.type,
-      timestamp: Date.now(),
-      data: {
-        currentLevel: module.level,
-        targetLevel: nextLevel.level,
-        duration: upgradeTime,
-        requirements: nextLevel.requirements,
-        effects: nextLevel.effects,
-      },
+      currentLevel: module.level,
+      targetLevel: nextLevel.level,
+      duration: upgradeTime,
+      requirements: nextLevel.requirements,
+      effects: nextLevel.effects,
     });
 
     return true;
@@ -469,18 +522,14 @@ export class ModuleUpgradeManager {
     // Update module status
     moduleStatusManager.updateModuleStatus(moduleId, 'active', 'Upgrade cancelled');
 
-    // Emit upgrade cancelled event
+    // Emit upgrade cancelled event using this.emit
     const module = moduleManager.getModule(moduleId);
     if (module) {
-      moduleEventBus.emit({
-        type: 'MODULE_UPGRADE_CANCELLED' as ModuleEventType,
+      this.emit(ModuleUpgradeManagerEventType.UPGRADE_CANCELLED, {
         moduleId,
         moduleType: module.type,
-        timestamp: Date.now(),
-        data: {
-          currentLevel: module.level,
-          targetLevel: activeUpgrade.targetLevel,
-        },
+        currentLevel: module.level,
+        targetLevel: activeUpgrade.targetLevel,
       });
     }
 
@@ -521,18 +570,14 @@ export class ModuleUpgradeManager {
     // Apply upgrade effects
     this.applyUpgradeEffects(moduleId, upgradeLevel);
 
-    // Emit upgrade completed event
-    moduleEventBus.emit({
-      type: 'MODULE_UPGRADED' as ModuleEventType,
+    // Emit upgrade completed event using this.emit
+    this.emit(ModuleUpgradeManagerEventType.UPGRADE_COMPLETED, {
       moduleId,
       moduleType: module.type,
-      timestamp: Date.now(),
-      data: {
-        oldLevel,
-        newLevel: targetLevel,
-        effects: upgradeLevel.effects,
-        visualChanges: upgradeLevel.visualChanges,
-      },
+      oldLevel,
+      newLevel: targetLevel,
+      effects: upgradeLevel.effects,
+      visualChanges: upgradeLevel.visualChanges,
     });
   }
 
@@ -566,42 +611,41 @@ export class ModuleUpgradeManager {
   };
 
   /**
-   * Clean up resources
+   * Clean up resources - Replace with dispose
    */
-  public cleanup(): void {
+  public dispose(): void {
     // Clear all active upgrade timers
     for (const [moduleId, upgrade] of Array.from(this.activeUpgrades.entries())) {
       clearTimeout(upgrade.timer);
-
-      // Update module status
-      moduleStatusManager.updateModuleStatus(
-        moduleId,
-        'active',
-        'Upgrade cancelled due to cleanup'
-      );
+      // Optionally update status if needed
+      // moduleStatusManager.updateModuleStatus(moduleId, 'active', 'Upgrade cancelled due to dispose');
     }
-
-    // Clear active upgrades
     this.activeUpgrades.clear();
 
-    // Unsubscribe from events
-    const unsubscribeCreated = moduleEventBus.subscribe(
-      'MODULE_CREATED' as ModuleEventType,
-      this.handleModuleCreated
-    );
-    const unsubscribeUpgraded = moduleEventBus.subscribe(
-      'MODULE_UPGRADED' as ModuleEventType,
-      this.handleModuleUpgraded
-    );
+    // Unsubscribe from all stored handles
+    this.unsubscribeHandles.forEach(unsubscribe => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    });
+    this.unsubscribeHandles = [];
 
-    if (typeof unsubscribeCreated === 'function') {
-      unsubscribeCreated();
+    // BaseTypedEventEmitter handles its own listener cleanup
+    this.clearAllListeners();
+
+    console.warn('[ModuleUpgradeManager] Disposed and cleaned up subscriptions/timers.');
+  }
+
+  /**
+   * Get the singleton instance
+   */
+  public static getInstance(): ModuleUpgradeManager {
+    if (!ModuleUpgradeManager.instance) {
+      ModuleUpgradeManager.instance = new ModuleUpgradeManager();
     }
-    if (typeof unsubscribeUpgraded === 'function') {
-      unsubscribeUpgraded();
-    }
+    return ModuleUpgradeManager.instance;
   }
 }
 
 // Export singleton instance
-export const moduleUpgradeManager = new ModuleUpgradeManager();
+export const moduleUpgradeManager = ModuleUpgradeManager.getInstance(); // Use getInstance for singleton

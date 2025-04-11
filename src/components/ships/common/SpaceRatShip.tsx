@@ -1,6 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useCallback, useRef } from 'react';
+import * as THREE from 'three';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
+import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import {
   FactionShip,
   FactionShipStats,
@@ -17,7 +19,7 @@ interface SpaceRatShipProps {
   id: string;
   name: string;
   type: SpaceRatsShipClass;
-  status: 'engaging' | 'patrolling' | 'retreating' | 'disabled';
+  status: ShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -67,7 +69,8 @@ export function SpaceRatShip({
   onSpecialAbility,
   onFire,
   children,
-}: SpaceRatShipProps) {
+}: SpaceRatShipProps): JSX.Element {
+  const groupRef = useRef<THREE.Group>(null);
   const { addEffect, removeEffect, hasEffect } = useShipEffects();
 
   // Faction-specific effects
@@ -138,7 +141,7 @@ export function SpaceRatShip({
   };
 
   // Determine which special ability to use based on ship type
-  const handleSpecialAbility = () => {
+  const handleSpecialAbility = useCallback(() => {
     switch (type) {
       case 'ratKing':
       case 'asteroidMarauder':
@@ -153,7 +156,7 @@ export function SpaceRatShip({
       default:
         onSpecialAbility?.();
     }
-  };
+  }, [hasEffect, removeEffect, addEffect, onSpecialAbility]);
 
   // Create a ship object that matches the expected type
   const shipData: FactionShip = {

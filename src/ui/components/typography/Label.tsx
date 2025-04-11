@@ -1,15 +1,16 @@
 /**
  * @context: ui-system, component-library, ui-typography-system
- * 
+ *
  * Label component for form fields and other elements that need descriptive labels
  */
 import * as React from 'react';
 import { forwardRef, useMemo } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import {
-    BaseComponentProps,
-    TextComponentProps
-} from '../../../types/ui/ComponentTypes';
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
+import { BaseComponentProps, TextComponentProps } from '../../../types/ui/ComponentTypes';
 
 /**
  * Label component props
@@ -19,58 +20,58 @@ export interface LabelProps extends BaseComponentProps, TextComponentProps {
    * Label content
    */
   children: React.ReactNode;
-  
+
   /**
    * ID of the element this label is for
    */
   htmlFor?: string;
-  
+
   /**
    * Whether the label is for a required field
    * @default false
    */
   required?: boolean;
-  
+
   /**
    * Whether the label should be visually hidden but still accessible to screen readers
    * @default false
    */
   srOnly?: boolean;
-  
+
   /**
    * Optional tooltip or help text to display with the label
    */
   tooltip?: React.ReactNode;
-  
+
   /**
    * Whether the label should be displayed inline with the form element
    * @default false
    */
   inline?: boolean;
-  
+
   /**
    * Whether to apply a bold font weight to the label
    * @default false
    */
   bold?: boolean;
-  
+
   /**
    * Whether the form field associated with this label is disabled
    * @default false
    */
   disabled?: boolean;
-  
+
   /**
    * Whether the field associated with this label has an error
    * @default false
    */
   hasError?: boolean;
-  
+
   /**
    * Optional secondary text to display after the main label
    */
   secondaryText?: React.ReactNode;
-  
+
   /**
    * Click handler for the label
    */
@@ -79,33 +80,36 @@ export interface LabelProps extends BaseComponentProps, TextComponentProps {
 
 /**
  * Label component
- * 
+ *
  * Renders a label element with consistent styling for form fields
  */
 export const Label = forwardRef<HTMLLabelElement, LabelProps>(
-  ({
-    children,
-    htmlFor,
-    required = false,
-    srOnly = false,
-    tooltip,
-    inline = false,
-    bold = false,
-    disabled = false,
-    hasError = false,
-    secondaryText,
-    onClick,
-    color,
-    fontSize,
-    fontWeight,
-    textAlign,
-    truncate,
-    textTransform,
-    className = '',
-    style,
-    id,
-    'data-testid': dataTestId,
-  }, ref) => {
+  (
+    {
+      children,
+      htmlFor,
+      required = false,
+      srOnly = false,
+      tooltip,
+      inline = false,
+      bold = false,
+      disabled = false,
+      hasError = false,
+      secondaryText,
+      onClick,
+      color,
+      fontSize,
+      fontWeight,
+      textAlign,
+      truncate,
+      textTransform,
+      className = '',
+      style,
+      id,
+      'data-testid': dataTestId,
+    },
+    ref
+  ) => {
     // Compute label classes
     const labelClasses = useMemo(() => {
       const classes = [
@@ -124,9 +128,11 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
         textAlign ? `gs-label--align-${textAlign}` : '',
         truncate ? 'gs-label--truncate' : '',
         textTransform ? `gs-label--text-transform-${textTransform}` : '',
-        className
-      ].filter(Boolean).join(' ');
-      
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       return classes;
     }, [
       srOnly,
@@ -143,13 +149,13 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
       textAlign,
       truncate,
       textTransform,
-      className
+      className,
     ]);
-    
+
     // Handle click with error boundary
     const handleClick = (event: React.MouseEvent<HTMLLabelElement>) => {
       if (disabled) return;
-      
+
       try {
         onClick?.(event);
       } catch (error) {
@@ -164,7 +170,7 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
         );
       }
     };
-    
+
     return (
       <label
         ref={ref}
@@ -179,18 +185,10 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
           {children}
           {required && <span className="gs-label__required-indicator">*</span>}
         </span>
-        
-        {tooltip && (
-          <span className="gs-label__tooltip">
-            {tooltip}
-          </span>
-        )}
-        
-        {secondaryText && (
-          <span className="gs-label__secondary">
-            {secondaryText}
-          </span>
-        )}
+
+        {tooltip && <span className="gs-label__tooltip">{tooltip}</span>}
+
+        {secondaryText && <span className="gs-label__secondary">{secondaryText}</span>}
       </label>
     );
   }
@@ -198,4 +196,4 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
 
 Label.displayName = 'Label';
 
-export default Label; 
+export default Label;

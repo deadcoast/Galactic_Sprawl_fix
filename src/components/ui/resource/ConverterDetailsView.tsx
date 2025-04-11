@@ -1,14 +1,16 @@
 import * as React from 'react';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ProcessStatus } from '../../../types/resources/ProductionChainTypes';
+import { ConverterStatus } from '../../../types/resources/ResourceConversionTypes';
+import { FlowNodeType, ResourceType } from '../../../types/resources/ResourceTypes';
 import './ConverterDetailsView.css';
 
 // Define the interfaces for the component
 interface ConverterDetail {
   id: string;
   name: string;
-  type: ResourceType;
+  type: FlowNodeType;
   tier: number;
-  status: 'active' | 'inactive' | 'error';
+  status: ConverterStatus;
   efficiency: number;
   utilization: number;
   energyUse: number;
@@ -22,7 +24,7 @@ interface ConversionProcessDetail {
   progress: number;
   startTime: number;
   estimatedEndTime: number;
-  status: 'in-progress' | 'completed' | 'failed' | 'paused';
+  status: ProcessStatus;
 }
 
 interface RecipeDetail {
@@ -30,15 +32,15 @@ interface RecipeDetail {
   name: string;
   baseEfficiency: number;
   inputs: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
   }>;
   outputs: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
   }>;
   byproducts?: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
   }>;
 }
@@ -90,6 +92,12 @@ const ConverterDetailsView: React.FC<ConverterDetailsViewProps> = ({
     return name.replace(/([A-Z])/g, ' $1').trim();
   };
 
+  // Helper function to capitalize first letter and replace underscores
+  const capitalizeFirstLetter = (str: string): string => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ');
+  };
+
   return (
     <div className="converter-details">
       <div className="details-header">
@@ -106,7 +114,7 @@ const ConverterDetailsView: React.FC<ConverterDetailsViewProps> = ({
             <div className="status-item">
               <div className="status-label">Status</div>
               <div className={`status-value ${converter.status}`}>
-                {converter.status.charAt(0).toUpperCase() + converter.status.slice(1)}
+                {capitalizeFirstLetter(converter.status.replace('_', ' '))}
               </div>
             </div>
             <div className="status-item">
@@ -157,7 +165,7 @@ const ConverterDetailsView: React.FC<ConverterDetailsViewProps> = ({
                     </div>
                   </div>
                   <div className="process-controls">
-                    {process.status === 'in-progress' && (
+                    {process.status === ProcessStatus.IN_PROGRESS && (
                       <button
                         className="pause-button"
                         onClick={() => onPauseProcess(process.processId)}
@@ -165,7 +173,7 @@ const ConverterDetailsView: React.FC<ConverterDetailsViewProps> = ({
                         PAUSE
                       </button>
                     )}
-                    {process.status === 'paused' && (
+                    {process.status === ProcessStatus.PAUSED && (
                       <button
                         className="resume-button"
                         onClick={() => onStartProcess(process.recipeId)}

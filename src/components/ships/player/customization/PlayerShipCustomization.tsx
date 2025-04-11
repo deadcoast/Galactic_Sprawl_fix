@@ -82,7 +82,7 @@ export function PlayerShipCustomization({
               >
                 <div className="h-8 w-full rounded" style={{ backgroundColor: color.preview }} />
                 {color.selected && (
-                  <div className="absolute right-2 top-2">
+                  <div className="absolute top-2 right-2">
                     <Check className="h-4 w-4 text-violet-400" />
                   </div>
                 )}

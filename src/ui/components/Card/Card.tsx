@@ -117,8 +117,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {/* Title section */}
         {renderTitle()}
 
-        {/* Main content */}
-        <div className={contentPadding}>{children}</div>
+        {/* Main content - Explicitly handle null/undefined case */}
+        <div className={contentPadding}>{children ?? null}</div>
 
         {/* Card footer */}
         {footer && (

@@ -78,7 +78,11 @@ export function createStateHook<
             error instanceof Error ? error : new Error('Failed to load persisted state'),
             ErrorType.INITIALIZATION,
             ErrorSeverity.MEDIUM,
-            { componentName: 'createStateHook', action: 'getInitialState', persistKey: options?.persistKey }
+            {
+              componentName: 'createStateHook',
+              action: 'getInitialState',
+              persistKey: options?.persistKey,
+            }
           );
         }
       }

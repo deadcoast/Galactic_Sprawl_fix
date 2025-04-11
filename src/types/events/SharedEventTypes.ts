@@ -11,23 +11,6 @@
 import { EventHandler as BaseEventHandler, EventUnsubscribe } from '../TypeUtils';
 
 /**
- * Base event interface that all events should extend
- */
-export interface BaseEvent {
-  type: string;
-  timestamp: number;
-  data?: unknown;
-}
-
-/**
- * Generic typed event interface
- */
-export interface TypedEvent<T extends string, D = unknown> extends BaseEvent {
-  type: T;
-  data?: D;
-}
-
-/**
  * Event Emitter interface compatible with both production and test code
  */
 export interface EventEmitter<E extends BaseEvent = BaseEvent> {
@@ -161,3 +144,104 @@ export function typedEmit<E extends BaseEvent, M extends EventDataMap, K extends
 // Re-export these types
 export type EventHandler<T> = BaseEventHandler<T>;
 export type { EventUnsubscribe };
+
+/**
+ * Base structure for event data payloads.
+ */
+export interface BaseEventData {
+  [key: string]: unknown;
+}
+
+/**
+ * Interface for events carrying specific payload types, enhancing type safety.
+ * @template P The type of the payload data.
+ */
+export interface TypedEventData<P> extends BaseEventData {
+  payload: P;
+}
+
+/**
+ * Type-safe event handler for events with specific payloads.
+ * @template P Payload type.
+ */
+export type TypedEventHandler<P> = (event: BaseEvent & { data: TypedEventData<P> }) => void;
+
+// Define EventType and ModuleEventType if they are missing
+// Example placeholder, adjust based on actual types
+export declare enum EventType /* ... */ {}
+export declare enum ModuleEventType /* ... */ {}
+
+/**
+ * Base structure for all events within the system.
+ * Ensures consistency in event handling and propagation.
+ */
+export interface BaseEvent {
+  /** Unique identifier for the event instance. */
+  id: string;
+  /** Type identifier for the event category (e.g., 'resource', 'module', 'ui'). */
+  type: EventType | ModuleEventType | string; // Allow string for custom types
+  /** Timestamp when the event was created. */
+  timestamp: number;
+  /** Optional data payload associated with the event. */
+  data?: BaseEventData | TypedEventData<unknown>; // Allow both base and typed data
+  /** Optional source identifier (e.g., component ID, service name). */
+  source?: string;
+  /** Optional metadata for additional context. */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Represents a specific event type with a defined payload structure.
+ * @template E The string literal type for the event (e.g., 'RESOURCE_UPDATED').
+ * @template P The type of the payload data associated with this event type.
+ */
+export interface SpecificEvent<E extends string, P> extends BaseEvent {
+  type: E;
+  data: TypedEventData<P>;
+}
+
+/**
+ * Helper type to extract the payload type from a SpecificEvent.
+ * @template SE A SpecificEvent type.
+ */
+export type PayloadType<SE extends SpecificEvent<string, unknown>> =
+  SE extends SpecificEvent<string, infer P> ? P : never;
+
+/**
+ * Type for defining event maps used by EventEmitters.
+ * Maps event type strings to their corresponding payload types.
+ * Example: { 'USER_LOGIN': UserData, 'ITEM_PURCHASED': ItemDetails }
+ */
+export type EventMap = Record<string, unknown>; // Base type, requires refinement or type guards
+
+/**
+ * Type-safe event map using SpecificEvent definitions.
+ * @template _T A record mapping event type strings to their SpecificEvent types.
+ * Example: { 'USER_LOGIN': SpecificEvent<'USER_LOGIN', UserData>, ... }
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type TypedEventMap<_T extends Record<string, SpecificEvent<string, unknown>>> = {
+  [K in keyof _T]: PayloadType<_T[K]>;
+};
+
+// --- Concrete Event Examples (Illustrative) ---
+
+/** Represents user login data. */
+export interface UserLoginData {
+  userId: string;
+  username: string;
+}
+
+/** Represents item purchase details. */
+export interface ItemPurchaseData {
+  itemId: string;
+  quantity: number;
+  price: number;
+}
+
+// Example of a TypedEventMap using these concrete events
+export type AppEventMap = {
+  USER_LOGIN: SpecificEvent<'USER_LOGIN', UserLoginData>;
+  ITEM_PURCHASED: SpecificEvent<'ITEM_PURCHASED', ItemPurchaseData>;
+  // Add other application-specific events here
+};

@@ -24,16 +24,16 @@ const useUpgradeProgressTracking = (moduleId: string): number => {
   useEffect(() => {
     const handleUpgradeProgress = (event: BaseEvent) => {
       if (!event) return;
-      
+
       // Check moduleId match
       if (event.moduleId !== moduleId) return;
-      
+
       // Validate data structure
       if (!event.data || typeof event.data !== 'object') return;
-      
+
       const data = event.data;
       if (!('progress' in data) || typeof data.progress !== 'number') return;
-      
+
       // Set progress from validated data
       setProgress(data.progress);
     };
@@ -85,7 +85,7 @@ export const ModuleCard = memo(function ModuleCard({
             updateStatus(currentStatus);
           }
         }, 30000); // Check every 30 seconds
-        
+
         return () => clearInterval(statusCheckInterval);
       }
     }

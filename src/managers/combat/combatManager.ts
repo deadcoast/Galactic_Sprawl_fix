@@ -52,24 +52,10 @@ export interface CombatWeapon {
  * Combat manager class that uses standardized types and events
  */
 export class CombatManager extends BaseTypedEventEmitter<CombatEvents> {
-  private static instance: CombatManager | null = null;
   private units: Map<string, CombatUnit> = new Map();
 
-  /**
-   * Private constructor to enforce singleton pattern
-   */
-  private constructor() {
+  public constructor() {
     super();
-  }
-  
-  /**
-   * Get the singleton instance of CombatManager
-   */
-  public static getInstance(): CombatManager {
-    if (!CombatManager.instance) {
-      CombatManager.instance = new CombatManager();
-    }
-    return CombatManager.instance;
   }
 
   /**

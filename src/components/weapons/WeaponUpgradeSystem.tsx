@@ -83,7 +83,7 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
                 if (typeof value !== 'number') return null;
                 return (
                   <div key={key} className="flex items-center justify-between">
-                    <span className="text-xs capitalize text-gray-400">
+                    <span className="text-xs text-gray-400 capitalize">
                       {key.replace(/([A-Z])/g, ' $1').trim()}
                     </span>
                     {renderStatValue(key as keyof BaseWeaponStats, value)}

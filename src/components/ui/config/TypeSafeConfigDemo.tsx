@@ -465,7 +465,9 @@ const TypeSafeConfigDemo: React.FC = () => {
                       onChange={e => setEditValue(e.target.value)}
                     >
                       {(() => {
-                        const enumValues = (selectedConfig.schema as z.ZodEnum<[string, ...string[]]>)._def?.values;
+                        const enumValues = (
+                          selectedConfig.schema as z.ZodEnum<[string, ...string[]]>
+                        )._def?.values;
                         if (Array.isArray(enumValues)) {
                           return enumValues.map((val: string) => (
                             <option key={val} value={val}>

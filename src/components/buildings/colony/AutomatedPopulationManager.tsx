@@ -413,7 +413,7 @@ export function AutomatedPopulationManager({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         {getEventIcon(event?.type)}
-                        <span className="text-sm font-medium capitalize text-white">
+                        <span className="text-sm font-medium text-white capitalize">
                           {event?.type}
                         </span>
                       </div>

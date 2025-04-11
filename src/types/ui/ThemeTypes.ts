@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, type-definitions, ui-theme-system
- * 
+ *
  * Theme-related type definitions for the UI system
  */
 
@@ -22,7 +22,7 @@ export enum ThemeColorName {
   TEXT_SECONDARY = 'textSecondary',
   BORDER = 'border',
   HIGHLIGHT = 'highlight',
-  ACCENT = 'accent'
+  ACCENT = 'accent',
 }
 
 /**
@@ -38,12 +38,12 @@ export interface ThemeContextValue {
    * Current theme object
    */
   theme: Theme;
-  
+
   /**
    * Current theme mode
    */
   mode: ThemeMode;
-  
+
   /**
    * Function to set the theme mode
    */
@@ -62,7 +62,7 @@ export enum ThemeFontSizeName {
   XXLARGE = 'xxlarge',
   DISPLAY1 = 'display1',
   DISPLAY2 = 'display2',
-  DISPLAY3 = 'display3'
+  DISPLAY3 = 'display3',
 }
 
 /**
@@ -75,14 +75,14 @@ export enum ThemeSpacingName {
   MEDIUM = 'medium',
   LARGE = 'large',
   XLARGE = 'xlarge',
-  XXLARGE = 'xxlarge'
+  XXLARGE = 'xxlarge',
 }
 
 /**
  * Theme type definitions
  */
 
-/** 
+/**
  * Theme color can be a direct color name or a token with intensity
  * e.g., 'primary', 'primary.500', 'text', etc.
  */
@@ -108,7 +108,7 @@ export enum ThemeBorderRadius {
   SMALL = 'small',
   MEDIUM = 'medium',
   LARGE = 'large',
-  FULL = 'full'
+  FULL = 'full',
 }
 
 /**
@@ -120,7 +120,7 @@ export enum ThemeBreakpoint {
   MD = 'md',
   LG = 'lg',
   XL = 'xl',
-  XXL = 'xxl'
+  XXL = 'xxl',
 }
 
 /**
@@ -222,35 +222,47 @@ export interface Theme {
  * Type guard for checking if a value is a valid ThemeColorName
  */
 export function isThemeColorName(value: unknown): value is ThemeColorName {
-  return typeof value === 'string' && Object.values(ThemeColorName).includes(value as ThemeColorName);
+  return (
+    typeof value === 'string' && Object.values(ThemeColorName).includes(value as ThemeColorName)
+  );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeFontSizeName
  */
 export function isThemeFontSizeName(value: unknown): value is ThemeFontSizeName {
-  return typeof value === 'string' && Object.values(ThemeFontSizeName).includes(value as ThemeFontSizeName);
+  return (
+    typeof value === 'string' &&
+    Object.values(ThemeFontSizeName).includes(value as ThemeFontSizeName)
+  );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeSpacingName
  */
 export function isThemeSpacingName(value: unknown): value is ThemeSpacingName {
-  return typeof value === 'string' && Object.values(ThemeSpacingName).includes(value as ThemeSpacingName);
+  return (
+    typeof value === 'string' && Object.values(ThemeSpacingName).includes(value as ThemeSpacingName)
+  );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeBorderRadius
  */
 export function isThemeBorderRadius(value: unknown): value is ThemeBorderRadius {
-  return typeof value === 'string' && Object.values(ThemeBorderRadius).includes(value as ThemeBorderRadius);
+  return (
+    typeof value === 'string' &&
+    Object.values(ThemeBorderRadius).includes(value as ThemeBorderRadius)
+  );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeBreakpoint
  */
 export function isThemeBreakpoint(value: unknown): value is ThemeBreakpoint {
-  return typeof value === 'string' && Object.values(ThemeBreakpoint).includes(value as ThemeBreakpoint);
+  return (
+    typeof value === 'string' && Object.values(ThemeBreakpoint).includes(value as ThemeBreakpoint)
+  );
 }
 
 /**
@@ -261,22 +273,18 @@ export function isThemeBreakpoint(value: unknown): value is ThemeBreakpoint {
  */
 export function getThemeColor(theme: Theme, color: ThemeColor, fallback?: string): string {
   if (!color) return fallback || '';
-  
+
   // Handle direct color name
   if (isThemeColorName(color)) {
     return theme.colors[color] || fallback || '';
   }
-  
+
   // Handle color with intensity (e.g., 'primary.500')
   const [colorName, intensity] = color.split('.');
-  if (
-    colorName && 
-    intensity && 
-    typeof theme.colors[colorName] === 'object'
-  ) {
+  if (colorName && intensity && typeof theme.colors[colorName] === 'object') {
     return (theme.colors[colorName] as Record<string, string>)[intensity] || fallback || '';
   }
-  
+
   // Return the raw value if it doesn't match pattern
   return color;
-} 
+}

@@ -106,7 +106,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     if (!event || !event.target) {
       return;
     }
-    
+
     const { name, value } = event.target;
     setFilter(prev => ({
       ...prev,

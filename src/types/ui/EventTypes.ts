@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, type-definitions, event-system
- * 
+ *
  * UI-specific event type definitions
  */
 
@@ -11,16 +11,16 @@ export enum UIEventType {
   // Theme events
   THEME_CHANGED = 'THEME_CHANGED',
   THEME_MODE_CHANGED = 'THEME_MODE_CHANGED',
-  
+
   // Component events
   COMPONENT_MOUNTED = 'COMPONENT_MOUNTED',
   COMPONENT_UPDATED = 'COMPONENT_UPDATED',
   COMPONENT_UNMOUNTED = 'COMPONENT_UNMOUNTED',
-  
+
   // Modal events
   MODAL_OPENED = 'MODAL_OPENED',
   MODAL_CLOSED = 'MODAL_CLOSED',
-  
+
   // Form events
   FORM_SUBMITTED = 'FORM_SUBMITTED',
   FORM_VALIDATED = 'FORM_VALIDATED',
@@ -31,12 +31,12 @@ export enum UIEventType {
   NAVIGATION_STARTED = 'NAVIGATION_STARTED',
   NAVIGATION_COMPLETED = 'NAVIGATION_COMPLETED',
   NAVIGATION_FAILED = 'NAVIGATION_FAILED',
-  
+
   // Animation events
   ANIMATION_STARTED = 'ANIMATION_STARTED',
   ANIMATION_COMPLETED = 'ANIMATION_COMPLETED',
   ANIMATION_CANCELLED = 'ANIMATION_CANCELLED',
-  
+
   // Interaction events
   DRAG_STARTED = 'DRAG_STARTED',
   DRAG_MOVED = 'DRAG_MOVED',
@@ -46,19 +46,19 @@ export enum UIEventType {
   PRESS_STARTED = 'PRESS_STARTED',
   PRESS_ENDED = 'PRESS_ENDED',
   FOCUS_CHANGED = 'FOCUS_CHANGED',
-  
+
   // UI state events
   UI_STATE_CHANGED = 'UI_STATE_CHANGED',
   UI_VIEW_CHANGED = 'UI_VIEW_CHANGED',
   UI_LAYOUT_CHANGED = 'UI_LAYOUT_CHANGED',
   UI_BREAKPOINT_CHANGED = 'UI_BREAKPOINT_CHANGED',
-  
+
   // Notification events
   NOTIFICATION_SHOWN = 'NOTIFICATION_SHOWN',
   NOTIFICATION_HIDDEN = 'NOTIFICATION_HIDDEN',
-  
+
   // Error events
-  UI_ERROR_OCCURRED = 'UI_ERROR_OCCURRED'
+  UI_ERROR_OCCURRED = 'UI_ERROR_OCCURRED',
 }
 
 /**
@@ -97,7 +97,10 @@ export interface ThemeModeChangedEvent extends UIEvent {
  * Component lifecycle event data
  */
 export interface ComponentLifecycleEvent extends UIEvent {
-  type: UIEventType.COMPONENT_MOUNTED | UIEventType.COMPONENT_UPDATED | UIEventType.COMPONENT_UNMOUNTED;
+  type:
+    | UIEventType.COMPONENT_MOUNTED
+    | UIEventType.COMPONENT_UPDATED
+    | UIEventType.COMPONENT_UNMOUNTED;
   data: {
     componentId: string;
     componentType: string;
@@ -121,7 +124,11 @@ export interface ModalEvent extends UIEvent {
  * Form event data
  */
 export interface FormEvent extends UIEvent {
-  type: UIEventType.FORM_SUBMITTED | UIEventType.FORM_VALIDATED | UIEventType.FORM_VALIDATION_ERROR | UIEventType.FORM_RESET;
+  type:
+    | UIEventType.FORM_SUBMITTED
+    | UIEventType.FORM_VALIDATED
+    | UIEventType.FORM_VALIDATION_ERROR
+    | UIEventType.FORM_RESET;
   data: {
     formId: string;
     formData?: Record<string, unknown>;
@@ -133,7 +140,10 @@ export interface FormEvent extends UIEvent {
  * Navigation event data
  */
 export interface NavigationEvent extends UIEvent {
-  type: UIEventType.NAVIGATION_STARTED | UIEventType.NAVIGATION_COMPLETED | UIEventType.NAVIGATION_FAILED;
+  type:
+    | UIEventType.NAVIGATION_STARTED
+    | UIEventType.NAVIGATION_COMPLETED
+    | UIEventType.NAVIGATION_FAILED;
   data: {
     from?: string;
     to: string;
@@ -146,7 +156,10 @@ export interface NavigationEvent extends UIEvent {
  * Animation event data
  */
 export interface AnimationEvent extends UIEvent {
-  type: UIEventType.ANIMATION_STARTED | UIEventType.ANIMATION_COMPLETED | UIEventType.ANIMATION_CANCELLED;
+  type:
+    | UIEventType.ANIMATION_STARTED
+    | UIEventType.ANIMATION_COMPLETED
+    | UIEventType.ANIMATION_CANCELLED;
   data: {
     animationId: string;
     elementId?: string;
@@ -262,8 +275,8 @@ export function isThemeModeChangedEvent(event: UIEvent): event is ThemeModeChang
 export function isComponentLifecycleEvent(event: UIEvent): event is ComponentLifecycleEvent {
   return (
     (event.type === UIEventType.COMPONENT_MOUNTED ||
-     event.type === UIEventType.COMPONENT_UPDATED ||
-     event.type === UIEventType.COMPONENT_UNMOUNTED) &&
+      event.type === UIEventType.COMPONENT_UPDATED ||
+      event.type === UIEventType.COMPONENT_UNMOUNTED) &&
     event.data !== undefined &&
     typeof event.data === 'object' &&
     'componentId' in event.data &&
@@ -276,8 +289,7 @@ export function isComponentLifecycleEvent(event: UIEvent): event is ComponentLif
  */
 export function isModalEvent(event: UIEvent): event is ModalEvent {
   return (
-    (event.type === UIEventType.MODAL_OPENED ||
-     event.type === UIEventType.MODAL_CLOSED) &&
+    (event.type === UIEventType.MODAL_OPENED || event.type === UIEventType.MODAL_CLOSED) &&
     event.data !== undefined &&
     typeof event.data === 'object' &&
     'modalId' in event.data
@@ -309,6 +321,6 @@ export function createUIEvent<T extends UIEventType>(
     type,
     timestamp: Date.now(),
     source,
-    data
+    data,
   };
-} 
+}

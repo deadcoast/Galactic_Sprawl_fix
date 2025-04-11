@@ -99,7 +99,7 @@ export function MiningMap({
   return (
     <div className="relative flex-1">
       {/* Zoom Controls */}
-      <div className="absolute right-4 top-4 z-10 flex space-x-2">
+      <div className="absolute top-4 right-4 z-10 flex space-x-2">
         <button
           onClick={() => handleZoom(0.1)}
           className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
@@ -167,10 +167,10 @@ export function MiningMap({
                     } ${isSelected ? `ring-2 ${color} ring-offset-2 ring-offset-gray-900` : ''}`}
                   >
                     <div
-                      className={`absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full ${background}`}
+                      className={`absolute top-1/2 left-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full ${background}`}
                     >
                       <div
-                        className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full ${background} flex items-center justify-center`}
+                        className={`absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full ${background} flex items-center justify-center`}
                       >
                         <Database className={color} />
                       </div>
@@ -178,19 +178,19 @@ export function MiningMap({
 
                     {/* Depletion Warning */}
                     {resource.depletion > 0.5 && (
-                      <AlertTriangle className="absolute -right-1 -top-1 h-4 w-4 text-yellow-500" />
+                      <AlertTriangle className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500" />
                     )}
 
                     {/* Assigned Ships Indicator */}
                     {assignedShips.length > 0 && (
-                      <div className="absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
+                      <div className="absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
                         {assignedShips.length}
                       </div>
                     )}
                   </div>
 
                   {/* Resource Label */}
-                  <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+                  <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
                     <div className={`${color} text-sm font-medium`}>{resource.name}</div>
                     <div className={`${color.replace('400', '300')}/70 text-xs`}>
                       {Math.round(resource.abundance * 100)}% • {resource.distance}ly

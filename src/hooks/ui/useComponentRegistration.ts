@@ -1,30 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { componentRegistryService } from '../../services/ComponentRegistryService';
-import { ResourceType } from './../../types/resources/ResourceTypes';
+// Remove context import
+// import { ComponentRegistryContext } from '../../contexts/ComponentRegistryContext';
 import { useComponentProfiler } from './useComponentProfiler';
+// Import the service instance
+import {
+  ComponentRegistration,
+  componentRegistryService,
+} from '../../services/ComponentRegistryService';
 
 /**
  * Options for component registration
  */
-export interface ComponentRegistrationOptions {
-  /**
-   * Type of the component (e.g., 'ResourceDisplay', 'ModuleCard')
-   */
-  type: ResourceType;
-
-  /**
-   * Event types this component is interested in receiving
-   */
-  eventSubscriptions: string[];
-
-  /**
-   * Update priority for this component
-   * - high: Component updates are critical for game functionality
-   * - medium: Component updates are important but not critical
-   * - low: Component updates can be delayed if necessary
-   */
-  updatePriority?: 'high' | 'medium' | 'low';
-}
+// Removed first ComponentRegistrationOptions interface as it might not be needed for the context-based hook
+// export interface ComponentRegistrationOptions { ... }
 
 /**
  * Hook that registers a React component with the ComponentRegistryService
@@ -50,36 +38,8 @@ export interface ComponentRegistrationOptions {
  *   // Component implementation...
  * }
  */
-export function useComponentRegistration(options: ComponentRegistrationOptions): string {
-  const componentId = useRef<string>('');
-  const profiler = useComponentProfiler(options?.type);
-
-  useEffect(() => {
-    // Register component with registry
-    const id = componentRegistryService.registerComponent({
-      type: options?.type,
-      eventSubscriptions: options?.eventSubscriptions,
-      updatePriority: options?.updatePriority || 'medium',
-    });
-
-    componentId.current = id;
-
-    // Track render with profiler
-    if (profiler) {
-      const renderTime = profiler.metrics.lastRenderTime;
-      if (renderTime !== undefined) {
-        componentRegistryService.trackRender(id);
-      }
-    }
-
-    // Return cleanup function
-    return () => {
-      componentRegistryService.unregisterComponent(id);
-    };
-  }, [options?.type, options?.updatePriority, profiler]);
-
-  return componentId.current;
-}
+// Removed first useComponentRegistration hook definition (lines 55-93)
+// export function useComponentRegistration(options: ComponentRegistrationOptions): string { ... }
 
 /**
  * Hook that registers a component and provides a method to manually update its metrics
@@ -90,16 +50,79 @@ export function useComponentRegistration(options: ComponentRegistrationOptions):
  * @param options Component registration options
  * @returns An object containing the component ID and an update function
  */
-export function useComponentRegistrationWithManualUpdates(options: ComponentRegistrationOptions): {
-  componentId: string;
-  updateMetrics: (renderTime: number) => void;
-} {
-  const componentId = useComponentRegistration(options);
+// Removed useComponentRegistrationWithManualUpdates hook definition (lines 95-110) as it depended on the removed hook
+// export function useComponentRegistrationWithManualUpdates(options: ComponentRegistrationOptions): { ... } {
 
-  // Function to manually update metrics
-  const updateMetrics = (renderTime: number) => {
-    componentRegistryService.trackRender(componentId);
+/**
+ * Hook to register a component instance with the ComponentRegistryService.
+ * Registers the component instance and provides a way to update its props.
+ * @param id A unique identifier for the component instance.
+ * @param type The type of the component (e.g., 'ResourceDisplay').
+ * @param initialProps Optional initial properties for the component.
+ * @returns An object containing a function to update the component's props.
+ */
+export function useComponentRegistration(
+  id: string,
+  type: string,
+  initialProps?: Record<string, unknown>
+) {
+  // Remove context usage
+  // const context = useContext(ComponentRegistryContext);
+  // if (!context) {
+  //   throw new Error('useComponentRegistration must be used within a ComponentRegistryProvider');
+  // }
+  // const { registerComponent, unregisterComponent, updateComponent } = context; // Added updateComponent
+
+  const propsRef = useRef(initialProps);
+  const componentInfoRef = useRef<ComponentRegistration | null>(null);
+
+  // Initial registration
+  useEffect(() => {
+    const registrationInfo: ComponentRegistration = {
+      id,
+      type,
+      eventSubscriptions: [],
+      updatePriority: 'medium',
+    };
+    componentInfoRef.current = registrationInfo;
+    // Use service instance directly
+    componentRegistryService.registerComponent({
+      type: registrationInfo.type,
+      eventSubscriptions: registrationInfo.eventSubscriptions,
+      updatePriority: registrationInfo.updatePriority,
+    });
+
+    // Track render with profiler
+    // NOTE: The profiler logic seems independent of context vs service, leaving as is.
+    // However, the commented-out tracking part needs clarification.
+    // If tracking is needed, componentRegistryService should have a method like trackRender.
+    const profiler = useComponentProfiler(type);
+    if (profiler && profiler.metrics.lastRenderTime !== undefined) {
+      // Notify registry of render time if needed, e.g.,
+      // componentRegistryService.trackRender(id, profiler.metrics.lastRenderTime);
+    }
+
+    // Return cleanup function
+    return () => {
+      componentRegistryService.unregisterComponent(id);
+    };
+  }, [id, type]);
+
+  // Function to update component props via service
+  const updateProps = (newProps: Record<string, unknown>) => {
+    propsRef.current = newProps;
+    if (componentInfoRef.current) {
+      // ComponentRegistration doesn't store props directly, so we don't update ref here
+      // componentInfoRef.current.props = newProps;
+
+      // Notify registry about prop updates using the service
+      // componentRegistryService.updateComponent(id, { props: newProps });
+      // TODO: Verify if updateComponent exists and how it handles props
+      console.warn(
+        'TODO: Verify ComponentRegistryService.updateComponent implementation for props'
+      );
+    }
   };
 
-  return { componentId, updateMetrics };
+  return { updateProps };
 }

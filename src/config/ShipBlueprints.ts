@@ -53,7 +53,7 @@ export interface ShipBlueprint {
 export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
   // Tier 1 Ships
   {
-    shipClass: 'spitflare',
+    shipClass: PlayerShipClass.SPITFLARE,
     name: 'Spitflare',
     description: 'Fast and agile combat ship, perfect for early game skirmishes',
     category: 'war',
@@ -82,7 +82,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     ],
   },
   {
-    shipClass: 'void-dredger-miner',
+    shipClass: PlayerShipClass.VOID_DREDGER_MINER,
     name: 'Void Dredger',
     description: 'Basic mining vessel with decent cargo capacity',
     category: 'mining',
@@ -105,7 +105,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     },
   },
   {
-    shipClass: 'andromeda-cutter',
+    shipClass: PlayerShipClass.ANDROMEDA_CUTTER,
     name: 'Andromeda Cutter',
     description: 'Light reconnaissance vessel with advanced scanning capabilities',
     category: 'recon',
@@ -129,7 +129,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
 
   // Tier 2 Ships
   {
-    shipClass: 'star-schooner',
+    shipClass: PlayerShipClass.STAR_SCHOONER,
     name: 'Star Schooner',
     description: 'Advanced reconnaissance ship with stealth capabilities',
     category: 'recon',
@@ -167,7 +167,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     ],
   },
   {
-    shipClass: 'orion-frigate',
+    shipClass: PlayerShipClass.ORION_FRIGATE,
     name: 'Orion Frigate',
     description: 'Versatile combat vessel with balanced offensive and defensive capabilities',
     category: 'war',
@@ -212,7 +212,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
 
   // Tier 3 Ships
   {
-    shipClass: 'harbringer-galleon',
+    shipClass: PlayerShipClass.HARBRINGER_GALLEON,
     name: 'Harbringer Galleon',
     description: 'Massive warship with devastating firepower',
     category: 'war',
@@ -264,7 +264,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     ],
   },
   {
-    shipClass: 'midway-carrier',
+    shipClass: PlayerShipClass.MIDWAY_CARRIER,
     name: 'Midway Carrier',
     description: 'Capital ship capable of deploying fighter squadrons',
     category: 'war',

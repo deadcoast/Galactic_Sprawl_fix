@@ -178,7 +178,7 @@ export interface CombatMechanicsSystem {
  */
 export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
   private static instance: CombatMechanicsSystemImpl | null = null;
-  
+
   private combatUnits: Map<string, CombatUnit> = new Map();
   private projectiles: Map<string, Projectile> = new Map();
   private activeEffects: Map<string, CombatEffect> = new Map();
@@ -203,7 +203,7 @@ export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
   private constructor(detectionSystem?: ObjectDetectionSystem) {
     this.detectionSystem = detectionSystem;
   }
-  
+
   /**
    * Get the singleton instance of CombatMechanicsSystemImpl
    */

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { EventBus } from '../../lib/events/EventBus';
+import { useEffect, useRef } from 'react';
+// import { EventBus } from '../../lib/events/EventBus'; // Remove local EventBus import
+import { BaseEvent, eventSystem } from '../../lib/events/UnifiedEventSystem'; // Import global eventSystem and BaseEvent
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { EventType } from '../../types/events/EventTypes'; // Keep legacy EventType for now
 import { ResourceType } from '../../types/resources/ResourceTypes';
 
 // Constants for module event types
@@ -22,6 +23,8 @@ export const MODULE_EVENTS = {
   ERROR_OCCURRED: EventType.ERROR_OCCURRED,
 } as const;
 
+// Update interface to extend correct BaseEvent
+// Keep specific fields, assuming ModuleManager publishes them via global eventSystem
 interface ModuleManagerEvent extends BaseEvent {
   moduleId: string;
   moduleType: ModuleType;
@@ -31,47 +34,57 @@ interface ModuleManagerEvent extends BaseEvent {
   [key: string]: unknown;
 }
 
-// Get the global event bus instance
-const eventBus = new EventBus<ModuleManagerEvent>();
+// Type guard implementation
+function isModuleManagerEvent(event: BaseEvent): event is ModuleManagerEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    typeof (event as ModuleManagerEvent).moduleId === 'string' &&
+    typeof (event as ModuleManagerEvent).moduleType === 'string'
+    // Add more specific checks if ModuleManagerEvent has unique required fields
+  );
+}
 
-// Keep track of event history
-const eventHistory: ModuleManagerEvent[] = [];
+// Remove local eventBus instance
+// const eventBus = new EventBus<ModuleManagerEvent>();
 
-// Subscribe to all event types to maintain history
-Object.values(MODULE_EVENTS).forEach(eventType => {
-  eventBus.on(eventType, (event: ModuleManagerEvent) => {
-    eventHistory.push(event);
-    // Keep history size manageable
-    if (eventHistory.length > 1000) {
-      eventHistory.shift();
-    }
-  });
-});
+// Remove eventHistory and its population logic
+// const eventHistory: ModuleManagerEvent[] = [];
+// Object.values(MODULE_EVENTS).forEach(eventType => {
+//   eventBus.on(eventType, (event: ModuleManagerEvent) => {
+//     eventHistory.push(event);
+//     if (eventHistory.length > 1000) {
+//       eventHistory.shift();
+//     }
+//   });
+// });
 
 /**
  * Hook for subscribing to module events with automatic cleanup
  */
 export function useModuleEvents(
-  eventType: EventType,
-  handler: (event: ModuleManagerEvent) => void,
+  eventType: EventType | string, // Allow string for flexibility, though enum is standard
+  handler: (event: ModuleManagerEvent) => void, // Revert handler type to ModuleManagerEvent
   options: { enabled?: boolean; deps?: React.DependencyList } = {}
 ): void {
   const { enabled = true, deps = [] } = options;
   const handlerRef = useRef(handler);
 
-  // Update handler ref when dependencies change
   useEffect(() => {
     handlerRef.current = handler;
   }, [handler, ...deps]);
 
-  // Subscribe to events with cleanup
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
-    const unsubscribe = eventBus.on(eventType, (event: ModuleManagerEvent) => {
-      handlerRef.current(event);
+    // Subscribe to the global eventSystem
+    const unsubscribe = eventSystem.subscribe(eventType as string, (event: BaseEvent) => {
+      // Use the type guard
+      if (isModuleManagerEvent(event)) {
+        handlerRef.current(event);
+      }
     });
 
     return () => {
@@ -84,34 +97,36 @@ export function useModuleEvents(
  * Hook for subscribing to multiple module events with automatic cleanup
  */
 export function useMultipleModuleEvents(
-  eventTypes: EventType[],
-  handler: (event: ModuleManagerEvent) => void,
+  eventTypes: (EventType | string)[], // Allow string array
+  handler: (event: ModuleManagerEvent) => void, // Revert handler type to ModuleManagerEvent
   options: { enabled?: boolean; deps?: React.DependencyList } = {}
 ): void {
   const { enabled = true, deps = [] } = options;
   const handlerRef = useRef(handler);
 
-  // Update handler ref when dependencies change
   useEffect(() => {
     handlerRef.current = handler;
   }, [handler, ...deps]);
 
-  // Subscribe to events with cleanup
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
     const unsubscribers = eventTypes.map(eventType =>
-      eventBus.on(eventType, (event: ModuleManagerEvent) => {
-        handlerRef.current(event);
+      // Subscribe to the global eventSystem
+      eventSystem.subscribe(eventType as string, (event: BaseEvent) => {
+        // Use the type guard
+        if (isModuleManagerEvent(event)) {
+          handlerRef.current(event);
+        }
       })
     );
 
     return () => {
       unsubscribers.forEach(unsubscribe => unsubscribe());
     };
-  }, [eventTypes, enabled]);
+  }, [JSON.stringify(eventTypes), enabled]); // Stringify array for dependency check
 }
 
 /**
@@ -181,21 +196,4 @@ export function useModuleStatus(
   useMultipleModuleEvents([MODULE_EVENTS.STATUS_CHANGED, MODULE_EVENTS.ERROR_OCCURRED], handler, {
     deps: [moduleId],
   });
-}
-
-/**
- * Hook to get module event history
- */
-export function useModuleHistory(moduleId?: string): ModuleManagerEvent[] {
-  const [history, setHistory] = useState<ModuleManagerEvent[]>([]);
-
-  useEffect(() => {
-    if (moduleId) {
-      setHistory(eventHistory.filter((event: ModuleManagerEvent) => event?.moduleId === moduleId));
-    } else {
-      setHistory([...eventHistory]);
-    }
-  }, [moduleId]);
-
-  return history;
 }

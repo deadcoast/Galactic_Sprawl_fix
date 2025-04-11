@@ -22,26 +22,26 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 // Define types for message payloads
 interface ResourceUpdatePayload {
   resourceType: ResourceType;
-  [ key: string ]: unknown;
+  [key: string]: unknown;
 }
 
 interface MiningUpdatePayload {
   shipId: string;
-  [ key: string ]: unknown;
+  [key: string]: unknown;
 }
 
 interface CombatUpdatePayload {
   type: string;
-  [ key: string ]: unknown;
+  [key: string]: unknown;
 }
 
 interface TechUpdatePayload {
   nodeId: string;
   node?: {
     category: string;
-    [ key: string ]: unknown;
+    [key: string]: unknown;
   };
-  [ key: string ]: unknown;
+  [key: string]: unknown;
 }
 
 // Type Guards
@@ -57,13 +57,19 @@ function isResourceUpdatePayload(payload: unknown): payload is ResourceUpdatePay
 
 function isMiningUpdatePayload(payload: unknown): payload is MiningUpdatePayload {
   return (
-    typeof payload === 'object' && payload !== null && 'shipId' in payload && typeof (payload as Record<string, unknown>).shipId === 'string'
+    typeof payload === 'object' &&
+    payload !== null &&
+    'shipId' in payload &&
+    typeof (payload as Record<string, unknown>).shipId === 'string'
   );
 }
 
 function isCombatUpdatePayload(payload: unknown): payload is CombatUpdatePayload {
   return (
-    typeof payload === 'object' && payload !== null && 'type' in payload && typeof (payload as Record<string, unknown>).type === 'string'
+    typeof payload === 'object' &&
+    payload !== null &&
+    'type' in payload &&
+    typeof (payload as Record<string, unknown>).type === 'string'
   );
 }
 
@@ -84,7 +90,7 @@ function isTechUpdatePayload(payload: unknown): payload is TechUpdatePayload {
       // Or allow it if partial node updates are possible?
       // For now, let's be strict:
       // console.warn("Invalid node structure in TechUpdatePayload", node);
-      // return false; 
+      // return false;
       // Or allow it if node is optional:
       return true;
     }
@@ -360,7 +366,7 @@ export function integrateWithGameSystems(): () => void {
           moduleId: 'tech-tree',
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: payload
+          data: payload,
         });
 
         // Handle different tech categories
@@ -457,10 +463,7 @@ export function integrateWithGameSystems(): () => void {
       try {
         cleanup();
       } catch (error) {
-        console.error(
-          'Error during cleanup:',
-          error instanceof Error ? error.message : error
-        );
+        console.error('Error during cleanup:', error instanceof Error ? error.message : error);
       }
     });
   };

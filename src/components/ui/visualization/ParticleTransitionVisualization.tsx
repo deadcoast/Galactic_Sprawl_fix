@@ -144,7 +144,6 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
   staggerDelay = 20,
   transitionColors = true,
   drawTrails = false,
-  trailLength = 0.3,
   renderMethod = RenderMethod.CANVAS,
   onTransitionComplete,
   onTransitionUpdate,
@@ -378,7 +377,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
         renderDomFrame(particles);
         break;
     }
-  }, [renderMethod, drawTrails, trailLength, blendMode]);
+  }, [renderMethod, drawTrails, blendMode]);
 
   // Canvas rendering
   const renderCanvasFrame = useCallback(
@@ -572,7 +571,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
   // Control buttons for the visualization
   const renderControls = useMemo(() => {
     return (
-      <div className="absolute bottom-2 right-2 flex space-x-2">
+      <div className="absolute right-2 bottom-2 flex space-x-2">
         {!isPlaying ? (
           <button
             onClick={startTransition}

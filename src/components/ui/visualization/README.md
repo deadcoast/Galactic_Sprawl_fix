@@ -47,22 +47,22 @@ import { Module } from '../../../types/modules/ModuleTypes';
 import { ModuleCard } from '../modules/ModuleCard';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
-function ModuleList({ 
-  modules, 
-  isLoading, 
-  onModuleSelect 
+function ModuleList({
+  modules,
+  isLoading,
+  onModuleSelect,
 }: {
   modules: Module[];
   isLoading: boolean;
   onModuleSelect: (moduleId: string) => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  
+
   const handleModuleClick = (moduleId: string) => {
     setSelectedId(moduleId);
     onModuleSelect(moduleId);
   };
-  
+
   return (
     <VirtualizedList
       items={modules}
@@ -73,18 +73,15 @@ function ModuleList({
       isLoading={isLoading}
       loadingPlaceholder={<LoadingSpinner />}
       emptyPlaceholder={<div className="empty-state">No modules available</div>}
-      onScroll={(scrollTop) => console.log('Scrolled to', scrollTop)}
+      onScroll={scrollTop => console.log('Scrolled to', scrollTop)}
       renderItem={(module, index, style) => (
-        <div 
-          key={module.id} 
+        <div
+          key={module.id}
           style={style}
           className={`module-item ${module.id === selectedId ? 'selected' : ''}`}
           onClick={() => handleModuleClick(module.id)}
         >
-          <ModuleCard 
-            module={module}
-            isSelected={module.id === selectedId}
-          />
+          <ModuleCard module={module} isSelected={module.id === selectedId} />
         </div>
       )}
     />
@@ -130,19 +127,15 @@ interface ResourceListProps {
   onResourceClick?: (resourceId: string) => void;
 }
 
-function ResourceVirtualizedList({ 
-  resources, 
-  height = 400, 
-  onResourceClick 
-}: ResourceListProps) {
+function ResourceVirtualizedList({ resources, height = 400, onResourceClick }: ResourceListProps) {
   return (
     <VirtualizedList
       items={resources}
       itemHeight={60}
       height={height}
       renderItem={(resource, index, style) => (
-        <div 
-          key={resource.id} 
+        <div
+          key={resource.id}
           style={style}
           className="resource-item"
           onClick={() => onResourceClick?.(resource.id)}
@@ -152,8 +145,8 @@ function ResourceVirtualizedList({
             {resource.amount} / {resource.capacity}
           </div>
           <div className="resource-bar">
-            <div 
-              className="resource-bar-fill" 
+            <div
+              className="resource-bar-fill"
               style={{ width: `${(resource.amount / resource.capacity) * 100}%` }}
             />
           </div>
@@ -164,4 +157,4 @@ function ResourceVirtualizedList({
 }
 
 export default memo(ResourceVirtualizedList);
-``` 
+```

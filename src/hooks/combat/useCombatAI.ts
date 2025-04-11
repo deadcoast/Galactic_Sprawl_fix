@@ -24,7 +24,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     damageTaken: 0,
     killCount: 0,
   });
-  
+
   // Add state for current formation
   const [currentFormation, setCurrentFormation] = useState<UnitFormation>({
     type: 'balanced',
@@ -226,14 +226,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       setCurrentFormation({
         type: 'defensive',
         spacing: 50, // Tighter spacing for defense
-        facing: 0,   // Face toward enemies
+        facing: 0, // Face toward enemies
       });
     } else if (allyCount > enemyCount * 1.5) {
       // Offensive formation when we outnumber enemies
       setCurrentFormation({
         type: 'offensive',
         spacing: 150, // Wider spacing for attack
-        facing: 0,    // Face toward enemies
+        facing: 0, // Face toward enemies
       });
     } else {
       // Balanced formation for even engagements
@@ -246,10 +246,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   };
 
   // Expose function to manually set formation
-  const setFormation = (formationType: 'offensive' | 'defensive' | 'balanced', spacing?: number) => {
+  const setFormation = (
+    formationType: 'offensive' | 'defensive' | 'balanced',
+    spacing?: number
+  ) => {
     setCurrentFormation({
       type: formationType,
-      spacing: spacing || (formationType === 'offensive' ? 150 : formationType === 'defensive' ? 50 : 100),
+      spacing:
+        spacing || (formationType === 'offensive' ? 150 : formationType === 'defensive' ? 50 : 100),
       facing: 0,
     });
   };
@@ -258,6 +262,6 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     status,
     performance,
     currentFormation,
-    setFormation
+    setFormation,
   };
 }

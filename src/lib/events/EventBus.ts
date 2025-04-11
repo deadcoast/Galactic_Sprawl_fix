@@ -191,7 +191,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
 
   // Map to store pattern-based subscriptions (using regular expressions)
   private patternSubscriptions: Map<string, Set<Subscription<T>>> = new Map();
-  
+
   // Store filters for advanced filtering
   private eventFilters: Map<SubscriptionId, (event: T) => boolean> = new Map();
 
@@ -380,7 +380,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     // Also check pattern subscriptions
     for (const [pattern, subscriptions] of this.patternSubscriptions.entries()) {
       const regex = new RegExp(pattern);
-      
+
       // If event type matches pattern, notify all matching subscribers
       if (regex.test(event.type)) {
         for (const subscription of subscriptions) {
@@ -720,10 +720,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   ): () => void {
     const patternString = pattern instanceof RegExp ? pattern.source : pattern;
     const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
-    
+
     // Create a unique ID for this subscription - following ID generation pattern
     const subscriptionId = this.generateSubscriptionId();
-    
+
     // Create subscription object - following context subscription object pattern
     const subscription: Subscription<T> = {
       id: subscriptionId,
@@ -733,17 +733,17 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       source: options.source,
       createdAt: Date.now(),
     };
-    
+
     // Ensure we have a set for this pattern
     if (!this.patternSubscriptions.has(patternString)) {
       this.patternSubscriptions.set(patternString, new Set());
     }
-    
+
     // Add subscription to the pattern map
     this.patternSubscriptions.get(patternString)?.add(subscription);
-    
+
     // When emitting events, we'll check if the event type matches unknown patterns
-    
+
     return () => {
       // Find and remove the pattern subscription - following cleanup pattern
       const subscriptions = this.patternSubscriptions.get(patternString);
@@ -768,12 +768,16 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     options: SubscriptionOptions = {}
   ): () => void {
     // Create standard subscription first - reusing existing functionality
-    return this.subscribe(eventType, (event: T) => {
-          // Only call listener if filter passes
-          if (filter(event)) {
-            listener(event);
-          }
-        }, options);
+    return this.subscribe(
+      eventType,
+      (event: T) => {
+        // Only call listener if filter passes
+        if (filter(event)) {
+          listener(event);
+        }
+      },
+      options
+    );
   }
 
   /**
@@ -786,10 +790,8 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     options: SubscriptionOptions = {}
   ): () => void {
     // Create subscriptions for each event type
-    const unsubscribers = eventTypes.map(eventType => 
-      this.subscribe(eventType, listener, options)
-    );
-    
+    const unsubscribers = eventTypes.map(eventType => this.subscribe(eventType, listener, options));
+
     // Return a function that unsubscribes from all
     return () => {
       unsubscribers.forEach(unsubscribe => unsubscribe());
@@ -809,26 +811,30 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   ): () => void {
     let timeoutId: NodeJS.Timeout | null = null;
     let lastEvent: T | null = null;
-    
+
     // Create a subscription that debounces the listener
-    const unsubscribe = this.subscribe(eventType, (event: T) => {
-      lastEvent = event;
-      
-      // Clear existing timeout if there is one
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-      }
-      
-      // Set a new timeout
-      timeoutId = setTimeout(() => {
-        if (lastEvent) {
-          listener(lastEvent);
+    const unsubscribe = this.subscribe(
+      eventType,
+      (event: T) => {
+        lastEvent = event;
+
+        // Clear existing timeout if there is one
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
         }
-        timeoutId = null;
-        lastEvent = null;
-      }, debounceMs);
-    }, options);
-    
+
+        // Set a new timeout
+        timeoutId = setTimeout(() => {
+          if (lastEvent) {
+            listener(lastEvent);
+          }
+          timeoutId = null;
+          lastEvent = null;
+        }, debounceMs);
+      },
+      options
+    );
+
     // Return enhanced unsubscribe that also clears the timeout
     return () => {
       if (timeoutId !== null) {

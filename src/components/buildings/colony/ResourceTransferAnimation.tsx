@@ -146,7 +146,7 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
               </div>
               {/* Direction Arrow */}
               <div
-                className="absolute -right-6 top-1/2 -translate-y-1/2"
+                className="absolute top-1/2 -right-6 -translate-y-1/2"
                 style={{ transform: `rotate(${angle}deg)` }}
               >
                 <ArrowRight className="h-4 w-4 text-amber-400/70" />

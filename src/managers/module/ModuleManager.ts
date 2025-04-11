@@ -1,6 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
   ModularBuilding,
@@ -47,7 +45,6 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
   private modules: Map<string, BaseModule>;
   private buildings: Map<string, ModularBuilding>;
   private configs: Map<ModuleType, ModuleConfig>;
-  private eventEmitter: BaseTypedEventEmitter<ModuleManagerEvent>;
 
   constructor() {
     super('ModuleManager');
@@ -55,7 +52,6 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     this.modules = new Map();
     this.buildings = new Map();
     this.configs = new Map();
-    this.eventEmitter = new BaseTypedEventEmitter<ModuleManagerEvent>();
   }
 
   /**
@@ -115,7 +111,7 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     // This could involve updating module progress, checking status, etc.
 
     // Publish module stats update
-    this.publishEvent({
+    this.publish({
       type: EventType.STATUS_CHANGED,
       moduleId: this.id,
       moduleType: 'resource-manager' as ModuleType,
@@ -166,7 +162,7 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     this.configs.set(config.type, config);
 
     // Emit config registration event
-    this.publishEvent({
+    this.publish({
       type: EventType.SYSTEM_STARTUP, // Use existing event type for compatibility
       moduleId: this.id,
       moduleType: 'module-manager' as ModuleType, // Cast for type compatibility
@@ -204,17 +200,8 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     moduleStatusManager.initializeModuleStatus(module.id);
 
     // Emit creation event using our event bus
-    this.publishEvent({
+    this.publish({
       type: EventType.MODULE_CREATED,
-      moduleId: module.id,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: { position, config },
-    });
-
-    // Also emit to legacy event bus for backward compatibility
-    moduleEventBus.emit({
-      type: 'MODULE_CREATED',
       moduleId: module.id,
       moduleType: module.type,
       timestamp: Date.now(),
@@ -244,17 +231,8 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     building.modules.push(module);
 
     // Emit attachment event using our event bus
-    this.publishEvent({
+    this.publish({
       type: EventType.MODULE_ATTACHED,
-      moduleId: module.id,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: { buildingId, attachmentPointId },
-    });
-
-    // Also emit to legacy event bus for backward compatibility
-    moduleEventBus.emit({
-      type: 'MODULE_ATTACHED',
       moduleId: module.id,
       moduleType: module.type,
       timestamp: Date.now(),
@@ -277,17 +255,8 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     module.level += 1;
 
     // Emit upgrade event using our event bus
-    this.publishEvent({
+    this.publish({
       type: EventType.MODULE_UPGRADED,
-      moduleId: module.id,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: { newLevel: module.level },
-    });
-
-    // Also emit to legacy event bus for backward compatibility
-    moduleEventBus.emit({
-      type: 'MODULE_UPGRADED',
       moduleId: module.id,
       moduleType: module.type,
       timestamp: Date.now(),
@@ -315,17 +284,8 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
       const eventType = active ? EventType.MODULE_ACTIVATED : EventType.MODULE_DEACTIVATED;
 
       // Emit activation/deactivation event using our event bus
-      this.publishEvent({
+      this.publish({
         type: eventType,
-        moduleId: module.id,
-        moduleType: module.type,
-        timestamp: Date.now(),
-        data: { active },
-      });
-
-      // Also emit to legacy event bus for backward compatibility
-      moduleEventBus.emit({
-        type: active ? 'MODULE_ACTIVATED' : 'MODULE_DEACTIVATED',
         moduleId: module.id,
         moduleType: module.type,
         timestamp: Date.now(),
@@ -364,7 +324,7 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     this.buildings.set(building.id, building);
 
     // Emit building registration event using a standard event type
-    this.publishEvent({
+    this.publish({
       type: EventType.SYSTEM_STARTUP, // Using a standard event type
       moduleId: building.id,
       moduleType: 'building' as ModuleType, // Cast for type compatibility

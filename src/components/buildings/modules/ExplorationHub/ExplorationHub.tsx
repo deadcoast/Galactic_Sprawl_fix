@@ -31,7 +31,7 @@ import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
-import { ReconShipStatus } from './ReconShipStatus';
+import { ShipStatusMonitor } from './ShipStatusMonitor';
 
 interface Anomaly {
   id: string;
@@ -365,14 +365,14 @@ const SectorComponent = memo(
 
               {/* Scanning Ship Indicator */}
               {scanningShip && (
-                <div className="absolute -right-2 -top-2">
+                <div className="absolute -top-2 -right-2">
                   <Rocket className="h-5 w-5 animate-pulse text-teal-400" />
                 </div>
               )}
             </div>
 
             {/* Sector Label */}
-            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+            <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
               <div className="font-medium text-teal-200">{sector.name}</div>
               {sector.status !== 'unmapped' && (
                 <div className="text-sm text-teal-300/70">
@@ -466,9 +466,7 @@ export function ExplorationHub() {
   });
 
   // Memoize complex calculations
-  const activeShips = useMemo(() => {
-    return ships.filter(ship => ship.status !== 'idle');
-  }, [ships]);
+  const activeShips: ReconShip[] = ships;
 
   // Initialize ReconShipManager
   const reconManager = useMemo(() => new ReconShipManagerImpl(), []);
@@ -909,11 +907,11 @@ export function ExplorationHub() {
               <input
                 type="text"
                 placeholder="Search sectors..."
-                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
             </div>
 
             <div className="flex space-x-2">
@@ -1196,28 +1194,7 @@ export function ExplorationHub() {
               onClose={() => setSelectedSector(null)}
             />
             <div className="mt-6">
-              <ReconShipStatus
-                ships={activeShips.map(ship => {
-                  let displayStatus: ReconShipStatusType;
-                  if (ship.status === 'assigned' || ship.status === 'scanning') {
-                    displayStatus = 'scanning';
-                  } else if (ship.status === 'returning') {
-                    displayStatus = 'returning';
-                  } else {
-                    displayStatus = 'idle';
-                  }
-
-                  return {
-                    id: ship.id,
-                    name: ship.name,
-                    status: displayStatus,
-                    targetSector: ship.targetSector,
-                    experience: ship.experience,
-                    specialization: ship.specialization,
-                    efficiency: ship.efficiency,
-                  };
-                })}
-              />
+              <ShipStatusMonitor shipIds={activeShips.map(ship => ship.id)} />
             </div>
           </>
         ) : (

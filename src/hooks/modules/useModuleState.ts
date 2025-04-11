@@ -14,17 +14,17 @@ import { useCallback, useMemo } from 'react';
 import { ModuleActionType, useModuleContext, useModules } from '../../contexts/ModuleContext';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
-    BaseModule,
-    BuildingType,
-    ModularBuilding,
-    ModuleType,
+  BaseModule,
+  BuildingType,
+  ModularBuilding,
+  ModuleType,
 } from '../../types/buildings/ModuleTypes';
 import {
-    HookPerformanceConfig,
-    defaultPerformanceConfig,
-    measureComputationTime,
-    measureSelectorTime,
-    trackHookRender,
+  HookPerformanceConfig,
+  defaultPerformanceConfig,
+  measureComputationTime,
+  measureSelectorTime,
+  trackHookRender,
 } from '../../utils/performance/hookPerformanceMonitor';
 
 // Performance monitoring configuration

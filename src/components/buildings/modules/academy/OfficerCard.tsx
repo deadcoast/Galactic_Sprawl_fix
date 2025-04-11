@@ -181,7 +181,7 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
         )}
 
         {officer.status === 'assigned' && (
-          <div className="absolute right-2 top-2 h-3 w-3 animate-pulse rounded-full bg-green-500" />
+          <div className="absolute top-2 right-2 h-3 w-3 animate-pulse rounded-full bg-green-500" />
         )}
       </div>
 
@@ -225,7 +225,7 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
 
       {/* Training Progress */}
       {officer.status === 'training' && officer.trainingProgress !== undefined && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+        <div className="absolute right-0 bottom-0 left-0 h-1 bg-gray-700">
           <div
             className="h-full bg-violet-500 transition-all"
             style={{ width: `${officer.trainingProgress * 100}%` }}

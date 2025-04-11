@@ -60,14 +60,14 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
           </div>
 
           <p className="mb-6 text-gray-600">
-            We're sorry, but something went wrong. Our team has been notified and is working to fix
-            the issue.
+            We encountered an error. Please try refreshing the page or contact support if the
+            problem persists.
           </p>
 
           {process.env.NODE_ENV !== 'production' && (
             <div className="mb-6 rounded border border-gray-200 bg-gray-50 p-4">
               <h3 className="mb-2 font-medium text-gray-800">Error Details:</h3>
-              <pre className="whitespace-pre-wrap break-all text-sm text-red-600">
+              <pre className="text-sm break-all whitespace-pre-wrap text-red-600">
                 {error.message}
               </pre>
               {error.stack && (
@@ -75,7 +75,7 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
                   <summary className="cursor-pointer text-sm font-medium text-gray-600">
                     Stack trace
                   </summary>
-                  <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-gray-600">
+                  <pre className="mt-2 text-xs break-all whitespace-pre-wrap text-gray-600">
                     {error.stack}
                   </pre>
                 </details>

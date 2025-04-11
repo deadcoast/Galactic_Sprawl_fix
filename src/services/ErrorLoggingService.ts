@@ -111,8 +111,8 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
       this.metadata.metrics = {};
     }
     const { metrics } = this.metadata;
-    metrics[ `errors_${type}` ] = (metrics[ `errors_${type}` ] ?? 0) + 1;
-    metrics[ `errors_${severity}` ] = (metrics[ `errors_${severity}` ] ?? 0) + 1;
+    metrics[`errors_${type}`] = (metrics[`errors_${type}`] ?? 0) + 1;
+    metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console in development
@@ -133,7 +133,7 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
       this.metadata.metrics = {};
     }
     const { metrics } = this.metadata;
-    metrics[ 'warnings_logged' ] = (metrics[ 'warnings_logged' ] ?? 0) + 1;
+    metrics['warnings_logged'] = (metrics['warnings_logged'] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console
@@ -152,7 +152,7 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
       this.metadata.metrics = {};
     }
     const { metrics } = this.metadata;
-    metrics[ 'info_logged' ] = (metrics[ 'info_logged' ] ?? 0) + 1;
+    metrics['info_logged'] = (metrics['info_logged'] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console
@@ -176,7 +176,7 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
       this.metadata.metrics = {};
     }
     const { metrics } = this.metadata;
-    metrics[ 'debug_logged' ] = (metrics[ 'debug_logged' ] ?? 0) + 1;
+    metrics['debug_logged'] = (metrics['debug_logged'] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console

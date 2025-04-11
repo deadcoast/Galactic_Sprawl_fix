@@ -92,7 +92,7 @@ export interface BaseManager<TEvent extends LegacyBaseEvent = LegacyBaseEvent> {
 /**
  * Base manager implementation that all managers should extend
  */
-export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
+export abstract class AbstractBaseManager<T extends BaseEvent>
   extends Singleton<AbstractBaseManager<T>>
   implements IBaseManager
 {
@@ -104,6 +104,7 @@ export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
   protected unsubscribeFunctions: (() => void)[] = [];
   protected dependencies: string[] = [];
   protected lastUpdateTime?: number;
+  protected metadata: ManagerMetadata;
 
   /**
    * Constructor for the base manager
@@ -114,6 +115,14 @@ export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
     super();
     this.managerName = name;
     this.id = id || `${name}_${Date.now()}`;
+    this.metadata = {
+      id: this.id,
+      name: this.managerName,
+      version: '1.0.0',
+      isInitialized: false,
+      dependencies: [],
+      status: ManagerStatus.STOPPED,
+    };
   }
 
   /**
@@ -300,10 +309,37 @@ export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
   }
 
   /**
-   * Publish an event
+   * Subscribe to an event.
+   * Tracks the subscription for automatic cleanup on dispose.
+   * @param eventType The event type string (or EventType enum value)
+   * @param handler The function to call when the event is published
+   * @returns An unsubscribe function
    */
-  protected publish<E extends BaseEvent>(event: E): void {
-    eventSystem.publish(event);
+  protected subscribe<E extends T = T>(eventType: string, handler: (event: E) => void): () => void {
+    // Use global eventSystem
+    const unsubscribe = eventSystem.subscribe(eventType, handler as (event: BaseEvent) => void);
+    this.unsubscribeFunctions.push(unsubscribe);
+    // Return a function that both unsubscribes and removes from tracking
+    return () => {
+      unsubscribe();
+      this.unsubscribeFunctions = this.unsubscribeFunctions.filter(fn => fn !== unsubscribe);
+    };
+  }
+
+  /**
+   * Publish an event.
+   * @param event The event object to publish
+   */
+  protected publish<E extends T = T>(event: E): void {
+    // Use global eventSystem
+    // Add required base fields if eventSystem expects them or for consistency
+    const fullEvent: BaseEvent & E = {
+      moduleId: this.id,
+      moduleType: 'system' as any, // HACK: Need ModuleType import from buildings
+      timestamp: Date.now(),
+      ...event,
+    };
+    eventSystem.publish(fullEvent);
   }
 
   /**
@@ -313,23 +349,16 @@ export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
     // Convert legacy event to new format
     this.publish({
       ...event,
-    });
+      // Ensure BaseEvent fields are present
+      type: event.type as EventType, // Assume string matches EventType enum value
+      moduleId: event.moduleId || this.id, // Use event moduleId or manager id
+      moduleType: 'system' as any, // HACK: Need ModuleType import from buildings
+      timestamp: event.timestamp || Date.now(),
+    } as T); // Cast to EventMap generic type
   }
 
   /**
    * Subscribe to an event
-   */
-  protected subscribe<E extends BaseEvent>(
-    eventType: string,
-    handler: (event: E) => void
-  ): () => void {
-    const unsubscribe = eventSystem.subscribe(eventType, handler);
-    this.unsubscribeFunctions.push(unsubscribe);
-    return unsubscribe;
-  }
-
-  /**
-   * Legacy method for subscribing to events (for backward compatibility)
    */
   public subscribeToEvent(
     eventType: EventType,

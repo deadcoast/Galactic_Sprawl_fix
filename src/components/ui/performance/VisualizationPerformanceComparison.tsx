@@ -292,7 +292,8 @@ const VisualizationPerformanceComparison: React.FC<VisualizationPerformanceCompa
               <li>For complex simulations, throttled rendering provides the biggest benefit</li>
               <li>Memoized accessors help most with frequent DOM updates</li>
               <li>
-                Batched DOM updates are most effective when munknownnown attributes change simultaneously
+                Batched DOM updates are most effective when munknownnown attributes change
+                simultaneously
               </li>
             </ul>
           </div>

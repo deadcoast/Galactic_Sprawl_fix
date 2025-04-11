@@ -8,4 +8,4 @@ declare global {
     // @ts-expect-error - interface is used to extend Vitest matchers
     interface AsymmetricMatchersContaining extends TestingLibraryMatchers<unknown, void> {}
   }
-} 
+}

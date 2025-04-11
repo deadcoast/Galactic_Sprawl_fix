@@ -305,7 +305,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Render line chart
    */
   private renderLineChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const {ctx} = this;
+    const { ctx } = this;
     if (!ctx) {
       return;
     }
@@ -414,7 +414,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Render scatter chart
    */
   private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const {ctx} = this;
+    const { ctx } = this;
     if (!ctx) {
       return;
     }
@@ -816,7 +816,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Render axes for charts
    */
   private renderAxes(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const {ctx} = this;
+    const { ctx } = this;
     if (!ctx) {
       return;
     }
@@ -971,7 +971,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Draw grid lines
    */
   private drawGrid(scales: ChartScales, chartArea: ChartArea, options: ChartOptions): void {
-    const {ctx} = this;
+    const { ctx } = this;
     if (!ctx) {
       return;
     }

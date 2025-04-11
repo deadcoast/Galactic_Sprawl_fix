@@ -6,29 +6,40 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
  * in combat scenarios.
  */
 
+// Import Base Class
 import {
-    AnomalyHazardEffect,
-    DamageHazardEffect,
-    FieldHazardEffect,
-    HazardEffectType,
-    HazardGenerationConfig,
-    MovingHazard,
-    SplittingHazard,
-    WeatherHazardEffect,
+  AnomalyHazardEffect,
+  DamageHazardEffect,
+  FieldHazardEffect,
+  HazardEffectType,
+  HazardGenerationConfig,
+  MovingHazard,
+  SplittingHazard,
+  WeatherHazardEffect,
 } from '../../effects/types_effects/EnvironmentalHazardEffects';
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+// Remove eventSystem import
+// import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
+// Remove old event type imports
+// import {
+//     EventType,
+//     HazardCreatedEventData,
+//     HazardRemovedEventData
+// } from '../../types/events/EventTypes';
+// Import new event types
 import {
-    EventType,
-    HazardCreatedEventData,
-    HazardRemovedEventData
-} from '../../types/events/EventTypes';
+  EnvironmentalHazardEventType,
+  EnvironmentalHazardManagerEvents,
+} from '../../types/events/EnvironmentalHazardEvents';
 
 /**
  * Manager class for environmental hazards in combat
  */
-export class EnvironmentalHazardManager {
-  private static instance: EnvironmentalHazardManager;
+// Extend Base Class
+export class EnvironmentalHazardManager extends BaseTypedEventEmitter<EnvironmentalHazardManagerEvents> {
+  // Remove static instance field
+  // private static instance: EnvironmentalHazardManager;
 
   // Store active hazards with their complete data
   private hazards: Map<string, HazardEffectType> = new Map();
@@ -42,17 +53,9 @@ export class EnvironmentalHazardManager {
   // Track hazard lifecycle timers
   private hazardTimers: Map<string, number> = new Map();
 
-  private constructor() {
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  public static getInstance(): EnvironmentalHazardManager {
-    if (!EnvironmentalHazardManager.instance) {
-      EnvironmentalHazardManager.instance = new EnvironmentalHazardManager();
-    }
-    return EnvironmentalHazardManager.instance;
+  // Change constructor to protected
+  protected constructor() {
+    super(); // Add super call
   }
 
   /**
@@ -245,18 +248,18 @@ export class EnvironmentalHazardManager {
     // Set up lifecycle management
     this.setupHazardLifecycle(hazardId, hazard);
 
-    // Emit creation event using eventSystem
-    const eventData: HazardCreatedEventData = {
+    // Emit creation event using this.emit
+    this.emit(EnvironmentalHazardEventType.HAZARD_CREATED, {
       hazardId,
       hazardType: hazard.type,
       position,
-    };
-    eventSystem.publish({
-      type: EventType.HAZARD_CREATED,
-      managerId: 'EnvironmentalHazardManager',
-      timestamp: Date.now(),
-      data: eventData,
     });
+    // eventSystem.publish({
+    //   type: EventType.HAZARD_CREATED,
+    //   managerId: 'EnvironmentalHazardManager',
+    //   timestamp: Date.now(),
+    //   data: eventData,
+    // });
 
     return hazardId;
   }
@@ -388,14 +391,14 @@ export class EnvironmentalHazardManager {
     this.movingHazards.delete(hazardId);
     this.splittingHazards.delete(hazardId);
 
-    // Emit removal event using eventSystem
-    const eventData: HazardRemovedEventData = { hazardId };
-    eventSystem.publish({
-      type: EventType.HAZARD_REMOVED,
-      managerId: 'EnvironmentalHazardManager',
-      timestamp: Date.now(),
-      data: eventData,
-    });
+    // Emit removal event using this.emit
+    this.emit(EnvironmentalHazardEventType.HAZARD_REMOVED, { hazardId });
+    // eventSystem.publish({
+    //   type: EventType.HAZARD_REMOVED,
+    //   managerId: 'EnvironmentalHazardManager',
+    //   timestamp: Date.now(),
+    //   data: eventData,
+    // });
   }
 
   /**

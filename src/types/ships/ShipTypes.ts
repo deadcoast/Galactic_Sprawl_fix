@@ -55,10 +55,4 @@ export type ShipStatus =
 /**
  * Type alias for ship categories/classes used for differentiation
  */
-export type ShipCategory =
-  | 'scout'
-  | 'fighter'
-  | 'cruiser'
-  | 'battleship'
-  | 'carrier'
-  | 'transport';
+export type ShipCategory = 'scout' | 'fighter' | 'cruiser' | 'battleship' | 'carrier' | 'transport';

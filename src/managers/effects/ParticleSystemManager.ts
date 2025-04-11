@@ -1,13 +1,13 @@
 import {
-    AdditiveBlending,
-    BufferAttribute,
-    BufferGeometry,
-    Color,
-    PerspectiveCamera,
-    Points,
-    Scene,
-    ShaderMaterial,
-    WebGLRenderer,
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  PerspectiveCamera,
+  Points,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
 } from 'three';
 import { EntityPool, PooledEntity } from '../../lib/optimization/EntityPool';
 import { Position } from '../../types/core/GameTypes';

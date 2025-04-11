@@ -1,6 +1,6 @@
 /**
  * @context: type-definitions, testing-library
- * 
+ *
  * Test utility type definitions for extending Jest and testing-library
  * This provides TypeScript declarations for custom matchers without requiring additional dependencies
  */
@@ -42,4 +42,4 @@ declare global {
 }
 
 // Export an empty object to make this a module
-export {}; 
+export {};

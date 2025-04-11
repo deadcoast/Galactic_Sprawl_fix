@@ -6,7 +6,6 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
  * while ensuring compatibility with the new type system.
  */
 
-import { EventBus } from '../../lib/events/EventBus';
 import { BaseModule, ModularBuilding, ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent } from '../../types/events/EventTypes';
 import {
@@ -70,12 +69,27 @@ export function convertToModules(baseModules: BaseModule[]): Module[] {
  */
 export class ModuleManagerWrapper implements IModuleManager {
   private manager: ModuleManager;
-  private _eventBus: EventBus<BaseEvent>;
 
   constructor(manager: ModuleManager = moduleManager) {
     this.manager = manager;
-    // Create a new EventBus instance that will be used if we can't access the manager's eventBus
-    this._eventBus = new EventBus<BaseEvent>();
+  }
+
+  /**
+   * Provide an EventBus-like interface that delegates to the manager's methods
+   */
+  get eventBus(): {
+    subscribe: (type: string, handler: (event: BaseEvent) => void) => () => void;
+    publish: (event: BaseEvent) => void;
+  } {
+    return {
+      subscribe: (eventType: string, handler: (event: BaseEvent) => void): (() => void) => {
+        return this.subscribe<BaseEvent>(eventType, handler);
+      },
+      publish: (event: BaseEvent): void => {
+        this.publish<BaseEvent>(event);
+      },
+      // Add other methods if IModuleManager expects them on eventBus
+    };
   }
 
   // Implement IModuleManager methods
@@ -159,11 +173,46 @@ export class ModuleManagerWrapper implements IModuleManager {
   }
 
   /**
-   * Access to the event bus
-   * Since eventBus is private in ModuleManager, we use our own instance
+   * Subscribe to events from the underlying manager using protected method
    */
-  get eventBus(): EventBus<BaseEvent> {
-    return this._eventBus;
+  subscribe<E extends BaseEvent>(eventType: string, handler: (event: E) => void): () => void {
+    // Delegate to the manager's protected subscribe method
+    // Requires casting to access protected member
+    const managerWithProtected = this.manager as any;
+    if (managerWithProtected.subscribe && typeof managerWithProtected.subscribe === 'function') {
+      try {
+        return managerWithProtected.subscribe(eventType, handler);
+      } catch (error) {
+        console.error('[ModuleManagerWrapper] Error calling protected subscribe:', error);
+        return () => {}; // Return no-op on error
+      }
+    } else {
+      console.warn(
+        '[ModuleManagerWrapper] Underlying manager does not support protected subscribe. Subscription might fail.'
+      );
+      return () => {};
+    }
+  }
+
+  /**
+   * Publish an event via the underlying manager using protected method
+   */
+  publish<E extends BaseEvent>(event: E): void {
+    // Delegate to the manager's protected publish method
+    // Requires casting to access protected member
+    const managerWithProtected = this.manager as any;
+    if (managerWithProtected.publish && typeof managerWithProtected.publish === 'function') {
+      try {
+        managerWithProtected.publish(event);
+      } catch (error) {
+        console.error('[ModuleManagerWrapper] Error calling protected publish:', error);
+      }
+    } else {
+      console.warn(
+        '[ModuleManagerWrapper] Underlying manager does not support protected publish. Event not published:',
+        event
+      );
+    }
   }
 
   /**

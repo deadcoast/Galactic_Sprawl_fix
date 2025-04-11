@@ -188,7 +188,7 @@ export function GalaxyMappingSystem({
       </div>
 
       {/* Overlay Controls */}
-      <div className="absolute right-4 top-4 z-10 flex flex-col space-y-2">
+      <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2">
         <button
           onClick={() => toggleOverlay('factions')}
           className={`rounded-full p-2 transition-colors ${

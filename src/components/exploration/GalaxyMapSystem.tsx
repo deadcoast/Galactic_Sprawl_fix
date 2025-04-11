@@ -283,7 +283,7 @@ export const GalaxyMapSystem: React.FC<GalaxyMapSystemProps> = ({
               return (
                 <svg
                   key={route.id}
-                  className="absolute left-0 top-0 h-full w-full overflow-visible"
+                  className="absolute top-0 left-0 h-full w-full overflow-visible"
                   style={{ pointerEvents: 'none' }}
                 >
                   <path
@@ -307,7 +307,7 @@ export const GalaxyMapSystem: React.FC<GalaxyMapSystemProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
+      <div className="absolute right-4 bottom-4 flex flex-col space-y-2">
         <button
           className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-white shadow-lg hover:bg-gray-700"
           onClick={() => setZoom(prev => Math.min(prev + 0.2, 3))}
@@ -323,7 +323,7 @@ export const GalaxyMapSystem: React.FC<GalaxyMapSystemProps> = ({
       </div>
 
       {/* Search and Filters */}
-      <div className="absolute left-4 top-4 flex space-x-2">
+      <div className="absolute top-4 left-4 flex space-x-2">
         <div className="relative">
           <input
             type="text"
@@ -332,7 +332,7 @@ export const GalaxyMapSystem: React.FC<GalaxyMapSystemProps> = ({
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute right-2 top-2 h-5 w-5 text-gray-400" />
+          <Search className="absolute top-2 right-2 h-5 w-5 text-gray-400" />
         </div>
         <button
           className="flex items-center justify-center rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white hover:bg-gray-700"

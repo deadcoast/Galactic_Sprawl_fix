@@ -33,7 +33,7 @@ export interface RenderTarget {
 
 export interface ComputeShaderConfig {
   computeSource: string;
-  workgroupSize: [ number, number, number ];
+  workgroupSize: [number, number, number];
   uniforms: string[];
   storageBuffers: string[];
 }
@@ -48,7 +48,7 @@ export interface ComputeProgram {
   program: WebGLProgram;
   uniforms: Record<string, WebGLUniformLocation>;
   storageBuffers: Record<string, number>;
-  workgroupSize: [ number, number, number ];
+  workgroupSize: [number, number, number];
 }
 
 export interface ExtendedChartOptions extends Omit<ChartOptions, 'axes' | 'legend' | 'tooltip'> {
@@ -92,8 +92,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           vec4 color = texture(u_texture, v_texCoord);
           outColor = mix(color, u_highlightColor, u_intensity);
         }`,
-      attributes: [ 'a_position', 'a_texCoord' ],
-      uniforms: [ 'u_matrix', 'u_texture', 'u_highlightColor', 'u_intensity' ],
+      attributes: ['a_position', 'a_texCoord'],
+      uniforms: ['u_matrix', 'u_texture', 'u_highlightColor', 'u_intensity'],
     },
     heatmap: {
       vertexSource: `#version 300 es
@@ -120,8 +120,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           vec3 color = mix(u_colorLow, u_colorHigh, t);
           outColor = vec4(color, 1.0);
         }`,
-      attributes: [ 'a_position', 'a_value' ],
-      uniforms: [ 'u_matrix', 'u_colorLow', 'u_colorHigh', 'u_minValue', 'u_maxValue' ],
+      attributes: ['a_position', 'a_value'],
+      uniforms: ['u_matrix', 'u_colorLow', 'u_colorHigh', 'u_minValue', 'u_maxValue'],
     },
     particles: {
       vertexSource: `#version 300 es
@@ -151,8 +151,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           if (d > 0.5) discard;
           outColor = u_color * v_opacity;
         }`,
-      attributes: [ 'a_position', 'a_velocity', 'a_age' ],
-      uniforms: [ 'u_matrix', 'u_time', 'u_lifespan', 'u_color' ],
+      attributes: ['a_position', 'a_velocity', 'a_age'],
+      uniforms: ['u_matrix', 'u_time', 'u_lifespan', 'u_color'],
     },
   };
 
@@ -180,9 +180,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           float value = input_data?.data[index];
           output_data?.data[index] = value > u_threshold ? value * u_multiplier : value;
         }`,
-      workgroupSize: [ 256, 1, 1 ] as [ number, number, number ],
-      uniforms: [ 'u_multiplier', 'u_threshold' ],
-      storageBuffers: [ 'input_data', 'output_data' ],
+      workgroupSize: [256, 1, 1] as [number, number, number],
+      uniforms: ['u_multiplier', 'u_threshold'],
+      storageBuffers: ['input_data', 'output_data'],
     },
     clustering: {
       computeSource: `#version 310 es
@@ -237,9 +237,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           // Write back to global memory
           clusters.assignments[gid] = local_assignments[lid];
         }`,
-      workgroupSize: [ 16, 16, 1 ] as [ number, number, number ],
-      uniforms: [ 'u_numCentroids', 'u_convergenceThreshold' ],
-      storageBuffers: [ 'input_points', 'clusters' ],
+      workgroupSize: [16, 16, 1] as [number, number, number],
+      uniforms: ['u_numCentroids', 'u_convergenceThreshold'],
+      storageBuffers: ['input_points', 'clusters'],
     },
   };
 
@@ -288,18 +288,22 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
 
         if (!computeExt || !storageExt) {
-          errorLoggingService.logWarn('WebGL2 compute extensions not available. GPU data processing disabled.');
+          errorLoggingService.logWarn(
+            'WebGL2 compute extensions not available. GPU data processing disabled.'
+          );
           return;
         }
 
         // Create compute shaders
-        for (const [ name, config ] of Object.entries(this.computeShaders)) {
+        for (const [name, config] of Object.entries(this.computeShaders)) {
           await this.createComputeShader(name, config);
         }
       }
     } catch (error) {
       this.metadata.status = 'error';
-      this.handleError(error as Error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        action: 'initialize WebGL Context',
+      });
       throw error;
     }
   }
@@ -312,7 +316,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.canvas = null;
       this.metadata.status = 'disposed';
     } catch (error) {
-      this.handleError(error as Error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -325,22 +329,30 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     return this.metadata.status === 'ready';
   }
 
-  public handleError(error: Error, context?: Record<string, unknown>): void {
+  public handleError(error: unknown, context?: Record<string, unknown>): void {
     if (!this.metadata.lastError) {
       // Initialize with required properties
       this.metadata.lastError = {
         type: ErrorType.RUNTIME,
-        message: error.message,
+        message: error instanceof Error ? error.message : String(error),
         timestamp: Date.now(),
       };
     }
     this.metadata.lastError = {
       type: ErrorType.RUNTIME,
-      message: error.message,
+      message: error instanceof Error ? error.message : String(error),
       timestamp: Date.now(),
       ...(context ? { context } : {}),
     };
-    errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, context);
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH,
+      {
+        service: this.metadata.name,
+        ...context,
+      }
+    );
   }
 
   private disposeResources(): void {
@@ -379,7 +391,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
   }
 
   private async createDefaultShaders(): Promise<void> {
-    for (const [ name, config ] of Object.entries(this.defaultShaders)) {
+    for (const [name, config] of Object.entries(this.defaultShaders)) {
       await this.createShaderProgram(name, config);
     }
   }
@@ -396,36 +408,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
 
     try {
       // Create vertex shader
-      const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-      if (!vertexShader) {
-        throw new Error('Failed to create vertex shader');
-      }
-
-      this.gl.shaderSource(vertexShader, config.vertexSource);
-      this.gl.compileShader(vertexShader);
-
-      if (!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
-        const info = this.gl.getShaderInfoLog(vertexShader);
-        this.gl.deleteShader(vertexShader);
-        throw new Error(`Vertex shader compilation failed: ${info}`);
-      }
-
-      // Create fragment shader
-      const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-      if (!fragmentShader) {
-        this.gl.deleteShader(vertexShader);
-        throw new Error('Failed to create fragment shader');
-      }
-
-      this.gl.shaderSource(fragmentShader, config.fragmentSource);
-      this.gl.compileShader(fragmentShader);
-
-      if (!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
-        const info = this.gl.getShaderInfoLog(fragmentShader);
-        this.gl.deleteShader(vertexShader);
-        this.gl.deleteShader(fragmentShader);
-        throw new Error(`Fragment shader compilation failed: ${info}`);
-      }
+      const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, config.vertexSource);
+      const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, config.fragmentSource);
 
       // Create program
       const program = this.gl.createProgram();
@@ -435,17 +419,26 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         throw new Error('Failed to create shader program');
       }
 
+      // Link program
       this.gl.attachShader(program, vertexShader);
       this.gl.attachShader(program, fragmentShader);
       this.gl.linkProgram(program);
 
+      // Check link status
       if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-        const info = this.gl.getProgramInfoLog(program);
-        this.gl.deleteProgram(program);
+        const linkError = this.gl.getProgramInfoLog(program);
+        // Clean up shaders before throwing
         this.gl.deleteShader(vertexShader);
         this.gl.deleteShader(fragmentShader);
-        throw new Error(`Shader program linking failed: ${info}`);
+        this.gl.deleteProgram(program);
+        throw new Error(`Failed to link shader program: ${linkError}`);
       }
+
+      // Detach and delete shaders after successful linking
+      this.gl.detachShader(program, vertexShader);
+      this.gl.detachShader(program, fragmentShader);
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
 
       // Get attribute and uniform locations
       const attributes: Record<string, number> = {};
@@ -454,20 +447,16 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       config.attributes.forEach(attr => {
         const location = this.gl!.getAttribLocation(program, attr);
         if (location !== -1) {
-          attributes[ attr ] = location;
+          attributes[attr] = location;
         }
       });
 
       config.uniforms.forEach(uniform => {
         const location = this.gl!.getUniformLocation(program, uniform);
         if (location) {
-          uniforms[ uniform ] = location;
+          uniforms[uniform] = location;
         }
       });
-
-      // Clean up shaders
-      this.gl.deleteShader(vertexShader);
-      this.gl.deleteShader(fragmentShader);
 
       const shaderProgram: ShaderProgram = { program, attributes, uniforms };
       this.programs.set(name, shaderProgram);
@@ -480,7 +469,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
 
       return shaderProgram;
     } catch (error) {
-      this.handleError(error as Error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        action: 'create shader program',
+        shaderName: name,
+      });
       throw error;
     }
   }
@@ -557,7 +549,12 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
 
       return renderTarget;
     } catch (error) {
-      this.handleError(error as Error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        action: 'create render target',
+        targetName: name,
+        width,
+        height,
+      });
       throw error;
     }
   }
@@ -611,38 +608,41 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
 
     try {
       // Create and compile compute shader
-      const computeShader = this.gl.createShader(computeExt.COMPUTE_SHADER)!;
-      this.gl.shaderSource(computeShader, config.computeSource);
-      this.gl.compileShader(computeShader);
-
-      if (!this.gl.getShaderParameter(computeShader, this.gl.COMPILE_STATUS)) {
-        throw new Error(
-          `Compute shader compilation failed: ${this.gl.getShaderInfoLog(computeShader)}`
-        );
-      }
+      const computeShader = this.compileShader(
+        0x91b9 /* GL_COMPUTE_SHADER */,
+        config.computeSource
+      );
 
       // Create and link program
       const program = this.gl.createProgram()!;
       this.gl.attachShader(program, computeShader);
       this.gl.linkProgram(program);
 
+      // Check link status
       if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-        throw new Error(`Program link failed: ${this.gl.getProgramInfoLog(program)}`);
+        const linkError = this.gl.getProgramInfoLog(program);
+        this.gl.deleteShader(computeShader);
+        this.gl.deleteProgram(program);
+        throw new Error(`Failed to link compute shader program: ${linkError}`);
       }
+
+      // Detach and delete shader after successful linking
+      this.gl.detachShader(program, computeShader);
+      this.gl.deleteShader(computeShader);
 
       // Get uniform locations
       const uniforms: Record<string, WebGLUniformLocation> = {};
       for (const uniform of config.uniforms) {
         const location = this.gl.getUniformLocation(program, uniform);
         if (location) {
-          uniforms[ uniform ] = location;
+          uniforms[uniform] = location;
         }
       }
 
       // Get storage buffer bindings
       const storageBuffers: Record<string, number> = {};
       for (let i = 0; i < config.storageBuffers.length; i++) {
-        storageBuffers[ config.storageBuffers[ i ] ] = i;
+        storageBuffers[config.storageBuffers[i]] = i;
       }
 
       const computeProgram: ComputeProgram = {
@@ -661,7 +661,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
 
       return computeProgram;
     } catch (error) {
-      this.handleError(error as Error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        action: 'create compute shader',
+        shaderName: name,
+      });
       throw error;
     }
   }
@@ -779,6 +782,45 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.gl.uniform1fv(location, value);
     } else {
       this.gl.uniform1f(location, value);
+    }
+  }
+
+  /**
+   * Compiles a shader (vertex or fragment)
+   */
+  private compileShader(type: number, source: string): WebGLShader {
+    if (!this.gl) {
+      throw new Error('WebGL context not initialized');
+    }
+
+    const shader = this.gl.createShader(type);
+    if (!shader) {
+      throw new Error(`Failed to create shader object (type: ${type})`);
+    }
+
+    try {
+      this.gl.shaderSource(shader, source);
+      this.gl.compileShader(shader);
+
+      if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+        const compileError = this.gl.getShaderInfoLog(shader);
+        this.gl.deleteShader(shader); // Clean up failed shader
+        throw new Error(`Shader compilation failed: ${compileError}`);
+      }
+      return shader;
+    } catch (error) {
+      // Even if shader creation succeeded, compilation might throw other errors
+      // Clean up shader if it exists and error occurred during compilation/check
+      if (shader) {
+        this.gl.deleteShader(shader);
+      }
+      // Handle the error using the standardized approach
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        action: 'compileShader',
+        shaderType: type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment',
+      });
+      // Re-throw the error to signal compilation failure
+      throw error;
     }
   }
 }

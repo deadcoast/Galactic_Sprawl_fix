@@ -102,7 +102,7 @@ export function SalvageSystem({ salvageItems, nearbyShips, onCollect }: SalvageS
       ))}
 
       {/* Collection Summary */}
-      <div className="fixed bottom-6 right-6 space-y-2">
+      <div className="fixed right-6 bottom-6 space-y-2">
         {salvageItems
           .filter(item => item?.collected)
           .map(item => (

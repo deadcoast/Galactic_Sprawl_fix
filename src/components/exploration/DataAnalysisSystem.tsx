@@ -122,7 +122,7 @@ class SimpleErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 
   render(): React.ReactNode {
     const { fallbackComponent: FallbackComponent, children } = this.props;
-    
+
     if (this.state.hasError) {
       return <FallbackComponent error={this.state.error} />;
     }
@@ -140,21 +140,22 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
   const [datasetDetails, setDatasetDetails] = React.useState(dataset);
-  
+
   // Subscribe to module update events for datasets
   useEffect(() => {
     const handleModuleUpdate = (event: StandardizedEvent) => {
       try {
         // Check if this is an update for our dataset
-        if (event?.data && 
-            typeof event.data === 'object' && 
-            'datasetId' in event.data && 
-            event.data.datasetId === dataset.id) {
-          
+        if (
+          event?.data &&
+          typeof event.data === 'object' &&
+          'datasetId' in event.data &&
+          event.data.datasetId === dataset.id
+        ) {
           // In a real implementation, you would get updates from a manager/registry
           // For now, simulate with dataset refreshes
           console.warn(`Dataset ${dataset.id} has been updated externally`);
-          
+
           // For demo purposes, clone and modify the dataset
           setDatasetDetails({
             ...dataset,
@@ -169,7 +170,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           {
             componentName: 'DatasetInfo',
             datasetId: dataset.id,
-            eventType: EventType.MODULE_UPDATED
+            eventType: EventType.MODULE_UPDATED,
           }
         );
         setError(error instanceof Error ? error : new Error(String(error)));
@@ -178,13 +179,13 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
 
     // Subscribe to module update events
     const unsubscribe = moduleEventBus.subscribe(EventType.MODULE_UPDATED, handleModuleUpdate);
-    
+
     // Cleanup subscription on unmount
     return () => {
       unsubscribe();
     };
   }, [dataset.id]);
-  
+
   // Count data points by type
   const counts = React.useMemo(() => {
     try {
@@ -209,11 +210,11 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         {
           componentName: 'DatasetInfo',
           datasetId: dataset.id,
-          action: 'calculateCounts'
+          action: 'calculateCounts',
         }
       );
       setError(error instanceof Error ? error : new Error(String(error)));
-      
+
       // Return default counts on error
       return {
         sector: 0,
@@ -246,30 +247,30 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         {
           componentName: 'DatasetInfo',
           datasetId: dataset.id,
-          source: source
+          source: source,
         }
       );
-      
+
       // Return default icon on error
       return <Database className="mr-2" size={16} />;
     }
   };
-  
+
   // Handle refresh dataset
   const handleRefreshDataset = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Simulate a refresh operation
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       // Update the details with a refreshed timestamp
       setDatasetDetails({
         ...datasetDetails,
         updatedAt: Date.now(),
       });
-      
+
       // Emit an event to notify other components
       moduleEventBus.emit({
         type: EventType.MODULE_UPDATED,
@@ -281,7 +282,6 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           datasetId: datasetDetails.id,
         },
       });
-      
     } catch (error) {
       errorLoggingService.logError(
         error instanceof Error ? error : new Error('Error refreshing dataset'),
@@ -290,7 +290,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         {
           componentName: 'DatasetInfo',
           datasetId: dataset.id,
-          action: 'refreshDataset'
+          action: 'refreshDataset',
         }
       );
       setError(error instanceof Error ? error : new Error(String(error)));
@@ -298,14 +298,14 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
       setIsLoading(false);
     }
   };
-  
+
   // Show error state
   if (error) {
     return (
       <div className="rounded border border-red-200 bg-red-50 p-4">
         <h3 className="mb-2 font-medium text-red-700">Error loading dataset details</h3>
         <p className="text-sm text-red-600">{error.message}</p>
-        <button 
+        <button
           className="mt-2 rounded bg-red-100 px-2 py-1 text-sm text-red-700 hover:bg-red-200"
           onClick={() => setError(null)}
         >
@@ -322,7 +322,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           {getSourceIcon(datasetDetails.source)}
           <h3 className="font-medium">{datasetDetails.name}</h3>
         </div>
-        <button 
+        <button
           className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 disabled:opacity-50"
           onClick={handleRefreshDataset}
           disabled={isLoading}
@@ -376,16 +376,11 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
         </div>
       )}
       onError={(error: Error, info: ErrorInfo) => {
-        errorLoggingService.logError(
-          error,
-          ErrorType.RUNTIME,
-          ErrorSeverity.HIGH,
-          {
-            componentName: 'DatasetInfo (ErrorBoundary)',
-            componentStack: info.componentStack,
-            datasetId: dataset.id
-          }
-        );
+        errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, {
+          componentName: 'DatasetInfo (ErrorBoundary)',
+          componentStack: info.componentStack,
+          datasetId: dataset.id,
+        });
       }}
     >
       <DatasetInfo dataset={dataset} />
@@ -792,7 +787,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   <DatasetInfoWrapper dataset={selectedDataset} />
                 </div>
               )}
-              
+
               <Typography variant="h6" gutterBottom>
                 Filters
               </Typography>

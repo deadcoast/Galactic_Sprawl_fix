@@ -143,7 +143,7 @@ export class SVGRenderer implements ChartRenderer {
     data?.datasets.forEach(dataset => {
       dataset.data?.forEach(point => {
         const x = this.normalizeValue(point.x);
-        const {y} = point;
+        const { y } = point;
         if (Number.isFinite(x) && Number.isFinite(y)) {
           xValues.push(x);
           yValues.push(y);

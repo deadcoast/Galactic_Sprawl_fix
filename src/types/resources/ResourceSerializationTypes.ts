@@ -2,7 +2,7 @@
  * @context: resource-system
  * @description: Types for serializing and deserializing resource data
  * @file: src/types/resources/ResourceSerializationTypes.ts
-*/
+ */
 import { ResourceAlert } from '../../hooks/resources/useResourceTracking';
 import { ResourceType } from './ResourceTypes';
 

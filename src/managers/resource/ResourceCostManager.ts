@@ -1,6 +1,6 @@
 import { ResourceContainer } from '../../types/resources/ResourceConversionTypes';
 import { ResourceCost, ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
-import { validateResourceCost } from '../../utils/resources/resourceValidation';
+import { validateResourceCost } from '../../utils/typeGuards/resourceTypeGuards';
 
 /**
  * Cost validation result

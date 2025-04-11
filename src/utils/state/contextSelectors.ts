@@ -1,13 +1,13 @@
 /**
  * @context: state-system, component-performance
- * 
+ *
  * Context selectors for optimized state access.
  * These utilities help reduce unnecessary re-renders by only subscribing
  * components to the specific parts of state they depend on.
  */
 
 import { isEqual } from 'lodash';
-import { useCallback, useContext, useEffect, useRef, useState, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * Creates a selector function that memoizes the result and only triggers
@@ -181,9 +181,9 @@ export function createMultiPropertySelector<ContextType, K extends keyof NonNull
 }
 
 /**
- * Creates a set of selector hooks for a context that follows the standard 
+ * Creates a set of selector hooks for a context that follows the standard
  * { state, dispatch } pattern.
- * 
+ *
  * @param context The React context to create selectors for
  * @returns An object with selector hook factories and a useDispatch hook
  */
@@ -194,7 +194,9 @@ export function createStandardContextSelectors<State, Action>(
   const useState = () => {
     const contextValue = useContext(context);
     if (!contextValue) {
-      throw new Error(`useState must be used within a Provider for ${context.displayName || 'unknown context'}`);
+      throw new Error(
+        `useState must be used within a Provider for ${context.displayName || 'unknown context'}`
+      );
     }
     return contextValue.state;
   };
@@ -202,21 +204,19 @@ export function createStandardContextSelectors<State, Action>(
   const useDispatch = () => {
     const contextValue = useContext(context);
     if (!contextValue) {
-      throw new Error(`useDispatch must be used within a Provider for ${context.displayName || 'unknown context'}`);
+      throw new Error(
+        `useDispatch must be used within a Provider for ${context.displayName || 'unknown context'}`
+      );
     }
     return contextValue.dispatch;
   };
 
   // Selector hooks
-  const useSelector = <Selected,>(
+  const useSelector = <Selected>(
     selector: (state: State) => Selected,
     equalityFn?: (a: Selected, b: Selected) => boolean
   ): Selected => {
-    return useContextSelector(
-      context,
-      contextValue => selector(contextValue.state),
-      equalityFn
-    );
+    return useContextSelector(context, contextValue => selector(contextValue.state), equalityFn);
   };
 
   // Create property selector factory
@@ -228,27 +228,29 @@ export function createStandardContextSelectors<State, Action>(
   const createNestedPropertySelector = <K1 extends keyof State, K2 extends keyof State[K1]>(
     path: [K1, K2]
   ) => {
-    return () => useSelector(state => {
-      const [key1, key2] = path;
-      const value1 = state[key1];
-      if (value1 === undefined || value1 === null) {
-        throw new Error(
-          `Property ${String(key1)} is ${value1 === undefined ? 'undefined' : 'null'}`
-        );
-      }
-      return value1[key2];
-    });
+    return () =>
+      useSelector(state => {
+        const [key1, key2] = path;
+        const value1 = state[key1];
+        if (value1 === undefined || value1 === null) {
+          throw new Error(
+            `Property ${String(key1)} is ${value1 === undefined ? 'undefined' : 'null'}`
+          );
+        }
+        return value1[key2];
+      });
   };
 
   // Create multi-property selector factory
   const createMultiPropertySelector = <K extends keyof State>(properties: K[]) => {
-    return () => useSelector(state => {
-      const result = {} as Pick<State, K>;
-      properties.forEach(prop => {
-        result[prop] = state[prop];
+    return () =>
+      useSelector(state => {
+        const result = {} as Pick<State, K>;
+        properties.forEach(prop => {
+          result[prop] = state[prop];
+        });
+        return result;
       });
-      return result;
-    });
   };
 
   return {

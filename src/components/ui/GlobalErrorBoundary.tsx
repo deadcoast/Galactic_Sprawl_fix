@@ -96,7 +96,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               {this.state.error?.stack && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-xs text-gray-400">Stack Trace</summary>
-                  <pre className="mt-2 max-h-60 overflow-auto whitespace-pre-wrap break-all text-xs text-gray-400">
+                  <pre className="mt-2 max-h-60 overflow-auto text-xs break-all whitespace-pre-wrap text-gray-400">
                     {this.state.error.stack}
                   </pre>
                 </details>

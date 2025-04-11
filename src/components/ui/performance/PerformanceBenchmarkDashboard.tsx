@@ -1,14 +1,18 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import {
-    BenchmarkResult,
-    createPerformanceVisualization,
-    detectPerformanceRegressions,
-    loadBenchmarkResults,
-    ResourceFlowBenchmarkResult,
-    runResourceFlowBenchmark,
-    saveBenchmarkResults,
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
+import {
+  BenchmarkResult,
+  createPerformanceVisualization,
+  detectPerformanceRegressions,
+  loadBenchmarkResults,
+  ResourceFlowBenchmarkResult,
+  runResourceFlowBenchmark,
+  saveBenchmarkResults,
 } from '../../../utils/performance/benchmarks/PerformanceBenchmarkTools';
 
 interface BenchmarkConfigOption {

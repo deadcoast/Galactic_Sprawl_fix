@@ -24,23 +24,23 @@ export default function CombatSystemPage() {
           <h2 className="mb-4 text-xl font-bold text-white">System Features</h2>
           <ul className="space-y-2 text-gray-300">
             <li className="flex items-start">
-              <span className="mr-2 mt-1 inline-block h-4 w-4 rounded-full bg-green-500"></span>
+              <span className="mt-1 mr-2 inline-block h-4 w-4 rounded-full bg-green-500"></span>
               <span>Real-time object detection and tracking</span>
             </li>
             <li className="flex items-start">
-              <span className="mr-2 mt-1 inline-block h-4 w-4 rounded-full bg-green-500"></span>
+              <span className="mt-1 mr-2 inline-block h-4 w-4 rounded-full bg-green-500"></span>
               <span>Customizable detection ranges and visualization</span>
             </li>
             <li className="flex items-start">
-              <span className="mr-2 mt-1 inline-block h-4 w-4 rounded-full bg-green-500"></span>
+              <span className="mt-1 mr-2 inline-block h-4 w-4 rounded-full bg-green-500"></span>
               <span>Threat assessment and classification</span>
             </li>
             <li className="flex items-start">
-              <span className="mr-2 mt-1 inline-block h-4 w-4 rounded-full bg-green-500"></span>
+              <span className="mt-1 mr-2 inline-block h-4 w-4 rounded-full bg-green-500"></span>
               <span>Multi-level alert system with priority handling</span>
             </li>
             <li className="flex items-start">
-              <span className="mr-2 mt-1 inline-block h-4 w-4 rounded-full bg-green-500"></span>
+              <span className="mt-1 mr-2 inline-block h-4 w-4 rounded-full bg-green-500"></span>
               <span>Performance-optimized rendering for various device capabilities</span>
             </li>
           </ul>
@@ -50,8 +50,8 @@ export default function CombatSystemPage() {
           <h2 className="mb-4 text-xl font-bold text-white">Usage Instructions</h2>
           <div className="space-y-4 text-gray-300">
             <p>
-              <strong className="text-white">Object Selection:</strong> Click on unknown object in the
-              radar to select it and view detailed information.
+              <strong className="text-white">Object Selection:</strong> Click on unknown object in
+              the radar to select it and view detailed information.
             </p>
             <p>
               <strong className="text-white">Range Management:</strong> Click on range rings to

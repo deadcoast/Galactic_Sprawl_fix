@@ -120,9 +120,9 @@ export const AbilityButton = forwardRef<HTMLButtonElement, AbilityButtonProps>(
     // Create cooldown overlay
     const cooldownOverlay =
       showCooldown && isOnCooldown ? (
-        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black bg-opacity-60 font-bold text-white">
+        <div className="bg-opacity-60 absolute inset-0 flex items-center justify-center rounded-md bg-black font-bold text-white">
           <div
-            className="absolute inset-0 bg-black bg-opacity-60"
+            className="bg-opacity-60 absolute inset-0 bg-black"
             style={{
               clipPath: `inset(0 0 ${cooldownPercent}% 0)`,
             }}
@@ -134,7 +134,7 @@ export const AbilityButton = forwardRef<HTMLButtonElement, AbilityButtonProps>(
     // Create keybinding indicator
     const keybindingIndicator =
       showKeybinding && keybinding ? (
-        <div className="absolute right-0 top-0 rounded-bl-md bg-gray-800 px-1 text-xs text-white">
+        <div className="absolute top-0 right-0 rounded-bl-md bg-gray-800 px-1 text-xs text-white">
           {keybinding}
         </div>
       ) : null;
@@ -174,7 +174,7 @@ export const AbilityButton = forwardRef<HTMLButtonElement, AbilityButtonProps>(
         {keybindingIndicator}
 
         {!ability.isUnlocked && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-gray-900 bg-opacity-80">
+          <div className="bg-opacity-80 absolute inset-0 flex items-center justify-center rounded-md bg-gray-900">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 text-white"

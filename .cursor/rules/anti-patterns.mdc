@@ -1,8 +1,13 @@
 ---
 description: 
-globs: src/**/*.ts,src/services/**/*.ts
+globs: **/*.tsx,src/**/*.tsx,src/**/*.ts,src/services/**/*.ts
 alwaysApply: false
 ---
+---
+description: Guidelines for writing clean, maintainable, and human-readable code following the anti-patterns.
+globs: **/*.tsx, **/*.ts, src/**/*.tsx, src/**/*.ts, src/services/**/*.ts
+---
+
 # GALACTIC SPRAWL (GS) - Anti Pattern Rules
 
 ## String Literal Anti-Pattern Rule

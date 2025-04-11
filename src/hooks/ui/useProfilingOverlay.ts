@@ -62,7 +62,9 @@ export function useProfilingOverlay(options: ProfilingOverlayOptions = {}) {
         }
       } catch (error) {
         errorLoggingService.logError(
-          error instanceof Error ? error : new Error('Error reading profiling overlay state from localStorage'),
+          error instanceof Error
+            ? error
+            : new Error('Error reading profiling overlay state from localStorage'),
           ErrorType.INITIALIZATION,
           ErrorSeverity.LOW,
           { componentName: 'useProfilingOverlay', action: 'getInitialState' }
@@ -92,7 +94,9 @@ export function useProfilingOverlay(options: ProfilingOverlayOptions = {}) {
           localStorage.setItem('profiling-overlay-visible', String(newState));
         } catch (error) {
           errorLoggingService.logError(
-            error instanceof Error ? error : new Error('Error saving profiling overlay state to localStorage'),
+            error instanceof Error
+              ? error
+              : new Error('Error saving profiling overlay state to localStorage'),
             ErrorType.RUNTIME,
             ErrorSeverity.LOW,
             { componentName: 'useProfilingOverlay', action: 'toggleOverlay (persistence)' }

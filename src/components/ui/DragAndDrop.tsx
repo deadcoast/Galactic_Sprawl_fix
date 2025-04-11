@@ -105,7 +105,7 @@ export function DropTarget<T = Record<string, unknown>>({
   return (
     <div
       ref={ref}
-      className={`${className} ${isOver ? 'ring-2 ring-cyan-500 ring-opacity-50' : ''}`}
+      className={`${className} ${isOver ? 'ring-opacity-50 ring-2 ring-cyan-500' : ''}`}
     >
       {children}
     </div>

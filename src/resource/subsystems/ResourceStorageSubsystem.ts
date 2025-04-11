@@ -1,10 +1,10 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-    ResourceType,
-    ResourceTypeString,
-    ResourceState as StringResourceState,
-    ResourceTransfer as StringResourceTransfer,
+  ResourceType,
+  ResourceTypeString,
+  ResourceState as StringResourceState,
+  ResourceTransfer as StringResourceTransfer,
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';

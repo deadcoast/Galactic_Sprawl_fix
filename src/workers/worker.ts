@@ -1,5 +1,3 @@
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
-
 interface WorkerMessage {
   taskId: string;
   type: string;
@@ -15,7 +13,16 @@ const taskHandlers = new Map<string, TaskHandler>();
 // Register task handlers
 taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
   // Example heavy computation task
-  const {iterations} = data as { iterations: number };
+  // Validate data structure
+  if (
+    typeof data !== 'object' ||
+    data === null ||
+    typeof (data as Record<string, unknown>).iterations !== 'number'
+  ) {
+    throw new Error('Invalid data format for heavyComputation: Expected { iterations: number }');
+  }
+  // Safe access after validation
+  const iterations = (data as { iterations: number }).iterations;
   let result = 0;
 
   for (let i = 0; i < iterations; i++) {
@@ -30,16 +37,27 @@ taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
 
 // Handle messages from the main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-  if (!event || !event.data) {
-    errorLoggingService.logError(
-      new Error('Received invalid message event in worker'),
-      ErrorType.NETWORK,
-      ErrorSeverity.MEDIUM,
-      { componentName: 'GenericWorker', action: 'onmessage' }
-    );
+  const rawData = event?.data;
+  // Validate the basic structure of the incoming message
+  if (
+    !rawData ||
+    typeof rawData !== 'object' ||
+    typeof rawData.type !== 'string' || // Basic check for type
+    !('data' in rawData) || // Check if data property exists
+    typeof rawData.taskId !== 'string' // Basic check for taskId
+  ) {
+    // Post error back to main thread for invalid message structure
+    const errorMsg = 'Received invalid message structure in generic worker';
+    console.error(errorMsg, rawData); // Log within worker for debugging
+    self.postMessage({
+      taskId: typeof rawData?.taskId === 'string' ? rawData.taskId : 'unknown',
+      type: 'error', // Use the standard error type for this worker
+      data: errorMsg,
+    });
     return;
   }
 
+  // Now we know rawData conforms to WorkerMessage structure
   const { taskId, type, data } = event.data;
 
   try {

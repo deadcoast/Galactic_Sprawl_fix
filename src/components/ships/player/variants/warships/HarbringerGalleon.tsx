@@ -160,7 +160,7 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
       </div>
       {/* Warning indicator for damaged state */}
       {status === 'damaged' && (
-        <div className="absolute right-0 top-0 p-2">
+        <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}

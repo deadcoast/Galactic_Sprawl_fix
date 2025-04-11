@@ -275,17 +275,17 @@ export interface BaseProps {
    * Unique identifier for the component
    */
   id?: string;
-  
+
   /**
    * Component classname for styling
    */
   className?: string;
-  
+
   /**
    * Whether component is visible
    */
   visible?: boolean;
-  
+
   /**
    * Whether component is disabled
    */
@@ -300,12 +300,12 @@ export interface ThemeOverride {
    * Color palette overrides
    */
   colors?: Record<string, string>;
-  
+
   /**
    * Spacing overrides
    */
   spacing?: Record<string, string | number>;
-  
+
   /**
    * Typography overrides
    */
@@ -320,17 +320,17 @@ export interface CustomStyleProps {
    * Container styles
    */
   container?: Record<string, string | number>;
-  
+
   /**
    * Header styles
    */
   header?: Record<string, string | number>;
-  
+
   /**
    * Content styles
    */
   content?: Record<string, string | number>;
-  
+
   /**
    * Footer styles
    */
@@ -345,17 +345,17 @@ export interface AccessibilityProps {
    * ARIA label
    */
   ariaLabel?: string;
-  
+
   /**
    * ARIA described by
    */
   ariaDescribedBy?: string;
-  
+
   /**
    * ARIA role
    */
   role?: string;
-  
+
   /**
    * Tab index
    */
@@ -370,17 +370,17 @@ export interface ExtendedProps extends BaseProps {
    * Custom theme override for this component
    */
   theme?: ThemeOverride;
-  
+
   /**
    * Custom styles to apply to the component
    */
   customStyles?: CustomStyleProps;
-  
+
   /**
    * Accessibility properties for the component
    */
   a11y?: AccessibilityProps;
-  
+
   /**
    * Component-specific configuration options
    */

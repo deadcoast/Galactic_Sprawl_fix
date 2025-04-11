@@ -13,10 +13,10 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-    Anomaly,
-    EXPLORATION_EVENTS,
-    ExplorationManager,
-    Sector,
+  Anomaly,
+  EXPLORATION_EVENTS,
+  ExplorationManager,
+  Sector,
 } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes';

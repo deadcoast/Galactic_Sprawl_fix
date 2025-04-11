@@ -31,8 +31,6 @@ const MODULE_EVENT_TYPES = [
   'MODULE_DEACTIVATED',
 ] as const;
 
-type ModuleEventType = (typeof MODULE_EVENT_TYPES)[number];
-
 /**
  * SystemIntegration component
  *
@@ -54,7 +52,9 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
         await resourceManager.initialize();
         setIsInitialized(true);
       } catch (error) {
-        logError(error instanceof Error ? error : new Error(String(error)), { context: 'Initialization' });
+        logError(error instanceof Error ? error : new Error(String(error)), {
+          context: 'Initialization',
+        });
       }
     };
     initialize();
@@ -65,7 +65,12 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
 
   const syncResourceState = useCallback(() => {
     const state = resourceManager.getAllResourceStates();
-    const resourcesPayload: Partial<{ minerals: number; energy: number; population: number; research: number; }> = {};
+    const resourcesPayload: Partial<{
+      minerals: number;
+      energy: number;
+      population: number;
+      research: number;
+    }> = {};
 
     Object.entries(state).forEach(([resTypeKey, resState]: [string, ResourceState]) => {
       const resType = ResourceType[resTypeKey as keyof typeof ResourceType];
@@ -105,8 +110,8 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
     syncResourceState();
     syncModuleState();
 
-    const unsubResources = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED as ModuleEventType, syncResourceState);
-    const unsubModules = moduleEventBus.subscribe('MODULE_UPDATED' as ModuleEventType, syncModuleState);
+    const unsubResources = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, syncResourceState);
+    const unsubModules = moduleEventBus.subscribe('MODULE_UPDATED', syncModuleState);
 
     intervalRef.current = setInterval(() => {
       if (!document.hidden) {

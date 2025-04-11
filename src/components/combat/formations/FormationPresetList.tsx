@@ -188,7 +188,7 @@ export function FormationPresetList({ currentType, onSelectFormation }: Formatio
         >
           <FormationPreview pattern={formation.pattern} type={formation.type} />
           <div className="flex-1">
-            <h3 className="font-medium capitalize text-white">{formation.pattern}</h3>
+            <h3 className="font-medium text-white capitalize">{formation.pattern}</h3>
             <p className="text-xs text-gray-400">{getFormationDescription(formation.pattern)}</p>
           </div>
         </div>

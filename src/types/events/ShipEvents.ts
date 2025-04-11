@@ -34,6 +34,7 @@ export interface Ship {
   location?: string;
   destination?: string;
   cargo?: ShipCargo;
+  assignedTo?: string;
 }
 
 /**
@@ -130,5 +131,55 @@ export interface ShipEvents {
   /**
    * Index signature for unknown other events
    */
-  [ key: string ]: unknown;
+  [key: string]: unknown;
+}
+
+/**
+ * Defines the events emitted by the ShipManager
+ */
+export interface ShipManagerEvents {
+  /**
+   * Emitted when a new ship is created.
+   */
+  shipCreated: {
+    ship: Ship;
+  };
+
+  /**
+   * Emitted when a ship's status changes.
+   */
+  shipStatusUpdated: {
+    shipId: string;
+    oldStatus: ShipStatus;
+    newStatus: ShipStatus;
+  };
+
+  /**
+   * Emitted when a ship's assignment changes.
+   */
+  shipAssignmentUpdated: {
+    shipId: string;
+    oldAssignment?: string;
+    newAssignment?: string;
+  };
+
+  /**
+   * Emitted when a ship is destroyed or removed.
+   * Add this event when ship removal logic is implemented.
+   */
+  // shipRemoved: {
+  //   shipId: string;
+  //   ship: Ship; // Include the removed ship details
+  // };
+
+  // Add index signature to satisfy BaseTypedEventEmitter constraint
+  [key: string]: unknown;
+}
+
+// Example Event Type Enum (Optional, but good practice)
+export enum ShipEventType {
+  SHIP_CREATED = 'shipCreated',
+  SHIP_STATUS_UPDATED = 'shipStatusUpdated',
+  SHIP_ASSIGNMENT_UPDATED = 'shipAssignmentUpdated',
+  // SHIP_REMOVED = 'shipRemoved',
 }

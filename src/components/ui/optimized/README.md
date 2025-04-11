@@ -38,9 +38,8 @@ export default withMemoization(ComplexComponent, {
   renderTimeThreshold: 8, // Log renders that take more than 8ms
   arePropsEqual: (prev, next) => {
     // Custom comparison logic
-    return prev.id === next.id && 
-           prev.data.version === next.data.version;
-  }
+    return prev.id === next.id && prev.data.version === next.data.version;
+  },
 });
 ```
 
@@ -50,7 +49,7 @@ export default withMemoization(ComplexComponent, {
 import { withMemoizationForwardRef } from '../optimized';
 
 const InputComponent = (
-  { label, value, onChange }: InputComponentProps, 
+  { label, value, onChange }: InputComponentProps,
   ref: React.ForwardedRef<HTMLInputElement>
 ) => {
   return (
@@ -63,7 +62,7 @@ const InputComponent = (
 
 export default withMemoizationForwardRef(InputComponent, {
   componentName: 'InputComponent',
-  trackRenders: true
+  trackRenders: true,
 });
 ```
 
@@ -111,11 +110,7 @@ function ModuleList({ modules, isLoading, onModuleSelected }) {
       emptyPlaceholder={<div>No modules available</div>}
       onScroll={scrollTop => console.log('Scrolled to', scrollTop)}
       renderItem={(module, index, style) => (
-        <div 
-          key={module.id} 
-          style={style}
-          onClick={() => onModuleSelected(module.id)}
-        >
+        <div key={module.id} style={style} onClick={() => onModuleSelected(module.id)}>
           <ModuleCard module={module} />
         </div>
       )}
@@ -144,7 +139,7 @@ function SystemOverview() {
           height={500}
         />
       </div>
-      
+
       <div className="panel">
         <h2>Galaxy Map</h2>
         <LazyMiniMap
@@ -165,4 +160,4 @@ function SystemOverview() {
 3. **Lazy-load heavy components** that aren't immediately needed
 4. **Use useCallback and useMemo** for functions and computed values that are used as props or dependencies
 5. **Avoid anonymous functions** in render methods to prevent unnecessary re-renders
-6. **Measure performance** using the built-in tracking in development mode 
+6. **Measure performance** using the built-in tracking in development mode

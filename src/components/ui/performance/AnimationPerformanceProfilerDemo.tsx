@@ -289,7 +289,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
                 {performanceData.frames.map((frame, i) => {
                   const x = (i / performanceData.frames.length) * (width - 40);
                   const frameHeight = (frame.frameDuration / (1000 / 30)) * 150;
-                  
+
                   return (
                     <g key={i}>
                       <rect

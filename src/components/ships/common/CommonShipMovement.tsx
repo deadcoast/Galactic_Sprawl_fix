@@ -5,7 +5,7 @@ import { shipMovementManager } from '../../../lib/ai/shipMovement';
 import { TechTreeManager } from '../../../managers/game/techTreeManager';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { getDefaultCapabilities, getShipCategory } from '../../../types/ships/CommonShipTypes';
-import { ResourceTypeConverter } from '../../../utils/ResourceTypeConverter';
+import { ResourceTypeConverter } from '../../../utils/resources/ResourceTypeConverter';
 
 interface Position {
   x: number;

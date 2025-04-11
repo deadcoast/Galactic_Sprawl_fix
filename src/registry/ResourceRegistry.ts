@@ -1,6 +1,10 @@
 import { EventEmitter } from '../lib/events/EventEmitter';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
-import { ResourceCategory, ResourceType, ResourceTypeMetadata } from '../types/resources/ResourceTypes';
+import {
+  ResourceCategory,
+  ResourceType,
+  ResourceTypeMetadata,
+} from '../types/resources/ResourceTypes';
 /**
  * ResourceRegistry.ts
  *
@@ -523,9 +527,10 @@ export class ResourceRegistry {
    * @param resourceType The resource type
    * @returns The display name or the resource type string if not found
    */
-  public getDisplayName(resourceType: ResourceType): ResourceType {
+  public getDisplayName(resourceType: ResourceType): string {
     const metadata = this.resourceMetadata?.get(resourceType);
-    return metadata ? (metadata?.displayName as ResourceType) : resourceType;
+    // Return the display name string, or the enum key as a fallback string
+    return metadata ? metadata.displayName : ResourceType[resourceType];
   }
 
   /**
@@ -568,9 +573,9 @@ export class ResourceRegistry {
    * @param resourceType The resource type
    * @returns Array of tags
    */
-  public getTags(resourceType: ResourceType): ResourceType[] {
+  public getTags(resourceType: ResourceType): string[] {
     const metadata = this.resourceMetadata?.get(resourceType);
-    return metadata ? (metadata?.tags as ResourceType[]) : [];
+    return metadata ? metadata.tags : [];
   }
 
   /**
@@ -868,5 +873,24 @@ export class ResourceRegistry {
       );
       return false;
     }
+  }
+
+  /**
+   * Get resource detail
+   *
+   * @param _resourceType The type of the resource to retrieve details for (unused for now, kept for API consistency).
+   * @param detailType The specific detail to retrieve (e.g., 'description', 'icon', 'baseValue').
+   * @returns The requested detail value or undefined if not found.
+   */
+  public getResourceDetail<K extends keyof ExtendedResourceMetadata>(
+    _resourceType: ResourceType,
+    detailType: K
+  ): ExtendedResourceMetadata[K] | undefined {
+    const resourceInfo = this.getResourceMetadata(_resourceType);
+    if (!resourceInfo) {
+      return undefined;
+    }
+    // Return the specific detail from the metadata
+    return resourceInfo[detailType];
   }
 }

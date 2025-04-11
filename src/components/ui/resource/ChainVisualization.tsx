@@ -1,69 +1,39 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlowNode, ResourceConversionRecipe, ResourceType } from '../../../types/resources/ResourceTypes';
+import {
+  ProcessStatus,
+  ProductionChainStatus,
+} from '../../../types/resources/ProductionChainTypes';
+import { FlowNode, ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
 import { d3Accessors } from '../../../types/visualizations/D3Types';
 
-// Define the ChainStatus interface since it's missing from ResourceTypes
-interface ChainStatus {
-  chainId: string;
-  currentStepIndex: number;
-  recipeIds: string[];
-  startTime: number;
-  estimatedEndTime: number;
-  progress: number;
-  stepStatus: Array<{
-    recipeId: string;
-    converterId: string;
-    processId?: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
-    startTime?: number;
-    endTime?: number;
-  }>;
-  resourceTransfers: Array<{
-    type: ResourceType;
-    amount: number;
-    fromStep: number;
-    toStep: number;
-    status: 'pending' | 'in_progress' | 'completed';
-  }>;
-  active: boolean;
-  paused: boolean;
-  completed: boolean;
-  failed: boolean;
-  errorMessage?: string;
+// Define Node and Link data structures expected by D3 simulation forces
+interface ChainNodeData extends d3.SimulationNodeDatum {
+  id: string;
+  label: string;
+  type: 'converter' | 'recipe' | 'input' | 'output'; // Input/output might be future types
+  level: number;
+  status?: ProcessStatus;
+  icon?: React.ReactNode; // Optional icon
+  // x, y, fx, fy are implicitly added by d3.SimulationNodeDatum
+}
+
+interface ChainLinkData extends d3.SimulationLinkDatum<ChainNodeData> {
+  source: string | ChainNodeData;
+  target: string | ChainNodeData;
+  status?: ProcessStatus;
 }
 
 // Types for the component props
 interface ChainVisualizationProps {
-  chain: ChainStatus;
+  chain: ProductionChainStatus;
   converters: Record<string, FlowNode>;
   recipes: Record<string, ResourceConversionRecipe>;
   width?: number;
   height?: number;
   interactive?: boolean;
   onNodeClick?: (nodeId: string, type: 'converter' | 'recipe') => void;
-}
-
-// Node type for D3 visualization
-interface ChainNode extends d3.SimulationNodeDatum {
-  id: string;
-  type: 'converter' | 'recipe';
-  name: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  x?: number;
-  y?: number;
-  // Add fx and fy properties for D3 force simulation
-  fx?: number | null;
-  fy?: number | null;
-}
-
-// Link type for D3 visualization
-interface ChainLink extends d3.SimulationLinkDatum<ChainNode> {
-  source: string | ChainNode;
-  target: string | ChainNode;
-  value: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
 
 /**
@@ -82,8 +52,9 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
   onNodeClick,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [nodes, setNodes] = useState<ChainNode[]>([]);
-  const [links, setLinks] = useState<ChainLink[]>([]);
+  // State uses the simulation data types directly
+  const [nodes, setNodes] = useState<ChainNodeData[]>([]);
+  const [links, setLinks] = useState<ChainLinkData[]>([]);
 
   // Generate graph data (nodes and links) from chain status
   const generateGraphData = useCallback(() => {
@@ -91,10 +62,9 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       return;
     }
 
-    const newNodes: ChainNode[] = [];
-    const newLinks: ChainLink[] = [];
+    const newNodes: ChainNodeData[] = []; // Use ChainNodeData
+    const newLinks: ChainLinkData[] = []; // Use ChainLinkData
 
-    // Add converter nodes
     chain.stepStatus.forEach((step, index) => {
       const converter = converters[step.converterId];
       const recipe = recipes[step.recipeId];
@@ -103,28 +73,41 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
         return;
       }
 
-      // Add converter node
+      const converterLevel = index * 2;
+      const recipeLevel = index * 2 + 1;
+
+      // Add converter node (conforming to ChainNodeData)
       newNodes.push({
         id: step.converterId,
         type: 'converter',
-        name: converter.id,
+        label: converter.id, // Use label
+        level: converterLevel,
         status: step.status,
+        // Initialize simulation properties if needed, though D3 usually handles this
+        x: undefined,
+        y: undefined,
+        fx: null,
+        fy: null,
       });
 
-      // Add recipe node
+      // Add recipe node (conforming to ChainNodeData)
       const recipeNodeId = `recipe-${step.recipeId}-${index}`;
       newNodes.push({
         id: recipeNodeId,
         type: 'recipe',
-        name: recipe.name,
+        label: recipe.name, // Use label
+        level: recipeLevel,
         status: step.status,
+        x: undefined,
+        y: undefined,
+        fx: null,
+        fy: null,
       });
 
-      // Add link from converter to recipe
+      // Add link from converter to recipe (conforming to ChainLinkData)
       newLinks.push({
         source: step.converterId,
         target: recipeNodeId,
-        value: 1,
         status: step.status,
       });
 
@@ -134,8 +117,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
         newLinks.push({
           source: recipeNodeId,
           target: nextStep.converterId,
-          value: 1,
-          status: 'pending', // Default to pending until the step is active
+          status: ProcessStatus.PENDING,
         });
       }
     });
@@ -151,24 +133,21 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
     }
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove(); // Clear previous render
+    svg.selectAll('*').remove();
 
-    // Define the simulation
+    // Define the simulation - Use types directly, no assertions needed
     const simulation = d3
-      .forceSimulation<ChainNode>(nodes)
+      .forceSimulation<ChainNodeData>(nodes)
       .force(
         'link',
-        d3
-          .forceLink<ChainNode, d3.SimulationLinkDatum<ChainNode>>(links)
-          .id(d => d.id)
-          .distance(100)
+        d3.forceLink<ChainNodeData, ChainLinkData>(links).id(d => d.id)
       )
-      .force('charge', d3.forceMunknownnownBody().strength(-300))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('x', d3.forceX())
+      .force('x', d3.forceX((d: ChainNodeData) => d.level * 150).strength(0.5))
       .force('y', d3.forceY());
 
-    // Create a group for links
+    // Create links - Use types directly
     const link = svg
       .append('g')
       .attr('class', 'links')
@@ -176,8 +155,8 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .data(links)
       .enter()
       .append('line')
-      .attr('stroke-width', d => Math.sqrt(d.value) * 2)
-      .attr('stroke', d => getStatusColor(d.status))
+      .attr('stroke-width', 1.5) // Simplified stroke width
+      .attr('stroke', d => getStatusColor(d.status ?? ProcessStatus.PENDING))
       .attr('marker-end', 'url(#arrowhead)');
 
     // Add arrow marker definition
@@ -195,7 +174,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', '#999');
 
-    // Create a group for nodes
+    // Create nodes - Use types directly
     const node = svg
       .append('g')
       .attr('class', 'nodes')
@@ -204,7 +183,8 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .enter()
       .append('g')
       .attr('class', 'node')
-      .on('click', function (event, d: ChainNode) {
+      .on('click', function (event, d: ChainNodeData) {
+        // Use ChainNodeData
         if (interactive && onNodeClick) {
           // Use event to provide visual feedback on click
           d3.select(this).classed('node-clicked', true);
@@ -215,32 +195,32 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
             d3.select(this).classed('node-clicked', false);
           }, 300);
 
-          onNodeClick(d.id, d.type);
+          onNodeClick!(d.id, d.type as 'converter' | 'recipe'); // Assert type for handler
         }
       })
       .call(
         d3
-          .drag<SVGGElement, ChainNode>()
+          .drag<SVGGElement, ChainNodeData>()
           .on('start', dragstarted)
           .on('drag', dragged)
           .on('end', dragended)
       );
 
-    // Add node shapes (different shapes for converters and recipes)
+    // Add node shapes
     node
       .append('circle')
       .attr('r', d => (d.type === 'converter' ? 15 : 10))
       .attr('fill', d => (d.type === 'converter' ? '#4299e1' : '#ed8936'))
-      .attr('stroke', d => getStatusColor(d.status))
+      .attr('stroke', d => getStatusColor(d.status ?? ProcessStatus.PENDING))
       .attr('stroke-width', 2);
 
-    // Add text labels
+    // Add text labels using the label property
     node
       .append('text')
       .attr('dy', -20)
       .attr('text-anchor', 'middle')
       .attr('fill', '#cbd5e0')
-      .text(d => d.name);
+      .text(d => d.label); // Use label property
 
     // Add status indicators
     node
@@ -248,61 +228,56 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .attr('dy', 25)
       .attr('text-anchor', 'middle')
       .attr('fill', '#cbd5e0')
-      .text(d => capitalizeFirstLetter(d.status.replace('_', ' ')));
+      .text(d => capitalizeFirstLetter((d.status ?? ProcessStatus.PENDING).replace('_', ' ')));
 
-    // Update node and link positions on simulation tick
+    // Update positions on tick
     simulation.on('tick', () => {
-      // Use safe accessors for link elements with source and target properties
       link
-        .attr('x1', function (d) {
-          return d3Accessors.getX(d.source);
-        })
-        .attr('y1', function (d) {
-          return d3Accessors.getY(d.source);
-        })
-        .attr('x2', function (d) {
-          return d3Accessors.getX(d.target);
-        })
-        .attr('y2', function (d) {
-          return d3Accessors.getY(d.target);
-        });
+        .attr('x1', d => d3Accessors.getX(d.source))
+        .attr('y1', d => d3Accessors.getY(d.source))
+        .attr('x2', d => d3Accessors.getX(d.target))
+        .attr('y2', d => d3Accessors.getY(d.target));
 
-      node.attr('transform', (d: ChainNode) => `translate(${d.x},${d.y})`);
+      node.attr('transform', (d: ChainNodeData) => `translate(${d.x ?? 0},${d.y ?? 0})`);
     });
 
-    // Drag event handlers
-    function dragstarted(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
-      if (!event?.active) {
-        simulation.alphaTarget(0.3).restart();
-      }
+    // Drag event handlers - use ChainNodeData
+    function dragstarted(
+      event: d3.D3DragEvent<SVGGElement, ChainNodeData, ChainNodeData>,
+      d: ChainNodeData
+    ) {
+      if (!event?.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
-
-    function dragged(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
+    function dragged(
+      event: d3.D3DragEvent<SVGGElement, ChainNodeData, ChainNodeData>,
+      d: ChainNodeData
+    ) {
       d.fx = event?.x;
       d.fy = event?.y;
     }
-
-    function dragended(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
-      if (!event?.active) {
-        simulation.alphaTarget(0);
-      }
+    function dragended(
+      event: d3.D3DragEvent<SVGGElement, ChainNodeData, ChainNodeData>,
+      d: ChainNodeData
+    ) {
+      if (!event?.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
     }
   }, [nodes, links, width, height, interactive, onNodeClick]);
 
   // Helper function to get color based on status
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: ProcessStatus) => {
     switch (status) {
-      case 'completed':
+      case ProcessStatus.COMPLETED:
         return '#48bb78'; // Green
-      case 'in_progress':
+      case ProcessStatus.IN_PROGRESS:
         return '#f6ad55'; // Orange
-      case 'failed':
+      case ProcessStatus.FAILED:
         return '#f56565'; // Red
-      case 'pending':
+      case ProcessStatus.PENDING:
+      case ProcessStatus.PAUSED: // Treat paused same as pending visually for now
       default:
         return '#a0aec0'; // Gray
     }

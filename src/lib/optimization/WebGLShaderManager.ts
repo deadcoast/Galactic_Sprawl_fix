@@ -751,4 +751,13 @@ export class WebGLShaderManager {
 
     console.warn('[WebGLShaderManager] Resources disposed');
   }
+
+  /**
+   * Updates uniforms for all managed shaders. Typically called once per frame.
+   * @param _deltaTime Time elapsed since the last frame in seconds.
+   */
+  public updateAllUniforms(_deltaTime: number): void {
+    if (!this.gl) return;
+    // ... existing code ...
+  }
 }

@@ -5,10 +5,11 @@
  * It fully implements the ShipEvents interface and uses the standardized types.
  */
 
-import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { Ship, ShipEvents } from '../../types/events/ShipEvents';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { ShipStatus, ShipType } from '../../types/ships/ShipTypes';
+import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShipTypes';
+import { ShipCategory, ShipStatus, ShipType } from '../../types/ships/ShipTypes';
 
 /**
  * Ship hangar manager class that uses standardized types and events
@@ -272,7 +273,11 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
    * @param requirements The requirements to build this ship type
    */
   public makeShipTypeAvailable(shipType: ShipType, requirements: Record<string, unknown>): void {
-    this.emit('ship-type:available', { shipType, requirements });
+    // Assume ShipType here refers to the class (PlayerShipClass) and needs mapping
+    const playerClass = shipType as unknown as PlayerShipClass; // Cast to unknown first
+    const playerCategory = this.getPlayerShipCategory(playerClass); // Renamed helper
+    const shipCategory = this.mapPlayerCategoryToShipCategory(playerCategory); // New mapping
+    this.emit('ship-type:available', { shipType: shipCategory, requirements });
   }
 
   /**
@@ -295,7 +300,9 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
     const ship: Ship = {
       id,
       name,
-      type,
+      type: this.mapPlayerCategoryToShipCategory(
+        this.getPlayerShipCategory(type as unknown as PlayerShipClass)
+      ), // Use helpers + mapping
       level: 1,
       health: maxHealth,
       maxHealth,
@@ -315,6 +322,31 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
     }
 
     return ship;
+  }
+
+  // Add the helper method copied from ShipHangarManager.ts (renamed)
+  private getPlayerShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
+    if (shipClass.includes('void-dredger')) {
+      return 'mining';
+    }
+    if (shipClass.includes('andromeda') || shipClass.includes('schooner')) {
+      return 'recon';
+    }
+    return 'war';
+  }
+
+  // Temporary mapping function until types are unified
+  private mapPlayerCategoryToShipCategory(playerCategory: PlayerShipCategory): ShipCategory {
+    switch (playerCategory) {
+      case 'war':
+        return 'fighter'; // Or cruiser/battleship - needs clarification
+      case 'recon':
+        return 'scout';
+      case 'mining':
+        return 'transport'; // Mapping mining to transport as a guess
+      default:
+        return 'fighter'; // Default fallback
+    }
   }
 }
 

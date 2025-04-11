@@ -198,12 +198,12 @@ export function RadarSweepAnimation({
 
   return (
     <div className="relative overflow-hidden rounded-full" style={{ width: size, height: size }}>
-      <canvas ref={canvasRef} width={size} height={size} className="absolute left-0 top-0" />
+      <canvas ref={canvasRef} width={size} height={size} className="absolute top-0 left-0" />
 
       {/* Radar Sweep */}
       {isActive && (
         <div
-          className="absolute left-0 top-0 h-full w-full"
+          className="absolute top-0 left-0 h-full w-full"
           style={{
             background: `conic-gradient(from ${rotation}deg, ${color} 0deg, ${color} 30deg, transparent 60deg, transparent 360deg)`,
             opacity: 0.7,
@@ -214,7 +214,7 @@ export function RadarSweepAnimation({
       {/* Pulse Effect */}
       {isActive && (
         <motion.div
-          className="absolute left-0 top-0 h-full w-full rounded-full"
+          className="absolute top-0 left-0 h-full w-full rounded-full"
           style={{ backgroundColor: pulseColor }}
           animate={{
             scale: [1, 1.05, 1],

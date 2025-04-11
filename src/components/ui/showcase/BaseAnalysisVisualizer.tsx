@@ -1,10 +1,5 @@
-import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { HeatMap } from '../../exploration/visualizations/charts/HeatMap';
-import {
-    NetworkEdge,
-    NetworkGraph,
-    NetworkNode,
-} from '../visualization/NetworkGraph';
+import { NetworkEdge, NetworkGraph, NetworkNode } from '../visualization/NetworkGraph';
 
 // Default renderers
 const defaultRenderers: Renderers = {
@@ -12,15 +7,11 @@ const defaultRenderers: Renderers = {
   heatmap: ({ data: heatmapData, size, options }) => {
     // Basic check if data is an array
     if (!Array.isArray(heatmapData)) {
-      return (
-        <div style={size}>
-          Invalid data format for Heatmap. Expected array of objects.
-        </div>
-      );
+      return <div style={size}>Invalid data format for Heatmap. Expected array of objects.</div>;
     }
 
     // Type assertion - assuming the data structure is compatible
-    const data = heatmapData as ChartDataRecord[];
+    const data = heatmapData as AnalysisComponentTypes[];
 
     // Extract keys from options or use defaults
     const valueKey = options?.valueKey || 'value';
@@ -29,7 +20,6 @@ const defaultRenderers: Renderers = {
 
     // Remove specific keys before spreading options
     const { valueKey: _vk, xKey: _xk, yKey: _yk, ...restOptions } = options || {};
-
 
     return (
       <HeatMap
@@ -44,22 +34,29 @@ const defaultRenderers: Renderers = {
     );
   },
   network: ({ data: networkData, size, options }) => {
-    // Validate network data structure
-    if (
-      typeof networkData !== 'object' ||
-      networkData === null ||
-      !Array.isArray((networkData as any).nodes) ||
-      !Array.isArray((networkData as any).edges)
-    ) {
+    // Define an inline type guard for the network data structure
+    function isNetworkDataObject(data: unknown): data is { nodes: unknown[]; edges: unknown[] } {
+      return (
+        typeof data === 'object' &&
+        data !== null &&
+        'nodes' in data &&
+        Array.isArray((data as { nodes: unknown }).nodes) &&
+        'edges' in data &&
+        Array.isArray((data as { edges: unknown }).edges)
+      );
+    }
+
+    // Use the type guard for validation
+    if (!isNetworkDataObject(networkData)) {
       return (
         <div style={size}>
-          Invalid data format for NetworkGraph. Expected object with 'nodes' and
-          'edges' arrays. Received: {JSON.stringify(networkData)}
+          Invalid data format for NetworkGraph. Expected object with 'nodes' and 'edges' arrays.
+          Received: {JSON.stringify(networkData)}
         </div>
       );
     }
 
-    // Type assertion after validation
+    // Type assertion after validation (safer now)
     const { nodes, edges } = networkData as {
       nodes: NetworkNode[];
       edges: NetworkEdge[];
@@ -75,4 +72,4 @@ const defaultRenderers: Renderers = {
       />
     );
   },
-}; 
+};

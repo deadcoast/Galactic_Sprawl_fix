@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import {
   DataVisualizationShaderType,
   ShaderUniform,
@@ -93,9 +93,6 @@ export const HeatMapDensityVisualization: React.FC<HeatMapDensityVisualizationPr
   gridSize = 0.05,
   ...restProps
 }) => {
-  // Canvas ref for custom pre-rendering if needed
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   // Process data for density visualization
   const processedData = useMemo(() => {
     // For basic usage, we can just return the data

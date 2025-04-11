@@ -1,10 +1,11 @@
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import {
-    BehaviorActionStartedEventData,
-    BehaviorNodeExecutedEventData,
-    EventType
+  BehaviorActionStartedEventData,
+  BehaviorNodeExecutedEventData,
+  EventType,
 } from '../../types/events/EventTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
 
@@ -32,20 +33,34 @@ interface BehaviorContext {
   cooldowns: Record<string, number>;
 }
 
-export class BehaviorTreeManager {
-  private static instance: BehaviorTreeManager;
+export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
   private trees: Map<string, BehaviorNode> = new Map();
   private contexts: Map<string, BehaviorContext> = new Map();
 
-  private constructor() {
-    this.initializeDefaultTrees();
+  protected constructor() {
+    super('BehaviorTreeManager');
   }
 
-  public static getInstance(): BehaviorTreeManager {
-    if (!BehaviorTreeManager.instance) {
-      BehaviorTreeManager.instance = new BehaviorTreeManager();
-    }
-    return BehaviorTreeManager.instance;
+  protected async onInitialize(): Promise<void> {
+    this.initializeDefaultTrees();
+    await Promise.resolve();
+  }
+
+  protected onUpdate(_deltaTime: number): void {
+    // Implement update logic if needed, e.g., periodically evaluating trees
+    // for (const unitId of this.contexts.keys()) {
+    //   const treeId = this.getTreeIdForUnit(unitId); // Need logic to determine tree
+    //   if (treeId) {
+    //      this.evaluateTree(unitId, treeId);
+    //   }
+    // }
+  }
+
+  protected async onDispose(): Promise<void> {
+    this.trees.clear();
+    this.contexts.clear();
+    // Other cleanup if needed
+    await Promise.resolve();
   }
 
   private initializeDefaultTrees(): void {
@@ -230,12 +245,16 @@ export class BehaviorTreeManager {
       case 'action':
         if (node.execute) {
           node.execute(context);
-          const eventData: BehaviorNodeExecutedEventData = { nodeId: node.id, success: true, unitId: context.unit.id };
-          eventSystem.publish({
-              type: EventType.BEHAVIOR_NODE_EXECUTED,
-              managerId: 'BehaviorTreeManager',
-              timestamp: Date.now(),
-              data: eventData
+          const eventData: BehaviorNodeExecutedEventData = {
+            nodeId: node.id,
+            success: true,
+            unitId: context.unit.id,
+          };
+          this.publish({
+            type: EventType.BEHAVIOR_NODE_EXECUTED as string,
+            managerId: this.managerName,
+            timestamp: Date.now(),
+            data: eventData,
           });
           return true;
         }
@@ -334,12 +353,15 @@ export class BehaviorTreeManager {
 
     const readyWeapon = context.unit.weapons.find(w => w.status === 'ready');
     if (readyWeapon) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'attack' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'attack',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Weapon firing logic handled by combat manager
     }
@@ -347,12 +369,15 @@ export class BehaviorTreeManager {
 
   private activateStealth(context: BehaviorContext): void {
     if (!context.cooldowns['stealth']) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'stealth' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'stealth',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       context.cooldowns['stealth'] = Date.now() + 10000; // 10 second cooldown
     }
@@ -360,12 +385,15 @@ export class BehaviorTreeManager {
 
   private performSurpriseAttack(context: BehaviorContext): void {
     if (context.unit.target) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'surprise_attack' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'surprise_attack',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Surprise attack bonus handled by combat manager
     }
@@ -381,24 +409,30 @@ export class BehaviorTreeManager {
 
     if (newFormation !== context.currentFormation.type) {
       context.currentFormation.type = newFormation;
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'formation_change' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'formation_change',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
     }
   }
 
   private formAttackPattern(context: BehaviorContext): void {
     if (context.nearbyAllies.length >= 3) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'form_attack_pattern' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'form_attack_pattern',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Formation pattern handled by fleet manager
     }
@@ -406,12 +440,15 @@ export class BehaviorTreeManager {
 
   private executeCoordinatedStrike(context: BehaviorContext): void {
     if (context.unit.target && context.nearbyAllies.length >= 2) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'coordinated_strike' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'coordinated_strike',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Coordinated attack handled by combat manager
     }
@@ -419,12 +456,15 @@ export class BehaviorTreeManager {
 
   private formDefensivePattern(context: BehaviorContext): void {
     if (context.nearbyAllies.length >= 2) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'form_defensive_pattern' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'form_defensive_pattern',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Defensive formation handled by fleet manager
     }
@@ -436,12 +476,15 @@ export class BehaviorTreeManager {
     );
 
     if (lowShieldAllies.length > 0) {
-      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'shield_boost' };
-      eventSystem.publish({
-          type: EventType.BEHAVIOR_ACTION_STARTED,
-          managerId: 'BehaviorTreeManager',
-          timestamp: Date.now(),
-          data: eventData
+      const eventData: BehaviorActionStartedEventData = {
+        unitId: context.unit.id,
+        actionType: 'shield_boost',
+      };
+      this.publish({
+        type: EventType.BEHAVIOR_ACTION_STARTED as string,
+        managerId: this.managerName,
+        timestamp: Date.now(),
+        data: eventData,
       });
       // Shield boost handled by combat manager
     }
@@ -452,5 +495,8 @@ export class BehaviorTreeManager {
   }
 }
 
-// Export singleton instance
-export const behaviorTreeManager = BehaviorTreeManager.getInstance();
+// Keep export, but it's the class now, not the instance
+// export const behaviorTreeManager = BehaviorTreeManager.getInstance();
+// Modify export if necessary based on how ManagerRegistry uses it
+// For now, just export the class
+// export default BehaviorTreeManager; // Or keep named export if registry imports it directly

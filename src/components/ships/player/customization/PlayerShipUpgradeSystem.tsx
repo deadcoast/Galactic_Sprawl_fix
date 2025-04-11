@@ -122,7 +122,7 @@ export function PlayerShipUpgradeSystem({
         <div className="grid grid-cols-2 gap-3">
           {Object.entries(ship.stats).map(([stat, values]) => (
             <div key={stat} className="rounded-lg bg-gray-700/50 p-3">
-              <div className="mb-2 text-sm capitalize text-gray-400">{stat}</div>
+              <div className="mb-2 text-sm text-gray-400 capitalize">{stat}</div>
               <div className="flex items-center justify-between">
                 <div className="text-white">
                   {values.current}

@@ -1,16 +1,14 @@
-import { AlertTriangle, Shield, Zap, Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
+import { AlertTriangle, Pause, Play, Shield, SkipBack, SkipForward, X, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { Position } from '../../types/core/GameTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
-import { useGameState } from '../../contexts/GameContext';
-import { GameEvent, GameEventType } from '../../types/core/GameTypes';
-import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { GameEvent, GameEventType, Position } from '../../types/core/GameTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { FactionId } from '../../types/ships/FactionTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -657,14 +655,14 @@ export function BattleEnvironment({
     const event: GameEvent = {
       type: eventType,
       timestamp: Date.now(),
-      data
+      data,
     };
-    
+
     // Use the useGameState hook indirectly by referencing it in comments
     // This is a workaround since hooks can only be used in component functions
     // In a real implementation, this would use the useGameState hook to update state
     console.warn('Combat event logged, would use useGameState to update:', event);
-    
+
     return event;
   };
 
@@ -692,14 +690,14 @@ export function BattleEnvironment({
       timestamp: gameEvent.timestamp,
       data: gameEvent.data as Record<string, unknown> | undefined,
       moduleId: 'combat-system',
-      moduleType: 'COMBAT_MODULE' as ModuleType
+      moduleType: 'COMBAT_MODULE' as ModuleType,
     };
   };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
       {/* Combat HUD - Only render visible units */}
-      <div className="absolute left-4 top-4 space-y-2">
+      <div className="absolute top-4 left-4 space-y-2">
         {virtualizedUnits.map(unit => (
           <div
             key={unit.id}
@@ -799,7 +797,7 @@ export function BattleEnvironment({
 
             {/* Enhanced Effect Indicator */}
             <div
-              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-full px-2 py-1 bg-${visuals.color}-900/80 border border-${visuals.color}-500/50 text-${visuals.color}-200 whitespace-nowrap text-xs ${hazard.severity === 'high' ? 'animate-pulse' : ''} ${visuals.animations.active}`}
+              className={`absolute top-full left-1/2 mt-2 -translate-x-1/2 rounded-full px-2 py-1 bg-${visuals.color}-900/80 border border-${visuals.color}-500/50 text-${visuals.color}-200 text-xs whitespace-nowrap ${hazard.severity === 'high' ? 'animate-pulse' : ''} ${visuals.animations.active}`}
             >
               {hazard.effect.type.charAt(0).toUpperCase() + hazard.effect.type.slice(1)}:{' '}
               {Math.round(
@@ -889,9 +887,9 @@ export function BattleEnvironment({
           intensity={techBonuses.effectPotency}
         />
       ))}
-      
+
       {/* Add Combat Controls at the bottom of the environment */}
-      <div className="absolute bottom-0 left-0 right-0 p-4">
+      <div className="absolute right-0 bottom-0 left-0 p-4">
         <CombatControls />
       </div>
     </div>
@@ -926,9 +924,9 @@ function getPositionFromEvent(event: { data?: { position?: unknown } }): Positio
   if (!event || !event.data || !event.data.position) {
     return { x: 50, y: 50 }; // Default position
   }
-  
+
   const position = event.data.position;
-  
+
   if (
     typeof position === 'object' &&
     position !== null &&
@@ -937,12 +935,12 @@ function getPositionFromEvent(event: { data?: { position?: unknown } }): Positio
     typeof position.x !== 'undefined' &&
     typeof position.y !== 'undefined'
   ) {
-    return { 
-      x: Number(position.x), 
-      y: Number(position.y) 
+    return {
+      x: Number(position.x),
+      y: Number(position.y),
     };
   }
-  
+
   return { x: 50, y: 50 }; // Default position
 }
 
@@ -971,7 +969,7 @@ const CombatControls = () => {
       <button onClick={handleSkipBack} aria-label="Skip back">
         <SkipBack className="h-5 w-5 text-teal-400" />
       </button>
-      <button onClick={handlePlayPause} aria-label={isPlaying ? "Pause" : "Play"}>
+      <button onClick={handlePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
         {isPlaying ? (
           <Pause className="h-5 w-5 text-teal-400" />
         ) : (

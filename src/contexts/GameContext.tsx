@@ -53,18 +53,8 @@ interface GameState extends BaseState {
   isPaused: boolean;
   gameTime: number;
   events: GameEvent[];
-  resources: {
-    minerals: number;
-    energy: number;
-    population: number;
-    research: number;
-  };
-  resourceRates: {
-    minerals: number;
-    energy: number;
-    population: number;
-    research: number;
-  };
+  resources: Record<ResourceType, number>;
+  resourceRates: Partial<Record<ResourceType, number>>;
   systems: {
     total: number;
     colonized: number;
@@ -120,8 +110,8 @@ interface GamePayloads {
   [GameActionType.RESUME_GAME]: undefined;
   [GameActionType.STOP_GAME]: undefined;
   [GameActionType.ADD_EVENT]: GameEvent;
-  [GameActionType.UPDATE_RESOURCES]: Partial<GameState['resources']>;
-  [GameActionType.UPDATE_RESOURCE_RATES]: Partial<GameState['resourceRates']>;
+  [GameActionType.UPDATE_RESOURCES]: Partial<Record<ResourceType, number>>;
+  [GameActionType.UPDATE_RESOURCE_RATES]: Partial<Record<ResourceType, number>>;
   [GameActionType.UPDATE_SYSTEMS]: Partial<GameState['systems']>;
   [GameActionType.UPDATE_GAME_TIME]: number;
   [GameActionType.ADD_MISSION]: GameState['missions']['history'][0];
@@ -157,16 +147,31 @@ const initialState: GameState = {
   gameTime: 0,
   events: [],
   resources: {
-    minerals: 1000,
-    energy: 1000,
-    population: 100,
-    research: 0,
+    [ResourceType.MINERALS]: 1000,
+    [ResourceType.ENERGY]: 1000,
+    [ResourceType.POPULATION]: 100,
+    [ResourceType.RESEARCH]: 0,
+    [ResourceType.PLASMA]: 0,
+    [ResourceType.GAS]: 0,
+    [ResourceType.EXOTIC]: 0,
+    [ResourceType.ORGANIC]: 0,
+    [ResourceType.FOOD]: 0,
+    [ResourceType.IRON]: 0,
+    [ResourceType.COPPER]: 0,
+    [ResourceType.TITANIUM]: 0,
+    [ResourceType.URANIUM]: 0,
+    [ResourceType.WATER]: 0,
+    [ResourceType.HELIUM]: 0,
+    [ResourceType.DEUTERIUM]: 0,
+    [ResourceType.ANTIMATTER]: 0,
+    [ResourceType.DARK_MATTER]: 0,
+    [ResourceType.EXOTIC_MATTER]: 0,
   },
   resourceRates: {
-    minerals: 0,
-    energy: 0,
-    population: 0,
-    research: 0,
+    [ResourceType.MINERALS]: 0,
+    [ResourceType.ENERGY]: 0,
+    [ResourceType.POPULATION]: 0,
+    [ResourceType.RESEARCH]: 0,
   },
   systems: {
     total: 1,
@@ -220,14 +225,14 @@ export const createAddEventAction = (event: GameEvent): GameAction => ({
 });
 
 export const createUpdateResourcesAction = (
-  resources: Partial<GameState['resources']>
+  resources: Partial<Record<ResourceType, number>>
 ): GameAction => ({
   type: GameActionType.UPDATE_RESOURCES,
   payload: resources,
 });
 
 export const createUpdateResourceRatesAction = (
-  rates: Partial<GameState['resourceRates']>
+  rates: Partial<Record<ResourceType, number>>
 ): GameAction => ({
   type: GameActionType.UPDATE_RESOURCE_RATES,
   payload: rates,
@@ -307,22 +312,40 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastUpdated: Date.now(),
       };
 
-    case GameActionType.UPDATE_RESOURCES:
+    case GameActionType.UPDATE_RESOURCES: {
+      const resourceUpdates = action.payload as Partial<Record<ResourceType, number>>;
+      const newResources = { ...state.resources };
+      for (const key in resourceUpdates) {
+        if (Object.prototype.hasOwnProperty.call(resourceUpdates, key)) {
+          const resourceType = key as ResourceType;
+          const newValue = resourceUpdates[resourceType];
+          if (newValue !== undefined) {
+            newResources[resourceType] = Math.max(0, newValue);
+          }
+        }
+      }
       return {
         ...state,
-        resources: { ...state.resources, ...(action.payload as Partial<GameState['resources']>) },
+        resources: newResources,
         lastUpdated: Date.now(),
       };
+    }
 
-    case GameActionType.UPDATE_RESOURCE_RATES:
+    case GameActionType.UPDATE_RESOURCE_RATES: {
+      const rateUpdates = action.payload as Partial<Record<ResourceType, number>>;
+      const newRates = { ...state.resourceRates };
+      for (const key in rateUpdates) {
+        if (Object.prototype.hasOwnProperty.call(rateUpdates, key)) {
+          const resourceType = key as ResourceType;
+          newRates[resourceType] = rateUpdates[resourceType];
+        }
+      }
       return {
         ...state,
-        resourceRates: {
-          ...state.resourceRates,
-          ...(action.payload as Partial<GameState['resourceRates']>),
-        },
+        resourceRates: newRates,
         lastUpdated: Date.now(),
       };
+    }
 
     case GameActionType.UPDATE_SYSTEMS:
       return {
@@ -659,13 +682,13 @@ export const useGameActions = () => {
     addEvent: useCallback((event: GameEvent) => dispatch(createAddEventAction(event)), [dispatch]),
 
     updateResources: useCallback(
-      (resources: Partial<GameState['resources']>) =>
+      (resources: Partial<Record<ResourceType, number>>) =>
         dispatch(createUpdateResourcesAction(resources)),
       [dispatch]
     ),
 
     updateResourceRates: useCallback(
-      (rates: Partial<GameState['resourceRates']>) =>
+      (rates: Partial<Record<ResourceType, number>>) =>
         dispatch(createUpdateResourceRatesAction(rates)),
       [dispatch]
     ),

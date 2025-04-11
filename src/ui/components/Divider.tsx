@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, component-library
- * 
+ *
  * Divider component for visually separating content
  */
 import * as React from 'react';
@@ -13,7 +13,7 @@ import { ThemeColor } from '../../types/ui/ThemeTypes';
  */
 export enum DividerOrientation {
   HORIZONTAL = 'horizontal',
-  VERTICAL = 'vertical'
+  VERTICAL = 'vertical',
 }
 
 /**
@@ -22,7 +22,7 @@ export enum DividerOrientation {
 export enum DividerVariant {
   SOLID = 'solid',
   DASHED = 'dashed',
-  DOTTED = 'dotted'
+  DOTTED = 'dotted',
 }
 
 /**
@@ -31,7 +31,7 @@ export enum DividerVariant {
 export enum DividerThickness {
   THIN = 'thin',
   MEDIUM = 'medium',
-  THICK = 'thick'
+  THICK = 'thick',
 }
 
 /**
@@ -43,51 +43,51 @@ export interface DividerProps extends BaseComponentProps {
    * @default 'horizontal'
    */
   orientation?: DividerOrientation | keyof typeof DividerOrientation;
-  
+
   /**
    * Divider style variant
    * @default 'solid'
    */
   variant?: DividerVariant | keyof typeof DividerVariant;
-  
+
   /**
    * Divider line thickness
    * @default 'medium'
    */
   thickness?: DividerThickness | keyof typeof DividerThickness;
-  
+
   /**
    * Divider custom color
    */
   color?: ThemeColor;
-  
+
   /**
    * Spacing before and after the divider in pixels or CSS length value
    */
   spacing?: number | string;
-  
+
   /**
    * Custom width for horizontal divider or height for vertical divider
    */
   length?: number | string;
-  
+
   /**
    * Optional label to display on the divider
    */
   label?: React.ReactNode;
-  
+
   /**
    * Label position
    * @default 'center'
    */
   labelPosition?: 'start' | 'center' | 'end';
-  
+
   /**
    * Whether the divider should have a glow effect
    * @default false
    */
   glow?: boolean;
-  
+
   /**
    * Whether the divider should be hidden on certain screen sizes
    */
@@ -98,51 +98,63 @@ export interface DividerProps extends BaseComponentProps {
  * Check if a value is a valid DividerOrientation
  */
 function isDividerOrientation(value: unknown): value is DividerOrientation {
-  return typeof value === 'string' && Object.values(DividerOrientation).includes(value as DividerOrientation);
+  return (
+    typeof value === 'string' &&
+    Object.values(DividerOrientation).includes(value as DividerOrientation)
+  );
 }
 
 /**
  * Check if a value is a valid DividerVariant
  */
 function isDividerVariant(value: unknown): value is DividerVariant {
-  return typeof value === 'string' && Object.values(DividerVariant).includes(value as DividerVariant);
+  return (
+    typeof value === 'string' && Object.values(DividerVariant).includes(value as DividerVariant)
+  );
 }
 
 /**
  * Check if a value is a valid DividerThickness
  */
 function isDividerThickness(value: unknown): value is DividerThickness {
-  return typeof value === 'string' && Object.values(DividerThickness).includes(value as DividerThickness);
+  return (
+    typeof value === 'string' && Object.values(DividerThickness).includes(value as DividerThickness)
+  );
 }
 
 /**
  * Divider component
- * 
+ *
  * Visually separates content with a horizontal or vertical line
  */
 export const Divider = forwardRef<HTMLDivElement, DividerProps>(
-  ({
-    orientation = DividerOrientation.HORIZONTAL,
-    variant = DividerVariant.SOLID,
-    thickness = DividerThickness.MEDIUM,
-    color,
-    spacing,
-    length,
-    label,
-    labelPosition = 'center',
-    glow = false,
-    hideOn,
-    className = '',
-    style,
-    id,
-    'aria-label': ariaLabel,
-    'data-testid': dataTestId,
-  }, ref) => {
+  (
+    {
+      orientation = DividerOrientation.HORIZONTAL,
+      variant = DividerVariant.SOLID,
+      thickness = DividerThickness.MEDIUM,
+      color,
+      spacing,
+      length,
+      label,
+      labelPosition = 'center',
+      glow = false,
+      hideOn,
+      className = '',
+      style,
+      id,
+      'aria-label': ariaLabel,
+      'data-testid': dataTestId,
+    },
+    ref
+  ) => {
     // Validate props for type safety
-    const safeOrientation = isDividerOrientation(orientation) ? orientation : DividerOrientation.HORIZONTAL;
+    const safeOrientation = isDividerOrientation(orientation)
+      ? orientation
+      : DividerOrientation.HORIZONTAL;
     const safeVariant = isDividerVariant(variant) ? variant : DividerVariant.SOLID;
     const safeThickness = isDividerThickness(thickness) ? thickness : DividerThickness.MEDIUM;
-    
+
     // Compute divider classes based on props
     const dividerClasses = useMemo(() => {
       const classes = [
@@ -155,30 +167,32 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
         label ? `gs-divider--label-${labelPosition}` : '',
         color ? `gs-divider--color-${color}` : '',
         ...(hideOn || []).map(size => `gs-divider--hide-on-${size}`),
-        className
-      ].filter(Boolean).join(' ');
-      
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       return classes;
     }, [
-      safeOrientation, 
-      safeVariant, 
-      safeThickness, 
-      glow, 
-      label, 
-      labelPosition, 
-      color, 
-      hideOn, 
-      className
+      safeOrientation,
+      safeVariant,
+      safeThickness,
+      glow,
+      label,
+      labelPosition,
+      color,
+      hideOn,
+      className,
     ]);
-    
+
     // Custom style with margin/padding based on spacing
     const customStyle = useMemo(() => {
       const dividerStyle = { ...style };
-      
+
       // Add spacing if provided
       if (spacing !== undefined) {
         const spacingValue = typeof spacing === 'number' ? `${spacing}px` : spacing;
-        
+
         if (safeOrientation === DividerOrientation.HORIZONTAL) {
           dividerStyle.marginTop = spacingValue;
           dividerStyle.marginBottom = spacingValue;
@@ -187,21 +201,21 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
           dividerStyle.marginRight = spacingValue;
         }
       }
-      
+
       // Add length if provided
       if (length !== undefined) {
         const lengthValue = typeof length === 'number' ? `${length}px` : length;
-        
+
         if (safeOrientation === DividerOrientation.HORIZONTAL) {
           dividerStyle.width = lengthValue;
         } else {
           dividerStyle.height = lengthValue;
         }
       }
-      
+
       return dividerStyle;
     }, [style, spacing, length, safeOrientation]);
-    
+
     // For accessibility, we use hr for horizontal dividers and a custom div for vertical ones
     if (safeOrientation === DividerOrientation.HORIZONTAL && !label) {
       return (
@@ -215,7 +229,7 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
         />
       );
     }
-    
+
     return (
       <div
         ref={ref}
@@ -227,11 +241,7 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
         aria-label={ariaLabel}
         data-testid={dataTestId}
       >
-        {label && (
-          <div className="gs-divider__label">
-            {label}
-          </div>
-        )}
+        {label && <div className="gs-divider__label">{label}</div>}
       </div>
     );
   }
@@ -239,4 +249,4 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
 
 Divider.displayName = 'Divider';
 
-export default Divider; 
+export default Divider;

@@ -211,7 +211,7 @@ export function AlertSystemUI({
                 transition={{ duration: 0.2 }}
                 className={`flex items-start border-b border-gray-800 p-3 ${getAlertBackground(alert.level)} ${alert.acknowledged ? 'opacity-70' : 'opacity-100'} `}
               >
-                <div className="mr-3 mt-0.5 flex-shrink-0">{getAlertIcon(alert.level)}</div>
+                <div className="mt-0.5 mr-3 flex-shrink-0">{getAlertIcon(alert.level)}</div>
 
                 <div className="min-w-0 flex-grow">
                   <div className="flex items-start justify-between">
@@ -220,7 +220,7 @@ export function AlertSystemUI({
                     >
                       {alert.message}
                     </p>
-                    <span className="ml-2 whitespace-nowrap text-xs text-gray-400">
+                    <span className="ml-2 text-xs whitespace-nowrap text-gray-400">
                       {formatTime(alert.timestamp)}
                     </span>
                   </div>

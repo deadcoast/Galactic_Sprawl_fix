@@ -298,7 +298,10 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
         .attr('r', 0) // Start with radius 0 for entrance animation
         .attr('fill', getCategoryColor(category))
         .attr('stroke', '#fff')
-        .attr('stroke-width', 1);
+        .attr('stroke-width', 1)
+        // Add hover handlers
+        .on('mouseover', createNodeHoverHandler(true))
+        .on('mouseout', createNodeHoverHandler(false));
 
       // Add entrance animation with proper typing
       circles
@@ -455,18 +458,34 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
   /**
    * Creates a type-safe function to handle hover effects on nodes
    */
-  const createNodeHoverHandler = () => {
-    return (event: React.MouseEvent<SVGCircleElement, MouseEvent>, node: TimeNode) => {
+  const createNodeHoverHandler = (isMouseOver: boolean) => {
+    return (event: MouseEvent, node: TimeNode) => {
+      // Disable hover effects during main animation
+      if (isAnimating) return;
+
       // Type-safe accessing of node data
       const value = node.value;
       const timestamp = node.timestamp;
       const category = node.category;
 
       // Safe D3 selection
-      const circle = d3.select<SVGCircleElement, TimeNode>(event?.currentTarget);
+      const target = event?.currentTarget;
+      if (!(target instanceof SVGCircleElement)) {
+        console.warn('Hover target is not an SVGCircleElement');
+        return;
+      }
+      const circle = d3.select<SVGCircleElement, TimeNode>(target);
 
       // Type-safe transition
-      circle.transition().duration(200).attr('r', 8).attr('stroke-width', 2);
+      circle
+        .transition()
+        .duration(150) // Faster transition for hover
+        .attr('r', isMouseOver ? 8 : 5) // Enlarge on hover
+        .attr('stroke-width', isMouseOver ? 2 : 1) // Thicker stroke on hover
+        .attr('stroke', isMouseOver ? '#333' : '#fff'); // Darker stroke on hover
+
+      // TODO: Optionally display tooltip with value, timestamp, category here
+      // console.log(`Hover ${isMouseOver ? 'over' : 'out'}: Cat: ${category}, Time: ${timestamp.toISOString()}, Val: ${value}`);
     };
   };
 

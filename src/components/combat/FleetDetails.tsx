@@ -96,11 +96,11 @@ export const FleetDetails: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-sm text-gray-400">Type</p>
-            <p className="capitalize text-white">{fleetDetails.formation.type}</p>
+            <p className="text-white capitalize">{fleetDetails.formation.type}</p>
           </div>
           <div>
             <p className="text-sm text-gray-400">Pattern</p>
-            <p className="capitalize text-white">{fleetDetails.formation.pattern}</p>
+            <p className="text-white capitalize">{fleetDetails.formation.pattern}</p>
           </div>
           <div>
             <p className="text-sm text-gray-400">Spacing</p>

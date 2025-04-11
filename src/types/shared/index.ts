@@ -2,7 +2,7 @@
  * @context: type-definitions
  * @description: Shared type definitions for common patterns across the codebase.
  * @file: src/types/shared/index.ts
-*/
+ */
 
 import { ResourceType } from '../resources/ResourceTypes';
 

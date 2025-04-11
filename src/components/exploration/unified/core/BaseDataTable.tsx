@@ -347,7 +347,7 @@ export function BaseDataTable<T>({
               <thead className="bg-gray-50">
                 <tr>
                   {onRowSelect && (
-                    <th className="w-10 px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="w-10 px-3 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                       {/* Checkbox header, if needed */}
                     </th>
                   )}
@@ -356,7 +356,7 @@ export function BaseDataTable<T>({
                     <th
                       key={column.id}
                       className={cn(
-                        'px-3 py-3 text-xs font-medium uppercase tracking-wider text-gray-500',
+                        'px-3 py-3 text-xs font-medium tracking-wider text-gray-500 uppercase',
                         column.sortable && 'cursor-pointer hover:bg-gray-100',
                         column.align === 'center' && 'text-center',
                         column.align === 'right' && 'text-right',

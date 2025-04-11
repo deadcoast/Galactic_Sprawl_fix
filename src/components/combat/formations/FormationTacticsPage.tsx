@@ -1,12 +1,5 @@
 import { ChevronDown, ChevronUp, Shield, Ship, Star, Swords } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/Tabs';
 import { FactionId } from '../../../types/ships/FactionTypes';
 import { FormationTacticsContainer } from './FormationTacticsContainer';

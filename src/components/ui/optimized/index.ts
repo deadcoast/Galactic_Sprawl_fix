@@ -1,26 +1,27 @@
 /**
  * @context: ui-system, performance-optimization, component-library
- * 
+ *
  * Index file for optimized component exports
  */
 
-// Re-export memoization utilities
-export type { VirtualizedListProps } from '../virtualized/VirtualizedList';
-export {
-  createMemoizedComponent, withMemoization,
-  withMemoizationForwardRef, type MemoizationOptions
-} from './MemoizedComponent';
-export { VirtualizedList };
+import { FixedSizeList, FixedSizeListProps } from 'react-window'; // Import from react-window
 
-// Import and re-export virtualized components
-  import VirtualizedList from '../virtualized/VirtualizedList';
+// Re-export memoization utilities
+// Assuming VirtualizedListProps was similar to FixedSizeListProps
+export {
+  createMemoizedComponent,
+  withMemoization,
+  withMemoizationForwardRef,
+  type MemoizationOptions,
+} from './MemoizedComponent';
+export type { FixedSizeListProps as VirtualizedListProps };
+
+// Export FixedSizeList as VirtualizedList
+export { FixedSizeList as VirtualizedList };
 
 // Import and re-export lazy loaded components
 import LazyMiniMap from '../game/LazyMiniMap';
 import LazyNetworkGraph from '../visualization/LazyNetworkGraph';
 import LazyResourceFlowDiagram from '../visualization/LazyResourceFlowDiagram';
 
-export {
-  LazyMiniMap, LazyNetworkGraph,
-  LazyResourceFlowDiagram
-};
+export { LazyMiniMap, LazyNetworkGraph, LazyResourceFlowDiagram };

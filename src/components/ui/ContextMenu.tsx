@@ -119,7 +119,7 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
 
             {/* Submenu */}
             {item?.children && activeSubmenu === item?.id && (
-              <div className="absolute left-full top-0 ml-1">
+              <div className="absolute top-0 left-full ml-1">
                 <ContextMenu
                   items={item?.children}
                   x={0}

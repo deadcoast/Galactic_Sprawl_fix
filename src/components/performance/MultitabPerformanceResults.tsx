@@ -1,4 +1,16 @@
-import { Badge, Card, Col, Divider, Empty, Row, Statistic, Table, Tag, Typography } from 'antd';
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Empty,
+  Row,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+} from 'antd';
 import React from 'react';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
@@ -224,6 +236,31 @@ export const MultitabPerformanceResults: React.FC<MultitabPerformanceResultsProp
             size="small"
             pagination={false}
           />
+
+          {_onReportGenerated && (
+            <div style={{ marginTop: '16px', textAlign: 'right' }}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  // Simple report generation
+                  const reportHeader = `Multitab Performance Report (${new Date().toLocaleString()})\n`;
+                  const reportSummary = avgMetrics
+                    ? `Overall Rating: ${getPerformanceRating()}\nAvg Memory: ${avgMetrics.avgMemory.toFixed(1)} MB, Avg CPU: ${avgMetrics.avgCPU.toFixed(1)}%, Avg FPS: ${avgMetrics.avgFPS.toFixed(1)}\n`
+                    : 'Overall Rating: N/A (No data)\n';
+                  const reportDetails = resultsArray
+                    .map(
+                      r =>
+                        `Tab ${r.tabId}: Mem=${r.memory.average.toFixed(1)}MB(max ${r.memory.max.toFixed(1)}) CPU=${r.cpu.average.toFixed(1)}%(max ${r.cpu.max.toFixed(1)}) FPS=${r.fps?.average.toFixed(1) ?? 'N/A'}(min ${r.fps?.min.toFixed(1) ?? 'N/A'}) Errors=${r.errors.length} Status=${r.status}`
+                    )
+                    .join('\n');
+                  const fullReport = `${reportHeader}\n${reportSummary}\nDetails:\n${reportDetails}`;
+                  _onReportGenerated(fullReport);
+                }}
+              >
+                Generate Report
+              </Button>
+            </div>
+          )}
         </>
       )}
     </Card>

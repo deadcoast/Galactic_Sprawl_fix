@@ -82,6 +82,25 @@ export const ResourceEventMonitor: React.FC = () => {
     }
   );
 
+  // Find the most recent event from the latestEvents record
+  const mostRecentEvent = React.useMemo(() => {
+    if (
+      !latestEvents ||
+      typeof latestEvents !== 'object' ||
+      Object.keys(latestEvents).length === 0
+    ) {
+      return null;
+    }
+    let latest: ModuleEvent | null = null;
+    for (const eventType in latestEvents) {
+      const event = latestEvents[eventType as EventType];
+      if (event && (!latest || event.timestamp > latest.timestamp)) {
+        latest = event;
+      }
+    }
+    return latest;
+  }, [latestEvents]);
+
   // Helper function to add events to the log
   const addEventToLog = (eventLog: ResourceEventLog) => {
     setEventLogs(prevLogs => {
@@ -165,20 +184,31 @@ export const ResourceEventMonitor: React.FC = () => {
     <div className="rounded-lg bg-gray-800 p-4 shadow-lg">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-white">Resource Event Monitor</h2>
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            placeholder="Filter events..."
-            className="rounded border border-gray-600 bg-gray-700 px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-          />
-          <button
-            onClick={clearLogs}
-            className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Clear
-          </button>
+        <div className="flex items-center space-x-4">
+          <div className="text-right text-xs text-gray-400">
+            <div>Total Received: {receivedCount}</div>
+            {mostRecentEvent && (
+              <div>
+                Latest: {mostRecentEvent.type} @{' '}
+                {new Date(mostRecentEvent.timestamp).toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              placeholder="Filter events..."
+              className="rounded border border-gray-600 bg-gray-700 px-3 py-1 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+            />
+            <button
+              onClick={clearLogs}
+              className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 

@@ -255,7 +255,7 @@ export interface DataAnalysisContextType {
   ) => void;
   deleteDataset: (id: string) => void;
   getDatasetById?: (id: string) => Dataset | undefined;
-  
+
   // Analysis configurations
   analysisConfigs: AnalysisConfig[];
   createAnalysisConfig: (config: Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>) => string;
@@ -265,34 +265,41 @@ export interface DataAnalysisContextType {
   ) => void;
   deleteAnalysisConfig: (id: string) => void;
   getAnalysisConfigById?: (id: string) => AnalysisConfig | undefined;
-  
-  // Analysis results 
+
+  // Analysis results
   analysisResults: AnalysisResult[];
   getAnalysisResultById?: (id: string) => AnalysisResult | undefined;
   getAnalysisResultsByConfigId: (configId: string) => AnalysisResult[];
   runAnalysis: (configId: string) => Promise<string>;
-  
+
   // Data point management
   addDataPointToDataset: (datasetId: string, dataPoint: DataPoint) => void;
   removeDataPointFromDataset: (datasetId: string, dataPointId: string) => void;
-  
+
   // Dataset utilities
   getOrCreateDatasetBySource: (
     source: 'sectors' | 'anomalies' | 'resources' | 'mixed',
     name?: string
   ) => string;
-  
+
   // Data operations
   refreshData: () => void;
   filterDataset: (
-    datasetId: string, 
+    datasetId: string,
     filters: Array<{
       field: string;
-      operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains' | 'between';
+      operator:
+        | 'equals'
+        | 'notEquals'
+        | 'greaterThan'
+        | 'lessThan'
+        | 'contains'
+        | 'notContains'
+        | 'between';
       value: string | number | boolean | string[] | [number, number];
     }>
   ) => DataPoint[];
-  
+
   // Conversion utilities
   sectorToDataPoint: (sector: Record<string, unknown>) => DataPoint;
   anomalyToDataPoint: (anomaly: Record<string, unknown>) => DataPoint;
@@ -301,15 +308,15 @@ export interface DataAnalysisContextType {
     sectorId?: string,
     coordinates?: { x: number; y: number }
   ) => DataPoint;
-  
+
   // Analysis and stats
   calculateStatistics?: (datasetId: string) => Record<string, unknown>;
   applyFilter?: (datasetId: string, filter: unknown) => DataPoint[];
-  
+
   // Linked data system for cross-referencing entities
   linkedData: Record<string, unknown>;
   storeLinkedData: (key: string, data: unknown) => void;
-  
+
   // Statistics tracking for anomalies
   anomalyStats: Record<string, unknown>;
   updateAnomalyStats: (data: {

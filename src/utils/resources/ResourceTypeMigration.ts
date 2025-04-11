@@ -6,41 +6,33 @@
  * object keys, arrays, and more.
  */
 
-import { ResourceType, ResourceTypeString } from './../../types/resources/ResourceTypes';
+// Remove unused import, resolving the linter error
+// import { ResourceType as StringResourceType } from '../../types/resources/LegacyResourceTypes'; // Assuming legacy types are here
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import {
+  ensureEnumResourceType,
+  ensureStringResourceType,
+  isValidStringType,
+  toEnumResourceType,
+} from './ResourceTypeConverter'; // Import needed converters
 
-// Define type aliases for clarity in migration functions
-type EnumResourceType = ResourceType;
-type StringResourceType = ResourceTypeString;
-
-/**
- * Validate that a value is a valid EnumResourceType
- * Following the type guard pattern from context documentation
- * @param value The value to check
- * @returns True if the value is a valid EnumResourceType
- */
-export function validateEnumResourceType(value: unknown): value is EnumResourceType {
-  if (typeof value !== 'string') {
-    return false;
-  }
-  
-  // Check if the value is in the ResourceType enum - following the pattern in context
-  return Object.values(ResourceType).includes(value as ResourceType);
-}
+// Keep migration-specific functions like getMigrationMapping, findEnumResourceType, generateMigrationGuide
+// Keep data transformation helpers if deemed necessary for migration specifically
 
 /**
  * Generate a mapping of string literals to EnumResourceType
  * Following the resource type conversion pattern from context documentation
  * @returns Record mapping string literals to EnumResourceType values
  */
-export function getMigrationMapping(): Record<string, EnumResourceType> {
-  const mapping: Record<string, EnumResourceType> = {};
-  
+export function getMigrationMapping(): Record<string, ResourceType> {
+  const mapping: Record<string, ResourceType> = {};
+
   // Map string literals to enum values - consistent with resource system patterns
   Object.values(ResourceType).forEach(resourceType => {
     // Convert to lowercase for case-insensitive matching
     const lowerCaseKey = resourceType.toLowerCase();
-    mapping[lowerCaseKey] = resourceType as EnumResourceType;
-    
+    mapping[lowerCaseKey] = resourceType as ResourceType;
+
     // Add additional common variations - following the pattern for handling variations
     if (lowerCaseKey === ResourceType.DARK_MATTER.toLowerCase()) {
       mapping['darkmatter'] = ResourceType.DARK_MATTER;
@@ -50,7 +42,7 @@ export function getMigrationMapping(): Record<string, EnumResourceType> {
       mapping['exotic-matter'] = ResourceType.EXOTIC_MATTER;
     }
   });
-  
+
   return mapping;
 }
 
@@ -60,21 +52,21 @@ export function getMigrationMapping(): Record<string, EnumResourceType> {
  * @param value A string that might represent a resource type
  * @returns The matching EnumResourceType or undefined if no match
  */
-export function findEnumResourceType(value: string): EnumResourceType | undefined {
+export function findEnumResourceType(value: string): ResourceType | undefined {
   // Get the mapping of string literals to enum values
   const mapping = getMigrationMapping();
-  
+
   // Try exact match first - following lookup pattern in context
   if (value in mapping) {
     return mapping[value];
   }
-  
+
   // Try lowercase match - consistent with case-insensitive patterns
   const lowerValue = value.toLowerCase();
   if (lowerValue in mapping) {
     return mapping[lowerValue];
   }
-  
+
   // Try to find a partial match - following fuzzy matching pattern
   const keys = Object.keys(mapping);
   for (const key of keys) {
@@ -82,7 +74,7 @@ export function findEnumResourceType(value: string): EnumResourceType | undefine
       return mapping[key];
     }
   }
-  
+
   return undefined;
 }
 
@@ -115,135 +107,14 @@ export function generateMigrationGuide(): string {
   return guide;
 }
 
-/**
- * Maps string resource types to enum resource types
- */
-const STRING_TO_ENUM_MAP: Record<string, ResourceType> = {
-  MINERALS: ResourceType.MINERALS,
-  ENERGY: ResourceType.ENERGY,
-  POPULATION: ResourceType.POPULATION,
-  RESEARCH: ResourceType.RESEARCH,
-  PLASMA: ResourceType.PLASMA,
-  GAS: ResourceType.GAS,
-  EXOTIC: ResourceType.EXOTIC,
-  ORGANIC: ResourceType.ORGANIC,
-  FOOD: ResourceType.FOOD,
-  IRON: ResourceType.IRON,
-  COPPER: ResourceType.COPPER,
-  TITANIUM: ResourceType.TITANIUM,
-  URANIUM: ResourceType.URANIUM,
-  WATER: ResourceType.WATER,
-  HELIUM: ResourceType.HELIUM,
-  DEUTERIUM: ResourceType.DEUTERIUM,
-  ANTIMATTER: ResourceType.ANTIMATTER,
-  DARK_MATTER: ResourceType.DARK_MATTER,
-  EXOTIC_MATTER: ResourceType.EXOTIC_MATTER,
-};
+// Remove duplicated mapping constants and conversion/validation functions
+// STRING_TO_ENUM_MAP, ENUM_TO_STRING_MAP
+// toEnumResourceType, toStringResourceType
+// isStringResourceType, isEnumResourceType
+// ensureEnumResourceType, ensureStringResourceType
+// validateEnumResourceType
 
-/**
- * Maps enum resource types to string resource types
- */
-const ENUM_TO_STRING_MAP: Record<ResourceType, string> = {
-  [ResourceType.MINERALS]: 'MINERALS',
-  [ResourceType.ENERGY]: 'ENERGY',
-  [ResourceType.POPULATION]: 'POPULATION',
-  [ResourceType.RESEARCH]: 'RESEARCH',
-  [ResourceType.PLASMA]: 'PLASMA',
-  [ResourceType.GAS]: 'GAS',
-  [ResourceType.EXOTIC]: 'EXOTIC',
-  [ResourceType.ORGANIC]: 'ORGANIC',
-  [ResourceType.FOOD]: 'FOOD',
-  [ResourceType.IRON]: 'IRON',
-  [ResourceType.COPPER]: 'COPPER',
-  [ResourceType.TITANIUM]: 'TITANIUM',
-  [ResourceType.URANIUM]: 'URANIUM',
-  [ResourceType.WATER]: 'WATER',
-  [ResourceType.HELIUM]: 'HELIUM',
-  [ResourceType.DEUTERIUM]: 'DEUTERIUM',
-  [ResourceType.ANTIMATTER]: 'ANTIMATTER',
-  [ResourceType.DARK_MATTER]: 'DARK_MATTER',
-  [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
-};
-
-/**
- * Converts a string resource type to an enum resource type
- * @param resourceType The string resource type
- * @returns The enum ResourceType
- */
-export function toEnumResourceType(resourceType: StringResourceType): ResourceType {
-  if (!(resourceType in STRING_TO_ENUM_MAP)) {
-    console.warn(`Unknown resource type: ${resourceType}, defaulting to MINERALS`);
-    return ResourceType.MINERALS;
-  }
-  return STRING_TO_ENUM_MAP[resourceType];
-}
-
-/**
- * Converts an enum resource type to a string resource type
- * @param resourceType The enum resource type
- * @returns The string resource type
- */
-export function toStringResourceType(resourceType: ResourceType): StringResourceType | string {
-  if (!(resourceType in ENUM_TO_STRING_MAP)) {
-    console.warn(`Unknown resource type: ${resourceType}, defaulting to minerals`);
-    return ResourceType.MINERALS;
-  }
-  return ENUM_TO_STRING_MAP[resourceType];
-}
-
-/**
- * Checks if a value is a valid string resource type
- * @param value The value to check
- * @returns Whether the value is a valid string resource type
- */
-export function isStringResourceType(value: unknown): value is StringResourceType {
-  return typeof value === 'string' && value in STRING_TO_ENUM_MAP;
-}
-
-/**
- * Checks if a value is a valid enum resource type
- * @param value The value to check
- * @returns Whether the value is a valid enum resource type
- */
-export function isEnumResourceType(value: unknown): value is ResourceType {
-  return typeof value === 'string' && Object.values(ResourceType).includes(value as ResourceType);
-}
-
-/**
- * Ensures a value is an enum resource type
- * @param resourceType Either a string resource type or an enum resource type
- * @returns The enum ResourceType
- */
-export function ensureEnumResourceType(
-  resourceType: StringResourceType | ResourceType
-): ResourceType {
-  // If it's already an enum type, return it
-  if (Object.values(ResourceType).includes(resourceType as ResourceType)) {
-    return resourceType as ResourceType;
-  }
-
-  // Otherwise, convert it
-  return toEnumResourceType(resourceType as StringResourceType);
-}
-
-/**
- * Ensures a value is a string resource type
- * @param value The value to ensure is a string resource type
- * @returns The string resource type
- * @throws Error if the value cannot be converted to a string resource type
- */
-export function ensureStringResourceType(value: unknown): StringResourceType | string {
-  if (isStringResourceType(value)) {
-    return value;
-  }
-
-  if (isEnumResourceType(value)) {
-    return toStringResourceType(value);
-  }
-
-  console.warn(`Unknown resource type: ${value}, defaulting to minerals`);
-  return ResourceType.MINERALS;
-}
+// Keep data transformation functions if they are migration-specific
 
 /**
  * Converts an array of items with resource types from string to enum
@@ -261,15 +132,16 @@ export function convertArrayResourceTypes<T>(array: T[], converter: (item: T) =>
  * @returns The converted record
  */
 export function convertRecordResourceTypes<T>(
-  record: Record<StringResourceType, T>
+  record: Record<string, T> // Use string for keys as they are coming from potentially non-enum sources
 ): Record<ResourceType, T> {
-  const result: Record<ResourceType, T> = {} as Record<ResourceType, T>;
+  const result: Partial<Record<ResourceType, T>> = {};
   for (const [key, value] of Object.entries(record)) {
-    if (isStringResourceType(key)) {
-      result[toEnumResourceType(key)] = value;
+    if (isValidStringType(key)) {
+      // Use the imported guard
+      result[toEnumResourceType(key)] = value; // Use the imported converter
     }
   }
-  return result;
+  return result as Record<ResourceType, T>;
 }
 
 /**
@@ -277,11 +149,14 @@ export function convertRecordResourceTypes<T>(
  * @param map The map to convert
  * @returns The converted map
  */
-export function convertMapResourceTypes<T>(map: Map<StringResourceType, T>): Map<ResourceType, T> {
+export function convertMapResourceTypes<T>(map: Map<string, T>): Map<ResourceType, T> {
   const result = new Map<ResourceType, T>();
   // Use Array.from to avoid iterator issues
   Array.from(map.entries()).forEach(([key, value]) => {
-    result?.set(toEnumResourceType(key), value);
+    if (isValidStringType(key)) {
+      // Use the imported guard
+      result?.set(toEnumResourceType(key), value); // Use the imported converter
+    }
   });
   return result;
 }
@@ -298,12 +173,12 @@ export function analyzeMigrationNeeds(fileContent: string): {
 } {
   const stringMatches = (
     fileContent.match(
-      /['"]minerals['"]|['"]energy['"]|['"]population['"]|['"]research['"]|['"]plasma['"]|['"]gas['"]|['"]exotic['"]/g
+      /['"]minerals['"]|['"]energy['"]|['"]population['"]|['"]research['"]|['"]plasma['"]|['"]gas['"]|['"]exotic['"]/gi // Added 'i' flag for case-insensitivity
     ) ?? []
   ).length;
   const enumMatches = (
     fileContent.match(
-      /ResourceType\.MINERALS|ResourceType\.ENERGY|ResourceType\.POPULATION|ResourceType\.RESEARCH|ResourceType\.PLASMA|ResourceType\.GAS|ResourceType\.EXOTIC/g
+      /ResourceType\.(MINERALS|ENERGY|POPULATION|RESEARCH|PLASMA|GAS|EXOTIC|ORGANIC|FOOD|IRON|COPPER|TITANIUM|URANIUM|WATER|HELIUM|DEUTERIUM|ANTIMATTER|DARK_MATTER|EXOTIC_MATTER)/g
     ) ?? []
   ).length;
 
@@ -315,7 +190,7 @@ export function analyzeMigrationNeeds(fileContent: string): {
 }
 
 /**
- * Applies migration to a file content
+ * Applies migration to a file content (Example implementation - might need refinement)
  * @param fileContent The file content to migrate
  * @returns The migrated file content
  */
@@ -323,13 +198,18 @@ export function applyMigration(fileContent: string): string {
   let result = fileContent;
 
   // Replace string literals with enum values
-  result = result?.replace(/['"]minerals['"]/g, 'ResourceType.MINERALS');
-  result = result?.replace(/['"]energy['"]/g, 'ResourceType.ENERGY');
-  result = result?.replace(/['"]population['"]/g, 'ResourceType.POPULATION');
-  result = result?.replace(/['"]research['"]/g, 'ResourceType.RESEARCH');
-  result = result?.replace(/['"]plasma['"]/g, 'ResourceType.PLASMA');
-  result = result?.replace(/['"]gas['"]/g, 'ResourceType.GAS');
-  result = result?.replace(/['"]exotic['"]/g, 'ResourceType.EXOTIC');
+  const resourceMapping = getMigrationMapping();
+  for (const [stringVal, enumVal] of Object.entries(resourceMapping)) {
+    // Handle single quotes: 'stringVal'
+    // Escape potential special regex characters in stringVal if necessary
+    const escapedStringVal = stringVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const singleQuoteRegex = new RegExp(`'${escapedStringVal}'`, 'g');
+    result = result.replace(singleQuoteRegex, `ResourceType.${enumVal}`);
+
+    // Handle double quotes: "stringVal"
+    const doubleQuoteRegex = new RegExp(`"${escapedStringVal}"`, 'g');
+    result = result.replace(doubleQuoteRegex, `ResourceType.${enumVal}`);
+  }
 
   return result;
 }
@@ -362,9 +242,9 @@ export function createResourceTypeCompatibilityLayer<T extends (...args: unknown
       if (index >= args.length) continue;
 
       if (convertToEnum) {
-        newArgs[index] = ensureEnumResourceType(args[index] as StringResourceType | ResourceType);
+        newArgs[index] = ensureEnumResourceType(args[index]); // Use imported converter
       } else {
-        newArgs[index] = ensureStringResourceType(args[index]);
+        newArgs[index] = ensureStringResourceType(args[index]); // Use imported converter
       }
     }
     return original(...newArgs);
@@ -376,12 +256,13 @@ export function createResourceTypeCompatibilityLayer<T extends (...args: unknown
  * @param obj The object to migrate
  * @returns The migrated object
  */
-export function migrateObjectKeys<T>(obj: Record<StringResourceType, T>): Record<ResourceType, T> {
+export function migrateObjectKeys<T>(obj: Record<string, T>): Record<ResourceType, T> {
   const result: Partial<Record<ResourceType, T>> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (isStringResourceType(key)) {
-      result[toEnumResourceType(key as StringResourceType)] = value;
+    if (isValidStringType(key)) {
+      // Use imported guard
+      result[toEnumResourceType(key)] = value; // Use imported converter
     }
   }
 
@@ -402,11 +283,11 @@ export function migrateArrayResourceTypes<T extends Record<string, unknown>>(
     if (
       propertyName in item &&
       typeof item[propertyName] === 'string' &&
-      isStringResourceType(item[propertyName] as string)
+      isValidStringType(item[propertyName] as string) // Use imported guard
     ) {
       return {
         ...item,
-        [propertyName]: toEnumResourceType(item[propertyName] as StringResourceType),
+        [propertyName]: toEnumResourceType(item[propertyName] as string), // Use imported converter
       };
     }
     return item;

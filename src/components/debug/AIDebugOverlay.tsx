@@ -27,7 +27,7 @@ export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AID
   }
 
   return (
-    <div className="fixed right-4 top-4 w-96 rounded-lg border border-gray-700 bg-gray-900/95 shadow-xl backdrop-blur-sm">
+    <div className="fixed top-4 right-4 w-96 rounded-lg border border-gray-700 bg-gray-900/95 shadow-xl backdrop-blur-sm">
       <div className="p-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">

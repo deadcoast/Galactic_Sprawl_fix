@@ -584,7 +584,10 @@ export class AsteroidFieldManager {
             field.hazards.push(newHazard);
             this.state.activeHazards.add(newHazard.id);
             // Publish using eventSystem for new hazard fragment
-            const newHazardEventData: AsteroidFieldHazardCreatedEventData = { fieldId, hazard: newHazard };
+            const newHazardEventData: AsteroidFieldHazardCreatedEventData = {
+              fieldId,
+              hazard: newHazard,
+            };
             eventSystem.publish({
               type: EventType.ASTEROID_FIELD_HAZARD_CREATED,
               managerId: 'AsteroidFieldManager',

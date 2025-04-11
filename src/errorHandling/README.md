@@ -41,11 +41,7 @@ This directory contains a comprehensive error handling system for the applicatio
 
 ```tsx
 // For components that fetch data
-<DataFetchingErrorBoundary 
-  fetchData={refetch} 
-  retryOnError 
-  maxRetries={3}
->
+<DataFetchingErrorBoundary fetchData={refetch} retryOnError maxRetries={3}>
   <UserProfile userId={userId} />
 </DataFetchingErrorBoundary>
 ```
@@ -54,10 +50,7 @@ This directory contains a comprehensive error handling system for the applicatio
 
 ```tsx
 // For visualization components
-<VisualizationErrorBoundary
-  visualizationType="chart"
-  dataSize={data.length}
->
+<VisualizationErrorBoundary visualizationType="chart" dataSize={data.length}>
   <LineChart data={data} />
 </VisualizationErrorBoundary>
 ```
@@ -68,38 +61,35 @@ This directory contains a comprehensive error handling system for the applicatio
 // Create a safe version of a component
 const SafeComponent = withErrorBoundary(DangerousComponent, {
   context: 'CustomContext',
-  fallback: <CustomErrorUI />
+  fallback: <CustomErrorUI />,
 });
 
 // Usage
-<SafeComponent {...props} />
+<SafeComponent {...props} />;
 ```
 
 ### Creating Typed Error Boundaries
 
 ```tsx
 // Create a typed error boundary for a specific component
-const SafeChart = createTypedErrorBoundary(
-  LineChart,
-  'LineChart'
-);
+const SafeChart = createTypedErrorBoundary(LineChart, 'LineChart');
 
 // Usage
-<SafeChart data={data} errorContext={{ chartType: 'line' }} />
+<SafeChart data={data} errorContext={{ chartType: 'line' }} />;
 ```
 
 ### Migration from Legacy Error Boundaries
 
 ```tsx
 // For legacy D3 visualization error boundaries
-<D3VisualizationErrorBoundaryAdapter 
+<D3VisualizationErrorBoundaryAdapter
   componentName="CustomChart"
 >
   <LegacyVisualization />
 </D3VisualizationErrorBoundaryAdapter>
 
 // For legacy integration error handlers
-<IntegrationErrorHandlerAdapter 
+<IntegrationErrorHandlerAdapter
   componentName="IntegrationComponent"
 >
   <LegacyComponent />

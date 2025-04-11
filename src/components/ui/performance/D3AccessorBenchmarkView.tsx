@@ -108,7 +108,7 @@ const D3AccessorBenchmarkView: React.FC = () => {
     const chartMax = Math.min(maxPercentage * 1.2, 100); // Limit to 100% max
 
     return (
-      <div className="mb-8 mt-6">
+      <div className="mt-6 mb-8">
         <h3 className="mb-3 text-lg font-semibold">Performance Comparison Chart</h3>
         <div className="rounded bg-gray-100 p-4">
           {benchmarkComparisons.map((comparison, index) => {
@@ -126,9 +126,9 @@ const D3AccessorBenchmarkView: React.FC = () => {
                   </span>
                 </div>
                 <div className="relative h-6 rounded-sm bg-gray-200">
-                  <div className="absolute bottom-0 left-1/2 top-0 w-px bg-gray-400"></div>
+                  <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gray-400"></div>
                   <div
-                    className={`absolute bottom-0 top-0 ${barColor} rounded-sm`}
+                    className={`absolute top-0 bottom-0 ${barColor} rounded-sm`}
                     style={{
                       width: `${barWidth}%`,
                       [barDirection === 'left' ? 'right' : 'left']: '50%',

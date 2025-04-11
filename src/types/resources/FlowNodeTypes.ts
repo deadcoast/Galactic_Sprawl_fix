@@ -1,6 +1,6 @@
 /**
  * @context: resource-system, visualization-system
- * 
+ *
  * Types for resource flow visualization nodes
  */
 
@@ -20,7 +20,7 @@ export enum FlowNodeType {
   TRANSPORTER = 'TRANSPORTER',
   SOURCE = 'SOURCE',
   SINK = 'SINK',
-  MULTIPLEXER = 'MULTIPLEXER'
+  MULTIPLEXER = 'MULTIPLEXER',
 }
 
 /**
@@ -75,5 +75,5 @@ export enum FlowNodeStatus {
   MAINTENANCE = 'maintenance',
   ERROR = 'error',
   OVERLOADED = 'overloaded',
-  STANDBY = 'standby'
-} 
+  STANDBY = 'standby',
+}

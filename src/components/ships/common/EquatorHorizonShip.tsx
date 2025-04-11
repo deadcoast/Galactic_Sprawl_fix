@@ -4,6 +4,7 @@ import { CombatEffectType } from '../../../effects/types_effects/EffectTypes';
 import { createEffect, isDamageEffect } from '../../../effects/util_effects/effectUtils';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import { Effect } from '../../../types/core/GameTypes';
+import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionId } from '../../../types/ships/FactionTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
@@ -185,6 +186,15 @@ export function EquatorHorizonShip({
     onSpecialAbility?.();
   }, [hasEffect, removeEffect, addEffect, onSpecialAbility]);
 
+  let displayStatus: ShipStatus = ShipStatus.PATROLLING;
+  if (status === 'engaging') {
+    displayStatus = ShipStatus.ENGAGING;
+  } else if (status === 'retreating') {
+    displayStatus = ShipStatus.RETREATING;
+  } else if (status === 'disabled') {
+    displayStatus = ShipStatus.DISABLED;
+  }
+
   return (
     <FactionShipBase
       ship={{
@@ -192,7 +202,7 @@ export function EquatorHorizonShip({
         name,
         class: type,
         faction: 'equator-horizon' as FactionId,
-        status,
+        status: displayStatus,
         tactics: {
           formation: 'balanced',
           behavior: 'defensive',

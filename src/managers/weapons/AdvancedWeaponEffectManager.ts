@@ -8,18 +8,18 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 
 import EventEmitter from 'eventemitter3';
 import {
-    AdvancedEffectVisualConfig,
-    AdvancedWeaponEffectType,
-    BeamEffect,
-    ChainEffect,
-    DelayedEffect,
-    EffectCreationConfig,
-    EnhancedStatusEffect,
-    EnvironmentalInteractionEffect,
-    HomingEffect,
-    MultiStageEffect,
-    ShieldBypassEffect,
-    TacticalEffect,
+  AdvancedEffectVisualConfig,
+  AdvancedWeaponEffectType,
+  BeamEffect,
+  ChainEffect,
+  DelayedEffect,
+  EffectCreationConfig,
+  EnhancedStatusEffect,
+  EnvironmentalInteractionEffect,
+  HomingEffect,
+  MultiStageEffect,
+  ShieldBypassEffect,
+  TacticalEffect,
 } from '../../effects/types_effects/AdvancedWeaponEffects';
 import { Position } from '../../types/geometry';
 

@@ -1,3 +1,4 @@
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
@@ -6,6 +7,39 @@ import {
   ModuleType,
 } from '../../types/buildings/ModuleTypes';
 import { moduleManager } from './ModuleManager';
+
+/**
+ * Events emitted by the ModuleAttachmentManager
+ */
+export enum ModuleAttachmentManagerEventType {
+  ATTACHMENT_STARTED = 'ATTACHMENT_STARTED',
+  ATTACHMENT_CANCELLED = 'ATTACHMENT_CANCELLED',
+  // Add other specific events if needed, e.g., VISUALIZATION_UPDATED
+}
+
+/**
+ * Event data interfaces for ModuleAttachmentManager events
+ */
+export interface AttachmentStartedEventData {
+  buildingId: string;
+  moduleType: ModuleType;
+  previewModuleId: string;
+  validPoints: string[];
+  incompatiblePoints: string[];
+}
+
+export interface AttachmentCancelledEventData {
+  buildingId: string;
+}
+
+/**
+ * Event map for the ModuleAttachmentManager
+ */
+export interface ModuleAttachmentManagerEvents extends Record<string, unknown> {
+  [ModuleAttachmentManagerEventType.ATTACHMENT_STARTED]: AttachmentStartedEventData;
+  [ModuleAttachmentManagerEventType.ATTACHMENT_CANCELLED]: AttachmentCancelledEventData;
+  // Add other event types here
+}
 
 /**
  * Visualization options for module attachment
@@ -33,13 +67,19 @@ export interface AttachmentResult {
  * Module Attachment Manager
  * Handles the attachment of modules to buildings, including validation, visualization, and event handling
  */
-export class ModuleAttachmentManager {
+export class ModuleAttachmentManager extends BaseTypedEventEmitter<ModuleAttachmentManagerEvents> {
+  private static instance: ModuleAttachmentManager | null = null; // Add for singleton
+
   private visualizationOptions: AttachmentVisualizationOptions;
   private previewModule: BaseModule | null = null;
   private validAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
   private incompatibleAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
+  private unsubscribeModuleAttached: (() => void) | null = null;
+  private unsubscribeModuleDetached: (() => void) | null = null;
 
-  constructor(options?: Partial<AttachmentVisualizationOptions>) {
+  private constructor(options?: Partial<AttachmentVisualizationOptions>) {
+    // Make private for singleton
+    super(); // Add super call
     this.visualizationOptions = {
       showValidPoints: true,
       highlightIncompatible: true,
@@ -49,9 +89,48 @@ export class ModuleAttachmentManager {
       ...options,
     };
 
-    // Subscribe to module events
-    moduleEventBus.subscribe('MODULE_ATTACHED' as ModuleEventType, this.handleModuleAttached);
-    moduleEventBus.subscribe('MODULE_DETACHED' as ModuleEventType, this.handleModuleDetached);
+    // Subscribe to module events (Keep for now, ideally move to unified system later)
+    // Store unsubscribe functions
+    this.unsubscribeModuleAttached = moduleEventBus.subscribe(
+      'MODULE_ATTACHED' as ModuleEventType,
+      this.handleModuleAttached
+    );
+    this.unsubscribeModuleDetached = moduleEventBus.subscribe(
+      'MODULE_DETACHED' as ModuleEventType,
+      this.handleModuleDetached
+    );
+  }
+
+  /**
+   * Get the singleton instance
+   */
+  public static getInstance(): ModuleAttachmentManager {
+    if (!ModuleAttachmentManager.instance) {
+      ModuleAttachmentManager.instance = new ModuleAttachmentManager();
+    }
+    return ModuleAttachmentManager.instance;
+  }
+
+  /**
+   * Dispose method to clean up subscriptions
+   */
+  public dispose(): void {
+    if (this.unsubscribeModuleAttached) {
+      this.unsubscribeModuleAttached();
+      this.unsubscribeModuleAttached = null;
+    }
+    if (this.unsubscribeModuleDetached) {
+      this.unsubscribeModuleDetached();
+      this.unsubscribeModuleDetached = null;
+    }
+    // BaseTypedEventEmitter handles its own listener cleanup
+    this.clearAllListeners(); // Ensure BaseTypedEventEmitter cleans up
+
+    // Clear internal state
+    this.previewModule = null;
+    this.validAttachmentPoints.clear();
+    this.incompatibleAttachmentPoints.clear();
+    console.warn('[ModuleAttachmentManager] Disposed and cleaned up subscriptions.');
   }
 
   /**
@@ -109,16 +188,12 @@ export class ModuleAttachmentManager {
     }
 
     // Emit event
-    moduleEventBus.emit({
-      type: 'ATTACHMENT_STARTED' as ModuleEventType,
-      moduleId: this.previewModule.id,
-      moduleType: moduleType,
-      timestamp: Date.now(),
-      data: {
-        buildingId,
-        validPoints: this.validAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
-        incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
-      },
+    this.emit(ModuleAttachmentManagerEventType.ATTACHMENT_STARTED, {
+      buildingId,
+      moduleType,
+      previewModuleId: this.previewModule.id,
+      validPoints: this.validAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
+      incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
     });
   }
 
@@ -130,13 +205,7 @@ export class ModuleAttachmentManager {
     this.clearAttachmentVisualization(buildingId);
 
     // Emit event
-    moduleEventBus.emit({
-      type: 'ATTACHMENT_CANCELLED' as ModuleEventType,
-      moduleId: 'none',
-      moduleType: 'radar' as ModuleType, // Using a default module type
-      timestamp: Date.now(),
-      data: { buildingId },
-    });
+    this.emit(ModuleAttachmentManagerEventType.ATTACHMENT_CANCELLED, { buildingId });
   }
 
   /**
@@ -350,7 +419,7 @@ export class ModuleAttachmentManager {
       // Remove the module from the building's modules array
       building.modules = building.modules.filter(m => m.id !== moduleId);
 
-      // Emit detachment event
+      // Emit detachment event (Keep using moduleEventBus for now)
       moduleEventBus.emit({
         type: 'MODULE_DETACHED' as ModuleEventType,
         moduleId,
@@ -392,36 +461,7 @@ export class ModuleAttachmentManager {
       ...options,
     };
   }
-
-  /**
-   * Clean up resources
-   */
-  public cleanup(): void {
-    // Unsubscribe from events
-    const unsubscribeAttached = moduleEventBus.subscribe(
-      'MODULE_ATTACHED' as ModuleEventType,
-      this.handleModuleAttached
-    );
-    const unsubscribeDetached = moduleEventBus.subscribe(
-      'MODULE_DETACHED' as ModuleEventType,
-      this.handleModuleDetached
-    );
-
-    // Call the unsubscribe functions
-    if (typeof unsubscribeAttached === 'function') {
-      unsubscribeAttached();
-    }
-
-    if (typeof unsubscribeDetached === 'function') {
-      unsubscribeDetached();
-    }
-
-    // Clear data
-    this.previewModule = null;
-    this.validAttachmentPoints.clear();
-    this.incompatibleAttachmentPoints.clear();
-  }
 }
 
 // Export singleton instance
-export const moduleAttachmentManager = new ModuleAttachmentManager();
+export const moduleAttachmentManager = ModuleAttachmentManager.getInstance();

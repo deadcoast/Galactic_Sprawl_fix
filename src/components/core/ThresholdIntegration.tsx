@@ -76,8 +76,10 @@ export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
     if (!event || !event.data || typeof event.data !== 'object') return;
 
     // Safely extract resources from event data
-    const resources = event.data && typeof event.data === 'object' && 'resources' in event.data ? 
-      event.data.resources : null;
+    const resources =
+      event.data && typeof event.data === 'object' && 'resources' in event.data
+        ? event.data.resources
+        : null;
 
     if (!resources || typeof resources !== 'object') return;
 

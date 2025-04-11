@@ -61,7 +61,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_datapoints = this.dataPoints.length;
     this.metadata.metrics = metrics;
   }
@@ -87,7 +87,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
       if (!this.metadata.metrics) {
         this.metadata.metrics = {};
       }
-      const {metrics} = this.metadata;
+      const { metrics } = this.metadata;
       metrics.total_anomalies = scores.filter(s => s.score > 0.7).length;
       metrics.last_detection_run = Date.now();
 

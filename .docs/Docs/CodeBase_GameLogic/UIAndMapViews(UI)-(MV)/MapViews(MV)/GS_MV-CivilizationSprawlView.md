@@ -10,10 +10,9 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Stylized 2D Representation:**  
   The Sprawl View is a simplified 2D map where each colonized system appears as a glowing orb. Systems are positioned in a pattern that reflects their spatial relationships (either loosely based on the Galaxy Map or arranged in an abstract “network” style).
-  
-- **Dynamic Node Labels:**  
+- **Dynamic Node Labels:**
   - **Colonized Systems:**  
-    Each orb is tagged with the empire’s name, system name, or key symbols (e.g., a colony, Dyson Sphere, or Star Station Colony icon).  
+    Each orb is tagged with the empire’s name, system name, or key symbols (e.g., a colony, Dyson Sphere, or Star Station Colony icon).
   - **Asset Indicators:**  
     Systems with additional assets (such as trade hubs, Dyson Spheres, or advanced infrastructure) display extra icons or badges.
 
@@ -21,10 +20,8 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Parallax Star Background:**  
   Multiple layers of slowly moving starfields add depth and reinforce the vastness of space.
-  
 - **Dark Zones & Unexplored Areas:**  
   Regions of the map that have not been fully developed or explored appear as darker, muted zones, indicating potential for expansion.
-  
 - **Hostile/Red Zones:**  
   Areas known to be under enemy or rival faction control are overlaid with a pulsating red tint or subtle animated gradients, alerting the player to possible threats.
 
@@ -39,8 +36,7 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Toggle & Exit:**  
   A prominent “Toggle” or “Exit” button is available, allowing the player to seamlessly switch back to the main game. This button should be clearly visible and contextually placed (e.g., top-right corner).
-  
-- **Hover & Click Actions:**  
+- **Hover & Click Actions:**
   - **System Tooltips:**  
     Hovering over a system orb displays a concise tooltip with key details:  
     • System Name  
@@ -57,8 +53,7 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
   • **Trade Routes Overlay:** Turn on/off animated connections.  
   • **Asset Highlights:** Focus on specific asset types (e.g., only show Dyson Sphere segments or Star Station Colonies).  
   • **Faction & Hostile Zones:** Highlight enemy-controlled areas or contested regions.
-  
-- **Search & Zoom:**  
+- **Search & Zoom:**
   - **Zooming & Panning:**  
     Smooth zoom in/out (via mouse wheel or pinch gestures) allows for both broad overviews and detailed examinations.  
     Panning (via click-and-drag or arrow keys) provides fluid navigation across the map.
@@ -73,7 +68,6 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Expanding Rings & Glows:**  
   Each colonized system’s orb displays concentric rings or glow effects that intensify with increased population and development. For example, a fully developed system might have a bright, multi-layered aura.
-  
 - **Animated Asset Indicators:**  
   Small animated icons (e.g., spinning gears for industrial hubs, pulsing energy for Dyson Spheres) overlaid on system orbs quickly convey the state of major developments.
 
@@ -86,7 +80,6 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Event Notifications:**  
   Temporary overlays or pop-ups within the Sprawl View can alert the player to recent events (e.g., “New Colony Established,” “Hostile Activity Detected in Sector 4”), drawing attention to areas that might need immediate action.
-  
 - **Real-Time Data Updates:**  
   As systems develop or change status (such as transitioning from locked to colonized), the view updates dynamically so the player always sees current information.
 
@@ -98,7 +91,6 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Tech Tree & Resource Synergy:**  
   The Sprawl View should reflect changes based on upgrades from the Tech Tree (e.g., unlocking “Interstellar Trade Network” will increase the visibility or frequency of trade route animations).
-  
 - **Faction Overlays:**  
   Optionally, layers can display the influence of other factions. For example, rival faction activity can be shown as red blips or outlined nodes, prompting strategic decisions.
 
@@ -106,7 +98,6 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Cosmic Weather Effects:**  
   To further immerse the player, include occasional cosmic events like auroras or solar winds that gently animate the background, subtly reminding players of the dynamic space environment.
-  
 - **Day/Night Cycles:**  
   If desired, a simulated day/night cycle or changing color tones over time can give the empire view a living, evolving feel.
 
@@ -114,7 +105,6 @@ The **Civilization Sprawl Map** is the master galactic overview, offering a simp
 
 - **Optimized Rendering:**  
   Use efficient rendering techniques for particle systems and parallax layers to ensure smooth performance, especially as the number of colonized systems increases.
-  
 - **Adaptive UI Layout:**  
   Ensure that the view scales and adapts to different screen resolutions and aspect ratios, maintaining clarity on both large monitors and smaller devices.
 

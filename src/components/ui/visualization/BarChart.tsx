@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, component-library, visualization-system
- * 
+ *
  * BarChart component for rendering bar charts
  */
 import { useMemo } from 'react';
@@ -12,43 +12,43 @@ export interface BarChartProps extends Omit<ChartProps, 'type'> {
    * @default 'vertical'
    */
   orientation?: 'vertical' | 'horizontal';
-  
+
   /**
    * Whether to stack bars from multiple datasets
    * @default false
    */
   stacked?: boolean;
-  
+
   /**
    * Whether to group bars from multiple datasets
    * @default true
    */
   grouped?: boolean;
-  
+
   /**
    * Bar border width in pixels
    * @default 0
    */
   barBorderWidth?: number;
-  
+
   /**
    * Bar border color
    * @default 'transparent'
    */
   barBorderColor?: string;
-  
+
   /**
    * Space between bar groups as a percentage of bar width
    * @default 0.2
    */
   barSpacing?: number;
-  
+
   /**
    * Whether to show value labels on bars
    * @default false
    */
   showValueLabels?: boolean;
-  
+
   /**
    * Value label position
    * @default 'inside'
@@ -73,7 +73,7 @@ export function BarChart({
   // Process data for display
   const processedData = useMemo(() => {
     if (!chartProps.data) return chartProps.data;
-    
+
     return {
       ...chartProps.data,
       datasets: chartProps.data.datasets.map(dataset => ({
@@ -87,22 +87,22 @@ export function BarChart({
           barBorderColor,
           barSpacing,
           showValueLabels,
-          valueLabelPosition
-        }
-      }))
+          valueLabelPosition,
+        },
+      })),
     };
   }, [
-    chartProps.data, 
-    orientation, 
-    stacked, 
-    grouped, 
-    barBorderWidth, 
-    barBorderColor, 
-    barSpacing, 
-    showValueLabels, 
-    valueLabelPosition
+    chartProps.data,
+    orientation,
+    stacked,
+    grouped,
+    barBorderWidth,
+    barBorderColor,
+    barSpacing,
+    showValueLabels,
+    valueLabelPosition,
   ]);
-  
+
   return (
     <Chart
       {...chartProps}
@@ -118,7 +118,7 @@ export function BarChart({
  * Helper to create categorical data for BarChart
  */
 export function createCategoryData(
-  values: number[], 
+  values: number[],
   categories: string[],
   datasetLabel: string = 'Categories',
   color?: string
@@ -127,7 +127,7 @@ export function createCategoryData(
     label: categories[index] || `Category ${index + 1}`,
     value,
   }));
-  
+
   return {
     datasets: [
       {
@@ -160,4 +160,4 @@ export function createComparisonData(
       })),
     })),
   };
-} 
+}

@@ -1,16 +1,16 @@
 /**
  * @context: ui-system, component-library
- * 
+ *
  * Badge component for displaying status indicators, counters, or small pieces of information
  */
 import * as React from 'react';
 import { forwardRef, useMemo } from 'react';
-import { 
-  BaseComponentProps, 
-  ComponentSize, 
+import {
+  BaseComponentProps,
+  ComponentSize,
   ComponentVariant,
   isComponentSize,
-  isComponentVariant
+  isComponentVariant,
 } from '../../types/ui/ComponentTypes';
 import { ThemeColor } from '../../types/ui/ThemeTypes';
 
@@ -21,7 +21,7 @@ export enum BadgePosition {
   TOP_RIGHT = 'top-right',
   TOP_LEFT = 'top-left',
   BOTTOM_RIGHT = 'bottom-right',
-  BOTTOM_LEFT = 'bottom-left'
+  BOTTOM_LEFT = 'bottom-left',
 }
 
 /**
@@ -32,53 +32,53 @@ export interface BadgeProps extends BaseComponentProps {
    * Badge content
    */
   content: React.ReactNode;
-  
+
   /**
    * Badge variant determines the visual style
    * @default 'primary'
    */
   variant?: ComponentVariant;
-  
+
   /**
    * Badge size
    * @default 'medium'
    */
   size?: ComponentSize;
-  
+
   /**
    * Maximum value to display, shows "{max}+" if content is a number exceeding max
    */
   max?: number;
-  
+
   /**
    * Custom color for the badge
    * Uses theme colors
    */
   color?: ThemeColor;
-  
+
   /**
    * Whether the badge should be displayed as a dot without content
    * @default false
    */
   dot?: boolean;
-  
+
   /**
    * Position of the badge when used as an indicator
    * @default 'top-right'
    */
   position?: BadgePosition | keyof typeof BadgePosition;
-  
+
   /**
    * The component that the badge wraps
    */
   children?: React.ReactNode;
-  
+
   /**
    * Whether the badge should be visible
    * @default true
    */
   visible?: boolean;
-  
+
   /**
    * Whether the badge should be rendered inline (without absolute positioning)
    * @default false
@@ -100,43 +100,46 @@ function formatBadgeContent(content: React.ReactNode, max?: number): React.React
   if (max === undefined || typeof content !== 'number' || content <= max) {
     return content;
   }
-  
+
   return `${max}+`;
 }
 
 /**
  * Badge component
- * 
+ *
  * Displays status indicators, counters, or small pieces of information
  */
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  ({
-    content,
-    variant = ComponentVariant.PRIMARY,
-    size = ComponentSize.MEDIUM,
-    max,
-    color,
-    dot = false,
-    position = BadgePosition.TOP_RIGHT,
-    children,
-    className = '',
-    style,
-    id,
-    visible = true,
-    inline = false,
-    'aria-label': ariaLabel,
-    'data-testid': dataTestId,
-  }, ref) => {
+  (
+    {
+      content,
+      variant = ComponentVariant.PRIMARY,
+      size = ComponentSize.MEDIUM,
+      max,
+      color,
+      dot = false,
+      position = BadgePosition.TOP_RIGHT,
+      children,
+      className = '',
+      style,
+      id,
+      visible = true,
+      inline = false,
+      'aria-label': ariaLabel,
+      'data-testid': dataTestId,
+    },
+    ref
+  ) => {
     // Validate variant, size, and position for type safety
     const safeVariant = isComponentVariant(variant) ? variant : ComponentVariant.PRIMARY;
     const safeSize = isComponentSize(size) ? size : ComponentSize.MEDIUM;
     const safePosition = isBadgePosition(position) ? position : BadgePosition.TOP_RIGHT;
-    
+
     // Format badge content based on max value
     const formattedContent = useMemo(() => {
       return formatBadgeContent(content, max);
     }, [content, max]);
-    
+
     // Compute badge classes based on props
     const badgeClasses = useMemo(() => {
       const classes = [
@@ -149,22 +152,14 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         inline ? 'gs-badge--inline' : '',
         children ? 'gs-badge--with-children' : '',
         color ? `gs-badge--color-${color}` : '',
-        className
-      ].filter(Boolean).join(' ');
-      
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       return classes;
-    }, [
-      safeVariant, 
-      safeSize, 
-      safePosition, 
-      dot, 
-      visible, 
-      inline, 
-      children, 
-      color, 
-      className
-    ]);
-    
+    }, [safeVariant, safeSize, safePosition, dot, visible, inline, children, color, className]);
+
     // If there are no children, render the badge directly
     if (!children) {
       return (
@@ -180,7 +175,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         </span>
       );
     }
-    
+
     // If there are children, render the badge as a wrapper
     return (
       <span className="gs-badge-wrapper" style={style}>
@@ -201,4 +196,4 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
 
 Badge.displayName = 'Badge';
 
-export default Badge; 
+export default Badge;

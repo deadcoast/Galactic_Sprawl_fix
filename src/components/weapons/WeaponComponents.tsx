@@ -202,7 +202,7 @@ export function WeaponUpgradeDisplay({
           const diff = value - currentValue;
           return (
             <div key={key} className="flex items-center justify-between text-xs">
-              <span className="capitalize text-gray-400">
+              <span className="text-gray-400 capitalize">
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </span>
               <span className={diff >= 0 ? 'text-green-400' : 'text-red-400'}>

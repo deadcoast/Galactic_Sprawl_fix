@@ -65,9 +65,16 @@ export abstract class AbstractBaseService<T extends AbstractBaseService<T>>
     };
   }
 
-  async initialize(dependencies?: Record<string, unknown>): Promise<void> {
+  /**
+   * Initializes the service. Can be overridden by subclasses.
+   * @param _dependencies Optional context object for initialization.
+   */
+  public async initialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    if (this.metadata.status !== 'initializing') {
+      return;
+    }
     try {
-      await this.onInitialize(dependencies);
+      await this.onInitialize(_dependencies);
       this.metadata.status = 'ready';
     } catch (error) {
       this.metadata.status = 'error';

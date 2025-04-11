@@ -101,10 +101,16 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
               subscription.handler(event);
             } catch (error) {
               errorLoggingService.logError(
-                error instanceof Error ? error : new Error(`Error handling event ${subscription.eventType}`),
+                error instanceof Error
+                  ? error
+                  : new Error(`Error handling event ${subscription.eventType}`),
                 ErrorType.EVENT_HANDLING,
                 ErrorSeverity.MEDIUM,
-                { componentName: 'useComponentLifecycle', action: 'eventHandler', eventType: subscription.eventType }
+                {
+                  componentName: 'useComponentLifecycle',
+                  action: 'eventHandler',
+                  eventType: subscription.eventType,
+                }
               );
             }
           }
@@ -169,8 +175,8 @@ export function useStableCallback<T extends (...args: unknown[]) => unknown>(cal
 
   // Create a stable function that calls the current callback
   return useRef<T>(((...args: unknown[]) => {
-      return callbackRef.current(...args);
-    }) as T).current;
+    return callbackRef.current(...args);
+  }) as T).current;
 }
 
 /**
@@ -244,10 +250,16 @@ export function useDynamicComponentLifecycle(
               subscription.handler(event);
             } catch (error) {
               errorLoggingService.logError(
-                error instanceof Error ? error : new Error(`Error handling event ${subscription.eventType}`),
+                error instanceof Error
+                  ? error
+                  : new Error(`Error handling event ${subscription.eventType}`),
                 ErrorType.EVENT_HANDLING,
                 ErrorSeverity.MEDIUM,
-                { componentName: 'useDynamicComponentLifecycle', action: 'eventHandler', eventType: subscription.eventType }
+                {
+                  componentName: 'useDynamicComponentLifecycle',
+                  action: 'eventHandler',
+                  eventType: subscription.eventType,
+                }
               );
             }
           }

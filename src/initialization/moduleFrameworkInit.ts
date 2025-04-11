@@ -429,3 +429,96 @@ function getSubModuleConfigs(): Record<string, SubModuleConfig> {
     },
   };
 }
+
+// Define module statistics with rates using ResourceType enum keys
+export const moduleStats = [
+  {
+    id: 'basic-miner-1',
+    productionRates: { [ResourceType.MINERALS]: 10 },
+    consumptionRates: { [ResourceType.ENERGY]: 5 },
+  },
+  {
+    id: 'power-plant-1',
+    productionRates: { [ResourceType.ENERGY]: 10 },
+    consumptionRates: {},
+  },
+  {
+    id: 'basic-factory-1',
+    productionRates: {},
+    consumptionRates: {
+      [ResourceType.MINERALS]: 10,
+      [ResourceType.ENERGY]: 15,
+    },
+  },
+  {
+    id: 'advanced-factory-1',
+    productionRates: { [ResourceType.EXOTIC_MATTER]: 2 },
+    consumptionRates: {
+      [ResourceType.MINERALS]: 15,
+      [ResourceType.ENERGY]: 15,
+      [ResourceType.PLASMA]: 5,
+    },
+  },
+  {
+    id: 'research-lab-1',
+    productionRates: { [ResourceType.RESEARCH]: 10 },
+    consumptionRates: { [ResourceType.ENERGY]: 8 },
+  },
+  {
+    id: 'hydroponics-bay-1',
+    productionRates: { [ResourceType.FOOD]: 15 },
+    consumptionRates: { [ResourceType.WATER]: 5, [ResourceType.ENERGY]: 12 },
+  },
+  {
+    id: 'synthesis-complex-1',
+    productionRates: { [ResourceType.ORGANIC]: 10 },
+    consumptionRates: { [ResourceType.ENERGY]: 7 },
+  },
+  // Tier 2 Modules
+  {
+    id: 'tier2-miner-1',
+    productionRates: { [ResourceType.MINERALS]: 25 },
+    consumptionRates: { [ResourceType.ENERGY]: 10 },
+  },
+  {
+    id: 'tier2-power-1',
+    productionRates: { [ResourceType.ENERGY]: 20 },
+    consumptionRates: {},
+  },
+  {
+    id: 'tier2-factory-1',
+    productionRates: { [ResourceType.COPPER]: 10 },
+    consumptionRates: { [ResourceType.MINERALS]: 10, [ResourceType.ENERGY]: 25 },
+  },
+  {
+    id: 'tier2-lab-1',
+    productionRates: { [ResourceType.RESEARCH]: 20 },
+    consumptionRates: { [ResourceType.ENERGY]: 8 },
+  },
+  // Tier 3 Modules
+  {
+    id: 'tier3-miner-1',
+    productionRates: { [ResourceType.TITANIUM]: 15 },
+    consumptionRates: { [ResourceType.MINERALS]: 15, [ResourceType.ENERGY]: 30 },
+  },
+  {
+    id: 'tier3-factory-1',
+    productionRates: {},
+    consumptionRates: {
+      [ResourceType.COPPER]: 15,
+      [ResourceType.TITANIUM]: 10,
+      [ResourceType.ENERGY]: 40,
+    },
+  },
+  {
+    id: 'tier3-power-1',
+    productionRates: { [ResourceType.ENERGY]: 50 },
+    consumptionRates: {},
+  },
+  // Tier 4 Modules (Example)
+  {
+    id: 'tier4-power-1',
+    productionRates: { [ResourceType.ANTIMATTER]: 1 },
+    consumptionRates: { [ResourceType.PLASMA]: 20, [ResourceType.ENERGY]: 75 },
+  },
+];

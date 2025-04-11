@@ -1,13 +1,17 @@
 /**
  * @context: ui-system, component-library, ui-library
- * 
+ *
  * Drawer component for sliding side panels
  */
 import { X } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
 import { UIEventType } from '../../../types/ui/EventTypes';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
@@ -17,84 +21,84 @@ export interface DrawerProps {
    * Whether the drawer is visible
    */
   isOpen: boolean;
-  
+
   /**
    * Handler called when the drawer should close
    */
   onClose: () => void;
-  
+
   /**
    * Drawer content
    */
   children: React.ReactNode;
-  
+
   /**
    * Drawer placement
    * @default 'right'
    */
   placement?: DrawerPlacement;
-  
+
   /**
    * Drawer title displayed in the header
    */
   title?: string;
-  
+
   /**
    * Drawer width when placement is 'left' or 'right'
    * @default '320px'
    */
   width?: string | number;
-  
+
   /**
    * Drawer height when placement is 'top' or 'bottom'
    * @default '320px'
    */
   height?: string | number;
-  
+
   /**
    * Whether the drawer can be closed by pressing Escape key
    * @default true
    */
   closeOnEsc?: boolean;
-  
+
   /**
    * Whether the drawer can be closed by clicking the overlay
    * @default true
    */
   closeOnOverlayClick?: boolean;
-  
+
   /**
    * Additional CSS class for the drawer
    */
   className?: string;
-  
+
   /**
    * Whether to show the close button in the header
    * @default true
    */
   showCloseButton?: boolean;
-  
+
   /**
    * Animation duration in milliseconds
    * @default 300
    */
   animationDuration?: number;
-  
+
   /**
    * Optional callback fired when the drawer finishes opening
    */
   onOpen?: () => void;
-  
+
   /**
    * Optional footer content
    */
   footer?: React.ReactNode;
-  
+
   /**
    * Drawer z-index to override the default
    */
   zIndex?: number;
-  
+
   /**
    * Whether to push the page content when drawer opens
    * @default false
@@ -125,44 +129,44 @@ export function Drawer({
 }: DrawerProps) {
   // Track internal open state for animations
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Ref for drawer content for focus management
   const drawerRef = useRef<HTMLDivElement>(null);
-  
+
   // Ref to restore focus when drawer closes
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  
+
   // Create container for portal if it doesn't exist
   useEffect(() => {
     let portalContainer = document.getElementById('drawer-portal');
-    
+
     if (!portalContainer) {
       portalContainer = document.createElement('div');
       portalContainer.id = 'drawer-portal';
       document.body.appendChild(portalContainer);
     }
-    
+
     return () => {
       if (portalContainer && portalContainer.childNodes.length === 0) {
         document.body.removeChild(portalContainer);
       }
     };
   }, []);
-  
+
   // Handle opening and closing animations, focus management, and page content pushing
   useEffect(() => {
     if (isOpen) {
       // Store previously focused element
       previousFocusRef.current = document.activeElement as HTMLElement;
-      
+
       // Set visible for animation
       setIsVisible(true);
-      
+
       // Lock body scroll
       if (!pushContent) {
         document.body.style.overflow = 'hidden';
       }
-      
+
       // Apply push content styles if enabled
       if (pushContent) {
         const mainContent = document.getElementById('main-content'); // Main content container
@@ -172,7 +176,7 @@ export function Drawer({
           mainContent.style.transform = translateValue;
         }
       }
-      
+
       // Focus drawer after animation
       const timeout = setTimeout(() => {
         if (drawerRef.current) {
@@ -180,11 +184,11 @@ export function Drawer({
         }
         onOpen?.();
       }, animationDuration);
-      
+
       // Emit drawer opened event
       try {
         const event = new CustomEvent(UIEventType.MODAL_OPENED, {
-          detail: { modalId: title || 'drawer', modalType: 'drawer' }
+          detail: { modalId: title || 'drawer', modalType: 'drawer' },
         });
         document.dispatchEvent(event);
       } catch (error) {
@@ -200,7 +204,7 @@ export function Drawer({
           }
         );
       }
-      
+
       return () => clearTimeout(timeout);
     } else {
       // Handle closing animation
@@ -212,22 +216,22 @@ export function Drawer({
             mainContent.style.transform = '';
           }
         }
-        
+
         const timeout = setTimeout(() => {
           setIsVisible(false);
-          
+
           // Restore body scroll
           document.body.style.overflow = '';
-          
+
           // Restore focus
           if (previousFocusRef.current) {
             previousFocusRef.current.focus();
           }
-          
+
           // Emit drawer closed event
           try {
             const event = new CustomEvent(UIEventType.MODAL_CLOSED, {
-              detail: { modalId: title || 'drawer', modalType: 'drawer' }
+              detail: { modalId: title || 'drawer', modalType: 'drawer' },
             });
             document.dispatchEvent(event);
           } catch (error) {
@@ -244,32 +248,32 @@ export function Drawer({
             );
           }
         }, animationDuration);
-        
+
         return () => clearTimeout(timeout);
       }
-      
+
       // Reset body overflow if not visible
       document.body.style.overflow = '';
     }
   }, [isOpen, isVisible, title, onOpen, animationDuration, placement, width, height, pushContent]);
-  
+
   // Handle ESC key for closing
   useEffect(() => {
     if (!isOpen || !closeOnEsc) return;
-    
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose, closeOnEsc]);
-  
+
   // Handle click on overlay
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     // Only close if clicking directly on the overlay, not its children
@@ -277,12 +281,12 @@ export function Drawer({
       onClose();
     }
   };
-  
+
   // Don't render unknownnownthing if not open or visible
   if (!isOpen && !isVisible) {
     return null;
   }
-  
+
   // Calculate drawer position styles based on placement
   const getDrawerPositionStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {
@@ -294,7 +298,7 @@ export function Drawer({
       transition: `transform ${animationDuration}ms ease`,
       overflow: 'hidden',
     };
-    
+
     // Set dimensions and position based on placement
     if (placement === 'left') {
       return {
@@ -306,7 +310,7 @@ export function Drawer({
         transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
       };
     }
-    
+
     if (placement === 'right') {
       return {
         ...baseStyles,
@@ -317,7 +321,7 @@ export function Drawer({
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
       };
     }
-    
+
     if (placement === 'top') {
       return {
         ...baseStyles,
@@ -328,7 +332,7 @@ export function Drawer({
         transform: isOpen ? 'translateY(0)' : 'translateY(-100%)',
       };
     }
-    
+
     // Bottom placement
     return {
       ...baseStyles,
@@ -339,7 +343,7 @@ export function Drawer({
       transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
     };
   };
-  
+
   // Helper to calculate translate value for push content
   const getTranslateValue = (
     placement: DrawerPlacement,
@@ -348,7 +352,7 @@ export function Drawer({
   ): string => {
     const widthValue = typeof drawerWidth === 'number' ? `${drawerWidth}px` : drawerWidth;
     const heightValue = typeof drawerHeight === 'number' ? `${drawerHeight}px` : drawerHeight;
-    
+
     switch (placement) {
       case 'left':
         return `translateX(${widthValue})`;
@@ -362,7 +366,7 @@ export function Drawer({
         return '';
     }
   };
-  
+
   // Calculate overlay styles
   const overlayStyles: React.CSSProperties = {
     position: 'fixed',
@@ -376,7 +380,7 @@ export function Drawer({
     zIndex: zIndex || 1300,
     pointerEvents: isOpen ? 'auto' : 'none',
   };
-  
+
   // Portal the drawer to the end of the document body
   return createPortal(
     <>
@@ -389,7 +393,7 @@ export function Drawer({
           data-testid="drawer-overlay"
         />
       )}
-      
+
       {/* Drawer content */}
       <div
         ref={drawerRef}
@@ -430,7 +434,7 @@ export function Drawer({
                 {title}
               </h2>
             )}
-            
+
             {showCloseButton && (
               <button
                 type="button"
@@ -456,7 +460,7 @@ export function Drawer({
             )}
           </div>
         )}
-        
+
         {/* Drawer Body */}
         <div
           className="drawer-body"
@@ -468,7 +472,7 @@ export function Drawer({
         >
           {children}
         </div>
-        
+
         {/* Drawer Footer */}
         {footer && (
           <div
@@ -491,4 +495,4 @@ export function Drawer({
   );
 }
 
-export default Drawer; 
+export default Drawer;

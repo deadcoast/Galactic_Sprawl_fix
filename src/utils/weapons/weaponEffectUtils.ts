@@ -412,7 +412,7 @@ export function createShipAbility(params: {
     name: params.name,
     type: params.type || 'offensive',
     cooldown: params.cooldown,
-    damage: params.damage
+    damage: params.damage,
   };
 }
 
@@ -426,7 +426,7 @@ export function weaponToShipAbility(weapon: WeaponSystem): CommonShipAbility {
     name: `${weapon.type} Weapon`, // Convert weapon type to a name
     type: 'offensive',
     cooldown: weapon.cooldown,
-    damage: weapon.damage
+    damage: weapon.damage,
   };
 }
 
@@ -444,7 +444,7 @@ export function createCustomShipAbility(
     name: 'Unnamed Ability',
     type: 'utility',
     cooldown: 30,
-    damage: undefined
+    damage: undefined,
   };
 
   // Merge with base ability and then customizations - following standard object merging pattern
@@ -453,6 +453,6 @@ export function createCustomShipAbility(
     ...baseAbility,
     ...customizations,
     // Always ensure an ID exists following the ID generation pattern
-    id: customizations.id || baseAbility.id || defaultAbility.id
+    id: customizations.id || baseAbility.id || defaultAbility.id,
   };
 }

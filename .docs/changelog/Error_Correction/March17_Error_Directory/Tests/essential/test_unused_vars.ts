@@ -93,11 +93,12 @@ console.log(`${name} is ${age} years old`);
 
 // Export to avoid unused export warnings
 export {
-  calculateTotal, DataProcessor, findIndex,
+  DataProcessor,
+  calculateTotal,
+  findIndex,
   getFirstItem,
   getUserInfo,
   processArray,
   processData,
-  safelyProcess
+  safelyProcess,
 };
-

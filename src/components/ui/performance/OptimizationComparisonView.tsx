@@ -98,13 +98,13 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   const setupCharts = () => {
     // In a real implementation, this would initialize D3 charts
     console.warn('Setting up performance comparison charts');
-    
+
     // Use width and height to set up chart dimensions
     if (optimizedChartRef.current) {
       optimizedChartRef.current.style.width = `${width / 2 - 20}px`;
       optimizedChartRef.current.style.height = `${height - 100}px`;
     }
-    
+
     if (unoptimizedChartRef.current) {
       unoptimizedChartRef.current.style.width = `${width / 2 - 20}px`;
       unoptimizedChartRef.current.style.height = `${height - 100}px`;
@@ -115,18 +115,15 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   const updateCharts = () => {
     // In a real implementation, this would update D3 charts with new data
     console.warn('Updating performance comparison charts');
-    
+
     // Adjust chart dimensions when data updates if needed
     if (optimizedChartRef.current && unoptimizedChartRef.current) {
       // Calculate potential scaling based on data size and dimensions
-      const dataSize = Math.max(
-        optimizedMetrics.fps.length, 
-        unoptimizedMetrics.fps.length
-      );
-      
+      const dataSize = Math.max(optimizedMetrics.fps.length, unoptimizedMetrics.fps.length);
+
       // Adjust chart width based on data points and view width
       const chartWidth = Math.min(width - 40, dataSize * 10);
-      
+
       optimizedChartRef.current.style.width = `${chartWidth}px`;
       unoptimizedChartRef.current.style.width = `${chartWidth}px`;
     }
@@ -197,36 +194,38 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
         loop: true,
         enableProfiling: true,
       },
-      (_elapsed: number, _deltaTime: number, _frameInfo: FrameInfo) => {
+      (elapsed: number, deltaTime: number, frameInfo: FrameInfo) => {
         // Animation logic here
-        
+
         // Use the frame timing information to adjust animation speed
-        const speedFactor = _deltaTime / 16.7; // Normalize against 60fps
-        
+        const speedFactor = deltaTime / 16.7; // Normalize against 60fps
+
         // Track performance based on frame info
-        if (_frameInfo.isFrameOverBudget) {
-          console.warn(`Optimized animation frame budget exceeded: ${_elapsed}ms elapsed`);
+        if (frameInfo.isFrameOverBudget) {
+          console.warn(`Optimized animation frame budget exceeded: ${elapsed}ms elapsed`);
         }
-        
+
         // Update animation state based on elapsed time
-        const animationProgress = (_elapsed % 5000) / 5000; // 5 second cycle
-        
+        const animationProgress = (elapsed % 5000) / 5000; // 5 second cycle
+
         // Use frame information for adaptive quality adjustment
-        if (_frameInfo.currentFps < 30) {
+        if (frameInfo.currentFps < 30) {
           // Would reduce visual quality or complexity in a real implementation
-          console.warn(`Reducing optimized animation quality (${_frameInfo.currentFps.toFixed(1)} FPS)`);
+          console.warn(
+            `Reducing optimized animation quality (${frameInfo.currentFps.toFixed(1)} FPS)`
+          );
         }
-        
+
         // Update visualization with current animation time
         if (optimizedChartRef.current) {
           // Apply the animation progress and speed factor to the visualization
-          const transformValue = `translateX(${animationProgress * 100}px) scale(${0.8 + (speedFactor * 0.2)})`;
+          const transformValue = `translateX(${animationProgress * 100}px) scale(${0.8 + speedFactor * 0.2})`;
           optimizedChartRef.current.style.transform = transformValue;
-          
+
           // In a real implementation, this would update more complex visualization
           // elements based on animation progress and frame metrics
         }
-        
+
         return false; // Continue running
       }
     );
@@ -251,51 +250,53 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
         loop: true,
         enableProfiling: true,
       },
-      (_elapsed: number, _deltaTime: number, _frameInfo: FrameInfo) => {
+      (elapsed: number, deltaTime: number, frameInfo: FrameInfo) => {
         // Animation logic here - with deliberate inefficiencies to demonstrate difference
-        
+
         // Simulate inefficient operations based on elapsed time
         const heavyCalculations = [];
-        for (let i = 0; i < Math.min(100, _elapsed / 1000 * 10); i++) {
-          heavyCalculations.push(Math.sin(i * _deltaTime));
+        for (let i = 0; i < Math.min(100, (elapsed / 1000) * 10); i++) {
+          heavyCalculations.push(Math.sin(i * deltaTime));
         }
-        
+
         // Track performance issues
-        if (_frameInfo.currentFps < 30) {
-          console.warn(`Unoptimized animation running at ${_frameInfo.currentFps.toFixed(1)} FPS after ${_elapsed.toFixed(0)}ms`);
+        if (frameInfo.currentFps < 30) {
+          console.warn(
+            `Unoptimized animation running at ${frameInfo.currentFps.toFixed(1)} FPS after ${elapsed.toFixed(0)}ms`
+          );
         }
-        
+
         // Simulate layout thrashing based on animation progress
-        if (_elapsed % 1000 < 20) {
+        if (elapsed % 1000 < 20) {
           // Force layout recalculation by accessing properties that trigger reflow
           if (unoptimizedChartRef.current) {
             // This is a real calculation that forces layout recalculation
             // causing performance issues deliberately to demonstrate differences
             const dummyCalculation = unoptimizedChartRef.current.offsetWidth * Math.random();
-            
+
             // Apply the calculation result to element style to ensure it's not optimized away
             unoptimizedChartRef.current.style.paddingLeft = `${Math.min(20, dummyCalculation % 5)}px`;
-            
+
             // In a real implementation, this might update dimensions, positions, or other
             // properties that trigger multiple DOM reflows
           }
         }
-        
+
         // Update visualization with current animation time and performance
         if (unoptimizedChartRef.current) {
           // Apply inefficient rendering approach with multiple style changes
           // that could be batched in the optimized version
-          unoptimizedChartRef.current.style.opacity = `${0.5 + 0.5 * Math.sin(_elapsed / 500)}`;
-          unoptimizedChartRef.current.style.filter = `blur(${Math.sin(_elapsed / 1000) * 2}px)`;
-          
+          unoptimizedChartRef.current.style.opacity = `${0.5 + 0.5 * Math.sin(elapsed / 500)}`;
+          unoptimizedChartRef.current.style.filter = `blur(${Math.sin(elapsed / 1000) * 2}px)`;
+
           // Force multiple individual style updates instead of using CSS transforms
           // which would be more efficient
-          const left = 50 + Math.sin(_elapsed / 1000) * 50;
-          const top = 20 + Math.cos(_elapsed / 800) * 20;
+          const left = 50 + Math.sin(elapsed / 1000) * 50;
+          const top = 20 + Math.cos(elapsed / 800) * 20;
           unoptimizedChartRef.current.style.marginLeft = `${left}px`;
           unoptimizedChartRef.current.style.marginTop = `${top}px`;
         }
-        
+
         return false; // Continue running
       }
     );
@@ -372,34 +373,49 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   // Generate performance comparisons between optimized and unoptimized versions
   const generateComparisons = () => {
     if (!optimizedReport || !unoptimizedReport) return;
-    
+
     const newComparisons: PerformanceComparison[] = [
       {
         metric: 'FPS',
         optimized: optimizedReport.performanceData.actualFps,
         unoptimized: unoptimizedReport.performanceData.actualFps,
-        difference: optimizedReport.performanceData.actualFps - unoptimizedReport.performanceData.actualFps,
-        percentImprovement: ((optimizedReport.performanceData.actualFps - unoptimizedReport.performanceData.actualFps) / 
-                            unoptimizedReport.performanceData.actualFps) * 100
+        difference:
+          optimizedReport.performanceData.actualFps - unoptimizedReport.performanceData.actualFps,
+        percentImprovement:
+          ((optimizedReport.performanceData.actualFps -
+            unoptimizedReport.performanceData.actualFps) /
+            unoptimizedReport.performanceData.actualFps) *
+          100,
       },
       {
         metric: 'Frame Time',
         optimized: optimizedReport.performanceData.averageFrameDuration,
         unoptimized: unoptimizedReport.performanceData.averageFrameDuration,
-        difference: unoptimizedReport.performanceData.averageFrameDuration - optimizedReport.performanceData.averageFrameDuration,
-        percentImprovement: ((unoptimizedReport.performanceData.averageFrameDuration - optimizedReport.performanceData.averageFrameDuration) / 
-                            unoptimizedReport.performanceData.averageFrameDuration) * 100
+        difference:
+          unoptimizedReport.performanceData.averageFrameDuration -
+          optimizedReport.performanceData.averageFrameDuration,
+        percentImprovement:
+          ((unoptimizedReport.performanceData.averageFrameDuration -
+            optimizedReport.performanceData.averageFrameDuration) /
+            unoptimizedReport.performanceData.averageFrameDuration) *
+          100,
       },
       {
         metric: 'Frame Success Rate',
         optimized: optimizedReport.performanceData.frameSuccessRate * 100,
         unoptimized: unoptimizedReport.performanceData.frameSuccessRate * 100,
-        difference: (optimizedReport.performanceData.frameSuccessRate - unoptimizedReport.performanceData.frameSuccessRate) * 100,
-        percentImprovement: ((optimizedReport.performanceData.frameSuccessRate - unoptimizedReport.performanceData.frameSuccessRate) / 
-                            unoptimizedReport.performanceData.frameSuccessRate) * 100
-      }
+        difference:
+          (optimizedReport.performanceData.frameSuccessRate -
+            unoptimizedReport.performanceData.frameSuccessRate) *
+          100,
+        percentImprovement:
+          ((optimizedReport.performanceData.frameSuccessRate -
+            unoptimizedReport.performanceData.frameSuccessRate) /
+            unoptimizedReport.performanceData.frameSuccessRate) *
+          100,
+      },
     ];
-    
+
     setComparisons(newComparisons);
   };
 
@@ -427,7 +443,7 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
       <div className="comparison-header">
         <h2>Performance Optimization Comparison</h2>
         <div className="comparison-controls">
-          <button 
+          <button
             className={`mode-button ${comparisonMode === 'side-by-side' ? 'active' : ''}`}
             onClick={toggleComparisonMode}
           >
@@ -462,46 +478,48 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
         </div>
       </div>
 
-      <div 
+      <div
         className={`comparison-container ${comparisonMode === 'side-by-side' ? 'side-by-side' : 'overlay'}`}
-        style={{ 
+        style={{
           height: height - 180,
-          width: width - 40
+          width: width - 40,
         }}
       >
-        <div 
-          className="optimized-view"
-          ref={optimizedChartRef}
-        >
+        <div className="optimized-view" ref={optimizedChartRef}>
           <h3>Optimized</h3>
           {optimizedReport && (
             <div className="performance-summary">
               <div className="metric">
                 <span className="label">FPS:</span>
-                <span className="value">{optimizedReport.performanceData.actualFps.toFixed(1)}</span>
+                <span className="value">
+                  {optimizedReport.performanceData.actualFps.toFixed(1)}
+                </span>
               </div>
               <div className="metric">
                 <span className="label">Frame Time:</span>
-                <span className="value">{optimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms</span>
+                <span className="value">
+                  {optimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms
+                </span>
               </div>
             </div>
           )}
         </div>
 
-        <div 
-          className="unoptimized-view"
-          ref={unoptimizedChartRef}
-        >
+        <div className="unoptimized-view" ref={unoptimizedChartRef}>
           <h3>Unoptimized</h3>
           {unoptimizedReport && (
             <div className="performance-summary">
               <div className="metric">
                 <span className="label">FPS:</span>
-                <span className="value">{unoptimizedReport.performanceData.actualFps.toFixed(1)}</span>
+                <span className="value">
+                  {unoptimizedReport.performanceData.actualFps.toFixed(1)}
+                </span>
               </div>
               <div className="metric">
                 <span className="label">Frame Time:</span>
-                <span className="value">{unoptimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms</span>
+                <span className="value">
+                  {unoptimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms
+                </span>
               </div>
             </div>
           )}

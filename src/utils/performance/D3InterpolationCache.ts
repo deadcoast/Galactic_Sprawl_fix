@@ -12,9 +12,9 @@
  */
 
 import * as d3 from 'd3';
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
 import { TypedInterpolator, typedInterpolators } from '../../types/visualizations/D3AnimationTypes';
 import { animationFrameManager } from './D3AnimationFrameManager';
-import { ErrorType, ErrorSeverity, errorLoggingService } from '../../services/ErrorLoggingService';
 
 /**
  * Configuration for interpolation caching
@@ -76,7 +76,7 @@ interface CacheEntry<T> {
 
 /**
  * Validates that the provided config contains valid values
- * 
+ *
  * @param config The configuration to validate
  * @returns True if the config is valid, false otherwise
  */
@@ -84,9 +84,9 @@ function isValidCacheConfig(config: unknown): config is InterpolationCacheConfig
   if (!config || typeof config !== 'object') {
     return false;
   }
-  
+
   const typedConfig = config as Record<string, unknown>;
-  
+
   // Check each property has the right type if provided
   if (typedConfig.maxCacheSize !== undefined && typeof typedConfig.maxCacheSize !== 'number') {
     return false;
@@ -103,10 +103,13 @@ function isValidCacheConfig(config: unknown): config is InterpolationCacheConfig
   if (typedConfig.trackStats !== undefined && typeof typedConfig.trackStats !== 'boolean') {
     return false;
   }
-  if (typedConfig.profilePerformance !== undefined && typeof typedConfig.profilePerformance !== 'boolean') {
+  if (
+    typedConfig.profilePerformance !== undefined &&
+    typeof typedConfig.profilePerformance !== 'boolean'
+  ) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -129,7 +132,7 @@ export class InterpolationCache<T> {
 
   /**
    * Create a new interpolation cache
-   * 
+   *
    * @param config Optional configuration settings for the cache
    * @throws Error if the configuration is invalid
    */
@@ -163,7 +166,7 @@ export class InterpolationCache<T> {
         ErrorSeverity.MEDIUM,
         {
           component: 'InterpolationCache',
-          config
+          config,
         }
       );
       // Use sensible defaults even when error occurs
@@ -232,7 +235,7 @@ export class InterpolationCache<T> {
    * const rawInterpolator = (t: number) => t * 100;
    * const cache = new InterpolationCache<number>();
    * const memoizedInterpolator = cache.memoize(rawInterpolator);
-   * 
+   *
    * // Now use the memoized version which will cache results
    * const value = memoizedInterpolator(0.5); // Computes and caches
    * const cachedValue = memoizedInterpolator(0.5); // Uses cached value
@@ -241,15 +244,10 @@ export class InterpolationCache<T> {
   memoize(interpolator: TypedInterpolator<T>): TypedInterpolator<T> {
     if (typeof interpolator !== 'function') {
       const error = new Error('Invalid interpolator function provided');
-      errorLoggingService.logError(
-        error,
-        ErrorType.VALIDATION,
-        ErrorSeverity.MEDIUM,
-        {
-          component: 'InterpolationCache',
-          method: 'memoize'
-        }
-      );
+      errorLoggingService.logError(error, ErrorType.VALIDATION, ErrorSeverity.MEDIUM, {
+        component: 'InterpolationCache',
+        method: 'memoize',
+      });
       // Return a safe fallback function that doesn't call the invalid interpolator
       return (t: number): T => {
         errorLoggingService.logError(
@@ -259,7 +257,7 @@ export class InterpolationCache<T> {
           {
             component: 'InterpolationCache',
             method: 'memoize.fallback',
-            parameter: t
+            parameter: t,
           }
         );
         // We need to return something of type T, but we don't know what T is
@@ -349,7 +347,7 @@ export class InterpolationCache<T> {
           {
             component: 'InterpolationCache',
             method: 'memoize.interpolator',
-            parameter: t
+            parameter: t,
           }
         );
         throw error;
@@ -635,7 +633,7 @@ export const globalInterpolationCache = new GlobalInterpolationCache();
 
 /**
  * Integration with the animation frame manager to memoize animations automatically
- * 
+ *
  * @param animationId Animation ID to enhance with memoization
  * @param memoizationFn Interpolation function to memoize
  * @param config Optional configuration settings for the cache
@@ -644,14 +642,14 @@ export const globalInterpolationCache = new GlobalInterpolationCache();
  * ```typescript
  * // Create a basic animation function
  * const animateOpacity = (t: number) => t; // Linear opacity from 0 to 1
- * 
+ *
  * // Enable memoization to improve performance
  * const memoizedAnimation = createMemoizedAnimation(
  *   'fade-animation',
  *   animateOpacity,
  *   { maxCacheSize: 200, resolution: 0.01 }
  * );
- * 
+ *
  * // Use the memoized animation in your render loop
  * const opacity = memoizedAnimation(progress);
  * element.style.opacity = String(opacity);
@@ -666,7 +664,7 @@ export function createMemoizedAnimation<T>(
     if (!animationId || typeof animationId !== 'string') {
       throw new Error('Invalid animation ID provided');
     }
-    
+
     if (typeof memoizationFn !== 'function') {
       throw new Error('Invalid memoization function provided');
     }
@@ -683,10 +681,10 @@ export function createMemoizedAnimation<T>(
       ErrorSeverity.MEDIUM,
       {
         component: 'createMemoizedAnimation',
-        animationId
+        animationId,
       }
     );
-    
+
     // Return the original function as a fallback
     return memoizationFn;
   }
@@ -833,7 +831,7 @@ export function getMemoizationStats(): CacheStats {
 
 /**
  * Utility to optimize an entire D3 selection's transitions with memoization
- * 
+ *
  * @param selection D3 selection to optimize transitions for
  * @param config Optional configuration settings for the cache
  * @returns The enhanced D3 selection with memoized transitions
@@ -843,10 +841,10 @@ export function getMemoizationStats(): CacheStats {
  * const circles = d3.select('svg')
  *   .selectAll('circle')
  *   .data(dataset);
- *   
+ *
  * // Optimize all transitions on this selection
  * const optimizedCircles = optimizeD3Transitions(circles);
- * 
+ *
  * // Now all transitions will use memoized interpolators
  * optimizedCircles.transition()
  *   .duration(1000)
@@ -869,7 +867,7 @@ export function optimizeD3Transitions<
     if (!selection) {
       throw new Error('Invalid D3 selection provided');
     }
-    
+
     const cacheId = 'd3-transition-' + Math.random().toString(36).substring(2);
 
     // Store original transition method
@@ -974,15 +972,15 @@ export function optimizeD3Transitions<
         return transition;
       } catch (error) {
         errorLoggingService.logError(
-          error instanceof Error ? error : new Error(String(error)), 
+          error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
           ErrorSeverity.MEDIUM,
           {
             component: 'optimizeD3Transitions',
-            selectionType: selection?.constructor?.name
+            selectionType: selection?.constructor?.name,
           }
         );
-        
+
         // Fall back to original transition
         return originalTransition.apply(this, args);
       }
@@ -996,10 +994,10 @@ export function optimizeD3Transitions<
       ErrorSeverity.MEDIUM,
       {
         component: 'optimizeD3Transitions',
-        function: 'setup'
+        function: 'setup',
       }
     );
-    
+
     // Return original selection without optimization
     return selection;
   }

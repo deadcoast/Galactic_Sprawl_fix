@@ -1,8 +1,7 @@
-import { colonyRules } from '../../config/automation/colonyRules';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { errorLoggingService } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { automationManager } from '../game/AutomationManager';
 import { getResourceManager } from '../ManagerRegistry';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -28,53 +27,83 @@ export interface ResearchBenefits {
   [key: string]: unknown;
 }
 
-/**
- * Colony event interface extending BaseEvent
- */
-export interface ColonyEvent extends BaseEvent {
-  type: EventType;
-  moduleId: string;
-  moduleType: ModuleType;
-  data: ColonyEventData;
-}
+// Remove ColonyEvent interface
+// export interface ColonyEvent extends BaseEvent {
+//   type: EventType;
+//   moduleId: string;
+//   moduleType: ModuleType;
+//   data: ColonyEventData;
+// }
 
-/**
- * Colony event data interface
- */
-export interface ColonyEventData extends Record<string, unknown> {
-  colonyId?: string;
-  stats?: ColonyStats;
-  resourceAmounts?: Record<string, number>;
-  type?: string;
-  level?: number;
-  amount?: number;
-  partnerId?: string;
-  tradeResources?: ResourceType[];
-  threatLevel?: number;
-  project?: string;
-  benefits?: ResearchBenefits;
-  protocol?: string;
-}
+// Remove ColonyEventData interface
+// export interface ColonyEventData extends Record<string, unknown> {
+//   colonyId?: string;
+//   stats?: ColonyStats;
+//   resourceAmounts?: Record<string, number>;
+//   type?: string;
+//   level?: number;
+//   amount?: number;
+//   partnerId?: string;
+//   tradeResources?: ResourceType[];
+//   threatLevel?: number;
+//   project?: string;
+//   benefits?: ResearchBenefits;
+//   protocol?: string;
+// }
 
-/**
- * Type guard for ColonyEvent
- */
-export function isColonyEvent(event: unknown): event is ColonyEvent {
-  if (!event || typeof event !== 'object') return false;
-  const e = event as ColonyEvent;
+// Remove isColonyEvent type guard
+// export function isColonyEvent(event: unknown): event is ColonyEvent {
+//   if (!event || typeof event !== 'object') return false;
+//   const e = event as ColonyEvent;
+//   return (
+//     'type' in e &&
+//     'moduleId' in e &&
+//     'moduleType' in e &&
+//     'data' in e &&
+//     typeof e.type === 'string' &&
+//     typeof e.moduleId === 'string' &&
+//     typeof e.moduleType === 'string' &&
+//     typeof e.data === 'object'
+//   );
+// }
+
+// Type guards for specific data structures within BaseEvent.data
+function isResourceUpdateData(
+  data: unknown
+): data is { colonyId: string; resourceAmounts: Record<string, number> } {
   return (
-    'type' in e &&
-    'moduleId' in e &&
-    'moduleType' in e &&
-    'data' in e &&
-    typeof e.type === 'string' &&
-    typeof e.moduleId === 'string' &&
-    typeof e.moduleType === 'string' &&
-    typeof e.data === 'object'
+    typeof data === 'object' &&
+    data !== null &&
+    'colonyId' in data &&
+    typeof data.colonyId === 'string' &&
+    'resourceAmounts' in data &&
+    typeof data.resourceAmounts === 'object' &&
+    data.resourceAmounts !== null
   );
 }
 
-export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
+function isResourceShortageData(data: unknown): data is { colonyId: string } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'colonyId' in data &&
+    typeof data.colonyId === 'string'
+  );
+}
+
+function isTechUnlockData(data: unknown): data is { colonyId: string; project: string } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'colonyId' in data &&
+    typeof data.colonyId === 'string' &&
+    'project' in data &&
+    typeof data.project === 'string'
+  );
+}
+
+// Change generic type to BaseEvent
+export class ColonyManagerImpl extends AbstractBaseManager<BaseEvent> {
   private colonies: Map<
     string,
     {
@@ -88,17 +117,17 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     }
   > = new Map();
 
-  constructor() {
-    super('ColonyManager');
-    this.initializeEventHandlers();
-    this.initializeAutomationRules();
-  }
+  // Use protected constructor (Implicit from AbstractBaseManager)
+  // constructor() {
+  //   super('ColonyManager');
+  //   // Initialization moved to onInitialize
+  // }
 
   /**
    * Initialize event handlers for colony-related events
    */
   private initializeEventHandlers(): void {
-    // Subscribe to relevant events
+    // Subscribe to relevant events - handlers now expect BaseEvent
     this.unsubscribeFunctions.push(
       this.subscribe(EventType.RESOURCE_UPDATED, this.handleResourceUpdate.bind(this)),
       this.subscribe(EventType.RESOURCE_SHORTAGE, this.handleResourceShortage.bind(this)),
@@ -106,30 +135,30 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     );
   }
 
-  private handleResourceUpdate(event: ColonyEvent): void {
-    if (!isColonyEvent(event)) return;
-    // Handle resource updates
-    const { colonyId, resourceAmounts } = event?.data;
-    if (colonyId && resourceAmounts) {
+  // Update handler signature to accept BaseEvent
+  private handleResourceUpdate(event: BaseEvent): void {
+    // Use type guard to check event.data
+    if (event.data && isResourceUpdateData(event.data)) {
+      const { colonyId, resourceAmounts } = event.data;
       this.updateColonyResources(colonyId, resourceAmounts);
     }
   }
 
-  private handleResourceShortage(event: ColonyEvent): void {
-    if (!isColonyEvent(event)) return;
-    // Handle resource shortages
-    const { colonyId } = event?.data;
-    if (colonyId) {
+  // Update handler signature to accept BaseEvent
+  private handleResourceShortage(event: BaseEvent): void {
+    // Use type guard to check event.data
+    if (event.data && isResourceShortageData(event.data)) {
+      const { colonyId } = event.data;
       this.activateEmergencyProtocol(colonyId, 'resource_shortage');
     }
   }
 
-  private handleTechUnlock(event: ColonyEvent): void {
-    if (!isColonyEvent(event)) return;
-    // Handle tech unlocks
-    const { colonyId, project } = event?.data;
-    if (colonyId && project) {
-      this.applyTechBenefits(colonyId, project as string);
+  // Update handler signature to accept BaseEvent
+  private handleTechUnlock(event: BaseEvent): void {
+    // Use type guard to check event.data
+    if (event.data && isTechUnlockData(event.data)) {
+      const { colonyId, project } = event.data;
+      this.applyTechBenefits(colonyId, project);
     }
   }
 
@@ -151,8 +180,9 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     // Apply tech benefits
     this.publish({
       type: EventType.TECH_UPDATED,
+      managerId: this.managerName, // Ensure managerId is present
       moduleId: colonyId,
-      moduleType: 'colony' as ModuleType,
+      moduleType: 'colony' as ModuleType, // Ensure moduleType is present
       timestamp: Date.now(),
       data: {
         project,
@@ -163,9 +193,12 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   }
 
   private initializeAutomationRules(): void {
-    colonyRules.forEach(rule => {
-      automationManager.registerRule(rule);
-    });
+    // TODO: Ensure automationManager is available (e.g., retrieved from registry in onInitialize)
+    // This might need to run in onInitialize after getting the manager instance.
+    // For now, comment out the direct usage.
+    // colonyRules.forEach(rule => {
+    //   automationManager.registerRule(rule);
+    // });
   }
 
   public registerColony(id: string, name: string, initialStats: Partial<ColonyStats> = {}): void {
@@ -191,6 +224,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     // Emit initialization event
     this.publish({
       type: EventType.MODULE_ACTIVATED,
+      managerId: this.managerName,
       moduleId: id,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -207,6 +241,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.stats = { ...colony.stats, ...updates };
     this.publish({
       type: EventType.MODULE_UPDATED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -230,6 +265,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
       colony.level = newLevel;
       this.publish({
         type: EventType.MODULE_UPGRADED,
+        managerId: this.managerName,
         moduleId: colonyId,
         moduleType: 'colony' as ModuleType,
         timestamp: Date.now(),
@@ -269,6 +305,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
 
     this.publish({
       type: EventType.RESOURCE_TRANSFERRED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -321,6 +358,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.stats.infrastructure += 1;
     this.publish({
       type: EventType.MODULE_UPDATED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -375,6 +413,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.tradeRoutes.add(partnerId);
     this.publish({
       type: EventType.AUTOMATION_STARTED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -390,6 +429,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
 
     this.publish({
       type: EventType.AUTOMATION_STARTED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -406,6 +446,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.activeResearch.add(project);
     this.publish({
       type: EventType.AUTOMATION_STARTED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -422,6 +463,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.activeResearch.delete(project);
     this.publish({
       type: EventType.AUTOMATION_CYCLE_COMPLETE,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -438,6 +480,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.emergencyProtocols.add(type);
     this.publish({
       type: EventType.AUTOMATION_STARTED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -454,6 +497,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     colony.emergencyProtocols.delete(type);
     this.publish({
       type: EventType.AUTOMATION_STOPPED,
+      managerId: this.managerName,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -481,7 +525,19 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
    * @inheritdoc
    */
   protected async onInitialize(_dependencies?: unknown): Promise<void> {
-    console.warn('ColonyManager initialized');
+    // Initialize event handlers first
+    this.initializeEventHandlers();
+
+    errorLoggingService.logInfo('ColonyManager initialized', { manager: this.managerName });
+
+    // TODO: Retrieve automationManager here if needed
+    // const automationManager = getAutomationManager();
+    // if (automationManager) {
+    //   colonyRules.forEach(rule => {
+    //     automationManager.registerRule(rule);
+    //   });
+    // }
+    await Promise.resolve(); // Placeholder
   }
 
   /**
@@ -489,7 +545,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
    */
   protected onUpdate(_deltaTime: number): void {
     // Update colony stats and check for events
-    this.colonies.forEach((colony, id) => {
+    this.colonies.forEach((_colony, id) => {
       this.updateColonyState(id);
     });
   }
@@ -498,8 +554,10 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
    * @inheritdoc
    */
   protected async onDispose(): Promise<void> {
+    // Base class handles unsubscribing
     // Clear all colonies and their data
     this.colonies.clear();
+    await Promise.resolve(); // Placeholder for potential async cleanup
   }
 
   /**
@@ -563,6 +621,3 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     }
   }
 }
-
-// Export singleton instance
-export const colonyManager = new ColonyManagerImpl();

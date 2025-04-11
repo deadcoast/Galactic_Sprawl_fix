@@ -129,7 +129,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
 
@@ -149,7 +149,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
   }
@@ -178,7 +178,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
         // Safely parse JSON
         const result = await response.json();
-        const {data, lastItemId} = result;
+        const { data, lastItemId } = result;
         if (lastItemId) {
           lastId = lastItemId;
         }
@@ -257,7 +257,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_requests = (metrics.total_requests ?? 0) + 1;
 
     if (status === 'error') {

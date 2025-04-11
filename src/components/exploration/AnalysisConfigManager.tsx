@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Settings from '@mui/icons-material/Settings';
 import {
   Button,
   Dialog,
@@ -185,16 +186,31 @@ const AnalysisConfigManager: React.FC<AnalysisConfigManagerProps> = ({
               selected={selectedConfig?.id === config.id}
               onClick={() => onSelectConfig(config)}
               secondaryAction={
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onDeleteConfig(config.id);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                <>
+                  <IconButton
+                    edge="end"
+                    aria-label="edit"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      const updatedName = `${config.name} (edited)`; // Placeholder update
+                      onUpdateConfig(config.id, { name: updatedName });
+                      console.log(`Placeholder edit for: ${config.name}`);
+                    }}
+                    sx={{ mr: 1 }} // Add margin between buttons
+                  >
+                    <Settings /> {/* Using Settings icon for Edit */}
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      onDeleteConfig(config.id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </>
               }
             >
               <ListItemText

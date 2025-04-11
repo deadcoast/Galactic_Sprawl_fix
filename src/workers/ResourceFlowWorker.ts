@@ -8,14 +8,13 @@ import { ResourceType } from './../types/resources/ResourceTypes';
  */
 
 import {
-    FlowConnection,
-    FlowNode,
-    ResourceState,
-    ResourceTransfer,
+  FlowConnection,
+  FlowNode,
+  ResourceState,
+  ResourceTransfer,
 } from '../types/resources/ResourceTypes';
 
 // Correct import for error logging service (if main thread context available, otherwise use postMessage)
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
 
 // Message types for communication with the main thread
 type WorkerMessageType =
@@ -143,21 +142,33 @@ const ctx: Worker = self as unknown as Worker;
 
 // Handle messages from main thread
 ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
-  if (!event || !event.data) {
-    // Replace console.error with errorLoggingService.logError
-    // TODO: Refine worker error reporting (postMessage back to main thread is safer)
-    errorLoggingService.logError(
-      new Error('Received invalid message event in ResourceFlowWorker'),
-      ErrorType.NETWORK,
-      ErrorSeverity.MEDIUM,
-      { componentName: 'ResourceFlowWorker', action: 'onmessage' }
-    );
+  const rawData = event?.data;
+  // Validate the basic structure of the incoming message
+  if (
+    !rawData ||
+    typeof rawData !== 'object' ||
+    typeof rawData.type !== 'string' || // Basic check for type
+    !('data' in rawData) || // Check if data property exists
+    typeof rawData.taskId !== 'string' // Basic check for taskId
+  ) {
+    // Attempt to use original type if available, otherwise use a placeholder
+    // Cast via unknown because we know this is an error state not fully matching WorkerOutput type constraints
+    const errorMsg = 'Received invalid message structure in ResourceFlowWorker';
+    console.error(errorMsg, rawData); // Log within worker for debugging
+    ctx.postMessage({
+      type: typeof rawData?.type === 'string' ? rawData.type : 'OPTIMIZE_FLOWS', // Use original type or placeholder
+      result: null,
+      error: errorMsg,
+      taskId: typeof rawData?.taskId === 'string' ? rawData.taskId : 'unknown', // Try to get taskId if possible
+      executionTimeMs: 0,
+    } as unknown as WorkerOutput); // Cast via unknown for error reporting
     return;
   }
 
+  // Now we know rawData is an object with type, data, and taskId
   const { type, data, taskId } = event.data;
   const startTime = Date.now();
-  
+
   let result;
   try {
     switch (type) {

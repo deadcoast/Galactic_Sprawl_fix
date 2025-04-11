@@ -445,9 +445,9 @@ export function ResourceDiscoverySystem({
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search discoveries..."
-              className="w-48 rounded border border-gray-600 bg-gray-700 py-1 pl-8 pr-2 text-sm text-white placeholder-gray-400"
+              className="w-48 rounded border border-gray-600 bg-gray-700 py-1 pr-2 pl-8 text-sm text-white placeholder-gray-400"
             />
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           </div>
 
           {/* Status filter */}

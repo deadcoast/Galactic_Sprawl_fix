@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
-    animationFrameManager,
-    FrameInfo,
+  animationFrameManager,
+  FrameInfo,
 } from '../../../utils/performance/D3AnimationFrameManager';
 
 // Type definitions
@@ -1306,6 +1306,21 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
           >
             Export Data
           </button>
+
+          {/* Frame Budget Control */}
+          <div style={{ display: 'inline-block', marginLeft: '15px' }}>
+            <label>
+              Frame Budget (ms):
+              <input
+                type="number"
+                min="1"
+                step="0.1"
+                value={frameBudget.toFixed(1)}
+                onChange={e => setFrameBudget(parseFloat(e.target.value) || 16.67)}
+                style={{ width: '60px', marginLeft: '5px' }}
+              />
+            </label>
+          </div>
         </div>
       </div>
 

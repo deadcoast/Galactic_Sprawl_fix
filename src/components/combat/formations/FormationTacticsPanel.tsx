@@ -1,6 +1,5 @@
 import { ChevronDown, ChevronUp, Edit, Save, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../../../components/ui/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/Tabs';
 import { useFleetAI } from '../../../hooks/factions/useFleetAI';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
@@ -259,7 +258,7 @@ export function FormationTacticsPanel({
                     height={240}
                   />
                   <div className="mt-3 flex justify-center space-x-2">
-                    <span className="rounded-full bg-gray-800 px-3 py-1 text-sm capitalize text-white">
+                    <span className="rounded-full bg-gray-800 px-3 py-1 text-sm text-white capitalize">
                       {currentFormation.pattern}
                     </span>
                     <span

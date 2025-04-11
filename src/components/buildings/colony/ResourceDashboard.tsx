@@ -1,14 +1,14 @@
 import {
-    AlertTriangle,
-    Battery,
-    Beaker,
-    CheckCircle,
-    Cpu,
-    Leaf,
-    Package,
-    TrendingDown,
-    TrendingUp,
-    Users,
+  AlertTriangle,
+  Battery,
+  Beaker,
+  CheckCircle,
+  Cpu,
+  Leaf,
+  Package,
+  TrendingDown,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
@@ -33,11 +33,7 @@ interface ResourceDashboardProps {
   onResourceClick?: (resourceType: ResourceData['type']) => void;
 }
 
-export function ResourceDashboard({
-  colonyId: _colonyId,
-  resources,
-  onResourceClick,
-}: ResourceDashboardProps) {
+export function ResourceDashboard({ resources, onResourceClick }: ResourceDashboardProps) {
   // Get resource icon
   const getResourceIcon = (type: ResourceData['type']) => {
     switch (type) {

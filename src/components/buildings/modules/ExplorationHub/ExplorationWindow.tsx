@@ -16,7 +16,7 @@ import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
-import { ReconShipStatus } from './ReconShipStatus';
+import { ShipStatusMonitor } from './ShipStatusMonitor';
 
 interface Sector {
   id: string;
@@ -192,11 +192,11 @@ export function ExplorationWindow() {
               <input
                 type="text"
                 placeholder="Search sectors..."
-                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
             </div>
 
             <div className="flex space-x-2">
@@ -340,14 +340,14 @@ export function ExplorationWindow() {
 
                       {/* Scanning Ship Indicator */}
                       {scanningShip && (
-                        <div className="absolute -right-2 -top-2">
+                        <div className="absolute -top-2 -right-2">
                           <Rocket className="h-5 w-5 animate-pulse text-teal-400" />
                         </div>
                       )}
                     </div>
 
                     {/* Sector Label */}
-                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+                    <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
                       <div className="font-medium text-teal-200">{sector.name}</div>
                       {sector.status !== 'unmapped' && (
                         <div className="text-sm text-teal-300/70">
@@ -363,7 +363,7 @@ export function ExplorationWindow() {
         </div>
 
         {/* Recon Fleet Status */}
-        <ReconShipStatus ships={mockShips} />
+        <ShipStatusMonitor shipIds={mockShips.map(ship => ship.id)} />
       </div>
 
       {/* Right Panel - Controls & Details */}

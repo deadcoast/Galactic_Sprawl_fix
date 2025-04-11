@@ -1,11 +1,11 @@
 import React, {
-    createContext,
-    ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useReducer,
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
 import { serviceRegistry } from '../lib/managers/ServiceRegistry';
@@ -14,12 +14,12 @@ import { moduleManagerWrapper } from '../managers/module/ModuleManagerWrapper';
 import { ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
-    IModuleManager,
-    LegacyModuleAction,
-    Module,
-    moduleEventToEventType,
-    ModuleEventType,
-    ModuleStatus,
+  IModuleManager,
+  LegacyModuleAction,
+  Module,
+  moduleEventToEventType,
+  ModuleEventType,
+  ModuleStatus,
 } from '../types/modules/ModuleTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -289,20 +289,24 @@ function subscribeToModuleEvent(
  * Hook providing legacy action dispatching functionality
  * This is intended to be used inside components that need to dispatch legacy actions
  */
-export function useDispatchLegacyAction(): (moduleId: string, action: string, data?: unknown) => void {
+export function useDispatchLegacyAction(): (
+  moduleId: string,
+  action: string,
+  data?: unknown
+) => void {
   const { dispatch, manager } = useModuleContext();
-  
+
   // Return the function that can be called by components
   return (moduleId: string, action: string, data?: unknown): void => {
     console.warn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead');
-    
+
     // First check if the module exists
     const module = manager?.getModule?.(moduleId);
     if (!module) {
       console.error(`[ModuleContext] Module not found: ${moduleId}`);
       return;
     }
-    
+
     // Implement the legacy action handling
     switch (action) {
       case 'activate':
@@ -314,17 +318,17 @@ export function useDispatchLegacyAction(): (moduleId: string, action: string, da
           dispatch(createUpdateModuleAction(moduleId, { status: 'active' }));
         }
         break;
-        
+
       case 'deactivate':
         // Use manager's deactivateModule if available, otherwise update via dispatch
         if (manager && typeof manager.deactivateModule === 'function') {
           manager.deactivateModule(moduleId);
         } else {
-          // Fallback to dispatch 
+          // Fallback to dispatch
           dispatch(createUpdateModuleAction(moduleId, { status: 'inactive' }));
         }
         break;
-        
+
       case 'update':
         if (typeof data === 'object' && data !== null) {
           // Use dispatch for updates
@@ -333,12 +337,12 @@ export function useDispatchLegacyAction(): (moduleId: string, action: string, da
           console.error(`[ModuleContext] Invalid data for 'update' action on module ${moduleId}`);
         }
         break;
-        
+
       case 'delete':
         // Use dispatch for module removal
         dispatch(createRemoveModuleAction(moduleId));
         break;
-        
+
       default:
         console.error(`[ModuleContext] Unknown action '${action}' for module ${moduleId}`);
     }
@@ -673,12 +677,14 @@ export function canBuildModule(
   return true;
 }
 
-export function buildModule(moduleType: ModuleType, 
+export function buildModule(
+  moduleType: ModuleType,
   // Rename _cost to cost and remove the underscore since ESLint flags it
-  cost: { minerals?: number; energy?: number }) {
+  cost: { minerals?: number; energy?: number }
+) {
   // Maybe use cost within the method
   console.warn(`Building module of type ${moduleType} with cost:`, cost);
-  
+
   // Get the first colony building to attach the module to
   const buildings = moduleManagerWrapper.getBuildings();
   const targetBuilding = buildings.find(building => building.type === 'colony');
@@ -747,3 +753,13 @@ export function buildModule(moduleType: ModuleType,
 
   moduleManagerWrapper.dispatch(legacyActivateAction);
 }
+
+// Placeholder for handling potential legacy actions if needed
+const handleLegacyAction = useCallback((_action: string, _data: unknown) => {
+  // TODO: Implement logic for handling legacy actions if necessary
+  // Currently, _dispatchLegacyAction is also unused.
+  // if (_dispatchLegacyAction) {
+  //   _dispatchLegacyAction(action, data);
+  // }
+  console.warn('Received legacy action:', _action, _data);
+}, []);

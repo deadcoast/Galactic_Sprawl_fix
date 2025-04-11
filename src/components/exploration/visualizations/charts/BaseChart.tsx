@@ -214,7 +214,7 @@ export function BaseChart({
         {subtitle && <p className="chart-subtitle mb-4 text-sm text-gray-500">{subtitle}</p>}
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto mb-2 h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+            <div className="mx-auto mb-2 h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
             <p className="text-gray-500 dark:text-gray-400">Loading chart data?...</p>
           </div>
         </div>

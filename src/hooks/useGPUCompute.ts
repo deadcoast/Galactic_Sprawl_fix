@@ -66,7 +66,11 @@ export function useGPUCompute({
             err instanceof Error ? err : new Error(`Error deleting input buffer ${name}`),
             ErrorType.RUNTIME,
             ErrorSeverity.MEDIUM,
-            { componentName: 'useGPUCompute', action: 'cleanupEffect (input buffer)', bufferName: name }
+            {
+              componentName: 'useGPUCompute',
+              action: 'cleanupEffect (input buffer)',
+              bufferName: name,
+            }
           );
         }
       });
@@ -78,7 +82,11 @@ export function useGPUCompute({
             err instanceof Error ? err : new Error('Error deleting output buffer'),
             ErrorType.RUNTIME,
             ErrorSeverity.MEDIUM,
-            { componentName: 'useGPUCompute', action: 'cleanupEffect (output buffer)', bufferName: outputBufferRef.current }
+            {
+              componentName: 'useGPUCompute',
+              action: 'cleanupEffect (output buffer)',
+              bufferName: outputBufferRef.current,
+            }
           );
         }
       }

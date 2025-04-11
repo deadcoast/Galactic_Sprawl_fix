@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-    GlobalRoutine
-} from '../../managers/automation/GlobalAutomationManager';
-import {
-    AutomationRule
-} from '../../managers/game/AutomationManager';
+import { GlobalRoutine } from '../../managers/automation/GlobalAutomationManager';
+import { AutomationRule } from '../../managers/game/AutomationManager';
 import { getAutomationManager, getGlobalAutomationManager } from '../../managers/ManagerRegistry'; // Import registry accessors
-import {
-    ErrorSeverity,
-    ErrorType,
-    errorLoggingService,
-} from '../../services/ErrorLoggingService'; // Import logging service
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService'; // Import logging service
 
 // Define SystemId type to match what's expected
 type SystemId = string;
@@ -51,7 +43,7 @@ export const useAutomation = () => {
       unsubscribe();
     };
     // Dependencies: ensure effect runs if manager instances change (though they shouldn't)
-  }, [globalAutomationManager]); 
+  }, [globalAutomationManager]);
 
   // Update routines state
   const updateRoutines = useCallback(() => {
@@ -88,14 +80,18 @@ export const useAutomation = () => {
   };
 
   // Memoized actions to interact with the managers
-  const actions = useMemo(() => ({
-    enableRoutine: (id: string) => globalAutomationManager?.enableRoutine(id),
-    disableRoutine: (id: string) => globalAutomationManager?.disableRoutine(id),
-    registerRoutine: (routine: GlobalRoutine) => globalAutomationManager?.registerRoutine(routine),
-    // Add more actions for AutomationManager if needed
-    getRule: (id: string) => automationManager?.getRule(id),
-    registerRule: (rule: AutomationRule) => automationManager?.registerRule(rule),
-  }), [globalAutomationManager, automationManager]);
+  const actions = useMemo(
+    () => ({
+      enableRoutine: (id: string) => globalAutomationManager?.enableRoutine(id),
+      disableRoutine: (id: string) => globalAutomationManager?.disableRoutine(id),
+      registerRoutine: (routine: GlobalRoutine) =>
+        globalAutomationManager?.registerRoutine(routine),
+      // Add more actions for AutomationManager if needed
+      getRule: (id: string) => automationManager?.getRule(id),
+      registerRule: (rule: AutomationRule) => automationManager?.registerRule(rule),
+    }),
+    [globalAutomationManager, automationManager]
+  );
 
   return {
     isInitialized,

@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, component-library, module-registry
- * 
+ *
  * ModuleControls component for providing common module operation controls
  */
 import * as React from 'react';
@@ -18,52 +18,52 @@ interface ModuleControlsProps {
    * Module ID to control
    */
   moduleId: string;
-  
+
   /**
    * Whether to show the activate/deactivate toggle
    * @default true
    */
   showActivateToggle?: boolean;
-  
+
   /**
    * Whether to show the upgrade button
    * @default true
    */
   showUpgrade?: boolean;
-  
+
   /**
    * Whether to show the maintenance button
    * @default false
    */
   showMaintenance?: boolean;
-  
+
   /**
    * Whether to show the power mode controls
    * @default false
    */
   showPowerModes?: boolean;
-  
+
   /**
    * Custom CSS class name
    */
   className?: string;
-  
+
   /**
    * Button size
    * @default 'medium'
    */
   size?: 'small' | 'medium' | 'large';
-  
+
   /**
    * Callback when module status changes
    */
   onStatusChange?: (newStatus: ExtendedModuleStatus) => void;
-  
+
   /**
    * Callback when upgrade starts
    */
   onUpgradeStart?: () => void;
-  
+
   /**
    * Custom module data (override for using the hook)
    */
@@ -87,10 +87,10 @@ export function ModuleControls({
 }: ModuleControlsProps) {
   // Get module data from hook or override
   const { module, currentStatus, isLoading, error } = useModuleStatus(moduleId);
-  
+
   // Use provided module data if available, otherwise use from hook
   const activeModule = moduleData || module;
-  
+
   // Get size-based class
   const getSizeClass = () => {
     switch (size) {
@@ -102,49 +102,49 @@ export function ModuleControls({
         return '';
     }
   };
-  
+
   // Handle module activation/deactivation
   const handleToggleActive = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
-    
+
     if (activeModule) {
       const newActive = !activeModule.isActive;
       moduleManager.setModuleActive(moduleId, newActive);
-      
+
       // Call status change callback if provided
       if (onStatusChange) {
         onStatusChange(newActive ? 'active' : 'inactive');
       }
     }
   };
-  
+
   // Handle module upgrade
   const handleUpgrade = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
-    
+
     if (activeModule) {
       moduleManager.upgradeModule(moduleId);
-      
+
       // Call upgrade start callback if provided
       if (onUpgradeStart) {
         onUpgradeStart();
       }
-      
+
       // Call status change callback if provided
       if (onStatusChange) {
         onStatusChange('upgrading');
       }
     }
   };
-  
+
   // Handle maintenance mode toggle
   const handleMaintenanceToggle = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
-    
+
     if (activeModule) {
       const isInMaintenance = currentStatus === 'maintenance';
       const newStatus: ExtendedModuleStatus = isInMaintenance ? 'active' : 'maintenance';
-      
+
       moduleManager.publishEvent({
         type: EventType.MODULE_STATUS_CHANGED,
         moduleId,
@@ -155,45 +155,46 @@ export function ModuleControls({
           previousStatus: currentStatus,
         },
       });
-      
+
       // Call status change callback if provided
       if (onStatusChange) {
         onStatusChange(newStatus);
       }
     }
   };
-  
+
   // Handle power mode change
-  const handlePowerModeChange = (mode: 'normal' | 'powersave' | 'boost') => (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    
-    if (activeModule) {
-      let newStatus: ExtendedModuleStatus = 'active';
-      
-      if (mode === 'powersave') {
-        newStatus = 'powersave';
-      } else if (mode === 'boost') {
-        newStatus = 'boost';
+  const handlePowerModeChange =
+    (mode: 'normal' | 'powersave' | 'boost') => (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent event bubbling
+
+      if (activeModule) {
+        let newStatus: ExtendedModuleStatus = 'active';
+
+        if (mode === 'powersave') {
+          newStatus = 'powersave';
+        } else if (mode === 'boost') {
+          newStatus = 'boost';
+        }
+
+        moduleManager.publishEvent({
+          type: EventType.MODULE_STATUS_CHANGED,
+          moduleId,
+          moduleType: activeModule.type,
+          timestamp: Date.now(),
+          data: {
+            status: newStatus,
+            previousStatus: currentStatus,
+          },
+        });
+
+        // Call status change callback if provided
+        if (onStatusChange) {
+          onStatusChange(newStatus);
+        }
       }
-      
-      moduleManager.publishEvent({
-        type: EventType.MODULE_STATUS_CHANGED,
-        moduleId,
-        moduleType: activeModule.type,
-        timestamp: Date.now(),
-        data: {
-          status: newStatus,
-          previousStatus: currentStatus,
-        },
-      });
-      
-      // Call status change callback if provided
-      if (onStatusChange) {
-        onStatusChange(newStatus);
-      }
-    }
-  };
-  
+    };
+
   // Display loading state
   if (isLoading && !moduleData) {
     return (
@@ -202,7 +203,7 @@ export function ModuleControls({
       </div>
     );
   }
-  
+
   // Display error state
   if ((error || !activeModule) && !moduleData) {
     return (
@@ -211,19 +212,19 @@ export function ModuleControls({
       </div>
     );
   }
-  
+
   // Determine button states
   const isActive = activeModule?.isActive || false;
   const isUpgrading = currentStatus === 'upgrading';
   const isInMaintenance = currentStatus === 'maintenance';
-  const currentPowerMode = currentStatus === 'powersave' ? 'powersave' : 
-                          currentStatus === 'boost' ? 'boost' : 'normal';
-  
+  const currentPowerMode =
+    currentStatus === 'powersave' ? 'powersave' : currentStatus === 'boost' ? 'boost' : 'normal';
+
   return (
     <div className={`module-controls ${className}`} data-testid="module-controls">
       {/* Activate/Deactivate Toggle */}
       {showActivateToggle && (
-        <button 
+        <button
           className={`module-controls__button ${getSizeClass()} ${isActive ? 'module-controls__button--active' : 'module-controls__button--inactive'}`}
           onClick={handleToggleActive}
           disabled={isUpgrading}
@@ -232,10 +233,10 @@ export function ModuleControls({
           {isActive ? 'Deactivate' : 'Activate'}
         </button>
       )}
-      
+
       {/* Upgrade Button */}
       {showUpgrade && (
-        <button 
+        <button
           className={`module-controls__button module-controls__button--upgrade ${getSizeClass()}`}
           onClick={handleUpgrade}
           disabled={isUpgrading || currentStatus === 'inactive'}
@@ -244,10 +245,10 @@ export function ModuleControls({
           {isUpgrading ? 'Upgrading...' : 'Upgrade'}
         </button>
       )}
-      
+
       {/* Maintenance Button */}
       {showMaintenance && (
-        <button 
+        <button
           className={`module-controls__button ${isInMaintenance ? 'module-controls__button--active' : ''} ${getSizeClass()}`}
           onClick={handleMaintenanceToggle}
           disabled={!isActive || isUpgrading}
@@ -256,11 +257,11 @@ export function ModuleControls({
           {isInMaintenance ? 'Exit Maintenance' : 'Maintenance'}
         </button>
       )}
-      
+
       {/* Power Mode Controls */}
       {showPowerModes && isActive && !isUpgrading && (
         <div className="module-controls__power-modes">
-          <button 
+          <button
             className={`module-controls__button ${currentPowerMode === 'powersave' ? 'module-controls__button--active' : ''} ${getSizeClass()}`}
             onClick={handlePowerModeChange('powersave')}
             disabled={currentPowerMode === 'powersave'}
@@ -268,8 +269,8 @@ export function ModuleControls({
           >
             Power Save
           </button>
-          
-          <button 
+
+          <button
             className={`module-controls__button ${currentPowerMode === 'normal' ? 'module-controls__button--active' : ''} ${getSizeClass()}`}
             onClick={handlePowerModeChange('normal')}
             disabled={currentPowerMode === 'normal'}
@@ -277,8 +278,8 @@ export function ModuleControls({
           >
             Normal
           </button>
-          
-          <button 
+
+          <button
             className={`module-controls__button ${currentPowerMode === 'boost' ? 'module-controls__button--active' : ''} ${getSizeClass()}`}
             onClick={handlePowerModeChange('boost')}
             disabled={currentPowerMode === 'boost'}
@@ -366,4 +367,4 @@ if (typeof document !== 'undefined') {
   const styleElement = document.createElement('style');
   styleElement.innerHTML = styles;
   document.head.appendChild(styleElement);
-} 
+}

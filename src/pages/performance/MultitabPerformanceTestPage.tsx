@@ -9,8 +9,8 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-    MultitabLaunchConfig,
-    MultitabPerformanceLauncher,
+  MultitabLaunchConfig,
+  MultitabPerformanceLauncher,
 } from '../../components/performance/MultitabPerformanceLauncher';
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
 import { errorLoggingService } from '../../services/ErrorLoggingService';

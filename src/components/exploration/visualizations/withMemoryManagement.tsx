@@ -66,15 +66,16 @@ export function withMemoryManagement<P extends BaseChartProps>(
 
       if (enableLogging) {
         errorLoggingService.logInfo(
-          `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}`,
+          `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}, Cache Exp: ${cacheExpirationTime}ms`,
           {
             component: 'withMemoryManagement',
             memoryUsageMB: Math.round(size / 1024 / 1024),
             cleanupLevel: autoCleanupLevel,
+            cacheExpirationMs: cacheExpirationTime,
           }
         );
       }
-    }, [props?.data, enableLogging, autoCleanupLevel]);
+    }, [props?.data, enableLogging, autoCleanupLevel, cacheExpirationTime]);
 
     // Calculate memory usage in MB for display
     const memoryMB = Math.round(memoryUsage / 1024 / 1024);

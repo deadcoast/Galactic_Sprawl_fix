@@ -5,7 +5,6 @@ import {
   ResourceType,
   createResourceState,
 } from '../../types/resources/ResourceTypes';
-import { isResourcePool } from '../../utils/resources/resourceValidation';
 
 /**
  * Pool allocation strategy
@@ -86,7 +85,7 @@ export class ResourcePoolManager {
    * Register a resource pool
    */
   public registerPool(pool: ResourcePool): boolean {
-    if (!isResourcePool(pool)) {
+    if (!pool) {
       console.error('Invalid resource pool:', pool);
       return false;
     }

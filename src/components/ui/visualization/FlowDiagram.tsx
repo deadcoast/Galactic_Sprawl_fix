@@ -2,15 +2,14 @@ import * as d3 from 'd3';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    d3Accessors,
-    SimulationLinkDatum,
-    SimulationNodeDatum,
+  d3Accessors,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
 } from '../../../types/visualizations/D3Types';
 import {
-    createD3ForceValidation,
-    ValidationTransformResult,
+  createD3ForceValidation,
+  ValidationTransformResult,
 } from '../../../types/visualizations/D3ValidationHooks';
-import { Schema } from '../../../types/visualizations/D3Validators';
 
 /**
  * Represents a node in the flow diagram
@@ -181,38 +180,54 @@ const convertLinksToD3Format = (
   links: FlowDataLink[],
   nodeMap: Map<string, FlowNode>
 ): FlowLink[] => {
-  return links.map(link => {
-    // Determine line width based on value and maxCapacity
-    const width = Math.max(1, Math.min(8, 1 + (link.value / 100) * 7));
+  return (
+    links
+      .map(link => {
+        // Find source and target nodes using the map
+        const sourceNode = nodeMap.get(link.source);
+        const targetNode = nodeMap.get(link.target);
 
-    // Determine color based on active state and utilization
-    let color: string;
-    if (!link.active) {
-      color = '#94a3b8'; // slate (inactive)
-    } else if (link.utilization && link.utilization > 0.8) {
-      color = '#ef4444'; // red (high utilization)
-    } else if (link.utilization && link.utilization > 0.5) {
-      color = '#f59e0b'; // amber (medium utilization)
-    } else {
-      color = '#3b82f6'; // blue (low utilization)
-    }
+        // If source or target node doesn't exist, skip this link
+        if (!sourceNode || !targetNode) {
+          console.warn(`Skipping link ${link.id}: Source or target node not found.`);
+          return null;
+        }
 
-    // Create a properly typed link with no type assertions
-    const d3Link: FlowLink = {
-      id: link.id,
-      source: link.source,
-      target: link.target,
-      value: link.value,
-      maxCapacity: link.maxCapacity,
-      utilization: link.utilization,
-      flowType: link.flowType,
-      active: link.active,
-      width,
-      color,
-    };
+        // Determine line width based on value and maxCapacity
+        const width = Math.max(1, Math.min(8, 1 + (link.value / 100) * 7));
 
-    return d3Link;
-  });
+        // Determine color based on active state and utilization
+        let color: string;
+        if (!link.active) {
+          color = '#94a3b8'; // slate (inactive)
+        } else if (link.utilization && link.utilization > 0.8) {
+          color = '#ef4444'; // red (high utilization)
+        } else if (link.utilization && link.utilization > 0.5) {
+          color = '#f59e0b'; // amber (medium utilization)
+        } else {
+          color = '#3b82f6'; // blue (low utilization)
+        }
+
+        // Create a properly typed link with node objects
+        const d3Link: FlowLink = {
+          id: link.id,
+          // Assign the resolved node objects
+          source: sourceNode,
+          target: targetNode,
+          value: link.value,
+          maxCapacity: link.maxCapacity,
+          utilization: link.utilization,
+          flowType: link.flowType,
+          active: link.active,
+          width,
+          color,
+        };
+
+        return d3Link;
+      })
+      // Filter out null links where nodes weren't found
+      .filter((link): link is FlowLink => link !== null)
+  );
 };
 
 /**
@@ -256,22 +271,6 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
    */
   const prepareVisualizationData = useCallback(() => {
     try {
-      // Define validation schemas
-      const flowDataSchema: Schema = {
-        name: 'FlowData',
-        description: 'Schema for flow data',
-        properties: {
-          nodes: {
-            type: 'array',
-            required: true,
-          },
-          links: {
-            type: 'array',
-            required: true,
-          },
-        },
-      };
-
       // Create validation functions
       const validation = createD3ForceValidation<FlowData, FlowNode, FlowLink>(
         // Node transform function
@@ -330,14 +329,9 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
         );
       }
 
-      // Create a map for node lookups (using validated nodes)
-      const nodeMap = new Map<string, FlowNode>();
-      nodeResult.data?.forEach(node => nodeMap.set(node.id, node));
-
       return {
         nodes: nodeResult.data,
         links: linkResult.data,
-        nodeMap,
         valid: nodeResult.valid && linkResult.valid,
         errors: [...nodeResult.errors, ...linkResult.errors],
       };
@@ -346,7 +340,6 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       return {
         nodes: [],
         links: [],
-        nodeMap: new Map(),
         valid: false,
         errors: ['Error preparing visualization data'],
       };
@@ -405,7 +398,21 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
     svg.selectAll('*').remove();
 
     // Prepare data with type safety
-    const { nodes, links, nodeMap } = prepareVisualizationData();
+    const { nodes, links, valid, errors } = prepareVisualizationData();
+
+    // Handle validation errors if necessary (already logged in prepareVisualizationData)
+    if (!valid) {
+      console.error('Flow diagram rendering aborted due to invalid data:', errors.join('\n'));
+      // Optionally display an error message in the SVG
+      svg
+        .append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'red')
+        .text('Error: Invalid flow data provided.');
+      return; // Stop rendering if data is invalid
+    }
 
     // Create container group for zooming
     const container = svg.append('g').attr('class', 'container');
@@ -486,7 +493,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
           .id(d => d.id)
           .distance(100)
       )
-      .force('charge', d3.forceMunknownnownBody().strength(-200))
+      .force('charge', d3.forceManyBody().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
@@ -549,8 +556,8 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       .append('circle')
       .attr('r', d => d.radius || 20)
       .attr('fill', d => d.color || '#999')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5);
+      .attr('stroke', d => (selectedNodeId === d.id ? '#1f2937' : '#fff'))
+      .attr('stroke-width', d => (selectedNodeId === d.id ? 3 : 1.5));
 
     // Add node labels
     node
@@ -606,21 +613,26 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       // Update links with safe accessors to prevent type errors
       link
         .attr('x1', d => {
-          const source = typeof d.source === 'string' ? findNodeById(nodes, d.source) : d.source;
+          const source = d.source as FlowNode;
           return source ? d3Accessors.getX(source) : 0;
         })
         .attr('y1', d => {
-          const source = typeof d.source === 'string' ? findNodeById(nodes, d.source) : d.source;
+          const source = d.source as FlowNode;
           return source ? d3Accessors.getY(source) : 0;
         })
         .attr('x2', d => {
-          const target = typeof d.target === 'string' ? findNodeById(nodes, d.target) : d.target;
+          const target = d.target as FlowNode;
           return target ? d3Accessors.getX(target) : 0;
         })
         .attr('y2', d => {
-          const target = typeof d.target === 'string' ? findNodeById(nodes, d.target) : d.target;
+          const target = d.target as FlowNode;
           return target ? d3Accessors.getY(target) : 0;
-        });
+        })
+        // Apply selected style conditionally
+        .attr('stroke', d => (selectedLinkId === d.id ? '#1f2937' : d.color || '#999'))
+        .attr('stroke-width', d =>
+          selectedLinkId === d.id ? Math.max(2, (d.width || 1) * 1.5) : d.width || 1
+        );
 
       // Update nodes with safe transforms
       node.attr('transform', d => {
@@ -667,6 +679,8 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
     handleLinkClick,
     onNodeClick,
     onLinkClick,
+    selectedNodeId,
+    selectedLinkId,
   ]);
 
   return (

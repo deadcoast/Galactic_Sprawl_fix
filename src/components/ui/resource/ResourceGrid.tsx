@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, resource-system, component-library, performance-optimization
- * 
+ *
  * ResourceGrid component for displaying multiple resources in a grid layout
  * Uses standardized UI components and resource type safety
  */
@@ -18,12 +18,12 @@ export interface ResourceGridItem {
    * Type of resource
    */
   resourceType: ResourceType;
-  
+
   /**
    * Initial amount of the resource
    */
   initialAmount?: number;
-  
+
   /**
    * Maximum capacity of the resource
    */
@@ -35,42 +35,42 @@ export interface ResourceGridProps {
    * List of resources to display
    */
   resources: ResourceGridItem[];
-  
+
   /**
    * Number of columns in the grid
    * @default 3
    */
   columns?: number;
-  
+
   /**
    * Gap between grid items in pixels
    * @default 16
    */
   gap?: number;
-  
+
   /**
    * Display mode for resources
    * @default 'compact'
    */
   displayMode?: ResourceDisplayMode;
-  
+
   /**
    * Whether to show resource percentage (only for 'bars' mode)
    * @default false
    */
   showPercentage?: boolean;
-  
+
   /**
    * Class name for styling
    */
   className?: string;
-  
+
   /**
    * Whether to use virtualization for large resource lists
    * @default true
    */
   virtualized?: boolean;
-  
+
   /**
    * Fixed height for each resource item when using virtualization
    * @default 120
@@ -80,7 +80,7 @@ export interface ResourceGridProps {
 
 /**
  * Component that displays multiple resources in a grid layout
- * 
+ *
  * Uses the standardized Grid component from the UI system for consistent layouts
  * and follows established resource type safety patterns
  */
@@ -96,15 +96,15 @@ export function ResourceGrid({
 }: ResourceGridProps) {
   // Validate resources to ensure only valid ResourceTypes are used
   const validResources = React.useMemo(() => {
-    return resources.filter(resource => 
+    return resources.filter(resource =>
       Object.values(ResourceType).includes(resource.resourceType)
     );
   }, [resources]);
-  
+
   // Virtualization setup
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(600);
-  
+
   // Measure container height for virtualization
   useEffect(() => {
     if (containerRef.current && virtualized) {
@@ -112,9 +112,9 @@ export function ResourceGrid({
         const { height } = entries[0].contentRect;
         setContainerHeight(height);
       });
-      
+
       resizeObserver.observe(containerRef.current);
-      
+
       return () => {
         if (containerRef.current) {
           resizeObserver.unobserve(containerRef.current);
@@ -122,58 +122,61 @@ export function ResourceGrid({
       };
     }
   }, [virtualized]);
-  
+
   // Setup virtualization if enabled and there are enough resources
   const showVirtualized = virtualized && validResources.length > 20;
-  
+
   const virtualization = React.useMemo(() => {
     if (!showVirtualized) {
       return null;
     }
-    
+
     return useVirtualization({
       itemCount: validResources.length,
       itemHeight,
       containerHeight,
-      overscan: 2
+      overscan: 2,
     });
   }, [showVirtualized, validResources.length, itemHeight, containerHeight]);
-  
+
   if (showVirtualized && virtualization) {
     // Virtualized rendering for better performance with large lists
     const { startIndex, endIndex, totalHeight, offsetY } = virtualization;
     const visibleResources = validResources.slice(startIndex, endIndex + 1);
-    
+
     // Calculate grid layout
     const itemsPerRow = columns;
     const rowStartIndex = Math.floor(startIndex / itemsPerRow);
     const rowEndIndex = Math.floor(endIndex / itemsPerRow);
-    
+
+    // Log calculated row indices for debugging virtualization
+    console.log(`Virtualized grid: Rendering rows ${rowStartIndex} to ${rowEndIndex}`);
+
     return (
-      <div 
+      <div
         ref={containerRef}
         className={`resource-grid-virtual-container ${className}`}
         style={{ height: `${containerHeight}px`, position: 'relative', overflow: 'auto' }}
         onScroll={virtualization.handleScroll}
         data-testid="resource-grid"
       >
-        <div 
+        <div
           className="resource-grid-virtual-content"
           style={{ height: `${totalHeight}px`, position: 'relative' }}
         >
-          <div 
+          <div
             className="resource-grid-virtual-items"
-            style={{ 
-              position: 'absolute', 
-              top: `${offsetY}px`, 
-              left: 0, 
+            style={{
+              position: 'absolute',
+              top: `${offsetY}px`,
+              left: 0,
               right: 0,
               display: 'grid',
               gridTemplateColumns: `repeat(${columns}, 1fr)`,
-              gap: `${gap}px`
+              gap: `${gap}px`,
             }}
           >
-            {visibleResources.map((resource) => (
+            {visibleResources.map(resource => (
               <div key={resource.resourceType} className="resource-grid-item">
                 {displayMode === 'compact' && (
                   <ResourceDisplay
@@ -181,15 +184,15 @@ export function ResourceGrid({
                     initialAmount={resource.initialAmount}
                   />
                 )}
-                
+
                 {displayMode === 'detailed' && (
                   <ResourceDisplay
                     resourceType={resource.resourceType}
                     initialAmount={resource.initialAmount}
-                    className="p-2 bg-gray-100 rounded-md"
+                    className="rounded-md bg-gray-100 p-2"
                   />
                 )}
-                
+
                 {displayMode === 'bars' && (
                   <ResourceBar
                     resourceType={resource.resourceType}
@@ -205,7 +208,7 @@ export function ResourceGrid({
       </div>
     );
   }
-  
+
   // Non-virtualized render for smaller lists
   return (
     <Grid
@@ -215,7 +218,7 @@ export function ResourceGrid({
       className={`resource-grid ${className}`}
       data-testid="resource-grid"
     >
-      {validResources.map((resource) => (
+      {validResources.map(resource => (
         <div key={resource.resourceType} className="resource-grid-item">
           {displayMode === 'compact' && (
             <ResourceDisplay
@@ -223,15 +226,15 @@ export function ResourceGrid({
               initialAmount={resource.initialAmount}
             />
           )}
-          
+
           {displayMode === 'detailed' && (
             <ResourceDisplay
               resourceType={resource.resourceType}
               initialAmount={resource.initialAmount}
-              className="p-2 bg-gray-100 rounded-md"
+              className="rounded-md bg-gray-100 p-2"
             />
           )}
-          
+
           {displayMode === 'bars' && (
             <ResourceBar
               resourceType={resource.resourceType}
@@ -242,15 +245,13 @@ export function ResourceGrid({
           )}
         </div>
       ))}
-      
+
       {validResources.length === 0 && (
-        <div className="resource-grid-empty">
-          No valid resources to display
-        </div>
+        <div className="resource-grid-empty">No valid resources to display</div>
       )}
     </Grid>
   );
 }
 
 // Memoize the component to prevent unnecessary re-renders
-export const MemoizedResourceGrid = React.memo(ResourceGrid); 
+export const MemoizedResourceGrid = React.memo(ResourceGrid);

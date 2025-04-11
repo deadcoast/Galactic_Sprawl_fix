@@ -1,14 +1,11 @@
 /**
  * @context: ui-system, ui-layout-system, component-library
- * 
+ *
  * Container component that provides a centered, width-constrained wrapper with consistent margin and padding
  */
 import * as React from 'react';
 import { forwardRef, useMemo } from 'react';
-import { 
-  BaseComponentProps, 
-  LayoutComponentProps 
-} from '../../../types/ui/ComponentTypes';
+import { BaseComponentProps, LayoutComponentProps } from '../../../types/ui/ComponentTypes';
 
 /**
  * Container width options
@@ -19,7 +16,7 @@ export enum ContainerWidth {
   LARGE = 'large',
   XLARGE = 'xlarge',
   FULL = 'full',
-  AUTO = 'auto'
+  AUTO = 'auto',
 }
 
 /**
@@ -30,49 +27,49 @@ export interface ContainerProps extends BaseComponentProps, LayoutComponentProps
    * Container content
    */
   children: React.ReactNode;
-  
+
   /**
    * Container maximum width
    * @default 'medium'
    */
   maxWidth?: ContainerWidth | keyof typeof ContainerWidth | string | number;
-  
+
   /**
    * Whether the container should be centered horizontally
    * @default true
    */
   centered?: boolean;
-  
+
   /**
    * Whether to make the container a flex container
    * @default false
    */
   flex?: boolean;
-  
+
   /**
    * HTML element to render
    * @default 'div'
    */
   as?: keyof JSX.IntrinsicElements;
-  
+
   /**
    * Whether to add a subtle background color to the container
    * @default false
    */
   withBackground?: boolean;
-  
+
   /**
    * Whether to add a border to the container
    * @default false
    */
   withBorder?: boolean;
-  
+
   /**
    * Whether to add a drop shadow to the container
    * @default false
    */
   withShadow?: boolean;
-  
+
   /**
    * Custom max width value when maxWidth is not one of the predefined options
    */
@@ -83,31 +80,33 @@ export interface ContainerProps extends BaseComponentProps, LayoutComponentProps
  * Check if a value is a valid ContainerWidth
  */
 function isContainerWidth(value: unknown): value is ContainerWidth {
-  return typeof value === 'string' && Object.values(ContainerWidth).includes(value as ContainerWidth);
+  return (
+    typeof value === 'string' && Object.values(ContainerWidth).includes(value as ContainerWidth)
+  );
 }
 
 /**
  * Convert maxWidth to CSS value
  */
 function getMaxWidthValue(
-  maxWidth: ContainerWidth | keyof typeof ContainerWidth | string | number | undefined, 
+  maxWidth: ContainerWidth | keyof typeof ContainerWidth | string | number | undefined,
   customMaxWidth?: string | number
 ): string | number | undefined {
   // Custom max width takes precedence
   if (customMaxWidth !== undefined) {
     return typeof customMaxWidth === 'number' ? `${customMaxWidth}px` : customMaxWidth;
   }
-  
+
   // Return undefined if no maxWidth
   if (maxWidth === undefined) {
     return undefined;
   }
-  
+
   // If maxWidth is a direct number, return as pixels
   if (typeof maxWidth === 'number') {
     return `${maxWidth}px`;
   }
-  
+
   // If maxWidth is a predefined option, return the corresponding value
   if (isContainerWidth(maxWidth)) {
     switch (maxWidth) {
@@ -126,51 +125,54 @@ function getMaxWidthValue(
         return 'auto';
     }
   }
-  
+
   // Otherwise, return the maxWidth as is
   return maxWidth;
 }
 
 /**
  * Container component
- * 
+ *
  * Provides a centered, width-constrained wrapper with consistent margin and padding
  */
 export const Container = forwardRef<HTMLElement, ContainerProps>(
-  ({
-    children,
-    maxWidth = ContainerWidth.MEDIUM,
-    centered = true,
-    flex = false,
-    as = 'div',
-    withBackground = false,
-    withBorder = false,
-    withShadow = false,
-    customMaxWidth,
-    className = '',
-    style,
-    id,
-    fullWidth,
-    padding,
-    paddingTop,
-    paddingRight,
-    paddingBottom,
-    paddingLeft,
-    margin,
-    marginTop,
-    marginRight,
-    marginBottom,
-    marginLeft,
-    display,
-    position,
-    'aria-labelledby': ariaLabelledBy,
-    'aria-label': ariaLabel,
-    'data-testid': dataTestId,
-    ...rest
-  }, ref) => {
+  (
+    {
+      children,
+      maxWidth = ContainerWidth.MEDIUM,
+      centered = true,
+      flex = false,
+      as = 'div',
+      withBackground = false,
+      withBorder = false,
+      withShadow = false,
+      customMaxWidth,
+      className = '',
+      style,
+      id,
+      fullWidth,
+      padding,
+      paddingTop,
+      paddingRight,
+      paddingBottom,
+      paddingLeft,
+      margin,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
+      display,
+      position,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-label': ariaLabel,
+      'data-testid': dataTestId,
+      ...rest
+    },
+    ref
+  ) => {
     // Convert maxWidth to CSS value
     const maxWidthValue = getMaxWidthValue(maxWidth, customMaxWidth);
-    
+
     // Compute container classes
     const containerClasses = useMemo(() => {
       const classes = [
@@ -180,19 +182,14 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
         withShadow ? 'gs-container--with-shadow' : '',
         centered ? 'gs-container--centered' : '',
         fullWidth ? 'gs-container--full-width' : '',
-        className
-      ].filter(Boolean).join(' ');
-      
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       return classes;
-    }, [
-      withBackground,
-      withBorder,
-      withShadow,
-      centered,
-      fullWidth,
-      className
-    ]);
-    
+    }, [withBackground, withBorder, withShadow, centered, fullWidth, className]);
+
     // Compute container styles
     const containerStyles = useMemo(() => {
       return {
@@ -209,7 +206,7 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
         marginLeft,
         display: flex ? 'flex' : display,
         position,
-        ...style
+        ...style,
       };
     }, [
       maxWidthValue,
@@ -226,9 +223,9 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
       flex,
       display,
       position,
-      style
+      style,
     ]);
-    
+
     // Render the component with the element specified by the 'as' prop
     if (as === 'div') {
       return (
@@ -246,7 +243,7 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
         </div>
       );
     }
-    
+
     // For other elements, use createElement to avoid type issues
     return React.createElement(
       as,
@@ -258,7 +255,7 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
         ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : {}),
         ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
         ...(dataTestId ? { 'data-testid': dataTestId } : {}),
-        ...rest
+        ...rest,
       },
       children
     );
@@ -267,4 +264,4 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
 
 Container.displayName = 'Container';
 
-export default Container; 
+export default Container;

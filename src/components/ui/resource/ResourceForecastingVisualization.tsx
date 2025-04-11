@@ -1,22 +1,20 @@
 import {
-    CategoryScale,
-    Chart as ChartJS,
-    ChartOptions,
-    Legend,
-    LinearScale,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
+  CategoryScale,
+  Chart as ChartJS,
+  ChartOptions,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
 } from 'chart.js';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
-import { useResourceRate } from '../../../contexts/ResourceRatesContext';
-import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 import './ResourceForecastingVisualization.css';
 
 // Register the Chart.js components
@@ -45,10 +43,12 @@ interface ForecastPoint {
   status: 'critical' | 'low' | 'normal' | 'high' | 'maximum';
 }
 
-// Add helper function to get resource name
-const getResourceName = (resourceType: ResourceType): string => {
-  return ResourceTypeHelpers.getDisplayName(resourceType);
-};
+/**
+ * Formats a resource type for display.
+ */
+function formatResourceType(resourceType: ResourceType): string {
+  return ResourceTypeInfo[resourceType]?.displayName ?? resourceType;
+}
 
 /**
  * Component that visualizes forecasted resource levels based on current rates
@@ -65,25 +65,22 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
   thresholds,
 }) => {
   // Calculate rate per minute for easier forecasting
-  const _ratePerMinute = rate * (60000 / cycleTime);
+  const ratePerMinute = rate * (60 / cycleTime);
 
   // Register component
-  const _componentId = useComponentRegistration({
-    type: ResourceType.MINERALS,
+  const componentId = useComponentRegistration({
+    type: resourceType,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED', 'RESOURCE_FLOW_UPDATED'],
     updatePriority: 'low', // Forecasting is less critical than actual resource displays
   });
 
   // Initialize with current state
   const [forecast, setForecast] = useState<ForecastPoint[]>([]);
-  const [_criticalPoint, _setCriticalPoint] = useState<number | null>(null);
-  const _resourceRates = useResourceRate(resourceType);
-  const { state: _thresholdState } = useThreshold();
 
   // Component lifecycle tracking for performance monitoring
   useComponentLifecycle({
     onMount: () => {
-      console.warn('ResourceForecastingVisualization mounted');
+      console.warn(`ResourceForecastingVisualization mounted with ID: ${componentId}`);
     },
     onUnmount: () => {
       console.warn('ResourceForecastingVisualization unmounted');
@@ -96,7 +93,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
       const interval = forecastPeriod / dataPoints; // minutes per data point
       const points: ForecastPoint[] = [];
       let projectedValue = currentValue;
-      const projectedRate = rate; // Current rate of change
+      const projectedRatePerMinute = ratePerMinute;
 
       // Add current value as first point
       points.push({
@@ -109,9 +106,9 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
       for (let i = 1; i <= dataPoints; i++) {
         const timePoint = `+${Math.round(i * interval)}m`;
 
-        // Calculate projected value based on current rate
-        // We assume rate is units per minute, so we multiply by interval
-        projectedValue += projectedRate * interval;
+        // Calculate projected value based on ratePerMinute
+        // Multiply ratePerMinute by the interval (in minutes)
+        projectedValue += projectedRatePerMinute * interval;
 
         // Enforce min/max bounds
         projectedValue = Math.max(0, Math.min(projectedValue, maxValue));
@@ -127,7 +124,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
     };
 
     setForecast(generateForecast());
-  }, [currentValue, rate, maxValue, forecastPeriod, dataPoints, thresholds, cycleTime]);
+  }, [currentValue, ratePerMinute, maxValue, forecastPeriod, dataPoints, thresholds]);
 
   // Calculate when critical thresholds will be reached (if applicable)
   const criticalEvents = useMemo(() => {
@@ -194,7 +191,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
     labels: forecast.map(point => point.time),
     datasets: [
       {
-        label: `${getResourceName(resourceType)} Forecast`,
+        label: `${formatResourceType(resourceType)} Forecast`,
         data: forecast.map(point => point.value),
         borderColor: getLineColor(forecast),
         backgroundColor: getBackgroundColor(forecast),
@@ -205,11 +202,11 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         fill: true,
       },
       // Add threshold lines if available
-      ...(thresholds?.critical
+      ...(thresholds?.critical !== undefined
         ? [
             {
               label: 'Critical Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.critical ?? 0.1)),
+              data: Array(forecast.length).fill(maxValue * thresholds.critical),
               borderColor: 'rgba(255, 0, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -219,11 +216,11 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
             },
           ]
         : []),
-      ...(thresholds?.low
+      ...(thresholds?.low !== undefined
         ? [
             {
               label: 'Low Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.low ?? 0.25)),
+              data: Array(forecast.length).fill(maxValue * thresholds.low),
               borderColor: 'rgba(255, 165, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -233,11 +230,11 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
             },
           ]
         : []),
-      ...(thresholds?.high
+      ...(thresholds?.high !== undefined
         ? [
             {
               label: 'High Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.high ?? 0.75)),
+              data: Array(forecast.length).fill(maxValue * thresholds.high),
               borderColor: 'rgba(0, 128, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -260,7 +257,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         max: maxValue * 1.1, // Add 10% buffer at top
         title: {
           display: true,
-          text: `${getResourceName(resourceType)} Units`,
+          text: `${formatResourceType(resourceType)} Units`,
         },
       },
       x: {
@@ -286,7 +283,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
       },
       title: {
         display: true,
-        text: `${getResourceName(resourceType)} Forecast (${rate > 0 ? '+' : ''}${rate.toFixed(2)}/min)`,
+        text: `${formatResourceType(resourceType)} Forecast (${ratePerMinute > 0 ? '+' : ''}${ratePerMinute.toFixed(2)}/min)`,
       },
     },
   };

@@ -5,8 +5,8 @@ import { ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceState, ResourceTransfer } from '../types/resources/ResourceTypes';
 import {
-    ensureStringResourceType,
-    toStringResourceType,
+  ensureStringResourceType,
+  toStringResourceType,
 } from '../utils/resources/ResourceTypeConverter';
 import { ResourceType } from './../types/resources/ResourceTypes';
 import { ResourceFlowSubsystem } from './subsystems/ResourceFlowSubsystem';

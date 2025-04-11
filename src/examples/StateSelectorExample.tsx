@@ -1,11 +1,12 @@
 /**
  * @context: example.state, component-library
- * 
+ *
  * Example demonstrating how to use context selectors for optimized state management
  */
 import React, { createContext, useReducer } from 'react';
-import { createStandardContextSelectors } from '../utils/state/contextSelectors';
+import { createSelector } from 'reselect';
 import { ResourceType } from '../types/resources/ResourceTypes';
+import { createStandardContextSelectors } from '../utils/state/contextSelectors';
 
 // Define our application state
 interface AppState {
@@ -52,7 +53,7 @@ const initialState: AppState = {
   user: null,
   resources: {
     energy: { id: ResourceType.ENERGY, amount: 100, rate: 10 },
-    minerals: { id: ResourceType.MINERALS, amount: 50, rate: 5 }
+    minerals: { id: ResourceType.MINERALS, amount: 50, rate: 5 },
   },
   ui: {
     sidebar: {
@@ -150,30 +151,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
 }
 
 // Create context
-const AppContext = createContext<{ state: AppState; dispatch: React.Dispatch<AppAction> } | undefined>(
-  undefined
-);
+const AppContext = createContext<
+  { state: AppState; dispatch: React.Dispatch<AppAction> } | undefined
+>(undefined);
 
 // Create the provider component
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  return (
-    <AppContext.Provider value={{ state, dispatch }}>
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 }
 
 // Create selectors using our enhanced utility
-const {
-  useState,
-  useDispatch,
-  useSelector,
-  createPropertySelector,
-  createNestedPropertySelector,
-  createMultiPropertySelector,
-} = createStandardContextSelectors<AppState, AppAction>(AppContext);
+const { useState, useDispatch, useSelector, createPropertySelector, createNestedPropertySelector } =
+  createStandardContextSelectors<AppState, AppAction>(AppContext);
 
 // Create specific selectors for common state access patterns
 const useUser = createPropertySelector('user');
@@ -188,22 +179,22 @@ const useTheme = () => {
 
 // Export everything
 export {
-  useSelector,
   useDispatch,
-  useState,
-  useUser,
-  useResources,
-  useUIState,
-  useSidebarState,
   useModalState,
+  useResources,
+  useSelector,
+  useSidebarState,
+  useState,
   useTheme,
+  useUIState,
+  useUser,
 };
 
 // Example components demonstrating selector usage
 export function ResourceDisplay() {
   // Only re-renders when resources change
   const resources = useResources();
-  
+
   return (
     <div>
       <h3>Resources</h3>
@@ -222,31 +213,33 @@ export function UserInfo() {
   // Only re-renders when user info changes
   const user = useUser();
   const dispatch = useDispatch();
-  
+
   if (!user) {
     return (
       <div>
         <h3>Please Log In</h3>
-        <button onClick={() => 
-          dispatch({
-            type: 'SET_USER',
-            payload: {
-              id: 'user1',
-              name: 'Test User',
-              email: 'test@example.com',
-              preferences: {
-                theme: 'light',
-                notifications: true,
+        <button
+          onClick={() =>
+            dispatch({
+              type: 'SET_USER',
+              payload: {
+                id: 'user1',
+                name: 'Test User',
+                email: 'test@example.com',
+                preferences: {
+                  theme: 'light',
+                  notifications: true,
+                },
               },
-            },
-          })
-        }>
+            })
+          }
+        >
           Log In
         </button>
       </div>
     );
   }
-  
+
   return (
     <div>
       <h3>User Information</h3>
@@ -255,12 +248,14 @@ export function UserInfo() {
       <div>
         <h4>Preferences</h4>
         <p>Theme: {user.preferences.theme}</p>
-        <button onClick={() => 
-          dispatch({
-            type: 'SET_THEME',
-            payload: user.preferences.theme === 'light' ? 'dark' : 'light',
-          })
-        }>
+        <button
+          onClick={() =>
+            dispatch({
+              type: 'SET_THEME',
+              payload: user.preferences.theme === 'light' ? 'dark' : 'light',
+            })
+          }
+        >
           Toggle Theme
         </button>
       </div>
@@ -272,7 +267,7 @@ export function SidebarControl() {
   // Only re-renders when sidebar state changes
   const sidebar = useSidebarState();
   const dispatch = useDispatch();
-  
+
   return (
     <div>
       <h3>Sidebar Controls</h3>
@@ -301,4 +296,7 @@ export function AppDemo() {
       </div>
     </AppProvider>
   );
-} 
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _createMultiPropertySelector = (...args: any[]) => createSelector(...args);

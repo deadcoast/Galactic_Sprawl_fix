@@ -1,34 +1,38 @@
 /**
  * @context: ui-system, ui-error-handling, component-library, resource-system
- * 
+ *
  * ResourceLoadingError - A specialized error component for resource loading failures
  */
 
-import React from 'react';
 import { Box, Database, RefreshCw } from 'lucide-react';
+import React from 'react';
+import {
+  ErrorSeverity,
+  ErrorType,
+  errorLoggingService,
+} from '../../../services/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ErrorType, ErrorSeverity, errorLoggingService } from '../../../services/ErrorLoggingService';
 import { ComponentErrorState } from './ComponentErrorState';
 
 export interface ResourceLoadingErrorProps {
   /** Resource type that failed to load */
   resourceType?: ResourceType;
-  
+
   /** Error message or object */
   error?: Error | string;
-  
+
   /** Function to retry loading the resource */
   onRetry?: () => void;
-  
+
   /** Additional CSS class */
   className?: string;
-  
+
   /** Custom message to display (defaults to a message based on resourceType) */
   message?: string;
-  
+
   /** Show compact version */
   compact?: boolean;
-  
+
   /** Additional metadata for error logging */
   metadata?: Record<string, unknown>;
 }
@@ -43,32 +47,28 @@ export function ResourceLoadingError({
   className = '',
   message,
   compact = false,
-  metadata = {}
+  metadata = {},
 }: ResourceLoadingErrorProps) {
   // Generate appropriate message based on resource type
-  const errorMessage = message || 
-    (resourceType ? 
-      `Failed to load ${resourceType.toLowerCase()} resources` : 
-      'Failed to load resources');
-  
+  const errorMessage =
+    message ||
+    (resourceType
+      ? `Failed to load ${resourceType.toLowerCase()} resources`
+      : 'Failed to load resources');
+
   // Log error when component mounts
   React.useEffect(() => {
     if (error) {
       const errorObj = typeof error === 'string' ? new Error(error) : error;
-      
-      errorLoggingService.logError(
-        errorObj,
-        ErrorType.RESOURCE,
-        ErrorSeverity.MEDIUM,
-        {
-          component: 'ResourceLoadingError',
-          resourceType,
-          ...metadata
-        }
-      );
+
+      errorLoggingService.logError(errorObj, ErrorType.RESOURCE, ErrorSeverity.MEDIUM, {
+        component: 'ResourceLoadingError',
+        resourceType,
+        ...metadata,
+      });
     }
   }, [error, resourceType, metadata]);
-  
+
   return (
     <ComponentErrorState
       message={errorMessage}
@@ -83,7 +83,7 @@ export function ResourceLoadingError({
       icon={<Database size={18} className="resource-error-icon" />}
       metadata={{
         resourceType,
-        ...metadata
+        ...metadata,
       }}
     />
   );
@@ -98,20 +98,19 @@ export function InlineResourceLoadingError({
   message,
 }: Pick<ResourceLoadingErrorProps, 'resourceType' | 'onRetry' | 'message'>) {
   // Generate appropriate message based on resource type
-  const errorMessage = message || 
-    (resourceType ? 
-      `Failed to load ${resourceType.toLowerCase()}` : 
-      'Resource unavailable');
-  
+  const errorMessage =
+    message ||
+    (resourceType ? `Failed to load ${resourceType.toLowerCase()}` : 'Resource unavailable');
+
   return (
     <div className="inline-resource-error">
       <div className="inline-resource-error__content">
         <Box size={14} className="inline-resource-error__icon" />
         <span className="inline-resource-error__message">{errorMessage}</span>
-        
+
         {onRetry && (
-          <button 
-            className="inline-resource-error__retry" 
+          <button
+            className="inline-resource-error__retry"
             onClick={onRetry}
             type="button"
             aria-label="Retry loading resource"
@@ -124,4 +123,4 @@ export function InlineResourceLoadingError({
   );
 }
 
-export default ResourceLoadingError; 
+export default ResourceLoadingError;

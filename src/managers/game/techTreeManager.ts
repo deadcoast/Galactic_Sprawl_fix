@@ -61,11 +61,14 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
   private static instance: TechTreeManager | null = null;
   private unlockedNodes: Set<string> = new Set();
   private techNodes: Map<string, TechNode> = new Map();
-  private activeResearch: Map<string, { 
-    startTime: number;
-    endTime: number;
-    intervalId?: NodeJS.Timeout; 
-  }> = new Map();
+  private activeResearch: Map<
+    string,
+    {
+      startTime: number;
+      endTime: number;
+      intervalId?: NodeJS.Timeout;
+    }
+  > = new Map();
   private synergies: Map<string, Set<string>> = new Map();
   private activeSynergies: Set<string> = new Set();
 
@@ -85,7 +88,7 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     }
     return TechTreeManager.instance;
   }
-  
+
   /**
    * Register a node in the tech tree
    */
@@ -99,9 +102,9 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
         this.synergies.get(targetNodeId)?.add(node.id);
       });
     }
-    
+
     this.techNodes.set(node.id, node);
-    
+
     // Update the unlocked nodes set if the node is already unlocked
     if (node.unlocked) {
       this.unlockedNodes.add(node.id);
@@ -129,7 +132,7 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     // Mark as unlocked
     node.unlocked = true;
     this.unlockedNodes.add(nodeId);
-    
+
     // Update node in the map
     this.techNodes.set(nodeId, node);
 
@@ -187,19 +190,19 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
 
     // Start tracking research
     const startTime = Date.now();
-    const endTime = startTime + (node.researchTime * 1000);
-    
+    const endTime = startTime + node.researchTime * 1000;
+
     // Set up interval to update progress
     const intervalId = setInterval(() => {
       this.updateResearchProgress(nodeId);
     }, 1000); // Update every second
-    
-    this.activeResearch.set(nodeId, { 
-      startTime, 
+
+    this.activeResearch.set(nodeId, {
+      startTime,
       endTime,
-      intervalId
+      intervalId,
     });
-    
+
     // Update node in the map
     this.techNodes.set(nodeId, node);
 
@@ -246,7 +249,7 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
   private updateResearchProgress(nodeId: string): void {
     const node = this.techNodes.get(nodeId);
     const researchData = this.activeResearch.get(nodeId);
-    
+
     if (!node || !researchData || !node.researchTime) {
       return;
     }
@@ -254,44 +257,44 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     const now = Date.now();
     const elapsed = now - researchData.startTime;
     const total = node.researchTime * 1000;
-    
+
     // Calculate progress (0-1)
     const progress = Math.min(1, elapsed / total);
     node.researchProgress = progress;
-    
+
     // Update node in map
     this.techNodes.set(nodeId, node);
-    
+
     // Emit progress event
     const remainingTime = Math.max(0, (researchData.endTime - now) / 1000);
-    this.emit('researchProgress', { 
-      nodeId, 
-      progress, 
-      remainingTime 
+    this.emit('researchProgress', {
+      nodeId,
+      progress,
+      remainingTime,
     });
-    
+
     // Check if research is complete
     if (progress >= 1) {
       // Clear interval
       if (researchData.intervalId) {
         clearInterval(researchData.intervalId);
       }
-      
+
       // Remove from active research
       this.activeResearch.delete(nodeId);
-      
+
       // Mark as unlocked
       node.unlocked = true;
       this.unlockedNodes.add(nodeId);
-      
+
       // Emit completed event
       this.emit('researchCompleted', { nodeId, node });
-      
+
       // Check and activate synergies
       this.checkAndActivateSynergies(nodeId);
     }
   }
-  
+
   /**
    * Check for and activate synergies when a node is unlocked
    * @param nodeId The ID of the newly unlocked node
@@ -303,13 +306,13 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     if (!synergyNodes) {
       return;
     }
-    
+
     // Check each synergy node
     const activatedSynergies = [...synergyNodes].filter(synergyNodeId => {
       const synergyNode = this.techNodes.get(synergyNodeId);
       return synergyNode?.unlocked === true;
     });
-    
+
     if (activatedSynergies.length > 0) {
       // Calculate total synergy bonus
       let totalBonus = 0;
@@ -319,16 +322,16 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
           totalBonus += synergyNode.synergyModifiers[nodeId];
         }
       });
-      
+
       // Mark synergy as active
       activatedSynergies.forEach(synergyNodeId => {
         this.activeSynergies.add(`${nodeId}-${synergyNodeId}`);
       });
-      
+
       // Emit synergy activated event
       this.emit('synergyActivated', {
         nodeIds: [nodeId, ...activatedSynergies],
-        synergyBonus: totalBonus
+        synergyBonus: totalBonus,
       });
     }
   }
@@ -348,12 +351,12 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     if (!node) {
       return false;
     }
-    
+
     // If already unlocked, it can't be unlocked again
     if (node.unlocked) {
       return false;
     }
-    
+
     // Check if all requirements are met
     return node.requirements.every(reqId => this.isUnlocked(reqId));
   }
@@ -380,54 +383,57 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
       node => !node.unlocked && this.canUnlock(node.id)
     );
   }
-  
+
   /**
    * Get active research nodes with progress
    */
-  public getActiveResearch(): Map<string, { 
-    progress: number; 
-    remainingTime: number;
-    startTime: number;
-    endTime: number;
-  }> {
+  public getActiveResearch(): Map<
+    string,
+    {
+      progress: number;
+      remainingTime: number;
+      startTime: number;
+      endTime: number;
+    }
+  > {
     const result = new Map();
-    
+
     for (const [nodeId, researchData] of this.activeResearch.entries()) {
       const node = this.techNodes.get(nodeId);
       if (node && node.researchProgress !== undefined) {
         const now = Date.now();
         const remainingTime = Math.max(0, (researchData.endTime - now) / 1000);
-        
+
         result.set(nodeId, {
           progress: node.researchProgress,
           remainingTime,
           startTime: researchData.startTime,
-          endTime: researchData.endTime
+          endTime: researchData.endTime,
         });
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Get all active synergies
    */
   public getActiveSynergies(): Map<string, number> {
     const result = new Map();
-    
+
     for (const synergyPair of this.activeSynergies) {
       const [nodeId, synergyNodeId] = synergyPair.split('-');
       const synergyNode = this.techNodes.get(synergyNodeId);
-      
+
       if (synergyNode?.synergyModifiers?.[nodeId]) {
         result.set(synergyPair, synergyNode.synergyModifiers[nodeId]);
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Find the optimal tech path to a target node
    * @param targetNodeId The ID of the target tech node
@@ -438,17 +444,17 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     if (!targetNode) {
       return null;
     }
-    
+
     // If already unlocked, return empty path
     if (targetNode.unlocked) {
       return {
         nodes: [],
         totalResearchTime: 0,
         synergyBonus: 0,
-        benefits: []
+        benefits: [],
       };
     }
-    
+
     // Get all nodes that need to be unlocked
     const nodesToUnlock = new Set<string>();
     const collectRequirements = (nodeId: string) => {
@@ -456,11 +462,11 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
       if (!node) {
         return;
       }
-      
+
       if (!node.unlocked) {
         nodesToUnlock.add(nodeId);
       }
-      
+
       for (const reqId of node.requirements) {
         const reqNode = this.techNodes.get(reqId);
         if (reqNode && !reqNode.unlocked) {
@@ -469,58 +475,55 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
         }
       }
     };
-    
+
     collectRequirements(targetNodeId);
-    
+
     // Calculate optimal order based on research time and synergies
     const nodeArray = Array.from(nodesToUnlock);
-    
+
     // Sort by tier level first, then by synergy potential
     nodeArray.sort((a, b) => {
       const nodeA = this.techNodes.get(a);
       const nodeB = this.techNodes.get(b);
-      
+
       if (!nodeA || !nodeB) {
         return 0;
       }
-      
+
       // Sort by tier first
       if (nodeA.tier !== nodeB.tier) {
         return nodeA.tier - nodeB.tier;
       }
-      
+
       // Then sort by synergy potential
       const synergiesA = this.synergies.get(a)?.size || 0;
       const synergiesB = this.synergies.get(b)?.size || 0;
-      
+
       return synergiesB - synergiesA;
     });
-    
+
     // Calculate total research time and synergy bonus
     let totalResearchTime = 0;
     let synergyBonus = 0;
-    
+
     nodeArray.forEach(nodeId => {
       const node = this.techNodes.get(nodeId);
       if (node) {
         totalResearchTime += node.researchTime || 60 * (node.tier || 1);
-        
+
         // Check for potential synergies
         const nodeSynergies = this.synergies.get(nodeId);
         if (nodeSynergies) {
           for (const synergyNodeId of nodeSynergies) {
             const synergyNode = this.techNodes.get(synergyNodeId);
-            if (
-              synergyNode?.unlocked && 
-              synergyNode.synergyModifiers?.[nodeId]
-            ) {
+            if (synergyNode?.unlocked && synergyNode.synergyModifiers?.[nodeId]) {
               synergyBonus += synergyNode.synergyModifiers[nodeId];
             }
           }
         }
       }
     });
-    
+
     // Collect benefits of the path
     const benefits: string[] = [];
     nodeArray.forEach(nodeId => {
@@ -529,12 +532,12 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
         benefits.push(`${node.name}: ${node.description}`);
       }
     });
-    
+
     return {
       nodes: nodeArray,
       totalResearchTime,
       synergyBonus,
-      benefits
+      benefits,
     };
   }
 

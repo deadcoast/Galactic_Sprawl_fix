@@ -1,29 +1,32 @@
 import * as d3 from 'd3';
 import { Feature } from 'geojson';
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
-    animationQualityManager,
-    QualitySettings,
+  animationQualityManager,
+  QualitySettings,
 } from '../../../utils/performance/D3AnimationQualityManager';
 
 // Import type-safe D3 utilities
-import { AnimationConfig } from '../../../types/visualizations/D3AnimationTypes';
 import { createSimulationDragBehavior } from '../../../types/visualizations/D3DragTypes';
 import {
-    d3Accessors,
-    SimulationLinkDatum,
-    SimulationNodeDatum
+  d3Accessors,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
 } from '../../../types/visualizations/D3Types';
 import {
-    createSvgZoomBehavior,
-    getFitToViewportTransform
+  createSvgZoomBehavior,
+  getFitToViewportTransform,
 } from '../../../types/visualizations/D3ZoomTypes';
 
 // Fix import path for error logging service
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/ErrorLoggingService';
 
 // Type definitions
 interface DataDashboardAppProps {
@@ -108,14 +111,6 @@ interface CategorySeries {
   category: string;
   color: string;
   points: D3TimeSeriesPoint[];
-}
-
-// Animation configuration for time series
-interface _TimeSeriesAnimationConfig extends AnimationConfig {
-  // Additional animation settings specific to time series
-  staggerDelay?: number; // Delay between animating different series
-  pointDelay?: number; // Delay between animating different points
-  lineAnimationType?: 'grow' | 'fade' | 'draw'; // How the line should animate
 }
 
 // Enums
@@ -295,7 +290,6 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
   height = 900,
 }) => {
   // References
-  const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<SVGSVGElement>(null);
   const timeSeriesRef = useRef<SVGSVGElement>(null);
   const geoMapRef = useRef<SVGSVGElement>(null);
@@ -344,12 +338,11 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
    * while maintaining references to the original data
    */
   const convertNetworkDataToD3Format = useCallback(() => {
-    // Create node map for quick lookups
     const nodeMap = new Map<string, D3NetworkNode>();
 
-    // Convert nodes with proper typing
-    const nodes: D3NetworkNode[] = networkData.nodes.map(node => {
-      // Create a color based on the group
+    // Convert nodes
+    const d3Nodes: D3NetworkNode[] = networkData.nodes.map(node => {
+      // Calculate color based on group
       let color = '';
       switch (node.group) {
         case 'A':
@@ -368,59 +361,49 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           color = '#9AA0A6'; // Grey
       }
 
-      // Calculate radius based on size and current quality settings
+      // Calculate radius based on size and quality settings
       const baseRadius = Math.sqrt(node.size) * 3;
-      // Cast to ExtendedQualitySettings to use the additional properties
       const extendedSettings = qualitySettings as ExtendedQualitySettings;
-      const nodeDetailLevel = extendedSettings.nodeDetailLevel || 1; // Default to 1 if not defined
+      const nodeDetailLevel = extendedSettings.nodeDetailLevel || 1;
       const radius = optimizationsEnabled ? baseRadius * nodeDetailLevel : baseRadius;
 
-      // Create D3 node with proper typing
       const d3Node: D3NetworkNode = {
         id: node.id,
-        value: node.value,
-        category: node.category,
         group: node.group,
+        category: node.category, // Ensure category is included
+        value: node.value,
+        color: color, // Use calculated color
         size: node.size,
-        color,
-        radius,
-        // Store reference to original data
-        data: node,
+        radius: radius, // Use calculated radius
+        data: node, // Keep reference to original data if needed
       };
-
-      // Add to map for quick lookups when creating links
       nodeMap.set(node.id, d3Node);
-
       return d3Node;
     });
 
-    // Convert links with proper typing
-    const links: _D3Link[] = networkData.links.map(link => {
+    // Convert links, ensuring source/target are node objects or valid IDs
+    const d3Links: _D3Link[] = networkData.links.map(link => {
       // Calculate link width based on value and quality settings
       const baseWidth = Math.sqrt(link.value) * 1.5;
-      // Cast to ExtendedQualitySettings to use the additional properties
       const extendedSettings = qualitySettings as ExtendedQualitySettings;
-      const linkDetailLevel = extendedSettings.linkDetailLevel || 1; // Default to 1 if not defined
+      const linkDetailLevel = extendedSettings.linkDetailLevel || 1;
       const width = optimizationsEnabled ? baseWidth * linkDetailLevel : baseWidth;
 
       // Create color based on link type
       const color = link.type === 'direct' ? '#4285F4' : '#9AA0A6';
 
-      // Create D3 link with proper typing
-      const d3Link: _D3Link = {
-        source: link.source,
+      return {
+        source: link.source, // D3 forceLink handles string IDs
         target: link.target,
         value: link.value,
-        type: link.type,
-        width,
-        color,
+        type: link.type, // Ensure type is included
+        width: width, // Use calculated width
+        color: color, // Use calculated color
       };
-
-      return d3Link;
     });
 
-    return { nodes, links, nodeMap };
-  }, [networkData, optimizationsEnabled, qualitySettings]);
+    return { nodes: d3Nodes, links: d3Links, nodeMap };
+  }, [networkData, width, height, qualitySettings, optimizationsEnabled]);
 
   /**
    * Converts time series data to D3-compatible format with proper typing
@@ -624,7 +607,14 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       seriesCount: series.length,
     });
     // Implementation would use points and series here
-  }, [timeSeriesData, selectedEntities, timeRange, optimizationsEnabled, qualitySettings, convertTimeSeriesDataToD3Format]);
+  }, [
+    timeSeriesData,
+    selectedEntities,
+    timeRange,
+    optimizationsEnabled,
+    qualitySettings,
+    convertTimeSeriesDataToD3Format,
+  ]);
 
   const initializeGeoVisualization = useCallback(() => {
     console.warn('Initializing geo visualization');
@@ -637,7 +627,14 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     });
     // Implementation would use points and categories here
     // Also uses worldMapData state
-  }, [geoData, selectedEntities, optimizationsEnabled, qualitySettings, worldMapData, convertGeoDataToD3Format]);
+  }, [
+    geoData,
+    selectedEntities,
+    optimizationsEnabled,
+    qualitySettings,
+    worldMapData,
+    convertGeoDataToD3Format,
+  ]);
 
   /**
    * Creates a hierarchical visualization with tree or treemap layout
@@ -872,7 +869,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       });
 
       // Add zoom behavior
-      const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+        // Explicitly type element
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
@@ -946,9 +944,10 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         };
 
         // Define the link generator instance
-        const horizontalLinkGenerator = d3.linkHorizontal<D3LinkData, [number, number]>()
-            .source(d => d.source)
-            .target(d => d.target);
+        const horizontalLinkGenerator = d3
+          .linkHorizontal<D3LinkData, [number, number]>()
+          .source(d => d.source)
+          .target(d => d.target);
 
         switch (linkStyle) {
           case 'straight':
@@ -1040,7 +1039,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       });
 
       // Add zoom behavior
-      const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+        // Explicitly type element
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
@@ -1171,7 +1171,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     const g = svg.append('g').attr('class', 'network-container');
 
     // Create the zoom behavior with type safety
-    const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
+    const zoom = createSvgZoomBehavior<SVGSVGElement>({
+      // Explicitly type element
       scaleExtentMin: 0.1,
       scaleExtentMax: 5,
       targetElement: g,
@@ -1228,8 +1229,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     // Create text labels based on quality settings
     if (showLabels) {
-      const labels = g // Removed underscore from variable name
-        .append('g')
+      g.append('g')
         .attr('class', 'labels')
         .selectAll('text')
         .data(nodes.filter(n => n.value > filterValue)) // Only label significant nodes
@@ -1332,7 +1332,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     handleEntitySelection,
   ]);
 
-   // Define data generation functions before they are used in useEffect
+  // Define data generation functions before they are used in useEffect
   // Generate mock network data
   const generateNetworkData = (nodeCount: number, linkCount: number) => {
     const nodes: NetworkNode[] = [];
@@ -1626,33 +1626,10 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     fetchWorldMap();
   }, []);
 
-  // Memoized labels
-  const _labels = useMemo(() => {
-    return {
-      network: {
-        title: 'Network Visualization',
-        subtitle: 'Interactive force-directed graph',
-      },
-      timeseries: {
-        title: 'Time Series Analysis',
-        subtitle: 'Multi-category temporal data',
-      },
-      geospatial: {
-        title: 'Geographic Distribution',
-        subtitle: 'Global data visualization',
-      },
-      hierarchy: {
-        title: 'Hierarchical Structure',
-        subtitle: 'Tree-based organization',
-      },
-    };
-  }, []);
-
   // Rendering
   return (
     <div
       className="data-dashboard-app"
-      ref={containerRef}
       style={{
         width,
         height,

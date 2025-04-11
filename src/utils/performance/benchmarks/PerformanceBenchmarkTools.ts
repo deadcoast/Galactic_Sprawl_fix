@@ -16,7 +16,13 @@
 import * as d3 from 'd3';
 import { performance } from 'perf_hooks';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
-import { FlowNode, FlowNodeType, ResourceState, ResourceType, createResourceState } from '../../../types/resources/ResourceTypes';
+import {
+  FlowNode,
+  FlowNodeType,
+  ResourceState,
+  ResourceType,
+  createResourceState,
+} from '../../../types/resources/ResourceTypes';
 
 /**
  * Performance benchmark result
@@ -353,18 +359,18 @@ export function createTestResourceNetwork(
     // Create a full resources record with default states for all types
     const resourcesRecord = {} as Record<ResourceType, ResourceState>; // Initialize as empty object cast to type
     for (const enumValue of Object.values(ResourceType).filter(
-        value => typeof value === 'string' && isNaN(parseInt(value))
+      value => typeof value === 'string' && isNaN(parseInt(value))
     ) as ResourceType[]) {
-        // Use createResourceState with default values (e.g., 0 current amount)
-        resourcesRecord[enumValue] = createResourceState(enumValue, 0); 
+      // Use createResourceState with default values (e.g., 0 current amount)
+      resourcesRecord[enumValue] = createResourceState(enumValue, 0);
     }
 
     // Set the specific resource state for this node (e.g., current amount)
     if (resourcesRecord[specificResourceType]) {
-        resourcesRecord[specificResourceType].current = 100; // Set initial amount for this node's type
+      resourcesRecord[specificResourceType].current = 100; // Set initial amount for this node's type
     } else {
-        // If somehow the specific type wasn't in the enum iteration, create it
-        resourcesRecord[specificResourceType] = createResourceState(specificResourceType, 100);
+      // If somehow the specific type wasn't in the enum iteration, create it
+      resourcesRecord[specificResourceType] = createResourceState(specificResourceType, 100);
     }
 
     // Create and register node

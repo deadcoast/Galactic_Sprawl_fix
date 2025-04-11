@@ -1,13 +1,24 @@
 /**
  * @context: ui-system, performance-optimization, component-library
- * 
+ *
  * MemoizedComponent - A higher-order component for optimizing React component rendering
  * with enhanced memoization capabilities and performance monitoring.
  */
 
 import * as React from 'react';
-import { memo, ComponentType, forwardRef, ForwardRefExoticComponent, PropsWithoutRef, RefAttributes, MemoExoticComponent } from 'react';
-import { createPropsComparison, MemoizationConfig } from '../../../utils/performance/ComponentOptimizer';
+import {
+  ComponentType,
+  forwardRef,
+  ForwardRefExoticComponent,
+  memo,
+  MemoExoticComponent,
+  PropsWithoutRef,
+  RefAttributes,
+} from 'react';
+import {
+  createPropsComparison,
+  MemoizationConfig,
+} from '../../../utils/performance/ComponentOptimizer';
 
 /**
  * Options for the withMemoization HOC
@@ -17,7 +28,7 @@ export interface MemoizationOptions<P extends object> extends MemoizationConfig 
    * Optional displayName for the wrapped component
    */
   displayName?: string;
-  
+
   /**
    * Function to determine if component update should be skipped
    */
@@ -26,7 +37,7 @@ export interface MemoizationOptions<P extends object> extends MemoizationConfig 
 
 /**
  * Higher-order component that enhances React.memo with advanced memoization features
- * 
+ *
  * @param Component Component to memoize
  * @param options Memoization options
  * @returns Memoized component with performance tracking
@@ -43,28 +54,30 @@ export function withMemoization<P extends object>(
     renderTimeThreshold = 16, // Default to one frame (60 fps)
     arePropsEqual,
   } = options;
-  
+
   // Create optimized props comparison function
-  const propsAreEqual = arePropsEqual || createPropsComparison({
-    componentName,
-    trackRenders,
-    logPerformance,
-    renderTimeThreshold,
-    propsAreEqual: arePropsEqual
-  });
-  
+  const propsAreEqual =
+    arePropsEqual ||
+    createPropsComparison({
+      componentName,
+      trackRenders,
+      logPerformance,
+      renderTimeThreshold,
+      propsAreEqual: arePropsEqual,
+    });
+
   // Apply memo HOC
   const MemoizedComponent = memo(Component, propsAreEqual);
-  
+
   // Set display name for dev tools
   MemoizedComponent.displayName = displayName;
-  
+
   return MemoizedComponent;
 }
 
 /**
  * HOC that adds memoization with forwarded refs
- * 
+ *
  * @param Component Component to memoize with ref forwarding
  * @param options Memoization options
  * @returns Memoized component with ref forwarding
@@ -81,37 +94,44 @@ export function withMemoizationForwardRef<P extends object, T = unknown>(
     renderTimeThreshold = 16,
     arePropsEqual,
   } = options;
-  
+
   // Create optimized props comparison function
-  const propsAreEqual = arePropsEqual || createPropsComparison({
-    componentName,
-    trackRenders,
-    logPerformance,
-    renderTimeThreshold,
-    propsAreEqual: arePropsEqual
-  });
-  
+  const propsAreEqual =
+    arePropsEqual ||
+    createPropsComparison({
+      componentName,
+      trackRenders,
+      logPerformance,
+      renderTimeThreshold,
+      propsAreEqual: arePropsEqual,
+    });
+
   // Create forwardRef component
   const ForwardRefComponent = forwardRef<T, P>((props, ref) => {
-    return <Component {...props as P} ref={ref} />;
+    return <Component {...(props as P)} ref={ref} />;
   });
-  
+
   // Apply memo with proper type casting for the equals function
-  const MemoizedComponent = memo(ForwardRefComponent, 
-    propsAreEqual as (prevProps: Readonly<PropsWithoutRef<P> & RefAttributes<T>>, 
-                      nextProps: Readonly<PropsWithoutRef<P> & RefAttributes<T>>) => boolean
+  const MemoizedComponent = memo(
+    ForwardRefComponent,
+    propsAreEqual as (
+      prevProps: Readonly<PropsWithoutRef<P> & RefAttributes<T>>,
+      nextProps: Readonly<PropsWithoutRef<P> & RefAttributes<T>>
+    ) => boolean
   );
-  
+
   // Set display name
   MemoizedComponent.displayName = displayName;
-  
-  return MemoizedComponent as MemoExoticComponent<ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>>;
+
+  return MemoizedComponent as MemoExoticComponent<
+    ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>
+  >;
 }
 
 /**
  * Create a memoized version of a component with default reasonable settings
  * Shorthand for withMemoization for common use cases
- * 
+ *
  * @param Component Component to memoize
  * @param componentName Optional component name for tracking
  * @returns Memoized component
@@ -124,6 +144,6 @@ export function createMemoizedComponent<P extends object>(
     componentName: componentName || Component.displayName || Component.name || 'Component',
     trackRenders: process.env.NODE_ENV === 'development',
     logPerformance: process.env.NODE_ENV === 'development',
-    renderTimeThreshold: 16
+    renderTimeThreshold: 16,
   });
-} 
+}

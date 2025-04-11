@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, component-library, visualization-system
- * 
+ *
  * LineGraph component for rendering line charts
  */
 import { useMemo } from 'react';
@@ -12,31 +12,31 @@ export interface LineGraphProps extends Omit<ChartProps, 'type'> {
    * @default true
    */
   showPoints?: boolean;
-  
+
   /**
    * Whether to fill the area below the line
    * @default false
    */
   fillArea?: boolean;
-  
+
   /**
    * Curve type for the line
    * @default 'linear'
    */
   curveType?: 'linear' | 'smooth';
-  
+
   /**
    * Line width in pixels
    * @default 2
    */
   lineWidth?: number;
-  
+
   /**
    * Point radius in pixels
    * @default 4
    */
   pointRadius?: number;
-  
+
   /**
    * Whether to show value labels above data points
    * @default false
@@ -59,7 +59,7 @@ export function LineGraph({
   // Process data for display
   const processedData = useMemo(() => {
     if (!chartProps.data) return chartProps.data;
-    
+
     // Apply unknownnownnown line-specific data transformations here if needed
     return {
       ...chartProps.data,
@@ -72,12 +72,12 @@ export function LineGraph({
           curveType,
           lineWidth,
           pointRadius,
-          showValueLabels
-        }
-      }))
+          showValueLabels,
+        },
+      })),
     };
   }, [chartProps.data, showPoints, fillArea, curveType, lineWidth, pointRadius, showValueLabels]);
-  
+
   return (
     <Chart
       {...chartProps}
@@ -93,7 +93,7 @@ export function LineGraph({
  * Helper to create time series data for LineGraph
  */
 export function createTimeSeriesData(
-  values: number[], 
+  values: number[],
   timeLabels: string[],
   datasetLabel: string = 'Time Series',
   color?: string
@@ -102,7 +102,7 @@ export function createTimeSeriesData(
     label: timeLabels[index] || `Point ${index + 1}`,
     value,
   }));
-  
+
   return {
     datasets: [
       {
@@ -112,4 +112,4 @@ export function createTimeSeriesData(
       },
     ],
   };
-} 
+}

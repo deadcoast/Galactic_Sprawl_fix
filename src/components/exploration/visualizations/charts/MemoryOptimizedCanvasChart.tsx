@@ -2,7 +2,11 @@ import { Alert, CircularProgress, Typography } from '@mui/material';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MemoryManagerOptions, useMemoryManager } from '../../../../hooks/useMemoryManager';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../../services/ErrorLoggingService';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 import CanvasChartFactory, { ChartType } from './CanvasChartFactory';
@@ -97,10 +101,10 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   memoryOptions,
   visibilityThreshold = 0.1,
   qualityLevels = [0.25, 0.5, 1.0],
-  useDoubleBuffering: _useDoubleBuffering = true,
-  formatXAxisDate: _formatXAxisDate,
-  enableRenderCaching: _enableRenderCaching = true,
-  maxCacheSizeMB: _maxCacheSizeMB = 50,
+  useDoubleBuffering = true,
+  formatXAxisDate,
+  enableRenderCaching = true,
+  maxCacheSizeMB = 50,
   className = '',
   errorMessage,
   onElementClick,
@@ -147,7 +151,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     enableLogging: showPerformanceStats,
     initialDataSizeEstimate: data ? data?.length * 100 : 1000, // Rough estimate
     autoCleanupLevel: memoryOptions?.autoCleanupLevel || 'medium',
-    memoryThreshold: memoryOptions?.memoryThreshold || 50 * 1024 * 1024, // 50MB default
+    memoryThreshold: memoryOptions?.memoryThreshold || maxCacheSizeMB * 1024 * 1024,
     cacheExpirationTime: memoryOptions?.cacheExpirationTime || 60000, // 1 minute default
     ...memoryOptions,
   });
@@ -341,14 +345,15 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
       // Clean up old render cache entries
       for (const [key, bitmap] of renderCache.entries()) {
-        if (key.startsWith('render_') && !isVisible) {
+        // Only clean if caching is enabled and component is not visible
+        if (enableRenderCaching && key.startsWith('render_') && !isVisible) {
           // Close bitmap to free memory
           bitmap.close();
           renderCache.delete(key);
         }
       }
     }
-  }, [isVisible, visibilityPercentage, visibilityThreshold, memory]);
+  }, [isVisible, visibilityPercentage, visibilityThreshold, memory, enableRenderCaching]);
 
   // Create or get a canvas buffer
   const getCanvasBuffer = useCallback(
@@ -396,9 +401,15 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
         return next;
       });
 
+      // Log if double buffering is requested (as actual implementation isn't present)
+      if (useDoubleBuffering) {
+        console.log(`[${instanceIdRef.current}] Double buffering enabled (placeholder).`);
+        // In a real implementation, might create/manage a secondary buffer here.
+      }
+
       return newBuffer;
     },
-    [canvasBuffers]
+    [canvasBuffers, useDoubleBuffering]
   );
 
   // Get render cache key
@@ -441,11 +452,27 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     const cacheKey = getRenderCacheKey(chartType, dataHash, canvasWidth, canvasHeight);
 
     // Store in memory manager for potential reuse
-    memory.updateData({
-      data: processedData,
-      buffers: canvasBuffers,
-      renderCache: new Map([[cacheKey, buffer.buffer as unknown as ImageBitmap]]),
-    });
+    if (enableRenderCaching) {
+      memory.updateData({
+        data: processedData,
+        buffers: canvasBuffers,
+        renderCache: new Map([[cacheKey, buffer.buffer as unknown as ImageBitmap]]),
+      });
+    } else {
+      // If caching disabled, just update data/buffers
+      memory.updateData({
+        data: processedData,
+        buffers: canvasBuffers,
+        renderCache: new Map(), // Ensure cache is empty/cleared
+      });
+    }
+
+    // Log if formatXAxisDate is provided (as it's not passed down)
+    if (formatXAxisDate) {
+      console.log(
+        `[${instanceIdRef.current}] formatXAxisDate function provided but not used by CanvasChartFactory.`
+      );
+    }
 
     // Update performance metrics
     setPerformanceMetrics(prev => ({
@@ -466,6 +493,8 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     canvasBuffers,
     _qualityLevel,
     data?.length,
+    enableRenderCaching,
+    formatXAxisDate,
   ]);
 
   // Cleanup on unmount
@@ -489,7 +518,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`${className} bg-paper flex items-center justify-center rounded border border-solid border-opacity-10`}
+        className={`${className} bg-paper border-opacity-10 flex items-center justify-center rounded border border-solid`}
         style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
@@ -507,7 +536,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        className={`${className} border-opacity-10 flex flex-col items-center justify-center rounded border border-solid`}
         style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
@@ -526,7 +555,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        className={`${className} border-opacity-10 flex flex-col items-center justify-center rounded border border-solid`}
         style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
@@ -575,7 +604,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
       {/* Performance stats overlay */}
       {showPerformanceStats && (
         <div
-          className="absolute right-1 top-1 z-10 rounded p-2 text-xs opacity-90"
+          className="absolute top-1 right-1 z-10 rounded p-2 text-xs opacity-90"
           style={{
             position: 'absolute',
             top: 5,

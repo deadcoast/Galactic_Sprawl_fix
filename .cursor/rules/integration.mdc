@@ -3,6 +3,11 @@ description:
 globs: src/**/*Manager.ts,src/managers/**/*.ts,src/components/**/*.tsx,src/**/*.ts
 alwaysApply: false
 ---
+---
+description: Guidelines for writing concise and integrated code.
+globs: **/*.tsx, **/*.ts, src/**/*Managers.ts, src/managers/**/*.ts, src/componenets/**/*.tsx, src/**/*.ts
+---
+
 # GALACTIC SPRAWL (GS) - Integration Pattern Rules
 
 ## Manager Registry Integration Rule

@@ -160,7 +160,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
   return (
     <div className="relative h-full w-full overflow-hidden bg-gray-900">
       {/* Empire Title */}
-      <div className="absolute left-4 top-4 z-10">
+      <div className="absolute top-4 left-4 z-10">
         <h1 className="text-2xl font-bold text-white">{empireName} Star System</h1>
       </div>
 
@@ -168,7 +168,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       <StarSystemBackdrop quality={quality} dayNightCycle={dayNightCycle} />
 
       {/* Central Mothership */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <CentralMothership
           {...systemData.mothership}
           quality={quality}
@@ -178,7 +178,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Colony Star Station */}
-      <div className="absolute left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2">
         <ColonyStarStation
           {...systemData.colony}
           quality={quality}
@@ -187,7 +187,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Habitable World */}
-      <div className="absolute right-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2">
         <HabitableWorld
           {...systemData.habitableWorld}
           quality={quality}
@@ -206,7 +206,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Mineral Processing */}
-      <div className="absolute bottom-1/4 right-1/3 -translate-x-1/2">
+      <div className="absolute right-1/3 bottom-1/4 -translate-x-1/2">
         <MineralProcessing
           {...systemData.mineralProcessing}
           quality={quality}
@@ -215,7 +215,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Population Indicators */}
-      <div className="absolute left-1/4 top-1/4 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2">
         <PopulationIndicator
           population={systemData.colony.population}
           maxPopulation={systemData.colony.maxPopulation}
@@ -225,7 +225,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Alert Overlay */}
-      <div className="fixed bottom-4 right-4 space-y-2">
+      <div className="fixed right-4 bottom-4 space-y-2">
         {alerts.map(alert => (
           <div
             key={`${alert.moduleId}-${alert.message}`}

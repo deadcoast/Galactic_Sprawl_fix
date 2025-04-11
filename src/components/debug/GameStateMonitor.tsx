@@ -98,7 +98,7 @@ export function GameStateMonitor({
   if (!isExpanded) {
     return (
       <button
-        className="fixed bottom-0 right-0 z-50 m-2 rounded bg-gray-800 p-2 text-white"
+        className="fixed right-0 bottom-0 z-50 m-2 rounded bg-gray-800 p-2 text-white"
         onClick={() => setIsExpanded(true)}
       >
         Open State Monitor
@@ -107,7 +107,7 @@ export function GameStateMonitor({
   }
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 m-2 max-h-[80vh] w-96 overflow-auto rounded bg-gray-900 p-2 text-white shadow-lg">
+    <div className="fixed right-0 bottom-0 z-50 m-2 max-h-[80vh] w-96 overflow-auto rounded bg-gray-900 p-2 text-white shadow-lg">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-lg font-bold">Game State Monitor</h2>
         <button

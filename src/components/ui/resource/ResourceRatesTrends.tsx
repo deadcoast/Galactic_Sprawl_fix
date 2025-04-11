@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
-    CartesianGrid,
-    Legend,
-    Line,
-    LineChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 
 // Number of data points to keep in history
 const MAX_HISTORY_POINTS = 30;
@@ -202,11 +202,15 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
     // Convert resource type enum value to display name
     try {
       const resourceType = name as ResourceType;
-      const displayName = ResourceTypeHelpers.getDisplayName(resourceType);
+      const displayName = ResourceTypeInfo[resourceType]?.displayName ?? resourceType;
       return [`${value.toFixed(1)}/tick`, displayName];
     } catch (_) {
       return [value.toFixed(1), name];
     }
+  };
+
+  const getResourceDisplayName = (resourceType: ResourceType): string => {
+    return ResourceTypeInfo[resourceType]?.displayName ?? resourceType;
   };
 
   return (
@@ -239,7 +243,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
             }}
             onClick={() => toggleResource(resourceType)}
           >
-            {ResourceTypeHelpers.getDisplayName(resourceType)}
+            {getResourceDisplayName(resourceType)}
           </button>
         ))}
       </div>
@@ -275,7 +279,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
                 formatter={(value: string) => {
                   try {
                     const resourceType = value as ResourceType;
-                    return ResourceTypeHelpers.getDisplayName(resourceType);
+                    return getResourceDisplayName(resourceType);
                   } catch {
                     return value;
                   }
@@ -314,9 +318,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
               className="mr-1 h-3 w-3 rounded-full"
               style={{ backgroundColor: resourceColors[resourceType] }}
             />
-            <span className="text-xs text-gray-300">
-              {ResourceTypeHelpers.getDisplayName(resourceType)}
-            </span>
+            <span className="text-xs text-gray-300">{getResourceDisplayName(resourceType)}</span>
           </div>
         ))}
       </div>

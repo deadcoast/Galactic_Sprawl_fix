@@ -323,17 +323,17 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
         </div>
 
         {/* Controls */}
-        <div className="absolute left-6 right-6 top-6 z-10 flex items-center justify-between">
+        <div className="absolute top-6 right-6 left-6 z-10 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search assets..."
-                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                 value={view.searchQuery}
                 onChange={e => setView(prev => ({ ...prev, searchQuery: e.target.value }))}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute top-2.5 right-3 h-5 w-5 text-gray-400" />
             </div>
 
             {/* Overlay Toggles */}
@@ -393,7 +393,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
             </button>
             <button className="group relative rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90">
               <HelpCircle className="h-5 w-5 text-cyan-400" />
-              <div className="absolute right-0 top-full mt-2 hidden w-64 rounded-lg border border-gray-700 bg-gray-800/95 p-3 group-hover:block">
+              <div className="absolute top-full right-0 mt-2 hidden w-64 rounded-lg border border-gray-700 bg-gray-800/95 p-3 group-hover:block">
                 <h4 className="mb-2 font-medium text-white">Navigation Help</h4>
                 <ul className="space-y-1 text-sm text-gray-300">
                   <li className="flex items-center">
@@ -511,13 +511,13 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
                       }}
                     >
                       <div
-                        className={`absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-400/30`}
+                        className={`absolute top-1/2 left-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-400/30`}
                         style={{
                           transform: `translate(-50%, -50%) scale(${0.8 + Math.sin(Date.now() / 1000) * 0.1})`,
                         }}
                       >
                         <div
-                          className={`absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-300/40 animate-spin-slow flex items-center justify-center`}
+                          className={`absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-300/40 animate-spin-slow flex items-center justify-center`}
                         >
                           <Icon className={`h-5 w-5 text-${color}-200`} />
                         </div>
@@ -550,7 +550,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
                     </div>
 
                     {/* Asset Label */}
-                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+                    <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
                       <div className={`text-${color}-200 font-medium`}>{asset.name}</div>
                       {asset.population && (
                         <div className={`text-${color}-300/70 text-sm`}>
@@ -567,7 +567,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
 
                     {/* Hover Tooltip */}
                     <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-                      <div className="whitespace-nowrap rounded-lg border border-gray-700 bg-gray-800/95 px-3 py-2 backdrop-blur-sm">
+                      <div className="rounded-lg border border-gray-700 bg-gray-800/95 px-3 py-2 whitespace-nowrap backdrop-blur-sm">
                         {asset.resources && view.activeOverlays.includes('resources') && (
                           <div className="flex items-center gap-2 text-sm">
                             {asset.resources.map(resource => (

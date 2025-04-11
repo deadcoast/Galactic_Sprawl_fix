@@ -13,6 +13,9 @@ import { AbstractBaseService } from '../lib/services/BaseService';
 import { apiService } from './APIService';
 import { ErrorType, errorLoggingService } from './ErrorLoggingService';
 
+// Define missing type alias
+type SubscriptionCallback = (data: unknown) => void; // Use 'unknown' for safer data handling
+
 export interface DataBuffer<T> {
   data: T[];
   capacity: number;
@@ -38,18 +41,23 @@ export interface DataGenerator<T> {
   configureGenerator: (config: Record<string, unknown>) => void;
 }
 
-class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImpl> {
+export class RealTimeDataService extends AbstractBaseService<RealTimeDataService> {
+  private static instance: RealTimeDataService;
   private dataBuffers: Map<string, DataBuffer<unknown>> = new Map();
   private streamConfigs: Map<string, StreamConfig> = new Map();
   private streamIds: Map<string, string> = new Map();
   private listeners: Map<string, Set<(data: unknown[]) => void>> = new Map();
   private generators: Map<string, DataGenerator<unknown>> = new Map();
+  private dataSources: Map<string, () => Promise<unknown>> = new Map();
+  private subscriptions: Map<string, Set<SubscriptionCallback>> = new Map();
+  private logger = errorLoggingService; // Use errorLoggingService as the logger
 
   public constructor() {
     super('RealTimeDataService', '1.0.0');
   }
 
-  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    this.startDataPolling();
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
@@ -104,7 +112,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_data_points += newData.length;
     metrics.buffer_utilization = this.calculateBufferUtilization(buffer);
     this.metadata.metrics = metrics;
@@ -150,7 +158,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.active_streams = this.streamIds.size;
     this.metadata.metrics = metrics;
   }
@@ -170,7 +178,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.active_streams = this.streamIds.size;
     metrics.generators_active = this.generators.size;
     this.metadata.metrics = metrics;
@@ -211,7 +219,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.generators_active = this.generators.size;
     this.metadata.metrics = metrics;
   }
@@ -284,7 +292,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     const config = this.streamConfigs.get(bufferId);
     if (config) {
       metrics.update_rate = data.length / (config.updateInterval / 1000);
@@ -337,10 +345,15 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
       service: 'RealTimeDataService',
     });
   }
+
+  // Define the missing method
+  private startDataPolling(): void {
+    // TODO: Implement actual data polling logic if needed, e.g., setInterval to fetch from dataSources
+  }
 }
 
 // Export singleton instance using direct instantiation
-export const realTimeDataService = new RealTimeDataServiceImpl();
+export const realTimeDataService = new RealTimeDataService();
 
 // Export default for easier imports
 export default realTimeDataService;

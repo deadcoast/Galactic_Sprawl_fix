@@ -1,3 +1,4 @@
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
@@ -85,18 +86,61 @@ export interface EffectApplicationResult {
 }
 
 /**
+ * Events emitted by the SubModuleManager
+ */
+export enum SubModuleManagerEventType {
+  SUBMODULE_CREATED = 'SUBMODULE_CREATED',
+  SUBMODULE_ATTACHED = 'SUBMODULE_ATTACHED',
+  SUBMODULE_DETACHED = 'SUBMODULE_DETACHED',
+  SUBMODULE_ACTIVATED = 'SUBMODULE_ACTIVATED',
+  SUBMODULE_DEACTIVATED = 'SUBMODULE_DEACTIVATED',
+  SUBMODULE_UPGRADED = 'SUBMODULE_UPGRADED',
+}
+
+/**
+ * Event data interfaces for SubModuleManager events
+ */
+export interface SubModuleEventData {
+  parentModuleId: string;
+  parentModuleType: ModuleType;
+  subModuleId: string;
+  subModuleType: SubModuleType;
+}
+
+export interface SubModuleUpgradeEventData extends SubModuleEventData {
+  newLevel: number;
+}
+
+/**
+ * Event map for the SubModuleManager
+ */
+export interface SubModuleManagerEvents extends Record<string, unknown> {
+  [SubModuleManagerEventType.SUBMODULE_CREATED]: SubModuleEventData;
+  [SubModuleManagerEventType.SUBMODULE_ATTACHED]: SubModuleEventData;
+  [SubModuleManagerEventType.SUBMODULE_DETACHED]: SubModuleEventData;
+  [SubModuleManagerEventType.SUBMODULE_ACTIVATED]: SubModuleEventData;
+  [SubModuleManagerEventType.SUBMODULE_DEACTIVATED]: SubModuleEventData;
+  [SubModuleManagerEventType.SUBMODULE_UPGRADED]: SubModuleUpgradeEventData;
+}
+
+/**
  * SubModuleManager
  * Manages the creation, attachment, activation, and effects of sub-modules
  */
-export class SubModuleManager {
+export class SubModuleManager extends BaseTypedEventEmitter<SubModuleManagerEvents> {
+  private static instance: SubModuleManager | null = null; // Add for singleton
+
   private subModules: Map<string, SubModule>;
   private configs: Map<SubModuleType, SubModuleConfig>;
   private effectHandlers: Map<
     string,
     (effect: SubModuleEffect, moduleId: string) => EffectApplicationResult
   >;
+  private unsubscribeHandles: (() => void)[] = []; // Store unsubscribe handles
 
-  constructor() {
+  private constructor() {
+    // Make private for singleton
+    super(); // Add super call
     this.subModules = new Map();
     this.configs = new Map();
     this.effectHandlers = new Map();
@@ -105,9 +149,18 @@ export class SubModuleManager {
     this.registerDefaultEffectHandlers();
 
     // Subscribe to module events
-    moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
-    moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated);
-    moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, this.handleModuleDeactivated);
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated)
+    );
+    this.unsubscribeHandles.push(
+      moduleEventBus.subscribe(
+        'MODULE_DEACTIVATED' as ModuleEventType,
+        this.handleModuleDeactivated
+      )
+    );
   }
 
   /**
@@ -852,7 +905,14 @@ export class SubModuleManager {
     this.configs.clear();
     this.effectHandlers.clear();
   }
+
+  static getInstance(): SubModuleManager {
+    if (!SubModuleManager.instance) {
+      SubModuleManager.instance = new SubModuleManager();
+    }
+    return SubModuleManager.instance;
+  }
 }
 
 // Export singleton instance
-export const subModuleManager = new SubModuleManager();
+export const subModuleManager = SubModuleManager.getInstance(); // Use getInstance for singleton

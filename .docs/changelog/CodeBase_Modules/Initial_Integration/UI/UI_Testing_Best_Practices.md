@@ -403,6 +403,7 @@ When testing React components with TypeScript, it's important to ensure proper t
 ### Best Practices for TypeScript Component Testing
 
 1. **Define proper interfaces for component props and data**:
+
    ```typescript
    interface ReconShip {
      id: string;
@@ -414,6 +415,7 @@ When testing React components with TypeScript, it's important to ensure proper t
    ```
 
 2. **Type your mock data explicitly**:
+
    ```typescript
    const mockShips: ReconShip[] = [
      {
@@ -421,11 +423,12 @@ When testing React components with TypeScript, it's important to ensure proper t
        name: 'Explorer Alpha',
        type: 'AC27G',
        // other properties...
-     }
+     },
    ];
    ```
 
 3. **Create proper types for mocked components**:
+
    ```typescript
    // Create a type for the mock component props
    type MockComponentProps = {
@@ -437,14 +440,15 @@ When testing React components with TypeScript, it's important to ensure proper t
    ```
 
 4. **Use type assertions correctly when mocking components**:
+
    ```typescript
    vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
      ReconShipCoordination: vi.fn((props: ReconShipCoordinationProps) => {
        // Store the props for testing
        (ReconShipCoordination as MockedReconShipCoordination).mockProps = props;
-       
+
        // Return mock JSX
-     })
+     }),
    }));
    ```
 
@@ -468,7 +472,7 @@ vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
   ReconShipCoordination: vi.fn((props: ReconShipCoordinationProps) => {
     // Store the props for testing
     (ReconShipCoordination as MockedReconShipCoordination).mockProps = props;
-    
+
     return (
       <div data-testid="recon-ship-coordination">
         {/* Simplified mock UI */}
@@ -480,15 +484,16 @@ vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
 // Test that callbacks are called correctly
 it('should call onDisbandFormation when disband button is clicked', () => {
   render(<ReconShipCoordination {...props} />);
-  
+
   const disbandButton = screen.getByTestId('disband-formation-1');
   disbandButton.click();
-  
+
   expect(mockOnDisbandFormation).toHaveBeenCalledWith('formation-1');
 });
 ```
 
 This approach is particularly useful for components that:
+
 - Have complex internal state management
 - Rely on context providers
 - Contain many conditional rendering paths

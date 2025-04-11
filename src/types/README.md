@@ -103,11 +103,13 @@ WeaponInstance
 ## Type Relationships
 
 1. **Weapon System**
+
    - `WeaponInstance` combines `WeaponConfig` and `WeaponState`
    - `WeaponMount` can hold a `WeaponInstance`
    - `CombatWeaponStats` extends `BaseWeaponStats` with combat-specific properties
 
 2. **Ship System**
+
    - All ships extend `CommonShip`
    - Ships use `WeaponMount` from the weapon system
    - Ships have abilities that use `Effect` from core
@@ -120,16 +122,19 @@ WeaponInstance
 ## Best Practices
 
 1. **Type Extensions**
+
    - Extend base types for specialized functionality
    - Use interfaces for complex objects
    - Use type unions for variants
 
 2. **Type Organization**
+
    - Keep related types in the same file
    - Use clear naming conventions
    - Document type relationships
 
 3. **Type Safety**
+
    - Use strict type checking
    - Avoid type assertions when possible
    - Use discriminated unions for state handling
@@ -153,7 +158,7 @@ WeaponInstance
    interface ExtendedStats extends BaseStats {
      special?: {
        // Additional properties
-     }
+     };
    }
    ```
 

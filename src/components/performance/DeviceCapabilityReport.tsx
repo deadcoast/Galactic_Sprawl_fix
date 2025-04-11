@@ -371,25 +371,25 @@ const CapabilityMetricsTable: React.FC<{
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Category
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Count
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               FPS
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Load Time
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Response Time
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Error Rate
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
               Actions
             </th>
           </tr>
@@ -397,41 +397,41 @@ const CapabilityMetricsTable: React.FC<{
         <tbody className="divide-y divide-gray-200 bg-white">
           {data?.map(item => (
             <tr key={item?.category} className="hover:bg-gray-50">
-              <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+              <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900">
                 {item?.category}
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 {item?.count.toLocaleString()}
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 <span
                   className={`rounded-full px-2 py-1 text-xs ${getFpsColorClass(item?.avgFps)}`}
                 >
                   {item?.avgFps.toFixed(1)}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 <span
                   className={`rounded-full px-2 py-1 text-xs ${getLoadTimeColorClass(item?.avgLoadTime)}`}
                 >
                   {item?.avgLoadTime}ms
                 </span>
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 <span
                   className={`rounded-full px-2 py-1 text-xs ${getResponseTimeColorClass(item?.avgResponseTime)}`}
                 >
                   {item?.avgResponseTime}ms
                 </span>
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 <span
                   className={`rounded-full px-2 py-1 text-xs ${getErrorRateColorClass(item?.errorRate)}`}
                 >
                   {item?.errorRate.toFixed(2)}%
                 </span>
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                 <button
                   className="font-medium text-blue-600 hover:text-blue-800"
                   onClick={() => onCategorySelect(item?.category)}
@@ -539,7 +539,7 @@ const DetailedCategoryAnalysis: React.FC<{
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-red-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-red-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -556,7 +556,7 @@ const DetailedCategoryAnalysis: React.FC<{
             </li>
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-red-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-red-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -573,7 +573,7 @@ const DetailedCategoryAnalysis: React.FC<{
             </li>
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-yellow-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-yellow-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -596,7 +596,7 @@ const DetailedCategoryAnalysis: React.FC<{
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-green-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-green-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -613,7 +613,7 @@ const DetailedCategoryAnalysis: React.FC<{
             </li>
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-green-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-green-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -630,7 +630,7 @@ const DetailedCategoryAnalysis: React.FC<{
             </li>
             <li className="flex items-start">
               <svg
-                className="mr-1 mt-0.5 h-5 w-5 text-green-500"
+                className="mt-0.5 mr-1 h-5 w-5 text-green-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -772,7 +772,7 @@ const DeviceCapabilityReport: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }

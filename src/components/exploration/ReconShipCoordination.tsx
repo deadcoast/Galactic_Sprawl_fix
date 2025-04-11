@@ -1,4 +1,4 @@
-import { ChevronUp, Plus, Radar, Users, Zap } from 'lucide-react';
+import { ChevronUp, MinusCircle, Plus, PlusCircle, Radar, Users, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { Position } from '../../types/core/GameTypes';
@@ -89,22 +89,21 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
   const [selectedShipIds, setSelectedShipIds] = useState<string[]>([]);
   const [selectedLeaderId, setSelectedLeaderId] = useState<string>('');
   const [prioritizeFormations, setPrioritizeFormations] = useState(true);
+  const [showAddShipModal, setShowAddShipModal] = useState(false);
 
   // Derived state
   const availableShips = useMemo(() => {
     return ships.filter(ship => ship.status === 'idle' && !ship.formationId);
   }, [ships]);
 
-  const _formationShips = useMemo(() => {
-    if (!selectedFormationId) return [];
-    const formation = formations.find(f => f.id === selectedFormationId);
-    if (!formation) return [];
-    return ships.filter(ship => formation.shipIds.includes(ship.id));
-  }, [ships, formations, selectedFormationId]);
-
-  const _selectedFormation = useMemo(() => {
+  const selectedFormation = useMemo(() => {
     return formations.find(f => f.id === selectedFormationId) || null;
   }, [formations, selectedFormationId]);
+
+  const formationShips = useMemo(() => {
+    if (!selectedFormation) return [];
+    return ships.filter(ship => selectedFormation.shipIds.includes(ship.id));
+  }, [ships, selectedFormation]);
 
   // Reset selected leader when selected ships change
   useEffect(() => {
@@ -343,58 +342,158 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
         {formations.map(formation => {
           const effectiveness = getFormationEffectiveness(formation);
           const status = getFormationStatus(formation);
+          const isSelected = selectedFormationId === formation.id;
 
           return (
             <div
               key={formation.id}
-              className={`rounded border p-4 cursor-pointer transition-colors ${
-                selectedFormationId === formation.id
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              className={`rounded border p-4 transition-all duration-200 ease-in-out ${
+                isSelected
+                  ? 'border-blue-500 bg-blue-50 shadow-md dark:bg-blue-900/30'
+                  : 'cursor-pointer border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50'
               }`}
-              onClick={() => handleFormationSelect(formation.id)}
+              onClick={() => !isSelected && handleFormationSelect(formation.id)}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">{formation.name}</h4>
-                  <p className="text-sm text-gray-500">Type: {formation.type}</p>
-                  <p className="text-sm text-gray-500">Status: {status}</p>
-                  <p className="text-sm text-gray-500">Effectiveness: {effectiveness.toFixed(1)}</p>
-                  <p className="text-sm text-gray-500">Leader: {getFormationLeader(formation)?.name ?? 'N/A'}</p>
+              <div className="flex items-start justify-between">
+                <div
+                  onClick={() => isSelected && handleFormationSelect('')}
+                  className={isSelected ? 'cursor-pointer' : ''}
+                >
+                  <h4 className="font-medium">
+                    {formation.name}{' '}
+                    {isSelected && (
+                      <span className="text-xs font-normal text-blue-600">(Selected)</span>
+                    )}
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Type: {formation.type}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Status: {status}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Effectiveness: {effectiveness.toFixed(1)}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Leader: {getFormationLeader(formation)?.name ?? 'N/A'}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Ships: {formation.shipIds.length}
+                  </p>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-col items-end space-y-2">
                   <button
-                    className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-                    onClick={() => onDisbandFormation(formation.id)}
+                    className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onDisbandFormation(formation.id);
+                      if (isSelected) setSelectedFormationId('');
+                    }}
                   >
                     Disband
                   </button>
+                  {isSelected && (
+                    <button
+                      className="flex items-center rounded bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-600"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setShowAddShipModal(true);
+                      }}
+                    >
+                      <PlusCircle size={14} className="mr-1" /> Add Ship
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="mt-2">
-                <h5 className="text-sm font-medium">Ships</h5>
-                <div className="mt-1 space-y-1">
-                  {getFormationShips(formation).map(ship => (
-                    <div key={ship.id} className="flex items-center justify-between text-sm">
-                      <span>{ship.name}</span>
-                      <span className="text-gray-500">{ship.type}</span>
-                      <span className="text-gray-500">
-                        {ship.currentTask ? `Task: ${ship.currentTask}` : 'No task'}
-                      </span>
-                    </div>
-                  ))}
+
+              {isSelected && (
+                <div className="mt-4 border-t border-gray-300 pt-3 dark:border-gray-600">
+                  <h5 className="mb-2 text-base font-semibold">Ships in Formation</h5>
+                  <div className="max-h-60 space-y-1 overflow-y-auto pr-2">
+                    {formationShips.length > 0 ? (
+                      formationShips.map(ship => (
+                        <div
+                          key={ship.id}
+                          className="flex items-center justify-between rounded bg-gray-100 p-2 dark:bg-gray-700"
+                        >
+                          <div>
+                            <span className="font-medium">{ship.name}</span>
+                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                              ({ship.type})
+                            </span>
+                          </div>
+                          {formation.shipIds.length > 1 && ship.id !== formation.leaderId && (
+                            <button
+                              className="ml-2 rounded bg-yellow-500 px-1.5 py-0.5 text-xs text-white hover:bg-yellow-600"
+                              onClick={e => {
+                                e.stopPropagation();
+                                onRemoveShipFromFormation(ship.id, formation.id);
+                              }}
+                            >
+                              <MinusCircle size={14} />
+                            </button>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        No ships assigned to this formation.
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
+
+        {showAddShipModal && selectedFormation && (
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+              <h3 className="mb-4 text-lg font-semibold">
+                Add Ships to "{selectedFormation.name}"
+              </h3>
+              <div className="max-h-60 space-y-2 overflow-y-auto border-y border-gray-300 py-3 dark:border-gray-600">
+                {availableShips.length > 0 ? (
+                  availableShips.map(ship => (
+                    <button
+                      key={ship.id}
+                      className="flex w-full items-center justify-between rounded px-2 py-1 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => {
+                        onAddShipToFormation(ship.id, selectedFormation.id);
+                        setShowAddShipModal(false);
+                      }}
+                    >
+                      <span>
+                        {ship.name} <span className="text-xs text-gray-500">({ship.type})</span>
+                      </span>
+                      <PlusCircle size={16} className="text-green-500" />
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No available ships to add.
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  className="rounded bg-gray-300 px-4 py-2 text-sm text-gray-800 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                  onClick={() => setShowAddShipModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
   const handleAutoDistributeClick = () => {
-    const unexploredSectorIds = getUnexploredSectors().map(sector => sector.id);
-    handleAutoDistributeTasks(unexploredSectorIds, prioritizeFormations);
+    const highPrioritySectorIds = _getHighPrioritySectors().map(sector => sector.id);
+    if (highPrioritySectorIds.length === 0) {
+      console.warn('No high priority sectors found for auto-distribution.');
+      return;
+    }
+    handleAutoDistributeTasks(highPrioritySectorIds, prioritizeFormations);
   };
 
   const renderCoordinationTab = () => {
@@ -478,7 +577,10 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
             onChange={e => setPrioritizeFormations(e.target.checked)}
             className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="prioritizeFormationsCheckbox" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="prioritizeFormationsCheckbox"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Prioritize formations for tasks
           </label>
         </div>
@@ -496,24 +598,9 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
     );
   };
 
-  const _renderShipDetails = (ship: ReconShip) => {
-    return (
-      <div key={ship.id} className="mb-4 rounded-lg bg-gray-800 p-4">
-        <h4 className="mb-2 text-lg font-semibold text-white">{ship.name}</h4>
-        <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
-          <div>Type: {ship.type}</div>
-          <div>Status: {ship.status}</div>
-          <div>Scanning: {ship.capabilities?.scanning ?? 0}</div>
-          <div>Stealth: {ship.capabilities?.stealth ?? 0}</div>
-          <div>Combat: {ship.capabilities?.combat ?? 0}</div>
-          <div>Stealth Active: {ship.capabilities?.stealthActive ? 'Yes' : 'No'}</div>
-        </div>
-      </div>
-    );
-  };
-
   const handleFormationSelect = (formationId: string) => {
     setSelectedFormationId(formationId === selectedFormationId ? '' : formationId);
+    setShowAddShipModal(false);
   };
 
   return (

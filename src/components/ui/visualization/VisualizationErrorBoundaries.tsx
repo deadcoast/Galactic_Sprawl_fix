@@ -2,9 +2,9 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import ResourceDistributionChart from '../../exploration/visualizations/charts/ResourceDistributionChart';
 import {
-    createTypedErrorBoundary,
-    D3VisualizationErrorBoundary,
-    ErrorFallbackProps,
+  createTypedErrorBoundary,
+  D3VisualizationErrorBoundary,
+  ErrorFallbackProps,
 } from './D3VisualizationErrorBoundary';
 import FlowDiagram from './FlowDiagram';
 import TemporalAnalysisView from './TemporalAnalysisView';

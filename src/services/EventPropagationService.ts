@@ -14,7 +14,7 @@ export interface EventSubscription {
  */
 class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationServiceImpl> {
   private subscriptions: Map<string, EventSubscription[]> = new Map();
-  private eventQueue: Array<{ type: string; data: unknown; }> = [];
+  private eventQueue: Array<{ type: string; data: unknown }> = [];
   private isProcessing = false;
   private customErrorHandler?: (error: Error, context?: Record<string, unknown>) => void;
 
@@ -22,7 +22,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     super('EventPropagationService', '1.0.0');
   }
 
-  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
     // Initialize metrics
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
@@ -36,8 +36,8 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     };
 
     // Check if we have access to the component registry service
-    if (dependencies && 'componentRegistry' in dependencies) {
-      const componentRegistry = dependencies.componentRegistry as typeof componentRegistryService;
+    if (_dependencies && 'componentRegistry' in _dependencies) {
+      const componentRegistry = _dependencies.componentRegistry as typeof componentRegistryService;
 
       // Notify registry that this service is available (using existing method rather than non-existent registerService)
       if (componentRegistry) {
@@ -47,22 +47,28 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           serviceName: 'EventPropagationService',
           timestamp: Date.now(),
         });
-        errorLoggingService.logWarn('[EventPropagationService] Notified component registry of initialization');
+        errorLoggingService.logWarn(
+          '[EventPropagationService] Notified component registry of initialization'
+        );
       }
     } else {
       // Log that we're initializing without component registry
-      errorLoggingService.logWarn('[EventPropagationService] Initializing without component registry dependency');
+      errorLoggingService.logWarn(
+        '[EventPropagationService] Initializing without component registry dependency'
+      );
     }
 
     // Handle other dependencies that might be passed in
-    if (dependencies) {
+    if (_dependencies) {
       // Log the dependencies we received
-      const dependencyNames = Object.keys(dependencies).join(', ');
-      errorLoggingService.logWarn(`[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`);
+      const dependencyNames = Object.keys(_dependencies).join(', ');
+      errorLoggingService.logWarn(
+        `[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`
+      );
 
       // Initialize with error logging service if provided
-      if ('errorLogging' in dependencies) {
-        const errorLogging = dependencies.errorLogging as typeof errorLoggingService;
+      if ('errorLogging' in _dependencies) {
+        const errorLogging = _dependencies.errorLogging as typeof errorLoggingService;
 
         // Configure error handling with the error logging service
         if (errorLogging) {
@@ -72,7 +78,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {
             errorLogging.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
               service: this.metadata.name,
-              ...context
+              ...context,
             });
           };
         }

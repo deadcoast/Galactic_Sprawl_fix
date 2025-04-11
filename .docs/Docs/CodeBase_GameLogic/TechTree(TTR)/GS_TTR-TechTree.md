@@ -26,7 +26,7 @@ The **Galactic Sprawl Tech Tree** is organized into five major branches. Each br
 - **Tier 3 – Advanced Systems & Capital Assets:**  
   Major upgrades unlocking capital ships, high-level automation, advanced combat and defense capabilities, and fully automated colony and trade hubs.
 
-- **Tier 4 – Unique/Epic Projects:**  
+- **Tier 4 – Unique/Epic Projects:**
   - Special projects that provide one-of-a-kind bonuses or game-changing abilities.
     - Command Nexus for fleet-wide buffs.
     - Unique Dyson Sphere Megastructure automation node.
@@ -35,40 +35,42 @@ The **Galactic Sprawl Tech Tree** is organized into five major branches. Each br
 
 Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie each object to the correct Tier. This is crucial for **progression**.
 
-1. **Tech Tree Scene/UI**  
-   - Create a dedicated “Research” UI or overlay where you show three columns (War, Recon, Mining).  
-   - You can do this as a **scrollable** layout, with Tier 1 items at the top, Tier 2 in the middle, Tier 3 at the bottom.  
-   - Mark locked items with a lock icon or a grayed-out button.  
+1. **Tech Tree Scene/UI**
 
-2. **Tier Unlock Requirements**  
-   - Each Tier or node in the Tech Tree might require some combination of: resources, time-based research, number of existing buildings, or other criteria.  
-   - Use  variables/timers to handle these.  
+   - Create a dedicated “Research” UI or overlay where you show three columns (War, Recon, Mining).
+   - You can do this as a **scrollable** layout, with Tier 1 items at the top, Tier 2 in the middle, Tier 3 at the bottom.
+   - Mark locked items with a lock icon or a grayed-out button.
 
-3. **Upgrade Logic**  
-   - When a Tier 2 module is unlocked, it should directly affect how the module is rendered or how it functions. For instance, upgrading the Radar from Tier 1 → Tier 2 might increase detection radius and show a bigger, fancier antenna.  
+2. **Tier Unlock Requirements**
+
+   - Each Tier or node in the Tech Tree might require some combination of: resources, time-based research, number of existing buildings, or other criteria.
+   - Use variables/timers to handle these.
+
+3. **Upgrade Logic**
+   - When a Tier 2 module is unlocked, it should directly affect how the module is rendered or how it functions. For instance, upgrading the Radar from Tier 1 → Tier 2 might increase detection radius and show a bigger, fancier antenna.
    - Link these **Tier states** to your Ship Hanger, Officer Academy, Mining Centre, and so on.
 
-**Result**: All Tiers (1, 2, 3) are now *structured* in your Tech Tree, and you can unlock advanced ships/buildings in the future steps.
+**Result**: All Tiers (1, 2, 3) are now _structured_ in your Tech Tree, and you can unlock advanced ships/buildings in the future steps.
 
 ### Implementation Details
 
-- **Component Structure**:  
+- **Component Structure**:
   - Create a `<TechTree />` component that renders three vertical columns.
   - Each column can be a scrollable subcomponent (e.g., `<TierColumn tier={1} />`).
-- **Data & Interactivity**:  
-  - Each node represents an upgrade or building.  
-  - Use icons, tooltips, and lock overlays (for locked nodes).  
+- **Data & Interactivity**:
+  - Each node represents an upgrade or building.
+  - Use icons, tooltips, and lock overlays (for locked nodes).
   - Nodes can be clicked to reveal more information (pop-up modal) or to begin research.
-- **Recommended Libraries**:  
+- **Recommended Libraries**:
   - [react-d3-tree](https://github.com/bkrem/react-d3-tree) or a custom implementation with [d3.js](https://d3js.org/) for dynamic hierarchical layouts.
   - [react-spring](https://www.react-spring.io/) for smooth transitions as nodes unlock.
   - [react-tooltip](https://www.npmjs.com/package/react-tooltip) for node details on hover.
 
 ### Additional Functionality
 
-- **Progress Indicators**:  
+- **Progress Indicators**:
   - Display progress bars or timers on nodes that are in the process of being unlocked.
-- **Conditional Rendering**:  
+- **Conditional Rendering**:
   - Lock/unlock nodes based on resource and tier requirements.
 
 ---
@@ -77,14 +79,16 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 
 ### Mothership Core Systems
 
-- **Tier 1:**  
+- **Tier 1:**
+
   - **Basic Mothership Functions:**  
     • Standard Radar (local system scanning)  
     • Basic Ship Hanger (enables production of Spitflares and Rock Breaker)  
     • Entry Officer Academy (standard officer recruitment)  
     • Basic Colony Station (initial trade and population hub)
 
-- **Tier 2:**  
+- **Tier 2:**
+
   - **Advanced Infrastructure:**  
     • **Advanced Radar:** Unlocks galaxy-wide monitoring (enemy detection and mineral spotting)  
     • **Expanded Ship Hanger:** Adds mid-tier ships (Star Schooner, Orion’s Frigate) and unlocks ship upgrades  
@@ -92,7 +96,8 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
     • **Colony Expansion:** Unlocks additional modules (local trading post, improved population management)  
     • **Mineral Processing Centre (Tier 2):** Enhanced mining automation and faster resource refinement
 
-- **Tier 3:**  
+- **Tier 3:**
+
   - **Capital Infrastructure:**  
     • **Ultra-Advanced Radar:** Full-spectrum scanning that detects anomalies, hidden tech, and habitable worlds  
     • **Mega Ship Hanger:** Enables construction of capital ships (Harbringer Galleon, Midway Carrier)  
@@ -100,9 +105,9 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
     • **Fully Automated Colony:** Dynamic expansion that integrates with Habitable Worlds and optimizes trade routes  
     • **Dyson Sphere Integration:** Advanced energy and resource bonuses through segmented automation
 
-- **Additional Nodes:**  
-  - **Quantum Communications Hub (Tier 2):** Improves inter-system data sharing and speeds up command decisions.  
-  - **AI Logistics Core (Tier 3):** Automates trade routes, reduces resource latency, and improves mining/refining efficiency.  
+- **Additional Nodes:**
+  - **Quantum Communications Hub (Tier 2):** Improves inter-system data sharing and speeds up command decisions.
+  - **AI Logistics Core (Tier 3):** Automates trade routes, reduces resource latency, and improves mining/refining efficiency.
   - **Modular Expansion Interface (Tier 3):** Allows colonies to scale visually and functionally as population grows.
 
 ---
@@ -111,14 +116,14 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 
 ### War Fleet Technologies (AP: War)
 
-- **Weapon Systems & Ship Upgrades:**  
+- **Weapon Systems & Ship Upgrades:**
   - **Tier 1:**  
     • Basic weapon systems (Machine Gun, Rockets, Gauss Cannon)  
-    • Light Hull Armor & Shields  
+    • Light Hull Armor & Shields
   - **Tier 2:**  
     • **Weapon Enhancements:** Upgrade Machine Guns to Plasma Rounds; add EMPR/Swarm Rocket variants; introduce Gauss Planer  
     • Medium Hull Armor & Shields  
-    • Basic fleet coordination for auto-deployment  
+    • Basic fleet coordination for auto-deployment
   - **Tier 3:**  
     • **Advanced Weaponry:** Unlock Spark Rounds, Big Bang Rockets, Recirculating Gauss, and advanced Rail Gun variants (e.g., Maurader)  
     • Heavy Hull Armor & Shields with reactive systems (kinetic energy absorption, smart countermeasures)  
@@ -126,24 +131,24 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 
 ### Recon Fleet Technologies (AP: Recon)
 
-- **Sensor & Data Systems:**  
+- **Sensor & Data Systems:**
   - **Tier 1:**  
-    • Basic sensor arrays (as fitted on SC4 Comet)  
+    • Basic sensor arrays (as fitted on SC4 Comet)
   - **Tier 2:**  
     • Enhanced sensor modules for improved mapping and stealth detection (enabling AC27G “Andromeda Cutter”)  
-    • Initial data processing improvements for faster mapping cycles  
+    • Initial data processing improvements for faster mapping cycles
   - **Tier 3:**  
     • **Quantum Recon Systems:** Accelerates mapping, improves anomaly detection, and integrates fully with the Exploration Hub  
     • Advanced cloaking and mobility upgrades for increased survivability in hostile zones
 
 ### Mining Fleet Technologies (AP: Mining)
 
-- **Extraction & Automation Improvements:**  
+- **Extraction & Automation Improvements:**
   - **Tier 1:**  
-    • Standard Mining Lasers and onboard refinement (baseline for MS-RB12G “Rock Breaker”)  
+    • Standard Mining Lasers and onboard refinement (baseline for MS-RB12G “Rock Breaker”)
   - **Tier 2:**  
     • Improved extraction rates and better resource yield probabilities  
-    • Enhanced processing algorithms integrated into the Mineral Processing Centre  
+    • Enhanced processing algorithms integrated into the Mineral Processing Centre
   - **Tier 3:**  
     • **Exotic Mining Techniques:** Unlock rare resource extraction (Dark Matter Crystals, Helium-3)  
     • **Automated Mining Drones:** AI-assisted systems that dynamically adjust extraction based on local deposit conditions  
@@ -158,11 +163,11 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 - **Tier 1:**  
   • Base models (Machine Gun, Rockets, Gauss Cannon, Rail Gun)
 - **Tier 2:**  
-  • Specialized variants (Plasma Rounds, EMPR & Swarm Rockets, Gauss Planer)  
+  • Specialized variants (Plasma Rounds, EMPR & Swarm Rockets, Gauss Planer)
 - **Tier 3:**  
-  • Maximum-damage upgrades (Spark Rounds, Big Bang Rockets, Recirculating Gauss, Maurader Rail Gun)  
-- **New Implementations:**  
-  - **Laser Beam Technology (Tier 3):** A continuous-damage weapon effective against multiple targets simultaneously.  
+  • Maximum-damage upgrades (Spark Rounds, Big Bang Rockets, Recirculating Gauss, Maurader Rail Gun)
+- **New Implementations:**
+  - **Laser Beam Technology (Tier 3):** A continuous-damage weapon effective against multiple targets simultaneously.
   - **Particle Accelerator Cannons (Tier 3):** High-damage, energy-draining weapons designed to penetrate advanced hull armors.
 
 ### Defensive Systems
@@ -170,11 +175,11 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 - **Tier 1:**  
   • Basic Light Shields and minimal hull armor
 - **Tier 2:**  
-  • Medium shields with regenerative properties, reactive armor systems  
+  • Medium shields with regenerative properties, reactive armor systems
 - **Tier 3:**  
-  • Heavy shields with layered defense mechanisms, smart countermeasures, and point-defense systems  
-- **New Implementations:**  
-  - **Energy Dissipation Field (Tier 3):** Temporarily reduces incoming energy-based damage.  
+  • Heavy shields with layered defense mechanisms, smart countermeasures, and point-defense systems
+- **New Implementations:**
+  - **Energy Dissipation Field (Tier 3):** Temporarily reduces incoming energy-based damage.
   - **Automated Repair Drones (Tier 2/3):** Deployed on capital ships (e.g., Midway Carrier) for rapid in-combat hull repairs.
 
 ---

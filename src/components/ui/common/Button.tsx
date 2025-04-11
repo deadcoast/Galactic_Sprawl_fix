@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react';
-import { Button as NewButton } from '../../../ui/components/Button';
 import { ComponentSize, ComponentVariant } from '../../../types/ui/ComponentTypes';
+import { Button as NewButton } from '../../../ui/components/Button';
 
 interface LegacyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success';

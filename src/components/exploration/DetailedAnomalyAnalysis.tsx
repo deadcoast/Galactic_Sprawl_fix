@@ -382,9 +382,9 @@ export function DetailedAnomalyAnalysis({
               placeholder="Search anomalies..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-48 rounded border border-gray-600 bg-gray-700 py-1 pl-8 pr-2 text-sm text-gray-300 placeholder-gray-500"
+              className="w-48 rounded border border-gray-600 bg-gray-700 py-1 pr-2 pl-8 text-sm text-gray-300 placeholder-gray-500"
             />
-            <FileText className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <FileText className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           </div>
 
           {/* Filter dropdown */}

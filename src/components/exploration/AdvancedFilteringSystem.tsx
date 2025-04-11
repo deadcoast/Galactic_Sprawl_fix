@@ -251,11 +251,11 @@ export function AdvancedFilteringSystem({
                   placeholder="Search by name, ID, or anomaly..."
                   className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 pl-8 text-sm text-white placeholder-gray-500"
                 />
-                <Search size={16} className="absolute left-2.5 top-2.5 text-gray-500" />
+                <Search size={16} className="absolute top-2.5 left-2.5 text-gray-500" />
                 {filters.searchQuery && (
                   <button
                     onClick={() => onSearchChange('')}
-                    className="absolute right-2.5 top-2.5 text-gray-500 hover:text-white"
+                    className="absolute top-2.5 right-2.5 text-gray-500 hover:text-white"
                   >
                     <X size={16} />
                   </button>

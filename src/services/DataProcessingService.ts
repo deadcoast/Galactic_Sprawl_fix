@@ -84,7 +84,8 @@ export class DataProcessingService {
 
       if (error) {
         // Ensure rejection is always an Error instance
-        const errorToSend = error instanceof Error ? error : new Error(String(error ?? 'Worker Error'));
+        const errorToSend =
+          error instanceof Error ? error : new Error(String(error ?? 'Worker Error'));
         reject(errorToSend);
       } else {
         // Resolves with whatever 'data' the worker sent

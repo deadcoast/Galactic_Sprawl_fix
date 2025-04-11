@@ -92,12 +92,8 @@ function ResourceChart({ data }) {
 export default withErrorBoundary(ResourceChart, {
   componentName: 'ResourceChart',
   fallback: ({ error, resetErrorBoundary }) => (
-    <ChartErrorState
-      title="Resource Chart"
-      error={error}
-      onRetry={resetErrorBoundary}
-    />
-  )
+    <ChartErrorState title="Resource Chart" error={error} onRetry={resetErrorBoundary} />
+  ),
 });
 ```
 
@@ -110,7 +106,7 @@ function ResourceList() {
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     async function loadResources() {
       try {
@@ -124,14 +120,14 @@ function ResourceList() {
         setIsLoading(false);
       }
     }
-    
+
     loadResources();
   }, []);
-  
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
-  
+
   if (error) {
     return (
       <ResourceDisplayErrorState
@@ -141,7 +137,7 @@ function ResourceList() {
       />
     );
   }
-  
+
   return (
     // Render resource list
   );
@@ -157,8 +153,8 @@ function ResourceForm() {
   const [formState, setFormState] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
-  
-  const handleSubmit = async (e) => {
+
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
       await submitResource(formState);
@@ -166,7 +162,7 @@ function ResourceForm() {
       setSubmitError(error);
     }
   };
-  
+
   if (submitError) {
     return (
       <FormErrorState
@@ -176,7 +172,7 @@ function ResourceForm() {
       />
     );
   }
-  
+
   return (
     <form onSubmit={handleSubmit}>
       {/* Form fields */}
@@ -199,17 +195,12 @@ try {
   // Risky operation
 } catch (error) {
   // Log error
-  errorLoggingService.logError(
-    error,
-    ErrorType.RUNTIME,
-    ErrorSeverity.MEDIUM,
-    {
-      component: 'ResourceManager',
-      action: 'fetchResources',
-      additionalContext: { resourceId: '123' }
-    }
-  );
-  
+  errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+    component: 'ResourceManager',
+    action: 'fetchResources',
+    additionalContext: { resourceId: '123' },
+  });
+
   // Show error UI
   return <ResourceDisplayErrorState error={error} />;
 }
@@ -224,4 +215,4 @@ try {
 5. **Log errors for monitoring**: Ensure errors are properly logged for debugging and monitoring
 6. **Handle all async errors**: Always use try/catch for async operations
 7. **Show appropriate fallback UI**: Select the right error component for each context
-8. **Use type-safety**: Leverage TypeScript to ensure proper error component usage 
+8. **Use type-safety**: Leverage TypeScript to ensure proper error component usage

@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Settings from '@mui/icons-material/Settings';
 import {
   Button,
   Dialog,
@@ -85,16 +86,31 @@ const DatasetManager: React.FC<DatasetManagerProps> = ({
               selected={selectedDataset?.id === dataset.id}
               onClick={() => onSelectDataset(dataset)}
               secondaryAction={
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onDeleteDataset(dataset.id);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                <>
+                  <IconButton
+                    edge="end"
+                    aria-label="edit"
+                    onClick={e => {
+                      e.stopPropagation();
+                      const updatedName = `${dataset.name} (edited)`;
+                      onUpdateDataset(dataset.id, { name: updatedName });
+                      console.log(`Placeholder edit for dataset: ${dataset.name}`);
+                    }}
+                    sx={{ mr: 1 }}
+                  >
+                    <Settings />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onDeleteDataset(dataset.id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </>
               }
             >
               <ListItemText

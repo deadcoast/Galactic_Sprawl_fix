@@ -21,22 +21,6 @@ import {
   ReferenceLine as ReferenceLineType,
 } from './BaseChart';
 
-// Define allowed positions for reference line labels
-type ReferenceLinePosition =
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right'
-  | 'insideTop'
-  | 'insideBottom'
-  | 'insideLeft'
-  | 'insideRight'
-  | 'insideTopRight'
-  | 'insideTopLeft'
-  | 'insideBottomRight'
-  | 'insideBottomLeft'
-  | 'center';
-
 // Define the click event interface
 interface PointClickEvent {
   payload: Record<string, unknown>;

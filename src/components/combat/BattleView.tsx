@@ -151,7 +151,7 @@ export const BattleView: React.FC = () => {
               <div className="relative mr-4 flex-shrink-0">
                 <div className="h-4 w-4 rounded-full bg-blue-600"></div>
                 {index < battleDetails.events.length - 1 && (
-                  <div className="absolute left-1.5 top-4 h-full w-1 -translate-x-1/2 bg-gray-700"></div>
+                  <div className="absolute top-4 left-1.5 h-full w-1 -translate-x-1/2 bg-gray-700"></div>
                 )}
               </div>
               <div className="pb-6">

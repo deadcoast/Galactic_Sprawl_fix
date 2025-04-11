@@ -1,6 +1,6 @@
 /**
  * @context: state-system, persistence
- * 
+ *
  * State persistence utilities for storing and loading application state.
  * These utilities handle localStorage persistence with versioning, migration,
  * and optional compression.
@@ -102,7 +102,11 @@ export enum PersistenceErrorType {
  * Error class for state persistence
  */
 export class PersistenceError extends Error {
-  constructor(public type: PersistenceErrorType, message: string, public originalError?: unknown) {
+  constructor(
+    public type: PersistenceErrorType,
+    message: string,
+    public originalError?: unknown
+  ) {
     super(message);
     this.name = 'PersistenceError';
   }
@@ -145,13 +149,15 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
     if (!compress) {
       return str;
     }
-    
+
     try {
       // Use lz-string if available, otherwise use basic btoa
       if (typeof window !== 'undefined' && 'lzstring' in window) {
-        return ((window as unknown) as { lzstring: { compressToUTF16: (str: string) => string } }).lzstring.compressToUTF16(str);
+        return (
+          window as unknown as { lzstring: { compressToUTF16: (str: string) => string } }
+        ).lzstring.compressToUTF16(str);
       }
-      
+
       // Fallback to basic encoding
       return typeof btoa === 'function' ? btoa(str) : str;
     } catch (error) {
@@ -159,7 +165,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       return str;
     }
   };
-  
+
   /**
    * Decompress a string
    */
@@ -171,9 +177,11 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
     try {
       // Use lz-string if available, otherwise use basic atob
       if (typeof window !== 'undefined' && 'lzstring' in window) {
-        return ((window as unknown) as { lzstring: { decompressFromUTF16: (str: string) => string } }).lzstring.decompressFromUTF16(str);
+        return (
+          window as unknown as { lzstring: { decompressFromUTF16: (str: string) => string } }
+        ).lzstring.decompressFromUTF16(str);
       }
-      
+
       // Fallback to basic decoding
       return typeof atob === 'function' ? atob(str) : str;
     } catch (error) {
@@ -190,14 +198,14 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
     try {
       // Use the deserialize function from options - following context pattern
       const parsed = deserialize(serializedState);
-      
+
       if (!validate(parsed)) {
         throw new PersistenceError(
           PersistenceErrorType.VALIDATION,
           `Invalid state structure for key "${key}"`
         );
       }
-      
+
       return parsed as T;
     } catch (error) {
       throw new PersistenceError(
@@ -230,7 +238,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
     if (saveTimeout && !immediate) {
       clearTimeout(saveTimeout);
     }
-    
+
     const saveFunc = async () => {
       try {
         // Generate the serialized state - using persistedStr to track serialization
@@ -244,29 +252,30 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
             error
           );
         }
-        
+
         // Create metadata wrapper following the pattern in context docs
         const persistData: PersistedData<T> = {
           version,
           timestamp: Date.now(),
           state,
         };
-        
+
         // Serialize and compress if needed - using the serialized state for metrics
         const serializedData = compressString(serialize(persistData));
-        
+
         // Log state size information if debug is enabled - using persistedStr for comparison
         if (debug) {
-          const compressionRatio = persistedStr.length > 0 
-            ? ((persistedStr.length - serializedData.length) / persistedStr.length) * 100 
-            : 0;
-          log('State serialization stats', { 
-            rawSize: persistedStr.length, 
+          const compressionRatio =
+            persistedStr.length > 0
+              ? ((persistedStr.length - serializedData.length) / persistedStr.length) * 100
+              : 0;
+          log('State serialization stats', {
+            rawSize: persistedStr.length,
             compressedSize: serializedData.length,
-            compressionRatio: `${compressionRatio.toFixed(2)}%`
+            compressionRatio: `${compressionRatio.toFixed(2)}%`,
           });
         }
-        
+
         try {
           if (storage.setItem) {
             await storage.setItem(key, serializedData);
@@ -296,7 +305,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
         throw error;
       }
     };
-    
+
     if (immediate) {
       return saveFunc();
     } else {
@@ -312,7 +321,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
     try {
       // Get the serialized state from storage
       let serializedState: string | null = null;
-      
+
       try {
         if (storage.getItem) {
           serializedState = await storage.getItem(key);
@@ -324,16 +333,16 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
           error
         );
       }
-      
+
       if (!serializedState) {
         log('No saved state found');
         return null;
       }
-      
+
       // Decompress if needed
       const decompressed = decompressString(serializedState);
       let persistData: PersistedData<T>;
-      
+
       try {
         // Use the deserialize function from options - following context pattern
         const parsed = deserialize(decompressed) as PersistedData<T>;
@@ -345,20 +354,20 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
           error
         );
       }
-      
+
       log('Loaded persisted data', {
         version: persistData.version,
         current: version,
         age: (Date.now() - persistData.timestamp) / 1000,
       });
-      
+
       // Handle version migration if needed
       if (persistData.version !== version) {
         if (!migrate) {
           log('Version mismatch and no migration function provided, using null');
           return null;
         }
-        
+
         try {
           const migratedState = migrate(persistData.state, persistData.version);
           log('Migrated state from version', {
@@ -374,7 +383,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
           );
         }
       }
-      
+
       // Use the restoreState function to validate and deserialize
       try {
         // Serialize and then deserialize using our functions to ensure validation
@@ -391,11 +400,11 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       }
     } catch (error) {
       console.error(`[StatePersistence:${key}] Load error:`, error);
-      
+
       if (error instanceof PersistenceError) {
         throw error;
       }
-      
+
       throw new PersistenceError(
         PersistenceErrorType.DESERIALIZATION,
         `Failed to load state for key "${key}"`,
@@ -413,7 +422,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       await storage.removeItem(key);
     } catch (error) {
       log('Error clearing state', error);
-      
+
       throw new PersistenceError(
         PersistenceErrorType.STORAGE_UNAVAILABLE,
         `Failed to clear state: ${error instanceof Error ? error.message : String(error)}`,

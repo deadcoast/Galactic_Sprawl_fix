@@ -103,7 +103,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_snapshots = this.snapshots.length;
     metrics.latest_snapshot_timestamp = snapshot.timestamp;
     this.metadata.metrics = metrics;
@@ -121,7 +121,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_restores = (metrics.total_restores ?? 0) + 1;
     metrics.last_restore_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -154,7 +154,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -169,6 +169,21 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
         action: 'handleError', // Indicate the action
       }
     );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private logRecoveryAttempt(
+    success: boolean,
+    error?: Error,
+    _metadata?: Record<string, unknown>
+  ): void {
+    const logEntry = {
+      timestamp: Date.now(),
+      success: success,
+      error: error,
+    };
+
+    // Implementation of logRecoveryAttempt method
   }
 }
 

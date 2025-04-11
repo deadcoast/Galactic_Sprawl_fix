@@ -69,13 +69,13 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
       {showDetails && (
         <div className="mb-4">
           <p className="mb-1 font-medium">Error message:</p>
-          <pre className="overflow-auto whitespace-pre-wrap rounded bg-red-100 p-2 text-sm">
+          <pre className="overflow-auto rounded bg-red-100 p-2 text-sm whitespace-pre-wrap">
             {error.message || 'Unknown error'}
           </pre>
           {error.stack && (
             <details className="mt-2">
               <summary className="cursor-pointer text-sm font-medium">Stack trace</summary>
-              <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded bg-red-100 p-2 text-xs">
+              <pre className="mt-2 overflow-auto rounded bg-red-100 p-2 text-xs whitespace-pre-wrap">
                 {error.stack}
               </pre>
             </details>

@@ -1,14 +1,14 @@
 /**
  * @context: ui-system, game-system, performance-optimization
- * 
+ *
  * LazyMiniMap - A lazy-loaded version of the MiniMap component
  * This component only loads the actual map when needed, reducing the initial bundle size
  */
 
 import React from 'react';
+import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import { useLazyComponent } from '../../../utils/performance/ComponentOptimizer';
 import { ErrorBoundary } from '../errors/ErrorBoundary';
-import { ErrorType, ErrorSeverity } from '../../../services/ErrorLoggingService';
 import { MiniMapStar, ViewportConfig } from './MiniMap';
 
 // Interface for MiniMapProps
@@ -50,17 +50,17 @@ export function LazyMiniMap(props: MiniMapProps) {
     () => import('./MiniMap').then(module => ({ default: module.MiniMap })),
     []
   );
-  
+
   // Show loading state
   if (loading) {
     return <LoadingPlaceholder />;
   }
-  
+
   // Show error state
   if (error || !Component) {
     return <ErrorDisplay />;
   }
-  
+
   // Render the actual component within an error boundary
   return (
     <ErrorBoundary
@@ -75,4 +75,4 @@ export function LazyMiniMap(props: MiniMapProps) {
 }
 
 // Export a memoized version of the component
-export default React.memo(LazyMiniMap); 
+export default React.memo(LazyMiniMap);

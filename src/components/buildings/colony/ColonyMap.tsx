@@ -28,16 +28,15 @@ interface ColonyMapProps {
 }
 
 export function ColonyMap({
-  colonyId: _colonyId,
+  colonyId,
   buildings,
-  population: _population,
-  maxPopulation: _maxPopulation,
-  quality: _quality,
+  population,
+  maxPopulation,
+  quality,
   onBuildingClick,
   onMapClick,
 }: ColonyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -46,16 +45,8 @@ export function ColonyMap({
 
   // Set up map dimensions
   useEffect(() => {
-    if (mapRef.current) {
-      const { width, height } = mapRef.current.getBoundingClientRect();
-      setDimensions({ width, height });
-    }
-
     const handleResize = () => {
-      if (mapRef.current) {
-        const { width, height } = mapRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
-      }
+      // Potentially add logic here if resizing needs to affect scale/position
     };
 
     window.addEventListener('resize', handleResize);
@@ -112,15 +103,15 @@ export function ColonyMap({
   const getBuildingStatusIndicator = (status: BuildingData['status']) => {
     switch (status) {
       case 'operational':
-        return <div className="absolute right-1 top-1 h-2 w-2 rounded-full bg-green-500"></div>;
+        return <div className="absolute top-1 right-1 h-2 w-2 rounded-full bg-green-500"></div>;
       case 'constructing':
-        return <div className="absolute right-1 top-1 h-2 w-2 rounded-full bg-blue-500"></div>;
+        return <div className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blue-500"></div>;
       case 'upgrading':
-        return <div className="absolute right-1 top-1 h-2 w-2 rounded-full bg-purple-500"></div>;
+        return <div className="absolute top-1 right-1 h-2 w-2 rounded-full bg-purple-500"></div>;
       case 'damaged':
-        return <div className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></div>;
+        return <div className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></div>;
       case 'inactive':
-        return <div className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gray-500"></div>;
+        return <div className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gray-500"></div>;
       default:
         return null;
     }
@@ -129,7 +120,15 @@ export function ColonyMap({
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium text-white">Colony Map</h3>
+        <div>
+          <h3 className="text-lg font-medium text-white">Colony Map - {colonyId}</h3>
+          <div className="mt-1 flex items-center space-x-4 text-xs text-gray-400">
+            <span>
+              Population: {population.toLocaleString()} / {maxPopulation.toLocaleString()}
+            </span>
+            <span>Quality: {quality.charAt(0).toUpperCase() + quality.slice(1)}</span>
+          </div>
+        </div>
         <div className="flex items-center space-x-2">
           <button
             className="rounded-md border border-gray-700 bg-gray-900 p-1 text-gray-400 hover:bg-gray-700"
@@ -195,7 +194,7 @@ export function ColonyMap({
       >
         {/* Map Grid */}
         <div
-          className="absolute left-0 top-0 grid"
+          className="absolute top-0 left-0 grid"
           style={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
             transformOrigin: '0 0',
@@ -248,7 +247,7 @@ export function ColonyMap({
               </div>
 
               {building.level > 1 && (
-                <div className="absolute bottom-1 right-1 rounded-full bg-gray-900 px-1 text-xs font-medium text-white">
+                <div className="absolute right-1 bottom-1 rounded-full bg-gray-900 px-1 text-xs font-medium text-white">
                   {building.level}
                 </div>
               )}
@@ -258,7 +257,7 @@ export function ColonyMap({
 
         {/* Building Tooltip */}
         {hoveredBuilding && (
-          <div className="absolute right-2 top-2 w-48 rounded-md border border-gray-700 bg-gray-800 p-2 shadow-lg">
+          <div className="absolute top-2 right-2 w-48 rounded-md border border-gray-700 bg-gray-800 p-2 shadow-lg">
             {(() => {
               const building = buildings.find(b => b.id === hoveredBuilding);
               if (!building) {

@@ -5,7 +5,11 @@ import { ViewportOptimizedHeatMap } from './ViewportOptimizedHeatMap';
 import { ViewportOptimizedScatterPlot } from './ViewportOptimizedScatterPlot';
 import { VirtualizedLineChart } from './VirtualizedLineChart';
 // Corrected import path
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../../services/ErrorLoggingService';
 
 /**
  * Memory-optimized version of VirtualizedLineChart that includes automatic

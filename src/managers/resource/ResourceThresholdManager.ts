@@ -6,7 +6,7 @@ import {
   ResourceThreshold,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
-import { validateResourceThreshold } from '../../utils/resources/resourceValidation';
+import { validateResourceThreshold } from '../../utils/typeGuards/resourceTypeGuards';
 
 // Map our custom event types to the standard ModuleEventType
 const RESOURCE_UPDATE: ModuleEventType = 'RESOURCE_UPDATED';

@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-    isSerializedResourceState,
-    ResourceTotals,
-    SerializedResource,
-    SerializedResourceState,
-    SerializedThreshold,
-    serializeResourceMap,
-    validateResourceState,
+  isSerializedResourceState,
+  ResourceTotals,
+  SerializedResource,
+  SerializedResourceState,
+  SerializedThreshold,
+  serializeResourceMap,
+  validateResourceState,
 } from '../../types/resources/ResourceSerializationTypes';
 import {
-    ResourceState,
-    ResourceThreshold,
-    ResourceTransfer,
-    ResourceType,
+  ResourceState,
+  ResourceThreshold,
+  ResourceTransfer,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
 
 /**

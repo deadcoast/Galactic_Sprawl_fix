@@ -182,7 +182,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
       </AnimatePresence>
 
       {/* Transfer Queue Display */}
-      <div className="absolute bottom-4 right-4 space-y-2">
+      <div className="absolute right-4 bottom-4 space-y-2">
         {transfers
           .filter(t => t.status === 'queued')
           .slice(0, 3)

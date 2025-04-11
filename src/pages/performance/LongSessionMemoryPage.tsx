@@ -11,12 +11,12 @@ import { useEffect, useState } from 'react';
 import LongSessionMemoryVisualizer from '../../components/performance/LongSessionMemoryVisualizer';
 import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
 import {
-    LongSessionMemoryResult,
-    LongSessionMemoryTestSuite,
+  LongSessionMemoryResult,
+  LongSessionMemoryTestSuite,
 } from '../../tests/performance/LongSessionMemoryTestSuite';
 import {
-    LongSessionMemoryTracker,
-    MemoryTrendAnalysis,
+  LongSessionMemoryTracker,
+  MemoryTrendAnalysis,
 } from '../../utils/performance/longsession/LongSessionMemoryTracker';
 
 /**

@@ -1,12 +1,12 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-    ResourceTransfer as StringResourceTransfer,
-    ResourceType as StringResourceType,
+  ResourceTransfer as StringResourceTransfer,
+  ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
 import {
-    ensureStringResourceType,
-    toEnumResourceType,
+  ensureStringResourceType,
+  toEnumResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -45,7 +45,9 @@ export class ResourceTransferSubsystem {
       this.isInitialized = true;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize ResourceTransferSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error('Failed to initialize ResourceTransferSubsystem'),
         ErrorType.INITIALIZATION,
         ErrorSeverity.CRITICAL,
         { componentName: 'ResourceTransferSubsystem', action: 'initialize' }

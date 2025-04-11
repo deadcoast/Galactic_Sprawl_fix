@@ -103,7 +103,7 @@ export interface ObjectDetectionSystem {
  */
 export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   private static instance: ObjectDetectionSystemImpl | null = null;
-  
+
   private detectors: Map<string, DetectorUnit> = new Map();
   private detectables: Map<string, DetectableObject> = new Map();
   private detectedObjectsCache: Map<string, Set<string>> = new Map();
@@ -125,11 +125,13 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
     this.environmentalFactors = environmentalFactors;
     this.startScanLoop();
   }
-  
+
   /**
    * Get the singleton instance of ObjectDetectionSystemImpl
    */
-  public static getInstance(environmentalFactors: EnvironmentalFactors = {}): ObjectDetectionSystemImpl {
+  public static getInstance(
+    environmentalFactors: EnvironmentalFactors = {}
+  ): ObjectDetectionSystemImpl {
     if (!ObjectDetectionSystemImpl.instance) {
       ObjectDetectionSystemImpl.instance = new ObjectDetectionSystemImpl(environmentalFactors);
     }

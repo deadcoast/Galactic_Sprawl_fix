@@ -9,10 +9,10 @@ This module provides consolidated utilities for transforming data for visualizat
 ## Basic Usage
 
 ```typescript
-import { 
-  transformToScatterFormat, 
-  calculateDomain, 
-  createColorScale 
+import {
+  transformToScatterFormat,
+  calculateDomain,
+  createColorScale,
 } from '../../utils/dataTransforms';
 
 // Transform data for a scatter plot
@@ -51,7 +51,7 @@ const domain = calculateDomain(data, 'value', 0.1); // 10% padding
 const domains = calculateDomains(data, {
   x: 'xValue',
   y: 'yValue',
-  size: 'count'
+  size: 'count',
 });
 ```
 
@@ -101,9 +101,9 @@ const { items, totalPages, currentPage, hasNextPage } = paginateData(data, 25, 0
 // Transform time series data
 const timeSeriesData = transformTimeSeriesData(
   ['2023-01', '2023-02', '2023-03', '2023-04'], // time points
-  [10, 15, 12, 18],                            // actual values
-  [11, 14, 13, 17],                            // predicted values
-  [19, 21, 20]                                 // forecast values
+  [10, 15, 12, 18], // actual values
+  [11, 14, 13, 17], // predicted values
+  [19, 21, 20] // forecast values
 );
 
 // Calculate residuals (actual - predicted)
@@ -174,7 +174,7 @@ const displayValue = formatFilterValue([10, 20]); // Returns "10 to 20"
 const displayFilter = formatFilter({
   field: 'age',
   operator: 'between',
-  value: [25, 40]
+  value: [25, 40],
 }); // Returns "age between 25 to 40"
 
 // Get appropriate input type for operator
@@ -188,13 +188,13 @@ const inputType = getInputTypeForOperator('between'); // Returns 'range'
 const passes = applyFilter(item, {
   field: 'type',
   operator: 'equals',
-  value: 'energy'
+  value: 'energy',
 });
 
 // Apply multiple filters (AND logic)
 const filteredData = applyFilters(data, [
   { field: 'type', operator: 'equals', value: 'energy' },
-  { field: 'amount', operator: 'greaterThan', value: 50 }
+  { field: 'amount', operator: 'greaterThan', value: 50 },
 ]);
 
 // Apply complex filters with AND/OR logic
@@ -202,14 +202,14 @@ const complexFilteredData = applyComplexFilter(data, {
   type: 'or',
   filters: [
     { field: 'type', operator: 'equals', value: 'energy' },
-    { 
+    {
       type: 'and',
       filters: [
         { field: 'type', operator: 'equals', value: 'minerals' },
-        { field: 'quality', operator: 'greaterThan', value: 75 }
-      ]
-    }
-  ]
+        { field: 'quality', operator: 'greaterThan', value: 75 },
+      ],
+    },
+  ],
 });
 ```
 

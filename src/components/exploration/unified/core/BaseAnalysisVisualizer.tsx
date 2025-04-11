@@ -166,9 +166,18 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
 
   // Default renderers for visualization types
   const defaultRenderers: Record<VisualizationType, VisualizationRenderer> = {
-    bar: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+    bar: (
+      data: Record<string, unknown>,
+      chartWidth: number,
+      chartHeight: number,
+      options?: VisualizationOptions
+    ) => {
       if (!Array.isArray(data)) {
-        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Bar Chart.</p>}><div /></VisualizationErrorBoundary>;
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Bar Chart.</p>}>
+            <div />
+          </VisualizationErrorBoundary>
+        );
       }
       return (
         <BarChartComponent
@@ -182,9 +191,18 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    line: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+    line: (
+      data: Record<string, unknown>,
+      chartWidth: number,
+      chartHeight: number,
+      options?: VisualizationOptions
+    ) => {
       if (!Array.isArray(data)) {
-        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Line Chart.</p>}><div /></VisualizationErrorBoundary>;
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Line Chart.</p>}>
+            <div />
+          </VisualizationErrorBoundary>
+        );
       }
       return (
         <LineChartComponent
@@ -198,9 +216,18 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    scatter: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+    scatter: (
+      data: Record<string, unknown>,
+      chartWidth: number,
+      chartHeight: number,
+      options?: VisualizationOptions
+    ) => {
       if (!Array.isArray(data)) {
-        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Scatter Plot.</p>}><div /></VisualizationErrorBoundary>;
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Scatter Plot.</p>}>
+            <div />
+          </VisualizationErrorBoundary>
+        );
       }
       return (
         <ScatterPlot
@@ -214,19 +241,28 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    pie: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+    pie: (
+      data: Record<string, unknown>,
+      chartWidth: number,
+      chartHeight: number,
+      options?: VisualizationOptions
+    ) => {
       if (!Array.isArray(data)) {
-        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Pie Chart.</p>}><div /></VisualizationErrorBoundary>;
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Pie Chart.</p>}>
+            <div />
+          </VisualizationErrorBoundary>
+        );
       }
       // Transform data into the ChartData format
       const chartData: ChartData = {
         datasets: [
           {
-            label: options?.title as string || 'Pie Chart Data',
+            label: (options?.title as string) || 'Pie Chart Data',
             // Assuming input data is like [{ label: string, value: number, color?: string }]
             data: data.map(item => ({
-              label: item.label as string || 'Unknown', 
-              value: item.value as number || 0,
+              label: (item.label as string) || 'Unknown',
+              value: (item.value as number) || 0,
               color: item.color as string | undefined,
             })),
           },
@@ -248,21 +284,35 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    radar: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => (
+    radar: (
+      data: Record<string, unknown>,
+      width: number,
+      height: number,
+      options?: VisualizationOptions
+    ) => (
       // Reverted to placeholder as the generic Chart component does not support 'radar'
       <div className="flex h-full flex-col items-center justify-center">
-        <p className="italic text-gray-500">Radar chart placeholder</p>
-        <p className="text-xs italic text-gray-400">
+        <p className="text-gray-500 italic">Radar chart placeholder</p>
+        <p className="text-xs text-gray-400 italic">
           (Data: {typeof data}, Size: {width}x{height}, Colors: {options?.colors?.length ?? 0})
         </p>
       </div>
     ),
 
-    heatmap: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+    heatmap: (
+      data: Record<string, unknown>,
+      chartWidth: number,
+      chartHeight: number,
+      options?: VisualizationOptions
+    ) => {
       // Heatmap expects data structured differently, often a grid or list of {x, y, value}
       // We'll assume data is already in a suitable format or pre-processed.
       if (!Array.isArray(data) && typeof data !== 'object') {
-        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Heatmap.</p>}><div /></VisualizationErrorBoundary>;
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Heatmap.</p>}>
+            <div />
+          </VisualizationErrorBoundary>
+        );
       }
       // Heatmap component might expect an array, handle object data if necessary
       const heatmapData = Array.isArray(data) ? data : Object.values(data || {});
@@ -281,7 +331,12 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    network: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => {
+    network: (
+      data: Record<string, unknown>,
+      width: number,
+      height: number,
+      options?: VisualizationOptions
+    ) => {
       // Validate data structure for network graph
       const networkData = data as { nodes?: NetworkNode[]; edges?: NetworkEdge[] }; // Type assertion
       if (
@@ -293,7 +348,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
         return (
           <VisualizationErrorBoundary fallback={<p>Invalid data format for Network Graph.</p>}>
             <div className="flex h-full items-center justify-center text-red-500">
-              Invalid data format for Network Graph. Expected object with 'nodes' and 'edges' arrays.
+              Invalid data format for Network Graph. Expected object with 'nodes' and 'edges'
+              arrays.
             </div>
           </VisualizationErrorBoundary>
         );
@@ -319,10 +375,10 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                   Property
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                   Value
                 </th>
               </tr>
@@ -330,8 +386,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
             <tbody className="divide-y divide-gray-200 bg-white">
               {keys.map(key => (
                 <tr key={key}>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{key}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{key}</td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                     {formatValue(data[key])}
                   </td>
                 </tr>
@@ -342,11 +398,17 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    custom: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => (
+    custom: (
+      data: Record<string, unknown>,
+      width: number,
+      height: number,
+      options?: VisualizationOptions
+    ) => (
       <div className="flex h-full flex-col items-center justify-center">
-        <p className="italic text-gray-500">Custom visualization placeholder</p>
-        <p className="text-xs italic text-gray-400">
-          (Data: {typeof data}, Size: {width}x{height}, CustomOption: {String(options?.customProp ?? 'N/A')})
+        <p className="text-gray-500 italic">Custom visualization placeholder</p>
+        <p className="text-xs text-gray-400 italic">
+          (Data: {typeof data}, Size: {width}x{height}, CustomOption:{' '}
+          {String(options?.customProp ?? 'N/A')})
         </p>
       </div>
     ),
@@ -442,7 +504,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
     if (!insights || insights.length === 0) {
       return (
         <div className="rounded-md bg-gray-50 p-4">
-          <p className="italic text-gray-500">No insights available for this analysis.</p>
+          <p className="text-gray-500 italic">No insights available for this analysis.</p>
         </div>
       );
     }

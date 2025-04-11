@@ -255,105 +255,6 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
 };
 
 /**
- * Helper functions for resource type conversions
- */
-export const ResourceTypeHelpers = {
-  /**
-   * Convert string to enum
-   * @param type String representation of resource type
-   * @returns ResourceType enum value
-   */
-  stringToEnum(type: ResourceTypeString): ResourceType {
-    const mapping: Record<ResourceTypeString, ResourceType> = {
-      MINERALS: ResourceType.MINERALS,
-      ENERGY: ResourceType.ENERGY,
-      POPULATION: ResourceType.POPULATION,
-      RESEARCH: ResourceType.RESEARCH,
-      PLASMA: ResourceType.PLASMA,
-      GAS: ResourceType.GAS,
-      EXOTIC: ResourceType.EXOTIC,
-      ORGANIC: ResourceType.ORGANIC,
-      FOOD: ResourceType.FOOD,
-      IRON: ResourceType.IRON,
-      COPPER: ResourceType.COPPER,
-      TITANIUM: ResourceType.TITANIUM,
-      URANIUM: ResourceType.URANIUM,
-      WATER: ResourceType.WATER,
-      HELIUM: ResourceType.HELIUM,
-      DEUTERIUM: ResourceType.DEUTERIUM,
-      ANTIMATTER: ResourceType.ANTIMATTER,
-      DARK_MATTER: ResourceType.DARK_MATTER,
-      EXOTIC_MATTER: ResourceType.EXOTIC_MATTER,
-    };
-    return mapping[type] || ResourceType.MINERALS;
-  },
-
-  /**
-   * Convert enum to string
-   * @param type ResourceType enum value
-   * @returns String representation of resource type
-   */
-  enumToString(type: ResourceType): ResourceTypeString {
-    const mapping: Record<ResourceType, ResourceTypeString> = {
-      [ResourceType.MINERALS]: 'MINERALS',
-      [ResourceType.ENERGY]: 'ENERGY',
-      [ResourceType.POPULATION]: 'POPULATION',
-      [ResourceType.RESEARCH]: 'RESEARCH',
-      [ResourceType.PLASMA]: 'PLASMA',
-      [ResourceType.GAS]: 'GAS',
-      [ResourceType.EXOTIC]: 'EXOTIC',
-      [ResourceType.ORGANIC]: 'ORGANIC',
-      [ResourceType.FOOD]: 'FOOD',
-      [ResourceType.IRON]: 'IRON',
-      [ResourceType.COPPER]: 'COPPER',
-      [ResourceType.TITANIUM]: 'TITANIUM',
-      [ResourceType.URANIUM]: 'URANIUM',
-      [ResourceType.WATER]: 'WATER',
-      [ResourceType.HELIUM]: 'HELIUM',
-      [ResourceType.DEUTERIUM]: 'DEUTERIUM',
-      [ResourceType.ANTIMATTER]: 'ANTIMATTER',
-      [ResourceType.DARK_MATTER]: 'DARK_MATTER',
-      [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
-    };
-    return mapping[type];
-  },
-
-  /**
-   * Get metadata for a resource type
-   * @param type ResourceType enum or string
-   * @returns Metadata for the resource type
-   */
-  getMetadata(type: ResourceType | ResourceTypeString): ResourceTypeMetadata {
-    if (typeof type === 'string') {
-      // Convert string to enum
-      type = this.stringToEnum(type as ResourceTypeString);
-    }
-    return ResourceTypeInfo[type];
-  },
-
-  /**
-   * Get display name for a resource type
-   * @param type ResourceType enum or string
-   * @returns Display name for the resource type
-   */
-  getDisplayName(type: ResourceType | ResourceTypeString): string {
-    return this.getMetadata(type).displayName;
-  },
-};
-
-/**
- * Standard resource interface
- */
-export interface StandardResource {
-  id: string;
-  name: string;
-  type: ResourceType;
-  category: ResourceCategory;
-  description?: string;
-  icon?: string;
-}
-
-/**
  * Resource state class for managing resource amounts
  */
 export class ResourceStateClass {
@@ -375,7 +276,7 @@ export class ResourceStateClass {
     // Convert string type to enum if needed
     this._type =
       typeof data?.type === 'string'
-        ? ResourceTypeHelpers.stringToEnum(data?.type as ResourceTypeString)
+        ? ResourceTypeInfo[data?.type as ResourceTypeString].id
         : data?.type;
 
     // Set default values from metadata
@@ -384,7 +285,6 @@ export class ResourceStateClass {
     this._max = data?.max ?? metadata?.defaultMax;
     this._min = data?.min ?? 0;
     this._production = data?.production ?? 0;
-    this._consumption = data?.consumption ?? 0;
   }
 
   get current(): number {
@@ -474,6 +374,7 @@ export class ResourceStateClass {
  */
 export interface ResourceState {
   current: number;
+  capacity: number;
   max: number;
   min: number;
   production: number;
@@ -694,12 +595,31 @@ export interface ResourcePool {
 
 // Export types from ResourceConversionTypes.ts
 export type {
-    ChainExecutionStatus,
-    ConversionChain,
-    ConverterFlowNode,
-    ConverterNodeConfig,
-    ConverterStatus,
-    ExtendedResourceConversionRecipe,
-    ResourceConversionProcess
+  ChainExecutionStatus,
+  ConversionChain,
+  ConverterFlowNode,
+  ConverterNodeConfig,
+  ConverterStatus,
+  ExtendedResourceConversionRecipe,
+  ResourceConversionProcess,
 } from './ResourceConversionTypes';
 
+/**
+ * Standard resource interface
+ */
+export interface StandardResource {
+  id: string;
+  name: string;
+  type: ResourceType;
+  category: ResourceCategory;
+  description?: string;
+  icon?: string;
+}
+
+/**
+ * Represents a quantity of a specific resource.
+ */
+export type ResourceQuantity = {
+  type: ResourceType;
+  amount: number;
+};

@@ -1,6 +1,6 @@
 /**
  * @context: state-system, migration
- * 
+ *
  * State migration utilities for handling schema changes between application versions.
  * These utilities allow for seamless migration of stored state when the schema changes,
  * with support for validation, type checking, and complex transformations.
@@ -104,7 +104,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
 
   // Store migrations by target version
   const migrationsByVersion = new Map<number, MigrationStep<T>>();
-  
+
   // Initialize with provided migrations
   initialMigrations.forEach(migration => {
     migrationsByVersion.set(migration.toVersion, migration);
@@ -121,7 +121,11 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
    * Chain another migration step
    */
   const createStepChainer = (currentVersion: number) => {
-    const addStep = (nextVersion: number, nextMigrateFn: MigrationFn<T>, nextDescription?: string) => {
+    const addStep = (
+      nextVersion: number,
+      nextMigrateFn: MigrationFn<T>,
+      nextDescription?: string
+    ) => {
       if (nextVersion <= currentVersion) {
         throw new Error(
           `Invalid migration chain: version ${nextVersion} is not greater than ${currentVersion}`
@@ -130,17 +134,23 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
       registerMigration(nextVersion, nextMigrateFn, nextDescription);
       return { addStep };
     };
-    
+
     return { addStep };
   };
 
   /**
    * Register a migration for a specific version
    */
-  const registerMigration = (toVersion: number, migrateFn: MigrationFn<T>, description?: string) => {
+  const registerMigration = (
+    toVersion: number,
+    migrateFn: MigrationFn<T>,
+    description?: string
+  ) => {
     // Validate version
     if (typeof toVersion !== 'number' || toVersion <= 0) {
-      throw new Error(`Invalid migration version: ${toVersion}. Version must be a positive number.`);
+      throw new Error(
+        `Invalid migration version: ${toVersion}. Version must be a positive number.`
+      );
     }
 
     // Check if a migration already exists for this version
@@ -201,7 +211,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
       // Check if we have migrations to apply
       if (applicableMigrations.length === 0) {
         log(`No migrations available from version ${fromVersion} to ${currentVersion}`);
-        
+
         // Just validate and return if there are no migrations
         if (schemaValidator && !schemaValidator(state)) {
           throw new MigrationError(
@@ -210,28 +220,30 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
             'Schema validation failed for current version'
           );
         }
-        
+
         if (!validate(state as T)) {
-          throw new MigrationError(
-            fromVersion,
-            currentVersion,
-            'State validation failed'
-          );
+          throw new MigrationError(fromVersion, currentVersion, 'State validation failed');
         }
-        
+
         return state as T;
       }
 
       // Apply migrations in sequence
       let migratedState = state;
       for (const migration of applicableMigrations) {
-        log(`Applying migration to version ${migration.toVersion}${migration.description ? `: ${migration.description}` : ''}`);
-        
+        log(
+          `Applying migration to version ${migration.toVersion}${migration.description ? `: ${migration.description}` : ''}`
+        );
+
         try {
           migratedState = migration.migrate(migratedState);
-          
+
           // Validate the intermediate state if requested
-          if (migration.toVersion === currentVersion && schemaValidator && !schemaValidator(migratedState)) {
+          if (
+            migration.toVersion === currentVersion &&
+            schemaValidator &&
+            !schemaValidator(migratedState)
+          ) {
             throw new MigrationError(
               fromVersion,
               migration.toVersion,
@@ -242,7 +254,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
           if (error instanceof MigrationError) {
             throw error;
           }
-          
+
           throw new MigrationError(
             fromVersion,
             migration.toVersion,
@@ -254,11 +266,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
 
       // Validate the final state
       if (!validate(migratedState as T)) {
-        throw new MigrationError(
-          fromVersion,
-          targetVersion,
-          'Final state validation failed'
-        );
+        throw new MigrationError(fromVersion, targetVersion, 'Final state validation failed');
       }
 
       // Log performance information
@@ -270,12 +278,12 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
       return migratedState as T;
     } catch (error) {
       log('Migration failed', error);
-      
+
       // Call onError handler if provided
       if (onError && error instanceof Error) {
         onError(error, state, fromVersion);
       }
-      
+
       // Re-throw the error
       throw error;
     }
@@ -300,17 +308,17 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
     if (version === currentVersion) {
       return true;
     }
-    
+
     // Check if we have all required migrations to get from version to current
     const versions = Array.from(migrationsByVersion.keys()).sort((a, b) => a - b);
     let lastVersion = version;
-    
+
     for (const migrationVersion of versions) {
       if (migrationVersion > lastVersion && migrationVersion <= currentVersion) {
         lastVersion = migrationVersion;
       }
     }
-    
+
     return lastVersion === currentVersion;
   };
 
@@ -386,11 +394,11 @@ export function renameProperty<T extends Record<string, unknown>, K extends stri
   newKey: K
 ): Omit<T, typeof oldKey> & Record<K, unknown> {
   const { [oldKey]: value, ...rest } = state;
-  
+
   // Create the new object with properly typed properties
   const result = rest as Omit<T, typeof oldKey>;
   (result as Record<string, unknown>)[newKey] = value;
-  
+
   return result as Omit<T, typeof oldKey> & Record<K, unknown>;
 }
 
@@ -422,16 +430,13 @@ export function transformProperty<T extends Record<string, unknown>, K extends k
 /**
  * Deep merge two objects
  */
-export function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  source: Partial<T>
-): T {
+export function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
   const output = { ...target };
-  
+
   Object.keys(source).forEach(key => {
     const sourceKey = key as keyof typeof source;
     const targetKey = key as keyof typeof target;
-    
+
     if (
       source[sourceKey] !== null &&
       typeof source[sourceKey] === 'object' &&
@@ -450,7 +455,7 @@ export function deepMerge<T extends Record<string, unknown>>(
       output[targetKey] = source[sourceKey] as T[keyof T];
     }
   });
-  
+
   return output;
 }
 
@@ -465,7 +470,7 @@ export function addToArray<T extends Record<string, unknown>, K extends keyof T,
   if (!Array.isArray(state[key])) {
     throw new Error(`Property ${String(key)} is not an array`);
   }
-  
+
   return {
     ...state,
     [key]: [...(state[key] as unknown[]), item],
@@ -483,7 +488,7 @@ export function filterArray<T extends Record<string, unknown>, K extends keyof T
   if (!Array.isArray(state[key])) {
     throw new Error(`Property ${String(key)} is not an array`);
   }
-  
+
   return {
     ...state,
     [key]: (state[key] as unknown[]).filter(predicate),
@@ -501,7 +506,7 @@ export function mapArray<T extends Record<string, unknown>, K extends keyof T, V
   if (!Array.isArray(state[key])) {
     throw new Error(`Property ${String(key)} is not an array`);
   }
-  
+
   return {
     ...state,
     [key]: (state[key] as unknown[]).map(mapper),
@@ -518,22 +523,24 @@ export function createMigrationChain<T>(
   return (state: unknown) => {
     // Sort migrations by version
     const sortedMigrations = [...migrations].sort((a, b) => a.toVersion - b.toVersion);
-    
+
     // Validate migration chain
     let lastVersion = fromVersion;
     for (const migration of sortedMigrations) {
       if (migration.toVersion <= lastVersion) {
-        throw new Error(`Invalid migration chain: version ${migration.toVersion} must be greater than ${lastVersion}`);
+        throw new Error(
+          `Invalid migration chain: version ${migration.toVersion} must be greater than ${lastVersion}`
+        );
       }
       lastVersion = migration.toVersion;
     }
-    
+
     // Apply migrations in sequence
     let result = state;
     for (const migration of sortedMigrations) {
       result = migration.transform(result);
     }
-    
+
     return result as T;
   };
 }

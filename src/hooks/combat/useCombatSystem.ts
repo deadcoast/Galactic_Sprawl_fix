@@ -3,6 +3,7 @@ import { getCombatManager } from '../../managers/ManagerRegistry';
 import { FleetFormation } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { CombatUnitStatus } from '../../types/events/CombatEvents';
+import { BaseEvent } from '../../types/events/EventTypes';
 
 /**
  * Enhanced combat system hook for managing fleet formations and tactics
@@ -231,3 +232,9 @@ export function useUnitCombat(unitId: string) {
     position: unitStatus?.position,
   };
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const handleDamageTaken = (_event: BaseEvent): void => {
+  // Placeholder: Update UI or trigger other effects when a unit takes damage
+  // Could update a unit's health bar, show damage numbers, etc.
+};

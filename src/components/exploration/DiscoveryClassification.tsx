@@ -395,13 +395,13 @@ export function DiscoveryClassification({
                     <div className="mb-3">
                       <div className="relative">
                         <Search
-                          className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400"
+                          className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
                           size={16}
                         />
                         <input
                           type="text"
                           placeholder="Search categories..."
-                          className="w-full rounded border py-2 pl-10 pr-4"
+                          className="w-full rounded border py-2 pr-4 pl-10"
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                         />

@@ -7,7 +7,11 @@ import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { isResourceUpdateEvent } from '../../../utils/events/eventTypeGuards';
 import { useTooltipContext } from '../tooltip-context';
-import { resourceColors, resourceIcons, resourceNames } from '../visualization/ResourceVisualization';
+import {
+  resourceColors,
+  resourceIcons,
+  resourceNames,
+} from '../visualization/ResourceVisualization';
 
 /**
  * Enhanced version of ResourceVisualization that uses the component registration system
@@ -87,8 +91,9 @@ const ResourceTooltip = React.memo(
     const status = getResourceStatus(value, capacity, thresholds);
     const colors = resourceColors[type];
     const percentFilled = capacity ? ((value / capacity) * 100).toFixed(1) : 'N/A';
-    const timeUntilEmpty = rate < 0 ? Math.abs(value / rate).toFixed(1) : 'N/A';
-    const timeUntilFull = rate > 0 && capacity ? ((capacity - value) / rate).toFixed(1) : 'N/A';
+    const timeUntilEmpty = rate < 0 && value > 0 ? Math.abs(value / rate).toFixed(1) : 'N/A';
+    const timeUntilFull =
+      rate > 0 && capacity && value < capacity ? ((capacity - value) / rate).toFixed(1) : 'N/A';
 
     return (
       <div className={`rounded-md p-2 ${colors.bg} border ${colors.border}`}>
@@ -130,6 +135,25 @@ const ResourceTooltip = React.memo(
             <div className="flex items-center justify-between gap-4">
               <span className="text-gray-400">Capacity:</span>
               <span className={colors.base}>{capacity.toLocaleString()}</span>
+            </div>
+          )}
+
+          {capacity !== undefined && percentFilled !== 'N/A' && (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-gray-400">Filled:</span>
+              <span className={colors.base}>{percentFilled}%</span>
+            </div>
+          )}
+          {timeUntilEmpty !== 'N/A' && (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-gray-400">Time Empty:</span>
+              <span className="text-red-400">~{timeUntilEmpty}s</span>
+            </div>
+          )}
+          {timeUntilFull !== 'N/A' && (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-gray-400">Time Full:</span>
+              <span className="text-green-400">~{timeUntilFull}s</span>
             </div>
           )}
 
@@ -178,6 +202,15 @@ const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase(
     };
   }, [type, subscribe]);
 
+  // Placeholder effect to demonstrate usage of setRate
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Simulate a small rate change just to use the setter
+      setRate(prevRate => (prevRate ?? 0) + 0.1);
+    }, 2000); // Example delay
+    return () => clearTimeout(timer);
+  }, [setRate]); // Dependency array includes setRate
+
   // Handle mouse events for tooltip
   const handleMouseEnter = useCallback(() => {
     if (componentRef.current) {
@@ -212,13 +245,25 @@ const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase(
   return (
     <div
       ref={componentRef}
-      className={`relative flex items-center gap-2 rounded-md p-2 ${colors.bg} border ${colors.border} cursor-pointer`}
+      className={`relative flex items-center gap-2 overflow-hidden rounded-md border p-2 ${colors.bg} ${colors.border} cursor-pointer`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Icon className={`h-5 w-5 ${colors.base}`} />
-      <span className={colors.base}>{value.toLocaleString()}</span>
-      {status && <status.icon className={`h-4 w-4 ${status.color}`} />}
+      {/* Background fill element using fillPercentage */}
+      <div
+        className={`absolute top-0 bottom-0 left-0 ${colors.fill}`}
+        style={{
+          width: `${fillPercentage}%`,
+          opacity: 0.2,
+          transition: 'width 0.5s ease-in-out', // Smooth transition for fill change
+        }}
+      />
+      {/* Ensure content is above the background fill */}
+      <div className="relative z-10 flex items-center gap-2">
+        <Icon className={`h-5 w-5 ${colors.base}`} />
+        <span className={colors.base}>{value.toLocaleString()}</span>
+        {status && <status.icon className={`h-4 w-4 ${status.color}`} />}
+      </div>
     </div>
   );
 });

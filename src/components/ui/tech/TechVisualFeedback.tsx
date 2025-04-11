@@ -203,8 +203,7 @@ export function TechVisualFeedback({
   const [activeNodes, setActiveNodes] = useState<string[]>([]);
   const [techPath, setTechPath] = useState<TechPath | null>(null);
   const [synergies, setSynergies] = useState<SynergyVisualizationProps[]>([]);
-  const techTreeManager = getTechTreeManager();
-  
+
   // Calculate node position for connections
   useEffect(() => {
     if (nodeRef.current) {
@@ -214,15 +213,15 @@ export function TechVisualFeedback({
       setNodePosition({ x, y });
     }
   }, [nodeRef.current, isSelected]);
-  
+
   // Set up research progress tracking
   useEffect(() => {
     const techTreeManager = getTechTreeManager();
-    
+
     // Check if this node is being researched
     const activeResearch = techTreeManager.getActiveResearch();
     const researchData = activeResearch.get(node.id);
-    
+
     if (researchData) {
       setResearchActive(true);
       setResearchProgress(researchData.progress);
@@ -231,43 +230,47 @@ export function TechVisualFeedback({
       setResearchActive(false);
       setResearchProgress(node.researchProgress || 0);
     }
-    
+
     // Subscribe to research progress events
-    const handleResearchProgress = (data: { nodeId: string; progress: number; remainingTime: number }) => {
+    const handleResearchProgress = (data: {
+      nodeId: string;
+      progress: number;
+      remainingTime: number;
+    }) => {
       if (data.nodeId === node.id) {
         setResearchActive(true);
         setResearchProgress(data.progress);
         setRemainingTime(data.remainingTime);
       }
     };
-    
+
     const handleResearchCompleted = (data: { nodeId: string }) => {
       if (data.nodeId === node.id) {
         setResearchActive(false);
         setResearchProgress(1);
       }
     };
-    
+
     techTreeManager.on('researchProgress', handleResearchProgress);
     techTreeManager.on('researchCompleted', handleResearchCompleted);
-    
+
     return () => {
       techTreeManager.off('researchProgress', handleResearchProgress);
       techTreeManager.off('researchCompleted', handleResearchCompleted);
     };
   }, [node.id]);
-  
+
   // Get synergy information
   useEffect(() => {
     if (showSynergies) {
       const techTreeManager = getTechTreeManager();
       const activeSynergies = techTreeManager.getActiveSynergies();
-      
+
       const nodeSynergies: SynergyVisualizationProps[] = [];
-      
+
       activeSynergies.forEach((strength, synergyPair) => {
         const [sourceId, targetId] = synergyPair.split('-');
-        
+
         if (sourceId === node.id || targetId === node.id) {
           nodeSynergies.push({
             sourceNodeId: sourceId,
@@ -276,20 +279,22 @@ export function TechVisualFeedback({
           });
         }
       });
-      
+
       setSynergies(nodeSynergies);
     }
   }, [node.id, showSynergies]);
-  
+
   // Get path planning information
   useEffect(() => {
     if (showPath && isSelected && !node.unlocked) {
       const techTreeManager = getTechTreeManager();
       const path = techTreeManager.findOptimalPath(node.id);
       setTechPath(path);
-      
+
       if (path) {
         setActiveNodes(path.nodes);
+      } else {
+        setActiveNodes([]);
       }
     } else {
       setTechPath(null);
@@ -301,19 +306,19 @@ export function TechVisualFeedback({
     if (node.unlocked) {
       return 'bg-gradient-to-br from-green-400 to-green-700';
     }
-    
+
     if (researchActive) {
       return 'bg-gradient-to-br from-yellow-400 to-yellow-600';
     }
-    
+
     if (isAvailable) {
       return 'bg-gradient-to-br from-blue-400 to-blue-700';
     }
-    
+
     if (techPath && techPath.nodes.includes(node.id)) {
       return 'bg-gradient-to-br from-purple-400 to-purple-700';
     }
-    
+
     return 'bg-gradient-to-br from-gray-400 to-gray-700';
   };
 
@@ -369,32 +374,33 @@ export function TechVisualFeedback({
       );
     });
   };
-  
+
   const renderSynergies = () => {
     if (!showSynergies || synergies.length === 0) {
       return null;
     }
-    
+
     return (
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="pointer-events-none absolute inset-0">
         {synergies.map((synergy, index) => {
           // Find the other node
-          const otherNodeId = synergy.sourceNodeId === node.id ? synergy.targetNodeId : synergy.sourceNodeId;
+          const otherNodeId =
+            synergy.sourceNodeId === node.id ? synergy.targetNodeId : synergy.sourceNodeId;
           const otherNodeElement = document.querySelector(`[data-node-id="${otherNodeId}"]`);
-          
+
           if (!otherNodeElement) {
             return null;
           }
-          
+
           const rect = otherNodeElement.getBoundingClientRect();
           const otherNodePosition = {
             x: rect.left + rect.width / 2,
             y: rect.top + rect.height / 2,
           };
-          
+
           // Draw synergy line
           return (
-            <SynergyLine 
+            <SynergyLine
               key={`synergy-${index}`}
               from={nodePosition}
               to={otherNodePosition}
@@ -405,35 +411,35 @@ export function TechVisualFeedback({
       </div>
     );
   };
-  
+
   const renderPathInfo = () => {
     if (!showPath || !techPath || techPath.nodes.length === 0) {
       return null;
     }
-    
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
-        className="absolute top-full mt-2 p-3 bg-black bg-opacity-80 rounded-lg z-20 text-xs text-white max-w-xs"
+        className="bg-opacity-80 absolute top-full z-20 mt-2 max-w-xs rounded-lg bg-black p-3 text-xs text-white"
       >
-        <h4 className="font-bold text-sm mb-1">Research Path</h4>
-        <div className="flex items-center mb-2">
-          <span className="text-gray-300 mr-2">Time:</span>
+        <h4 className="mb-1 text-sm font-bold">Research Path</h4>
+        <div className="mb-2 flex items-center">
+          <span className="mr-2 text-gray-300">Time:</span>
           <span>{Math.round(techPath.totalResearchTime / 60)} minutes</span>
         </div>
         {techPath.synergyBonus > 0 && (
-          <div className="flex items-center mb-2">
-            <span className="text-gray-300 mr-2">Synergy Bonus:</span>
+          <div className="mb-2 flex items-center">
+            <span className="mr-2 text-gray-300">Synergy Bonus:</span>
             <span className="text-green-400">+{Math.round(techPath.synergyBonus * 100)}%</span>
           </div>
         )}
         <div className="mt-2">
-          <h5 className="font-semibold mb-1">Steps:</h5>
-          <ol className="list-decimal list-inside">
+          <h5 className="mb-1 font-semibold">Steps:</h5>
+          <ol className="list-inside list-decimal">
             {techPath.nodes.map((nodeId, index) => {
-              const pathNode = techTreeManager.getNode(nodeId);
+              const pathNode = getTechTreeManager().getNode(nodeId);
               if (!pathNode) return null;
               return (
                 <li key={`path-${index}`} className="mb-1">
@@ -452,13 +458,15 @@ export function TechVisualFeedback({
       <motion.div
         data-node-id={node.id}
         className={cn(
-          'relative p-3 rounded-lg shadow-lg',
+          'relative rounded-lg p-3 shadow-lg transition-all duration-200 ease-in-out',
           getNodeColor(),
           {
-            'ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900': isSelected,
+            'ring-opacity-75 ring-4 shadow-blue-500/50 ring-blue-500': isSelected,
             'cursor-pointer': isAvailable || node.unlocked,
-            'cursor-not-allowed opacity-50': !isAvailable && !node.unlocked,
-            'hover:scale-105': isAvailable || node.unlocked,
+            'cursor-not-allowed opacity-60 grayscale filter': !isAvailable && !node.unlocked,
+            'hover:scale-105 hover:shadow-xl': isAvailable || node.unlocked,
+            'animate-pulse-slow ring-2 ring-purple-400 ring-offset-1 ring-offset-gray-900':
+              activeNodes.includes(node.id) && !isSelected && !node.unlocked,
           }
         )}
         onMouseEnter={() => setHovered(true)}
@@ -467,35 +475,27 @@ export function TechVisualFeedback({
         whileHover={{ scale: isAvailable || node.unlocked ? 1.05 : 1 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex items-center mb-2">
-          <div
-            className={cn(
-              'p-1 rounded-full mr-2',
-              getIconColor()
-            )}
-          >
+        <div className="mb-2 flex items-center">
+          <div className={cn('mr-2 rounded-full p-1', getIconColor())}>
             {categoryIcons[node.category] || categoryIcons.special}
           </div>
-          <div className="text-white font-bold">{node.name}</div>
+          <div className="font-bold text-white">{node.name}</div>
         </div>
-        
+
         {showResearchProgress && (researchActive || researchProgress > 0) && (
-          <ResearchProgressIndicator 
+          <ResearchProgressIndicator
             progress={researchProgress}
-            totalTime={node.researchTime || 60}
             isActive={researchActive}
             remainingTime={remainingTime}
           />
         )}
-        
-        {showDetails && (
-          <div className="text-gray-200 text-sm mt-2">{node.description}</div>
-        )}
-        
+
+        {showDetails && <div className="mt-2 text-sm text-gray-200">{node.description}</div>}
+
         <div className="absolute top-0 right-0 p-1">
           <div
             className={cn(
-              'rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold',
+              'flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold',
               {
                 'bg-green-500 text-white': node.unlocked,
                 'bg-blue-500 text-white': !node.unlocked && isAvailable,
@@ -515,18 +515,18 @@ export function TechVisualFeedback({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute top-full mt-2 p-3 bg-black bg-opacity-80 rounded-lg z-20 text-xs text-white max-w-xs"
+            className="bg-opacity-80 absolute top-full z-20 mt-2 max-w-xs rounded-lg bg-black p-3 text-xs text-white"
           >
-            <h4 className="font-bold text-sm">{node.name}</h4>
+            <h4 className="text-sm font-bold">{node.name}</h4>
             <p className="mt-1">{node.description}</p>
             {!node.unlocked && (
               <div className="mt-2">
                 <div className="font-semibold">Requirements:</div>
-                <ul className="list-disc list-inside">
+                <ul className="list-inside list-disc">
                   {node.requirements.map((req, index) => {
-                    const reqNode = techTreeManager.getNode(req);
-                    const isUnlocked = techTreeManager.isUnlocked(req);
-                    
+                    const reqNode = getTechTreeManager().getNode(req);
+                    const isUnlocked = getTechTreeManager().isUnlocked(req);
+
                     return (
                       <li
                         key={`req-${index}`}
@@ -542,9 +542,9 @@ export function TechVisualFeedback({
             {node.synergyModifiers && Object.keys(node.synergyModifiers).length > 0 && (
               <div className="mt-2">
                 <div className="font-semibold">Synergies:</div>
-                <ul className="list-disc list-inside">
+                <ul className="list-inside list-disc">
                   {Object.entries(node.synergyModifiers).map(([targetId, value], index) => {
-                    const targetNode = techTreeManager.getNode(targetId);
+                    const targetNode = getTechTreeManager().getNode(targetId);
                     return (
                       <li key={`synergy-${index}`}>
                         {targetNode?.name || targetId}: +{Math.round(value * 100)}%
@@ -563,7 +563,7 @@ export function TechVisualFeedback({
 
       {/* Render connections */}
       {renderConnections()}
-      
+
       {/* Render synergies */}
       {renderSynergies()}
     </div>
@@ -589,7 +589,7 @@ export function TechConnectionLine({
   const dy = to.y - from.y;
   const length = Math.sqrt(dx * dx + dy * dy);
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-  
+
   // For partial progress, adjust the line length
   const adjustedLength = length * progress;
 
@@ -608,7 +608,7 @@ export function TechConnectionLine({
 
   return (
     <div
-      className="absolute pointer-events-none"
+      className="pointer-events-none absolute"
       style={{
         position: 'fixed',
         top: 0,
@@ -637,12 +637,10 @@ export function TechConnectionLine({
  */
 export function ResearchProgressIndicator({
   progress,
-  totalTime,
   isActive,
   remainingTime,
 }: {
   progress: number;
-  totalTime: number;
   isActive: boolean;
   remainingTime?: number;
 }) {
@@ -652,35 +650,26 @@ export function ResearchProgressIndicator({
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
-  
+
   return (
     <div className="mt-2">
-      <div className="flex items-center justify-between text-xs mb-1">
+      <div className="mb-1 flex items-center justify-between text-xs">
         <span className="text-white">Research Progress</span>
         {remainingTime !== undefined && (
-          <span className="text-white">
-            {formatTime(remainingTime)}
-          </span>
+          <span className="text-white">{formatTime(remainingTime)}</span>
         )}
       </div>
-      <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-700">
         <motion.div
-          className={cn(
-            "h-full rounded-full",
-            isActive ? "bg-yellow-500" : "bg-green-500"
-          )}
+          className={cn('h-full rounded-full', isActive ? 'bg-yellow-500' : 'bg-green-500')}
           initial={{ width: `${progress * 100}%` }}
-          animate={{ 
+          animate={{
             width: `${progress * 100}%`,
-            transition: { duration: isActive ? 1 : 0.5 }
+            transition: { duration: isActive ? 1 : 0.5 },
           }}
         />
       </div>
-      {isActive && (
-        <div className="text-xs text-yellow-300 mt-1 animate-pulse">
-          Researching...
-        </div>
-      )}
+      {isActive && <div className="mt-1 animate-pulse text-xs text-yellow-300">Researching...</div>}
     </div>
   );
 }
@@ -702,13 +691,13 @@ export function SynergyLine({
   const dy = to.y - from.y;
   const length = Math.sqrt(dx * dx + dy * dy);
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-  
+
   // Calculate line thickness based on strength
   const thickness = Math.max(2, Math.min(10, strength * 10));
-  
+
   return (
     <div
-      className="absolute pointer-events-none"
+      className="pointer-events-none absolute"
       style={{
         position: 'fixed',
         top: 0,
@@ -719,7 +708,7 @@ export function SynergyLine({
       }}
     >
       <motion.div
-        className="absolute bg-purple-400 origin-left"
+        className="absolute origin-left bg-purple-400"
         style={{
           left: from.x,
           top: from.y,
@@ -730,7 +719,7 @@ export function SynergyLine({
           opacity: 0.6,
         }}
         initial={{ opacity: 0 }}
-        animate={{ 
+        animate={{
           opacity: 0.6,
           boxShadow: `0 0 ${strength * 10}px ${strength * 3}px rgba(168, 85, 247, 0.5)`,
         }}
@@ -750,82 +739,72 @@ export function TechSynergyIndicator({
   activeNodeId: string;
 }) {
   const techTreeManager = getTechTreeManager();
-  const [synergies, setSynergies] = useState<Record<string, number>>({});
-  
+  const [synergyLines, setSynergyLines] = useState<
+    {
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+      strength: number;
+    }[]
+  >([]);
+
   useEffect(() => {
-    // Calculate synergies for active node
-    const activeSynergies: Record<string, number> = {};
-    
-    // Get the active node
     const activeNode = nodes.find(n => n.id === activeNodeId);
     if (!activeNode) return;
-    
-    // Calculate synergy strength for all other nodes
-    nodes.forEach(node => {
-      if (node.id !== activeNodeId && node.unlocked) {
-        const strength = calculateSynergyStrength(activeNode, node);
-        if (strength > 0) {
-          activeSynergies[node.id] = strength;
+
+    const lines: typeof synergyLines = [];
+    const activeNodeElement = document.querySelector(`[data-node-id="${activeNodeId}"]`);
+    if (!activeNodeElement) return;
+
+    const activeRect = activeNodeElement.getBoundingClientRect();
+    const activePosition = {
+      x: activeRect.left + activeRect.width / 2,
+      y: activeRect.top + activeRect.height / 2,
+    };
+
+    // Get active synergies from the manager
+    const activeSynergies = techTreeManager.getActiveSynergies();
+
+    nodes.forEach(otherNode => {
+      if (otherNode.id === activeNodeId) return;
+
+      // Check for synergy in both directions in the map
+      const synergyKey1 = `${activeNode.id}-${otherNode.id}`;
+      const synergyKey2 = `${otherNode.id}-${activeNode.id}`;
+      const synergyStrength =
+        activeSynergies.get(synergyKey1) ?? activeSynergies.get(synergyKey2) ?? 0;
+
+      if (synergyStrength > 0) {
+        const otherNodeElement = document.querySelector(`[data-node-id="${otherNode.id}"]`);
+        if (otherNodeElement) {
+          const otherRect = otherNodeElement.getBoundingClientRect();
+          const otherPosition = {
+            x: otherRect.left + otherRect.width / 2,
+            y: otherRect.top + otherRect.height / 2,
+          };
+
+          lines.push({
+            from: activePosition,
+            to: otherPosition,
+            strength: synergyStrength,
+          });
         }
       }
     });
-    
-    setSynergies(activeSynergies);
-  }, [nodes, activeNodeId]);
-  
-  const calculateSynergyStrength = (node1: TechNode, node2: TechNode): number => {
-    // Check if nodes have direct synergy via modifiers
-    if (node1.synergyModifiers?.[node2.id]) {
-      return node1.synergyModifiers[node2.id];
-    }
-    
-    if (node2.synergyModifiers?.[node1.id]) {
-      return node2.synergyModifiers[node1.id];
-    }
-    
-    // Check for category synergy
-    if (node1.category === node2.category) {
-      return 0.1; // 10% base synergy for same category
-    }
-    
-    // Special synergies for certain combinations
-    if (
-      (node1.category === 'weapons' && node2.category === 'warFleet') ||
-      (node1.category === 'warFleet' && node2.category === 'weapons')
-    ) {
-      return 0.15; // 15% synergy for weapons + warships
-    }
-    
-    return 0;
-  };
-  
-  if (Object.keys(synergies).length === 0) {
-    return null;
-  }
-  
+
+    setSynergyLines(lines);
+    // Dependency includes nodes array content and activeNodeId to recalculate if they change
+  }, [nodes, activeNodeId, techTreeManager]);
+
   return (
-    <div className="p-4 bg-gray-800 rounded-lg mt-4">
-      <h3 className="text-white font-bold mb-2">Synergies</h3>
-      <ul className="space-y-2">
-        {Object.entries(synergies).map(([nodeId, strength]) => {
-          const node = nodes.find(n => n.id === nodeId);
-          if (!node) return null;
-          
-          return (
-            <li key={nodeId} className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-2 p-1 rounded-full bg-purple-500">
-                  {categoryIcons[node.category]}
-                </div>
-                <span className="text-white">{node.name}</span>
-              </div>
-              <span className="text-purple-400 font-bold">
-                +{Math.round(strength * 100)}%
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="pointer-events-none absolute inset-0 z-0">
+      {synergyLines.map((line, index) => (
+        <SynergyLine
+          key={`indicator-synergy-${index}`}
+          from={line.from}
+          to={line.to}
+          strength={line.strength}
+        />
+      ))}
     </div>
   );
 }

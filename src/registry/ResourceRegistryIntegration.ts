@@ -6,7 +6,8 @@
  */
 
 import { ResourceType } from '../types/resources/ResourceTypes';
-import { ResourceTypeConverter } from '../utils/ResourceTypeConverter';
+// Import specific functions from the canonical converter
+import { stringToResourceType } from '../utils/resources/ResourceTypeConverter';
 import { RegistryEventData, ResourceRegistry } from './ResourceRegistry';
 
 // Forward declaration of ResourceFlowManager to avoid circular dependencies
@@ -29,6 +30,7 @@ interface ResourceFlowManager {
 export class ResourceRegistryIntegration {
   private static _instance: ResourceRegistryIntegration | null = null;
   private registry: ResourceRegistry;
+  private resourceFlowManager: ResourceFlowManager | null = null;
 
   /**
    * Get the singleton instance of ResourceRegistryIntegration
@@ -83,7 +85,7 @@ export class ResourceRegistryIntegration {
     // Example (pseudo-code):
     // const resourceStates = resourceFlowManager.getAllResourceStates();
     // resourceStates.forEach((state, resourceType) => {
-    //   const standardizedType = ResourceTypeConverter.stringToEnum(resourceType);
+    //   const standardizedType = stringToResourceType(resourceType);
     //   if (standardizedType) {
     //     // Update registry with availability information
     //     const metadata = this.registry.getResourceMetadata(standardizedType);
@@ -109,8 +111,8 @@ export class ResourceRegistryIntegration {
     // Example (pseudo-code):
     // const recipes = resourceFlowManager.getAllConversionRecipes();
     // recipes.forEach(recipe => {
-    //   const inputType = ResourceTypeConverter.stringToEnum(recipe.input.type);
-    //   const outputType = ResourceTypeConverter.stringToEnum(recipe.output.type);
+    //   const inputType = stringToResourceType(recipe.input.type);
+    //   const outputType = stringToResourceType(recipe.output.type);
     //
     //   if (inputType && outputType) {
     //     this.registry.setConversionRate(
@@ -140,8 +142,8 @@ export class ResourceRegistryIntegration {
     //   const conversionRates = this.registry.getAllConversionRates(sourceType);
     //
     //   conversionRates.forEach((rate, targetType) => {
-    //     const stringSourceType = ResourceTypeConverter.enumToString(sourceType);
-    //     const stringTargetType = ResourceTypeConverter.enumToString(targetType);
+    //     const stringSourceType = enumToStringResourceType(sourceType);
+    //     const stringTargetType = enumToStringResourceType(targetType);
     //
     //     if (stringSourceType && stringTargetType) {
     //       resourceFlowManager.setConversionRate(
@@ -162,7 +164,7 @@ export class ResourceRegistryIntegration {
    */
   public getResourceMetadata(resourceType: ResourceType | string): unknown {
     if (typeof resourceType === 'string') {
-      const enumType = ResourceTypeConverter.stringToEnum(resourceType);
+      const enumType = stringToResourceType(resourceType);
       if (!enumType) {
         return undefined;
       }
@@ -178,11 +180,14 @@ export class ResourceRegistryIntegration {
    * @param resourceType The resource type (string or enum)
    * @returns The display name or the resource type string if not found
    */
-  public getDisplayName(resourceType: ResourceType | string): ResourceType {
+  public getDisplayName(resourceType: ResourceType | string): string {
     if (typeof resourceType === 'string') {
-      const enumType = ResourceTypeConverter.stringToEnum(resourceType);
+      const enumType = stringToResourceType(resourceType);
       if (!enumType) {
-        return resourceType as ResourceType;
+        console.warn(
+          `[ResourceRegistryIntegration] Invalid resource type string provided to getDisplayName: ${resourceType}`
+        );
+        return resourceType;
       }
       return this.registry.getDisplayName(enumType);
     }
@@ -198,7 +203,7 @@ export class ResourceRegistryIntegration {
    */
   public getIcon(resourceType: ResourceType | string): string | undefined {
     if (typeof resourceType === 'string') {
-      const enumType = ResourceTypeConverter.stringToEnum(resourceType);
+      const enumType = stringToResourceType(resourceType);
       if (!enumType) {
         return undefined;
       }
@@ -219,7 +224,7 @@ export class ResourceRegistryIntegration {
     let enumType: ResourceType | undefined;
 
     if (typeof resourceType === 'string') {
-      enumType = ResourceTypeConverter.stringToEnum(resourceType);
+      enumType = stringToResourceType(resourceType);
       if (!enumType) {
         return false;
       }
@@ -242,7 +247,7 @@ export class ResourceRegistryIntegration {
     let enumType: ResourceType | undefined;
 
     if (typeof resourceType === 'string') {
-      enumType = ResourceTypeConverter.stringToEnum(resourceType);
+      enumType = stringToResourceType(resourceType);
       if (!enumType) {
         return false;
       }
@@ -273,7 +278,7 @@ export class ResourceRegistryIntegration {
     let enumType: ResourceType | undefined;
 
     if (typeof targetType === 'string') {
-      enumType = ResourceTypeConverter.stringToEnum(targetType);
+      enumType = stringToResourceType(targetType);
       if (!enumType) {
         return [];
       }
@@ -300,7 +305,7 @@ export class ResourceRegistryIntegration {
     let enumTargetType: ResourceType | undefined;
 
     if (typeof sourceType === 'string') {
-      enumSourceType = ResourceTypeConverter.stringToEnum(sourceType);
+      enumSourceType = stringToResourceType(sourceType);
       if (!enumSourceType) {
         return undefined;
       }
@@ -309,7 +314,7 @@ export class ResourceRegistryIntegration {
     }
 
     if (typeof targetType === 'string') {
-      enumTargetType = ResourceTypeConverter.stringToEnum(targetType);
+      enumTargetType = stringToResourceType(targetType);
       if (!enumTargetType) {
         return undefined;
       }
@@ -318,5 +323,46 @@ export class ResourceRegistryIntegration {
     }
 
     return this.registry.getConversionRate(enumSourceType, enumTargetType);
+  }
+
+  public setResourceFlowManager(manager: ResourceFlowManager): void {
+    this.resourceFlowManager = manager;
+  }
+
+  /**
+   * Integrates resource flow data into the registry.
+   * Requires ResourceFlowManager to be set.
+   * @param _resourceFlowManager - The ResourceFlowManager instance (unused, retained for potential future use).
+   */
+  public integrateResourceFlowData(_resourceFlowManager?: ResourceFlowManager): void {
+    if (!this.resourceFlowManager) {
+      console.warn('ResourceFlowManager not set. Cannot integrate flow data.');
+      return;
+    }
+    // Implementation of integrateResourceFlowData method
+  }
+
+  /**
+   * Example integration point for resource production data.
+   * @param _resourceFlowManager - The ResourceFlowManager instance (unused).
+   */
+  public integrateProductionData(_resourceFlowManager?: ResourceFlowManager): void {
+    if (!this.resourceFlowManager) {
+      console.warn('ResourceFlowManager not set. Cannot integrate production data.');
+      return;
+    }
+    // Implementation of integrateProductionData method
+  }
+
+  /**
+   * Example integration point for resource consumption data.
+   * @param _resourceFlowManager - The ResourceFlowManager instance (unused).
+   */
+  public integrateConsumptionData(_resourceFlowManager?: ResourceFlowManager): void {
+    if (!this.resourceFlowManager) {
+      console.warn('ResourceFlowManager not set. Cannot integrate consumption data.');
+      return;
+    }
+    // Implementation of integrateConsumptionData method
   }
 }

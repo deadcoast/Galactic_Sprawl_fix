@@ -235,7 +235,7 @@ export const DataHighlightVisualization: React.FC<DataHighlightVisualizationProp
     if (!showLegend) return null;
 
     return (
-      <div className="absolute bottom-2 right-2 rounded bg-black bg-opacity-70 p-2 text-xs text-white">
+      <div className="bg-opacity-70 absolute right-2 bottom-2 rounded bg-black p-2 text-xs text-white">
         <div className="flex flex-col gap-1">
           <div className="font-bold">Legend</div>
           <div className="flex items-center">

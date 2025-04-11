@@ -6,7 +6,7 @@ import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { EventType } from '../../../types/events/EventTypes';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 import './ResourceOptimizationSuggestions.css';
 
 // Define the ResourceRateDetail interface locally since it's not exported
@@ -35,13 +35,16 @@ interface ResourceOptimizationSuggestionsProps {
   onImplementSuggestion?: (suggestion: OptimizationSuggestion) => void;
 }
 
-// Helper function to get resource name for display
-const getResourceName = (resourceType: ResourceType | 'all'): string => {
+/**
+ * Formats a resource type for display, handling the special 'all' case.
+ */
+function formatResourceType(resourceType: ResourceType | 'all'): string {
   if (resourceType === 'all') {
     return 'All Resources';
   }
-  return ResourceTypeHelpers.getDisplayName(resourceType);
-};
+  // Use ResourceTypeInfo for enum types
+  return ResourceTypeInfo[resourceType]?.displayName ?? resourceType;
+}
 
 /**
  * Component that analyzes resource flows and provides optimization suggestions
@@ -205,7 +208,7 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
       <div className="suggestions-header">
         <h3>
           {focusedResource
-            ? `Optimization Suggestions for ${getResourceName(focusedResource)}`
+            ? `Optimization Suggestions for ${formatResourceType(focusedResource)}`
             : 'Global Optimization Suggestions'}
         </h3>
         <div className="suggestions-actions">
@@ -255,7 +258,9 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
                   <span className={`impact ${suggestion.impact}`}>
                     {suggestion.impact.charAt(0).toUpperCase() + suggestion.impact.slice(1)} Impact
                   </span>
-                  <span className="resource-type">{getResourceName(suggestion.resourceType)}</span>
+                  <span className="resource-type">
+                    {formatResourceType(suggestion.resourceType)}
+                  </span>
                 </div>
               </div>
               {suggestion.actionable && !suggestion.implemented && onImplementSuggestion && (

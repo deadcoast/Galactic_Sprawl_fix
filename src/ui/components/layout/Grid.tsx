@@ -1,23 +1,20 @@
 /**
  * @context: ui-system, ui-layout-system, component-library
- * 
+ *
  * Grid component for creating responsive grid layouts
  */
 import * as React from 'react';
 import { forwardRef, useMemo } from 'react';
-import { 
-  BaseComponentProps, 
-  LayoutComponentProps 
-} from '../../../types/ui/ComponentTypes';
+import { BaseComponentProps, LayoutComponentProps } from '../../../types/ui/ComponentTypes';
 
 /**
  * Grid template options
  */
 export enum GridTemplate {
-  EQUAL = 'equal',         // Equal width columns
-  AUTO = 'auto',           // Auto width based on content
+  EQUAL = 'equal', // Equal width columns
+  AUTO = 'auto', // Auto width based on content
   AUTO_FILL = 'auto-fill', // Auto fill available space
-  AUTO_FIT = 'auto-fit'    // Auto fit available space
+  AUTO_FIT = 'auto-fit', // Auto fit available space
 }
 
 /**
@@ -30,7 +27,7 @@ export enum GridAlignment {
   STRETCH = 'stretch',
   SPACE_BETWEEN = 'space-between',
   SPACE_AROUND = 'space-around',
-  SPACE_EVENLY = 'space-evenly'
+  SPACE_EVENLY = 'space-evenly',
 }
 
 /**
@@ -41,85 +38,85 @@ export interface GridProps extends BaseComponentProps, LayoutComponentProps {
    * Grid content
    */
   children: React.ReactNode;
-  
+
   /**
    * Number of columns
    * @default 12
    */
   columns?: number;
-  
+
   /**
    * Grid column gap
    * @default 16
    */
   columnGap?: number | string;
-  
+
   /**
    * Grid row gap
    * @default 16
    */
   rowGap?: number | string;
-  
+
   /**
    * Combined shorthand for row and column gap
    */
   gap?: number | string;
-  
+
   /**
    * HTML element to render
    * @default 'div'
    */
   as?: keyof JSX.IntrinsicElements;
-  
+
   /**
    * Minimum column width for auto templates
    * Used with AUTO_FILL and AUTO_FIT templates
    */
   minColumnWidth?: number | string;
-  
+
   /**
    * Grid template type
    * @default 'equal'
    */
   template?: GridTemplate | keyof typeof GridTemplate;
-  
+
   /**
    * Custom grid-template-columns CSS value
    * Overrides columns and template props
    */
   templateColumns?: string;
-  
+
   /**
    * Custom grid-template-rows CSS value
    */
   templateRows?: string;
-  
+
   /**
    * Horizontal alignment of grid items
    */
   alignItems?: GridAlignment | keyof typeof GridAlignment;
-  
+
   /**
    * Vertical alignment of grid items
    */
   justifyItems?: GridAlignment | keyof typeof GridAlignment;
-  
+
   /**
    * Horizontal alignment of the entire grid
    */
   justifyContent?: GridAlignment | keyof typeof GridAlignment;
-  
+
   /**
    * Vertical alignment of the entire grid
    */
   alignContent?: GridAlignment | keyof typeof GridAlignment;
-  
+
   /**
    * Whether the grid should take up the full height of its container
    * @default false
    */
   fullHeight?: boolean;
-  
+
   /**
    * Custom CSS grid-auto-flow value
    */
@@ -151,7 +148,7 @@ function getGridTemplateColumns(
   if (!template) {
     return `repeat(${columns}, 1fr)`;
   }
-  
+
   if (isGridTemplate(template)) {
     switch (template) {
       case GridTemplate.EQUAL:
@@ -172,78 +169,91 @@ function getGridTemplateColumns(
         return `repeat(${columns}, 1fr)`;
     }
   }
-  
+
   return `repeat(${columns}, 1fr)`;
 }
 
 /**
  * Grid component
- * 
+ *
  * Creates responsive grid layouts
  */
 export const Grid = forwardRef<HTMLElement, GridProps>(
-  ({
-    children,
-    columns = 12,
-    columnGap = 16,
-    rowGap = 16,
-    gap,
-    as = 'div',
-    minColumnWidth,
-    template = GridTemplate.EQUAL,
-    templateColumns,
-    templateRows,
-    alignItems,
-    justifyItems,
-    justifyContent,
-    alignContent,
-    fullHeight = false,
-    autoFlow,
-    className = '',
-    style,
-    id,
-    fullWidth,
-    padding,
-    paddingTop,
-    paddingRight,
-    paddingBottom,
-    paddingLeft,
-    margin,
-    marginTop,
-    marginRight,
-    marginBottom,
-    marginLeft,
-    display,
-    position,
-    'aria-labelledby': ariaLabelledBy,
-    'aria-label': ariaLabel,
-    'data-testid': dataTestId,
-  }, ref) => {
+  (
+    {
+      children,
+      columns = 12,
+      columnGap = 16,
+      rowGap = 16,
+      gap,
+      as = 'div',
+      minColumnWidth,
+      template = GridTemplate.EQUAL,
+      templateColumns,
+      templateRows,
+      alignItems,
+      justifyItems,
+      justifyContent,
+      alignContent,
+      fullHeight = false,
+      autoFlow,
+      className = '',
+      style,
+      id,
+      fullWidth,
+      padding,
+      paddingTop,
+      paddingRight,
+      paddingBottom,
+      paddingLeft,
+      margin,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
+      display,
+      position,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-label': ariaLabel,
+      'data-testid': dataTestId,
+    },
+    _ref
+  ) => {
     // Compute grid classes
     const gridClasses = useMemo(() => {
       return [
-              'gs-grid',
-              fullWidth ? 'gs-grid--full-width' : '',
-              fullHeight ? 'gs-grid--full-height' : '',
-              className
-            ].filter(Boolean).join(' ');
+        'gs-grid',
+        fullWidth ? 'gs-grid--full-width' : '',
+        fullHeight ? 'gs-grid--full-height' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ');
     }, [fullWidth, fullHeight, className]);
-    
+
     // Compute grid styles
     const gridStyles = useMemo(() => {
       // Calculate grid-template-columns based on props
-      const gridTemplateColumns = templateColumns || getGridTemplateColumns(template, columns, minColumnWidth);
-      
+      const gridTemplateColumns =
+        templateColumns || getGridTemplateColumns(template, columns, minColumnWidth);
+
       return {
         display: 'grid',
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         gap: gap !== undefined ? (typeof gap === 'number' ? `${gap}px` : gap) : undefined,
-        columnGap: gap === undefined ? (typeof columnGap === 'number' ? `${columnGap}px` : columnGap) : undefined,
-        rowGap: gap === undefined ? (typeof rowGap === 'number' ? `${rowGap}px` : rowGap) : undefined,
+        columnGap:
+          gap === undefined
+            ? typeof columnGap === 'number'
+              ? `${columnGap}px`
+              : columnGap
+            : undefined,
+        rowGap:
+          gap === undefined ? (typeof rowGap === 'number' ? `${rowGap}px` : rowGap) : undefined,
         alignItems: alignItems && isGridAlignment(alignItems) ? alignItems : undefined,
         justifyItems: justifyItems && isGridAlignment(justifyItems) ? justifyItems : undefined,
-        justifyContent: justifyContent && isGridAlignment(justifyContent) ? justifyContent : undefined,
+        justifyContent:
+          justifyContent && isGridAlignment(justifyContent) ? justifyContent : undefined,
         alignContent: alignContent && isGridAlignment(alignContent) ? alignContent : undefined,
         gridAutoFlow: autoFlow,
         height: fullHeight ? '100%' : undefined,
@@ -259,7 +269,7 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
         marginBottom,
         marginLeft,
         position,
-        ...style
+        ...style,
       };
     }, [
       template,
@@ -288,12 +298,12 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
       marginBottom,
       marginLeft,
       position,
-      style
+      style,
     ]);
-    
+
     // Render the component with the element specified by the 'as' prop
     const Component = as;
-    
+
     // Use createElement to avoid type issues
     return React.createElement(
       Component,
@@ -301,7 +311,15 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
         className: gridClasses,
         style: gridStyles,
         ...(as === 'div' ? { id } : {}),
-        ...(as === 'div' ? { 'aria-labelledby': ariaLabelledBy, 'aria-label': ariaLabel, 'data-testid': dataTestId } : {})
+        ...(as === 'div'
+          ? {
+              'aria-labelledby': ariaLabelledBy,
+              'aria-label': ariaLabel,
+              'data-testid': dataTestId,
+            }
+          : {}),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ref: _ref,
       },
       children
     );
@@ -310,4 +328,4 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
 
 Grid.displayName = 'Grid';
 
-export default Grid; 
+export default Grid;

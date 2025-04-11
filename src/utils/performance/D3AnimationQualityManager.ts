@@ -407,9 +407,9 @@ export class D3AnimationQualityManager {
         effectiveType: string;
       }
 
-      const {connection} = navigator as { connection?: NetworkInformation };
+      const { connection } = navigator as { connection?: NetworkInformation };
       if (connection) {
-        const {effectiveType} = connection;
+        const { effectiveType } = connection;
         if (effectiveType === '4g') {
           capabilities.connectionType = 'fast';
         } else if (effectiveType === '3g') {
@@ -447,7 +447,7 @@ export class D3AnimationQualityManager {
         deviceMemory?: number;
       }
 
-      const {deviceMemory} = navigator as NavigatorWithMemory;
+      const { deviceMemory } = navigator as NavigatorWithMemory;
       if (typeof deviceMemory === 'number') {
         // deviceMemory is in GB, normalize to 0-100 scale
         // Assuming 8GB as high-end, 16GB+ as maximum
@@ -630,9 +630,12 @@ export class D3AnimationQualityManager {
       // Get average FPS from recent history
       const avgFps =
         this.performanceState.fpsHistory.length > 0
-          ? this.performanceState.fpsHistory.reduce((sum, fps) => sum + fps, 0) /
+          ? this.performanceState.fpsHistory.reduce((a, b) => a + b, 0) /
             this.performanceState.fpsHistory.length
           : this.performanceState.currentFps;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _sum = this.performanceState.fpsHistory.reduce((a, b) => a + b, 0); // Prefixed
 
       const currentTierIndex = this.getTierIndex(this.performanceState.currentTier);
       const minAcceptableFps = this.config.minAcceptableFps || 30;

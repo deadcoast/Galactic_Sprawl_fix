@@ -4,6 +4,7 @@
  * This file contains types and interfaces for resource conversion functionality.
  */
 
+import { ProcessStatus } from './ProductionChainTypes';
 import { FlowNode, ResourceState, ResourceType } from './ResourceTypes';
 
 /**
@@ -11,6 +12,7 @@ import { FlowNode, ResourceState, ResourceType } from './ResourceTypes';
  */
 export interface ChainExecutionStatus {
   chainId: string;
+  executionId: string;
   active: boolean;
   paused: boolean;
   completed: boolean;
@@ -24,7 +26,7 @@ export interface ChainExecutionStatus {
   errorMessage?: string;
   stepStatus: Array<{
     recipeId: string;
-    status: 'pending' | 'in-progress' | 'in_progress' | 'completed' | 'failed' | 'paused';
+    status: ProcessStatus;
     startTime: number;
     endTime: number;
     processId: string;
@@ -51,10 +53,13 @@ export interface ConverterNodeConfig {
 }
 
 /**
- * Status of a converter node
+ * Represents the possible operational statuses of a converter node.
  */
-export interface ConverterStatus {
-  activeProcesses: string[]; // Process IDs
+export enum ConverterStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  ERROR = 'error',
+  // Add other relevant statuses like 'constructing', 'upgrading'? For now, keep simple.
 }
 
 /**
@@ -92,6 +97,7 @@ export interface ResourceConversionRecipe {
   requiredLevel: number;
   processingTime: number;
   baseEfficiency: number;
+  requiredTechnologyId?: string;
 }
 
 /**
@@ -114,6 +120,7 @@ export interface ExtendedResourceConversionRecipe {
   requiredLevel: number;
   processingTime: number;
   baseEfficiency: number;
+  requiredTechnologyId?: string;
 }
 
 /**
@@ -127,6 +134,7 @@ export interface ConverterFlowNode extends FlowNode {
   resources: Record<ResourceType, ResourceState>; // Align with base FlowNode
   configuration?: ConverterNodeConfig;
   tags?: string[];
+  activeProcessIds?: string[]; // Add array to track active processes
 }
 
 /**

@@ -977,6 +977,19 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
       svg.append('g').call(yAxis);
 
+      // Add tooltip div
+      const tooltip = svg
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('background', 'rgba(0,0,0,0.7)')
+        .style('color', 'white')
+        .style('padding', '5px 10px')
+        .style('border-radius', '4px')
+        .style('font-size', '12px')
+        .style('opacity', 0)
+        .style('pointer-events', 'none');
+
       // Add bars
       svg
         .selectAll('.bar')
@@ -984,50 +997,21 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', 0)
-        .attr('y', (_d, i) => {
-          const yPos = yScale(i.toString());
-          return yPos !== undefined ? yPos + barHeight / 2 : 0;
+        .attr('x', margin.left)
+        .attr('y', d => yScale(d.name) ?? 0)
+        .attr('width', d => Math.max(0, xScale(valueAccessor(d)))) // Ensure width is not negative
+        .attr('height', yScale.bandwidth())
+        .attr('fill', colorAccessor)
+        // Add tooltip events
+        .on('mouseover', (event, d) => {
+          tooltip.transition().duration(200).style('opacity', 0.9);
+          tooltip
+            .html(`<strong>${d.name}</strong><br/>${yAxisLabel}: ${valueAccessor(d).toFixed(2)}`)
+            .style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 15}px`);
         })
-        .attr('width', (d: ComponentPerformanceMetrics) => xScale(valueAccessor(d)))
-        .attr('height', barHeight)
-        .attr('fill', (d: ComponentPerformanceMetrics) => colorAccessor(d))
-        .attr('opacity', (d: ComponentPerformanceMetrics) => (d.isVisible ? 1 : 0.5))
-        .on('mouseover', function (_event: MouseEvent, d: ComponentPerformanceMetrics) {
-          // Show tooltip
-          const _tooltip = d3
-            .select('body')
-            .append('div')
-            .attr('class', 'component-tooltip')
-            .style('position', 'absolute')
-            .style('background', 'rgba(0,0,0,0.7)')
-            .style('color', 'white')
-            .style('padding', '5px')
-            .style('border-radius', '3px')
-            .style('font-size', '12px')
-            .style('pointer-events', 'none')
-            .html(
-              `
-              <div><strong>${d.name}</strong></div>
-              <div>${yAxisLabel}: ${valueAccessor(d).toFixed(2)}</div>
-              <div>Elements: ${d.elementCount}</div>
-              <div>Memory: ${d.memoryUsage.toFixed(2)} MB</div>
-            `
-            )
-            .style('left', `${_event?.pageX + 10}px`)
-            .style('top', `${_event?.pageY - 28}px`);
-
-          // Highlight bar
-          d3.select(this).attr('fill', '#4285F4');
-        })
-        .on('mouseout', function () {
-          // Remove tooltip
-          d3.select('.component-tooltip').remove();
-
-          // Restore bar color
-          d3.select(this).attr('fill', function (_d) {
-            return colorAccessor(_d as ComponentPerformanceMetrics);
-          });
+        .on('mouseout', () => {
+          tooltip.transition().duration(500).style('opacity', 0);
         });
     }
   };
@@ -1405,84 +1389,94 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
   const setupStackTraceCollection = () => {
     console.warn('Setting up stack trace collection');
 
-    // No direct setup needed - stack traces are collected when performance issues are detected
-
-    // Set up a periodic check for memory leaks
-    const memoryLeakInterval = setInterval(() => {
-      if (!isRecording) {
-        clearInterval(memoryLeakInterval);
-        return;
-      }
-
-      // Check for memory growth if the memory API is available
-      const windowWithPerformance = window as WindowWithPerformance;
-      if (windowWithPerformance.performance.memory) {
-        const _jsHeapSize = windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
-
-        // If we have enough data points, check for consistent memory growth
-        if (renderingPerformanceData.length > 10) {
-          const recentMemoryData = renderingPerformanceData
-            .slice(-10)
-            .map(d => d.jsHeapSize)
-            .filter((size): size is number => size !== undefined);
-
-          if (recentMemoryData.length > 5) {
-            // Check if memory has been consistently growing
-            let consistentGrowth = true;
-            for (let i = 1; i < recentMemoryData.length; i++) {
-              if (recentMemoryData[i] <= recentMemoryData[i - 1]) {
-                consistentGrowth = false;
-                break;
-              }
-            }
-
-            // Calculate growth rate
-            const growthRate =
-              (recentMemoryData[recentMemoryData.length - 1] - recentMemoryData[0]) /
-              recentMemoryData[0];
-
-            // If memory is consistently growing at a significant rate, create a performance issue
-            if (consistentGrowth && growthRate > 0.1) {
-              const now = performance.now();
-
-              // Create a performance issue for memory leak
-              const newIssue: PerformanceIssue = {
-                timestamp: now,
-                type: 'memory-leak',
-                severity: growthRate > 0.5 ? 'critical' : growthRate > 0.25 ? 'high' : 'medium',
-                description: `Potential memory leak detected: ${(growthRate * 100).toFixed(1)}% growth over ${recentMemoryData.length} samples`,
-                components: [],
-                stackTrace: getStackTrace(),
-                details: {
-                  initialMemory: recentMemoryData[0],
-                  currentMemory: recentMemoryData[recentMemoryData.length - 1],
-                  growthRate: growthRate,
-                  growthRatePercent: growthRate * 100,
-                  samples: recentMemoryData.length,
-                },
-              };
-
-              setPerformanceIssues(prev => [...prev, newIssue]);
-
-              // Trigger callback if provided
-              if (onIssueDetected) {
-                onIssueDetected(newIssue);
-              }
-            }
-          }
-        }
-      }
-    }, 5000); // Check every 5 seconds
-
-    // Store interval ID in window for cleanup
-    const windowWithPerformance = window as WindowWithPerformance;
+    // Example: Add global error handler to catch unhandled exceptions
     if (typeof window !== 'undefined') {
-      windowWithPerformance.memoryLeakInterval = memoryLeakInterval;
+      const originalOnError = window.onerror;
+
+      window.onerror = (message, source, lineno, colno, error) => {
+        const now = performance.now();
+        const stack = error?.stack || 'Stack trace unavailable';
+
+        // Create performance issue for unhandled error
+        const newIssue: PerformanceIssue = {
+          timestamp: now,
+          type: 'unhandled-exception',
+          severity: 'critical',
+          description: typeof message === 'string' ? message : 'Unhandled exception occurred',
+          components: [], // Determine component context if possible
+          stackTrace: stack,
+          details: {
+            source: `${source}:${lineno}:${colno}`,
+          },
+        };
+
+        setPerformanceIssues(prev => [...prev, newIssue]);
+
+        // Trigger callback if provided
+        if (onIssueDetected) {
+          onIssueDetected(newIssue);
+        }
+
+        // Call original error handler if it exists
+        if (originalOnError) {
+          return originalOnError.call(window, message, source, lineno, colno, error);
+        }
+
+        // Return false to prevent default browser error handling
+        return false;
+      };
     }
 
-    // Update issues list if visible
-    if (issuesListRef.current && activeTab === 'issues') {
-      updateIssuesList();
+    // Example: Monitor for potential memory leaks (simple example)
+    if (typeof window !== 'undefined') {
+      const win = window as WindowWithPerformance;
+
+      let lastHeapSize = 0;
+      let consecutiveIncreases = 0;
+
+      win.memoryLeakInterval = setInterval(() => {
+        if (!isRecording) return;
+
+        const currentHeapSize = win.performance.memory
+          ? win.performance.memory.usedJSHeapSize
+          : undefined;
+
+        if (currentHeapSize !== undefined) {
+          if (currentHeapSize > lastHeapSize) {
+            consecutiveIncreases++;
+          } else {
+            consecutiveIncreases = 0;
+          }
+
+          // If heap size increases for 5 consecutive checks, flag potential leak
+          if (consecutiveIncreases >= 5) {
+            const now = performance.now();
+
+            const newIssue: PerformanceIssue = {
+              timestamp: now,
+              type: 'potential-memory-leak',
+              severity: 'high',
+              description: `Potential memory leak detected (heap size increased ${consecutiveIncreases} times consecutively)`,
+              components: [],
+              stackTrace: 'N/A (Requires heap snapshot analysis)',
+              details: {
+                lastHeapSize: lastHeapSize / (1024 * 1024),
+                currentHeapSize: currentHeapSize / (1024 * 1024),
+                consecutiveIncreases,
+              },
+            };
+
+            setPerformanceIssues(prev => [...prev, newIssue]);
+            consecutiveIncreases = 0; // Reset after flagging
+
+            if (onIssueDetected) {
+              onIssueDetected(newIssue);
+            }
+          }
+
+          lastHeapSize = currentHeapSize;
+        }
+      }, 5000); // Check every 5 seconds
     }
   };
 
@@ -1821,34 +1815,6 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
     } else {
       return String(value);
     }
-  };
-
-  // Handle tab change
-  const _handleTabChange = (tab: 'rendering' | 'components' | 'dom' | 'issues') => {
-    setActiveTab(tab);
-  };
-
-  // Start recording performance data
-  const _startRecording = () => {
-    setIsRecording(true);
-
-    // TODO: Implement recording start logic
-  };
-
-  // Stop recording performance data
-  const _stopRecording = () => {
-    setIsRecording(false);
-
-    // TODO: Implement recording stop logic
-  };
-
-  // Get JS heap size if available
-  const _getJsHeapSize = (): number | undefined => {
-    const windowWithPerformance = window as WindowWithPerformance;
-    if (typeof performance !== 'undefined' && windowWithPerformance.performance.memory) {
-      return windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
-    }
-    return undefined;
   };
 
   // Return the component UI

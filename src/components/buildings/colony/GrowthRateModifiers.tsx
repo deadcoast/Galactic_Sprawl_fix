@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import {
-    Apple,
-    ChevronDown,
-    ChevronUp,
-    Heart,
-    Home,
-    Info,
-    Leaf,
-    Minus,
-    Plus,
-    Zap,
+  Apple,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  Home,
+  Info,
+  Leaf,
+  Minus,
+  Plus,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
@@ -39,7 +39,6 @@ interface GrowthRateModifiersProps {
  * Allows toggling modifiers on/off and adding/removing modifiers.
  */
 export function GrowthRateModifiers({
-  colonyId: _colonyId,
   baseGrowthRate,
   modifiers,
   onModifierToggle,
@@ -194,7 +193,7 @@ export function GrowthRateModifiers({
             >
               <div className="flex items-center space-x-2">
                 {getModifierIcon(type as GrowthModifier['type'])}
-                <span className="text-sm font-medium capitalize text-white">{type}</span>
+                <span className="text-sm font-medium text-white capitalize">{type}</span>
                 <span className="text-xs text-gray-400">
                   ({typeModifiers.filter(m => m.active).length}/{typeModifiers.length} active)
                 </span>
@@ -342,10 +341,10 @@ export function GrowthRateModifiers({
           <div className="relative h-full w-full">
             {/* Base Growth Rate Marker */}
             <div
-              className="absolute bottom-0 top-0 border-r border-dashed border-white/30"
+              className="absolute top-0 bottom-0 border-r border-dashed border-white/30"
               style={{ left: `${Math.min(100, baseGrowthRate * 1000)}%` }}
             >
-              <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-white"></div>
+              <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-white"></div>
             </div>
 
             {/* Effective Growth Rate Bar */}
@@ -362,7 +361,7 @@ export function GrowthRateModifiers({
               transition={{ duration: 1, ease: 'easeOut' }}
             >
               <div
-                className="absolute -right-1 -top-1 h-2 w-2 rounded-full"
+                className="absolute -top-1 -right-1 h-2 w-2 rounded-full"
                 style={{
                   backgroundColor:
                     effectiveGrowthRate > baseGrowthRate ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
@@ -388,7 +387,7 @@ export function GrowthRateModifiers({
                 return (
                   <div
                     key={modifier.id}
-                    className="absolute bottom-0 top-0 border-r border-dotted"
+                    className="absolute top-0 bottom-0 border-r border-dotted"
                     style={{
                       left: `${position}%`,
                       borderColor:

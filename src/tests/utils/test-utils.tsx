@@ -1,14 +1,14 @@
 /**
  * @context: ui-system, component-library, testing
- * 
+ *
  * Test utilities for rendering components with proper context and setup
  */
 
-import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
+import React, { ReactElement } from 'react';
+import { vi } from 'vitest';
+import { ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 /**
  * Mock for ErrorLoggingService
@@ -29,12 +29,9 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 /**
  * Custom render function that wraps the component with necessary providers
  */
-export function renderWithProviders(
-  ui: ReactElement,
-  options: CustomRenderOptions = {}
-) {
+export function renderWithProviders(ui: ReactElement, options: CustomRenderOptions = {}) {
   const { initialTheme = 'light', initialWidth = 1024, ...renderOptions } = options;
-  
+
   // Mock window size for responsive design testing
   if (initialWidth) {
     Object.defineProperty(window, 'innerWidth', {
@@ -42,11 +39,11 @@ export function renderWithProviders(
       configurable: true,
       value: initialWidth,
     });
-    
+
     // Trigger resize event if needed
     window.dispatchEvent(new Event('resize'));
   }
-  
+
   // Create wrapper with all required providers
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -54,7 +51,7 @@ export function renderWithProviders(
       <>{children}</>
     );
   };
-  
+
   // Return the rendered component with userEvent for testing interactions
   return {
     user: userEvent.setup(),
@@ -71,10 +68,10 @@ export function mockResizeObserver() {
     unobserve: vi.fn(),
     disconnect: vi.fn(),
   }));
-  
+
   // Replace global ResizeObserver
   window.ResizeObserver = resizeObserverMock;
-  
+
   return resizeObserverMock;
 }
 
@@ -106,4 +103,4 @@ export function createMockErrorEvent(
 
 // Re-export everything from testing-library for convenience
 export * from '@testing-library/react';
-export { userEvent }; 
+export { userEvent };

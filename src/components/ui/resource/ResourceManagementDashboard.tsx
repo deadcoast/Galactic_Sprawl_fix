@@ -5,7 +5,7 @@ import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { EventType } from '../../../types/events/EventTypes';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 import ResourceFlowDiagram from '../../exploration/visualizations/charts/ResourceFlowDiagram';
 import ChainManagementInterface from './ChainManagementInterface';
 import ConverterDashboard from './ConverterDashboard';
@@ -253,9 +253,8 @@ const ResourceManagementDashboardBase: React.FC = () => {
 
   const _handleThresholdChange = useCallback(
     (resourceType: ResourceType, min: number, max: number) => {
-      // When using ResourceTypeHelpers to get the display name
       console.warn(
-        `Setting thresholds for ${ResourceTypeHelpers.getDisplayName(resourceType)}: min=${min}, max=${max}`
+        `Setting thresholds for ${ResourceTypeInfo[resourceType]?.displayName ?? resourceType}: min=${min}, max=${max}`
       );
 
       thresholdDispatch({
@@ -272,8 +271,9 @@ const ResourceManagementDashboardBase: React.FC = () => {
 
   const handleAutoMineToggle = useCallback(
     (resourceType: ResourceType) => {
-      // When using ResourceTypeHelpers to get the display name
-      console.warn(`Toggling auto-mine for ${ResourceTypeHelpers.getDisplayName(resourceType)}`);
+      console.warn(
+        `Toggling auto-mine for ${ResourceTypeInfo[resourceType]?.displayName ?? resourceType}`
+      );
 
       thresholdDispatch({
         type: 'TOGGLE_AUTO_MINE',

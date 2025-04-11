@@ -1,12 +1,12 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
 import { act, render, screen } from '@testing-library/react';
-import * as React from "react";
+import * as React from 'react';
 import { EventBus, EventListener } from '../lib/events/EventBus';
 import { BuildingType, ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { Position } from '../types/core/GameTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { IModuleManager, ModuleStatus } from '../types/modules/ModuleTypes';
 import { validateEventData } from '../utils/events/EventDataTypes';
+import { ResourceType } from './../types/resources/ResourceTypes';
 import { ModuleProvider, useModule, useModuleActions, useModules } from './ModuleContext';
 
 // Mock ServiceProvider since we don't have direct access to the actual implementation

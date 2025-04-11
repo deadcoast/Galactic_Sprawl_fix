@@ -1,10 +1,17 @@
 /**
  * @context: ui-theme-system
- * 
+ *
  * Default theme implementation for the Galactic Sprawl UI
  */
 
-import { Theme, ThemeBreakpoint, ThemeBorderRadius, ThemeColorName, ThemeFontSizeName, ThemeSpacingName } from '../../types/ui/ThemeTypes';
+import {
+  Theme,
+  ThemeBorderRadius,
+  ThemeBreakpoint,
+  ThemeColorName,
+  ThemeFontSizeName,
+  ThemeSpacingName,
+} from '../../types/ui/ThemeTypes';
 
 /**
  * Default theme for the application
@@ -16,13 +23,13 @@ export const defaultTheme: Theme = {
     [ThemeColorName.PRIMARY]: '#2563EB',
     [ThemeColorName.SECONDARY]: '#7C3AED',
     [ThemeColorName.ACCENT]: '#06B6D4',
-    
+
     // Status colors
     [ThemeColorName.SUCCESS]: '#10B981',
     [ThemeColorName.WARNING]: '#F59E0B',
     [ThemeColorName.DANGER]: '#EF4444',
     [ThemeColorName.INFO]: '#3B82F6',
-    
+
     // UI theme colors
     [ThemeColorName.LIGHT]: '#F8FAFC',
     [ThemeColorName.DARK]: '#0F172A',
@@ -32,7 +39,7 @@ export const defaultTheme: Theme = {
     [ThemeColorName.TEXT_SECONDARY]: '#94A3B8',
     [ThemeColorName.BORDER]: '#334155',
     [ThemeColorName.HIGHLIGHT]: '#3B82F6',
-    
+
     // Extended colors (these are allowed by the Record<string, string> part of the type)
     primaryLight: '#3B82F6',
     primaryDark: '#1D4ED8',
@@ -44,7 +51,7 @@ export const defaultTheme: Theme = {
     surfaceDark: '#0F172A',
     textDisabled: '#64748B',
   },
-  
+
   typography: {
     fontFamily: {
       base: "'Exo 2', sans-serif",
@@ -80,7 +87,7 @@ export const defaultTheme: Theme = {
       wide: '0.025em',
     },
   },
-  
+
   spacing: {
     [ThemeSpacingName.NONE]: 0,
     [ThemeSpacingName.XSMALL]: 4,
@@ -90,7 +97,7 @@ export const defaultTheme: Theme = {
     [ThemeSpacingName.XLARGE]: 32,
     [ThemeSpacingName.XXLARGE]: 48,
   },
-  
+
   sizes: {
     maxWidth: '1200px',
     navbarHeight: '64px',
@@ -101,7 +108,7 @@ export const defaultTheme: Theme = {
       large: '800px',
     },
   },
-  
+
   borders: {
     radius: {
       [ThemeBorderRadius.NONE]: '0',
@@ -117,14 +124,14 @@ export const defaultTheme: Theme = {
       thick: 4,
     },
   },
-  
+
   shadows: {
     none: 'none',
     small: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     medium: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     large: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
   },
-  
+
   transitions: {
     duration: {
       fast: '150ms',
@@ -139,7 +146,7 @@ export const defaultTheme: Theme = {
       easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
     },
   },
-  
+
   zIndices: {
     base: 0,
     dropdown: 10,
@@ -149,7 +156,7 @@ export const defaultTheme: Theme = {
     tooltip: 50,
     toast: 60,
   },
-  
+
   breakpoints: {
     [ThemeBreakpoint.XS]: '0px',
     [ThemeBreakpoint.SM]: '600px',
@@ -173,15 +180,15 @@ export const lightTheme: Theme = {
     [ThemeColorName.SURFACE]: '#F1F5F9',
     [ThemeColorName.TEXT]: '#0F172A',
     [ThemeColorName.TEXT_SECONDARY]: '#334155',
-    
+
     // Extended colors
     surfaceMedium: '#E2E8F0',
     surfaceDark: '#CBD5E1',
     textDisabled: '#64748B',
-  }
+  },
 };
 
 /**
  * Export the default dark theme as default
  */
-export default defaultTheme; 
+export default defaultTheme;

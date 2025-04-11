@@ -3,28 +3,41 @@
  * Handles ship creation, management, and status updates
  */
 
-// Define interfaces for the types used
-export interface Ship {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  assignedTo?: string;
-}
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { Ship, ShipEventType, ShipManagerEvents, ShipStatus } from '../../types/events/ShipEvents';
 
 /**
  * Implements the ship manager functionality
  * Manages all ships in the game
  */
-export class ShipManagerImpl {
+export class ShipManagerImpl extends BaseTypedEventEmitter<ShipManagerEvents> {
   private ships: Map<string, Ship> = new Map();
+
+  constructor() {
+    super(); // Call base class constructor
+  }
 
   /**
    * Create a new ship with the provided properties
+   * NOTE: The input `ship` type might need adjustment based on how ships are actually created.
+   * Assuming the input provides enough data to construct the full Ship type.
    */
-  public createShip(ship: { id: string; name: string; type: string; status: string }): Ship {
-    const newShip: Ship = { ...ship };
-    this.ships.set(ship.id, newShip);
+  public createShip(
+    shipData: Partial<Ship> & { id: string; name: string; type: string; status: ShipStatus }
+  ): Ship {
+    // Construct the full Ship object - requires default values or more input data
+    const newShip: Ship = {
+      level: 1,
+      health: 100,
+      maxHealth: 100,
+      fuel: 100,
+      maxFuel: 100,
+      crew: 10,
+      maxCrew: 10,
+      ...shipData, // Spread the input data
+    };
+    this.ships.set(newShip.id, newShip);
+    this.emit(ShipEventType.SHIP_CREATED, { ship: newShip }); // Emit event
     return newShip;
   }
 
@@ -42,9 +55,12 @@ export class ShipManagerImpl {
   /**
    * Update a ship's status
    */
-  public updateShipStatus(shipId: string, status: string): void {
+  public updateShipStatus(shipId: string, status: ShipStatus): void {
+    // Accept ShipStatus enum
     const ship = this.getShipById(shipId);
+    const oldStatus = ship.status;
     ship.status = status;
+    this.emit(ShipEventType.SHIP_STATUS_UPDATED, { shipId, oldStatus, newStatus: status }); // Emit event
   }
 
   /**
@@ -52,7 +68,13 @@ export class ShipManagerImpl {
    */
   public updateShipAssignment(shipId: string, systemId: string): void {
     const ship = this.getShipById(shipId);
+    const oldAssignment = ship.assignedTo;
     ship.assignedTo = systemId;
+    this.emit(ShipEventType.SHIP_ASSIGNMENT_UPDATED, {
+      shipId,
+      oldAssignment,
+      newAssignment: systemId,
+    }); // Emit event
   }
 
   /**

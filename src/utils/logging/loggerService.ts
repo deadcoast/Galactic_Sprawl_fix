@@ -1,6 +1,6 @@
 /**
  * Centralized logging service with structured error levels
- * 
+ *
  * This service provides a consistent logging interface across the application
  * with support for different log levels and context information.
  */
@@ -10,7 +10,7 @@ export enum LogLevel {
   WARN = 'WARN',
   INFO = 'INFO',
   DEBUG = 'DEBUG',
-  TRACE = 'TRACE'
+  TRACE = 'TRACE',
 }
 
 export interface LogContext {
@@ -31,7 +31,7 @@ export interface LoggerOptions {
 const DEFAULT_OPTIONS: LoggerOptions = {
   minLevel: process.env.NODE_ENV === 'production' ? LogLevel.WARN : LogLevel.DEBUG,
   includeTimestamp: true,
-  enableContextDisplay: true
+  enableContextDisplay: true,
 };
 
 /**
@@ -49,7 +49,7 @@ class LoggerService {
    */
   private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
     const parts: string[] = [];
-    
+
     if (this.options.includeTimestamp) {
       parts.push(`[${new Date().toISOString()}]`);
     }
@@ -76,7 +76,7 @@ class LoggerService {
     const levels = Object.values(LogLevel);
     const configLevelIndex = levels.indexOf(this.options.minLevel);
     const messageLevelIndex = levels.indexOf(level);
-    
+
     return messageLevelIndex <= configLevelIndex;
   }
 
@@ -130,4 +130,4 @@ class LoggerService {
 export const logger = new LoggerService();
 
 // Also export the class for cases where custom configurations are needed
-export default LoggerService; 
+export default LoggerService;

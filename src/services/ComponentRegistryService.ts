@@ -90,7 +90,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
@@ -126,7 +126,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
@@ -172,7 +172,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_renders = (metrics.total_renders ?? 0) + 1;
     metrics.last_render_timestamp = registration.lastRenderTime;
     this.metadata.metrics = metrics;
@@ -185,7 +185,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_notifications = (metrics.total_notifications ?? 0) + 1;
     metrics.last_notification_timestamp = Date.now();
     metrics.components_notified = components.length;
@@ -204,7 +204,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;

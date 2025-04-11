@@ -14,7 +14,7 @@ This directory contains tests for the Galactic Sprawl UI components. The testing
 ```
 src/tests/
 ├── components/         # Unit tests for individual components
-│   └── ui/             # Tests for UI components 
+│   └── ui/             # Tests for UI components
 ├── hooks/              # Tests for custom React hooks
 ├── integration/        # Integration tests for component combinations
 ├── accessibility/      # Accessibility compliance tests
@@ -65,10 +65,8 @@ Example:
 ```tsx
 it('Button calls onClick when clicked', async () => {
   const handleClick = vi.fn();
-  const { user } = renderWithProviders(
-    <Button onClick={handleClick}>Click Me</Button>
-  );
-  
+  const { user } = renderWithProviders(<Button onClick={handleClick}>Click Me</Button>);
+
   await user.click(screen.getByRole('button'));
   expect(handleClick).toHaveBeenCalledTimes(1);
 });
@@ -111,4 +109,4 @@ When adding a new component, create corresponding tests in the appropriate direc
 
 1. Unit tests in `src/tests/components/ui`
 2. Integration tests as needed in `src/tests/integration`
-3. Accessibility tests in `src/tests/accessibility` 
+3. Accessibility tests in `src/tests/accessibility`

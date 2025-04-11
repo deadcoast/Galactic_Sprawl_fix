@@ -186,12 +186,12 @@ export class D3Profiler {
    * Generate optimization recommendations based on the profile
    *
    * @param bottlenecks The identified bottlenecks
-   * @param totalDurationMs Total duration of all measurements
+   * @param _totalDurationMs Total duration of all measurements (prefixed, unused)
    * @returns Array of recommendation strings
    */
   private generateRecommendations(
     bottlenecks: PerformanceMeasurement[],
-    totalDurationMs: number
+    _totalDurationMs: number // Prefixed
   ): string[] {
     const recommendations: string[] = [];
 
@@ -282,10 +282,10 @@ export class ForceSimulationProfiler {
     this.originalTick = simulation.tick as (...args: unknown[]) => unknown;
 
     // Wrap the tick function to measure performance
-    const {originalTick} = this;
+    const { originalTick } = this;
     // Store the profiler instance for use in the customTick function
     const profilerInstance = this.profiler;
-    const {tickMeasurements} = this;
+    const { tickMeasurements } = this;
 
     // Define a function that returns a simulation
     const customTick = function (this: d3.Simulation<d3.SimulationNodeDatum, undefined>) {
@@ -561,7 +561,8 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = node.x ?? 0;
           const y = node.y ?? 0;
-          const transform = `translate(${x}, ${y})`;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _transform = `translate(${x}, ${y})`; // Prefixed
         }
       }
     },
@@ -577,7 +578,8 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = d3Accessors.getX(node);
           const y = d3Accessors.getY(node);
-          const transform = `translate(${x}, ${y})`;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _transform = `translate(${x}, ${y})`; // Prefixed
         }
       }
     },

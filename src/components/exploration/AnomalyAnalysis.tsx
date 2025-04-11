@@ -41,7 +41,6 @@ interface AnomalyAnalysisProps {
   onInvestigate: (anomalyId: string) => void;
   onAnalysisComplete: (anomalyId: string, results: Anomaly['analysisResults']) => void;
   className?: string;
-  quality?: 'low' | 'medium' | 'high';
 }
 
 export function AnomalyAnalysis({
@@ -49,7 +48,6 @@ export function AnomalyAnalysis({
   onInvestigate,
   onAnalysisComplete,
   className = '',
-  quality: _quality = 'medium',
 }: AnomalyAnalysisProps) {
   const [selectedAnomalyId, setSelectedAnomalyId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'severity' | 'type'>('severity');

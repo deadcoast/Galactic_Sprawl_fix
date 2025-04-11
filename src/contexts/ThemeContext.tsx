@@ -1,19 +1,21 @@
 /**
  * @context: ui-theme-system, context-library
- * 
+ *
  * Theme context provider for the application
  */
 
 import * as React from 'react';
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Theme, ThemeMode, ThemeContextValue } from '../types/ui/ThemeTypes';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { Theme, ThemeContextValue, ThemeMode } from '../types/ui/ThemeTypes';
 import defaultTheme, { lightTheme } from '../ui/theme/defaultTheme';
 
 // Define the theme context with default values
 const ThemeContext = createContext<ThemeContextValue>({
   theme: defaultTheme,
   mode: 'dark',
-  setMode: () => {/* Empty function as placeholder */},
+  setMode: () => {
+    /* Empty function as placeholder */
+  },
 });
 
 // Local storage key for theme preference
@@ -44,18 +46,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 }) => {
   // State for the current theme mode
   const [mode, setModeState] = useState<ThemeMode>(initialMode);
-  
+
   // State for the current theme object
-  const [theme, setTheme] = useState<Theme>(
-    mode === 'light' ? themes.light : themes.dark
-  );
+  const [theme, setTheme] = useState<Theme>(mode === 'light' ? themes.light : themes.dark);
 
   /**
    * Set the theme mode with storage persistence
    */
   const setMode = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);
-    
+
     // Persist to local storage
     if (newMode !== 'system') {
       localStorage.setItem(THEME_STORAGE_KEY, newMode);
@@ -78,22 +78,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     if (mode !== 'system') {
       return;
     }
-    
+
     // Check system preference
     const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    
+
     // Set theme based on system preference
     setTheme(prefersLight ? themes.light : themes.dark);
-    
+
     // Listen for changes to system preference
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       setTheme(e.matches ? themes.light : themes.dark);
     };
-    
+
     mediaQuery.addEventListener('change', handleChange);
-    
+
     // Cleanup
     return () => {
       mediaQuery.removeEventListener('change', handleChange);
@@ -117,11 +117,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     setMode,
   };
 
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 };
 
 /**
@@ -129,12 +125,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
  */
 export const useTheme = (): ThemeContextValue => {
   const context = useContext(ThemeContext);
-  
+
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
-  
+
   return context;
 };
 
-export default ThemeContext; 
+export default ThemeContext;

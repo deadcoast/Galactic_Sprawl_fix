@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, visualization-system, performance-optimization
- * 
+ *
  * LazyNetworkGraph - A lazy-loaded version of the NetworkGraph component
  * This component only loads the actual visualization when needed, reducing the initial bundle size
  */
@@ -37,17 +37,17 @@ export function LazyNetworkGraph(props: NetworkGraphProps) {
     () => import('./NetworkGraph').then(module => ({ default: module.NetworkGraph })),
     []
   );
-  
+
   // Show loading state
   if (loading) {
     return <LoadingPlaceholder />;
   }
-  
+
   // Show error state
   if (error || !Component) {
     return <ErrorDisplay />;
   }
-  
+
   // Render the actual component within an error boundary
   return (
     <ErrorBoundary
@@ -62,4 +62,4 @@ export function LazyNetworkGraph(props: NetworkGraphProps) {
 }
 
 // Export a memoized version of the component
-export default React.memo(LazyNetworkGraph); 
+export default React.memo(LazyNetworkGraph);

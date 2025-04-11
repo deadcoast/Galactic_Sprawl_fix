@@ -78,6 +78,7 @@ export enum EventType {
   RESOURCE_CONNECTION_ADDED = 'RESOURCE_CONNECTION_ADDED',
   RESOURCE_CONNECTION_REMOVED = 'RESOURCE_CONNECTION_REMOVED',
   RESOURCE_FLOW_OPTIMIZATION_COMPLETED = 'RESOURCE_FLOW_OPTIMIZATION_COMPLETED',
+  RESOURCE_NODE_UPDATED = 'RESOURCE_NODE_UPDATED',
 
   // Threshold events
   RESOURCE_THRESHOLD_CHANGED = 'RESOURCE_THRESHOLD_CHANGED',
@@ -197,6 +198,17 @@ export enum EventType {
   OFFICER_EXPERIENCE_GAINED = 'OFFICER_EXPERIENCE_GAINED',
   SQUAD_CREATED = 'SQUAD_CREATED',
   SQUAD_UPDATED = 'SQUAD_UPDATED',
+
+  // Production Chain Events
+  CHAIN_STARTED = 'CHAIN_STARTED',
+  CHAIN_STEP_STARTED = 'CHAIN_STEP_STARTED',
+  CHAIN_STEP_COMPLETED = 'CHAIN_STEP_COMPLETED',
+  CHAIN_COMPLETED = 'CHAIN_COMPLETED',
+  CHAIN_FAILED = 'CHAIN_FAILED',
+  CHAIN_STATUS_UPDATED = 'CHAIN_STATUS_UPDATED',
+
+  // Ship events (examples)
+  SHIP_CREATED = 'SHIP_CREATED',
 }
 
 /**
@@ -240,6 +252,7 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.RESOURCE_CONNECTION_ADDED]: EventCategory.RESOURCE,
   [EventType.RESOURCE_CONNECTION_REMOVED]: EventCategory.RESOURCE,
   [EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED]: EventCategory.RESOURCE,
+  [EventType.RESOURCE_NODE_UPDATED]: EventCategory.RESOURCE,
 
   // Threshold events
   [EventType.RESOURCE_THRESHOLD_CHANGED]: EventCategory.THRESHOLD,
@@ -359,6 +372,17 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.OFFICER_EXPERIENCE_GAINED]: EventCategory.OFFICER,
   [EventType.SQUAD_CREATED]: EventCategory.OFFICER,
   [EventType.SQUAD_UPDATED]: EventCategory.OFFICER,
+
+  // Production Chain Events
+  [EventType.CHAIN_STARTED]: EventCategory.SYSTEM,
+  [EventType.CHAIN_STEP_STARTED]: EventCategory.SYSTEM,
+  [EventType.CHAIN_STEP_COMPLETED]: EventCategory.SYSTEM,
+  [EventType.CHAIN_COMPLETED]: EventCategory.SYSTEM,
+  [EventType.CHAIN_FAILED]: EventCategory.SYSTEM,
+  [EventType.CHAIN_STATUS_UPDATED]: EventCategory.SYSTEM,
+
+  // Ship events (examples)
+  [EventType.SHIP_CREATED]: EventCategory.SYSTEM,
 };
 
 /**
@@ -430,7 +454,7 @@ export function isResourceUpdateEventData(data: unknown): data is ResourceUpdate
   if (!data || typeof data !== 'object') {
     return false;
   }
-  
+
   const d = data as Partial<ResourceUpdateEventData>;
   return (
     typeof d.resourceType === 'string' &&
@@ -814,19 +838,78 @@ export interface BehaviorActionCompletedEventData {
 }
 
 // Simplified interfaces for Officer/Squad/Training for event payloads
-interface OfficerSkillsInfo { combat: number; leadership: number; technical: number; }
-interface OfficerInfo { id: string; name: string; level: number; role: string; specialization: string; skills: OfficerSkillsInfo; stats: OfficerSkillsInfo; traits: string[]; status: string; assignedTo?: string; }
-interface TrainingProgramInfo { id: string; officerId: string; specialization: string; progress: number; startTime: number; duration: number; bonuses: { xpMultiplier: number; skillGainRate: number; }; }
-interface SquadInfo { id: string; name: string; members: OfficerInfo[]; specialization: string; leader?: OfficerInfo; bonuses: { combat: number; efficiency: number; survival: number; }; }
+interface OfficerSkillsInfo {
+  combat: number;
+  leadership: number;
+  technical: number;
+}
+interface OfficerInfo {
+  id: string;
+  name: string;
+  level: number;
+  role: string;
+  specialization: string;
+  skills: OfficerSkillsInfo;
+  stats: OfficerSkillsInfo;
+  traits: string[];
+  status: string;
+  assignedTo?: string;
+}
+interface TrainingProgramInfo {
+  id: string;
+  officerId: string;
+  specialization: string;
+  progress: number;
+  startTime: number;
+  duration: number;
+  bonuses: { xpMultiplier: number; skillGainRate: number };
+}
+interface SquadInfo {
+  id: string;
+  name: string;
+  members: OfficerInfo[];
+  specialization: string;
+  leader?: OfficerInfo;
+  bonuses: { combat: number; efficiency: number; survival: number };
+}
 
-export interface OfficerAcademyActivatedEventData { moduleId: string; }
-export interface OfficerTierUpgradedEventData { tier: number; }
-export interface OfficerHiredEventData { officer: OfficerInfo; }
-export interface OfficerTrainingStartedEventData { officerId: string; program: TrainingProgramInfo; }
-export interface OfficerTrainingCompletedEventData { officerId: string; specialization: string; skills: OfficerSkillsInfo; }
-export interface OfficerAssignedEventData { officerId: string; assignmentId: string; }
-export interface OfficerLeveledUpEventData { officerId: string; newLevel: number; skills: OfficerSkillsInfo; }
-export interface OfficerExperienceGainedEventData { officerId: string; amount: number; newTotal: number; nextLevel: number; }
-export interface SquadCreatedEventData { squad: SquadInfo; }
-export interface SquadUpdatedEventData { squadId: string; officerId?: string; // Optional: if update is due to officer assignment
+export interface OfficerAcademyActivatedEventData {
+  moduleId: string;
+}
+export interface OfficerTierUpgradedEventData {
+  tier: number;
+}
+export interface OfficerHiredEventData {
+  officer: OfficerInfo;
+}
+export interface OfficerTrainingStartedEventData {
+  officerId: string;
+  program: TrainingProgramInfo;
+}
+export interface OfficerTrainingCompletedEventData {
+  officerId: string;
+  specialization: string;
+  skills: OfficerSkillsInfo;
+}
+export interface OfficerAssignedEventData {
+  officerId: string;
+  assignmentId: string;
+}
+export interface OfficerLeveledUpEventData {
+  officerId: string;
+  newLevel: number;
+  skills: OfficerSkillsInfo;
+}
+export interface OfficerExperienceGainedEventData {
+  officerId: string;
+  amount: number;
+  newTotal: number;
+  nextLevel: number;
+}
+export interface SquadCreatedEventData {
+  squad: SquadInfo;
+}
+export interface SquadUpdatedEventData {
+  squadId: string;
+  officerId?: string; // Optional: if update is due to officer assignment
 }

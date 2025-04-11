@@ -137,10 +137,16 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
             options?.onError(err, phase, props);
           } catch (handlerError) {
             errorLoggingService.logError(
-              handlerError instanceof Error ? handlerError : new Error('Error in lifecycle onError handler'),
+              handlerError instanceof Error
+                ? handlerError
+                : new Error('Error in lifecycle onError handler'),
               ErrorType.EVENT_HANDLING,
               ErrorSeverity.HIGH,
-              { componentName: 'createLifecycleHook', action: 'reportError (onError handler)', originalError: err.message }
+              {
+                componentName: 'createLifecycleHook',
+                action: 'reportError (onError handler)',
+                originalError: err.message,
+              }
             );
           }
         }

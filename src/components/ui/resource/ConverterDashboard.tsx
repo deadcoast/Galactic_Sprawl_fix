@@ -1,48 +1,25 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
-import { FlowNode, ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
-import { ResourceType } from './../../../types/resources/ResourceTypes';
+// Import types from shared locations
+import {
+  ChainProcessingStatus, // Renamed from ChainStatus
+  ProcessStatus,
+  ProductionChainStatus, // Renamed from ChainStatus
+} from '../../../types/resources/ProductionChainTypes'; // Added import for new types
+import {
+  FlowNode,
+  FlowNodeType,
+  ResourceConversionRecipe,
+} from '../../../types/resources/ResourceTypes';
 import ChainVisualization from './ChainVisualization';
 import './ConverterDashboard.css';
 
-// Import the ChainStatus interface from the ChainVisualization component
-// Since ChainStatus is not exported from ChainVisualization, we need to redefine it here
-// This should match the interface in ChainVisualization.tsx
-interface ChainStatus {
-  chainId: string;
-  currentStepIndex: number;
-  recipeIds: string[];
-  startTime: number;
-  estimatedEndTime: number;
-  progress: number;
-  stepStatus: Array<{
-    recipeId: string;
-    converterId: string;
-    processId?: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
-    startTime?: number;
-    endTime?: number;
-  }>;
-  resourceTransfers: Array<{
-    type: ResourceType;
-    amount: number;
-    fromStep: number;
-    toStep: number;
-    status: 'pending' | 'in_progress' | 'completed';
-  }>;
-  active: boolean;
-  paused: boolean;
-  completed: boolean;
-  failed: boolean;
-  errorMessage?: string;
-}
-
-// Define the interfaces needed for the dashboard
+// Define the interfaces needed for the dashboard using imported types/enums
 interface ConverterSummary {
   id: string;
   name: string;
-  type: string;
-  status: 'active' | 'inactive' | 'error';
+  type: FlowNodeType; // Use FlowNodeType enum
+  status: 'active' | 'inactive' | 'error'; // Keep as string literals for now
   efficiency: number;
   utilization: number;
   tier: number;
@@ -55,7 +32,7 @@ interface ConversionProcessSummary {
   progress: number;
   startTime: number;
   estimatedEndTime: number;
-  status: 'in-progress' | 'completed' | 'failed' | 'paused';
+  status: ProcessStatus; // Use ProcessStatus enum
 }
 
 interface ChainStatusSummary {
@@ -64,7 +41,7 @@ interface ChainStatusSummary {
   steps: number;
   currentStep: number;
   progress: number;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed' | 'paused';
+  status: ChainProcessingStatus; // Use ChainProcessingStatus enum
 }
 
 interface EfficiencyFactors {
@@ -91,7 +68,7 @@ interface ConverterDashboardProps {
   efficiencyFactors: EfficiencyFactors;
   // For visualization
   selectedChain?: {
-    chain: ChainStatus; // Using the ChainStatus interface instead of unknownnown
+    chain: ProductionChainStatus; // Use imported ProductionChainStatus
     converters: Record<string, FlowNode>;
     recipes: Record<string, ResourceConversionRecipe>;
   };
@@ -220,7 +197,7 @@ const ConverterDashboard: React.FC<ConverterDashboardProps> = ({
                   <span className="progress-text">{(process.progress * 100).toFixed(0)}%</span>
                 </div>
                 <div className="process-controls">
-                  {process.status === 'in-progress' && (
+                  {process.status === ProcessStatus.IN_PROGRESS && (
                     <button
                       className="pause-button"
                       onClick={e => {

@@ -1,6 +1,6 @@
 /**
  * @context: ui-system, component-library, ui-library
- * 
+ *
  * Dialog component for user decision interactions
  */
 import * as React from 'react';
@@ -14,35 +14,35 @@ export interface DialogAction {
    * Label for the action button
    */
   label: string;
-  
+
   /**
    * Handler called when the action is selected
    */
   onClick: () => void;
-  
+
   /**
    * Visual style of the action
    * @default 'default'
    */
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'default';
-  
+
   /**
    * Whether this action should be auto-focused
    * @default false
    */
   autoFocus?: boolean;
-  
+
   /**
    * Additional class name for the action button
    */
   className?: string;
-  
+
   /**
    * Whether this action should close the dialog
    * @default true
    */
   closeOnClick?: boolean;
-  
+
   /**
    * Whether the action is disabled
    * @default false
@@ -55,44 +55,44 @@ export interface DialogProps extends Omit<ModalProps, OmittedModalProps> {
    * Dialog title
    */
   title: string;
-  
+
   /**
    * Main message or content for the dialog
    */
   message: React.ReactNode;
-  
+
   /**
    * Optional additional content beneath the main message
    */
   description?: React.ReactNode;
-  
+
   /**
    * Array of action buttons to display in footer
    */
   actions: DialogAction[];
-  
+
   /**
    * Handler called when the dialog is closed
    */
   onClose: () => void;
-  
+
   /**
    * Whether the dialog is for confirming a destructive action
    * @default false
    */
   isDestructive?: boolean;
-  
+
   /**
    * Dialog type determining its icon and styling
    * @default 'default'
    */
   type?: 'info' | 'warning' | 'error' | 'success' | 'default' | 'confirm' | 'delete';
-  
+
   /**
    * Optional icon to display
    */
   icon?: React.ReactNode;
-  
+
   /**
    * Custom class for the content area
    */
@@ -130,7 +130,7 @@ export function Dialog({
           outline: 'none',
           border: '1px solid transparent',
         };
-        
+
         // Apply variant-specific styles
         switch (action.variant) {
           case 'primary':
@@ -181,22 +181,22 @@ export function Dialog({
               border: '1px solid var(--color-border, #e2e8f0)',
             };
         }
-        
+
         // Apply special styling for destructive dialogs if needed
         if (isDestructive && action.variant === 'primary') {
           buttonStyle.backgroundColor = 'var(--color-error-main, #f44336)';
           buttonStyle.color = 'var(--color-error-contrast-text, #ffffff)';
           buttonStyle.border = '1px solid var(--color-error-main, #f44336)';
         }
-        
+
         const handleClick = () => {
           action.onClick();
-          
+
           if (action.closeOnClick !== false) {
             onClose();
           }
         };
-        
+
         return (
           <button
             key={`dialog-action-${index}`}
@@ -214,7 +214,7 @@ export function Dialog({
       })}
     </>
   );
-  
+
   // Determine icon based on dialog type
   let dialogIcon = icon;
   const dialogIconStyle: React.CSSProperties = {
@@ -226,7 +226,7 @@ export function Dialog({
     borderRadius: '50%',
     marginBottom: '16px',
   };
-  
+
   // Apply type-specific styles and icons if no custom icon provided
   if (!dialogIcon) {
     switch (type) {
@@ -259,16 +259,10 @@ export function Dialog({
         break;
     }
   }
-  
+
   return (
-    <Modal
-      title={title}
-      onClose={onClose}
-      footer={dialogFooter}
-      size="small"
-      {...modalProps}
-    >
-      <div 
+    <Modal title={title} onClose={onClose} footer={dialogFooter} size="small" {...modalProps}>
+      <div
         className={`dialog-content ${contentClassName}`}
         style={{
           display: 'flex',
@@ -278,13 +272,9 @@ export function Dialog({
           padding: '16px 0',
         }}
       >
-        {dialogIcon && (
-          <div style={dialogIconStyle}>
-            {dialogIcon}
-          </div>
-        )}
-        
-        <div 
+        {dialogIcon && <div style={dialogIconStyle}>{dialogIcon}</div>}
+
+        <div
           className="dialog-message"
           style={{
             fontSize: 'var(--font-size-md, 16px)',
@@ -295,9 +285,9 @@ export function Dialog({
         >
           {message}
         </div>
-        
+
         {description && (
-          <div 
+          <div
             className="dialog-description"
             style={{
               fontSize: 'var(--font-size-sm, 14px)',
@@ -313,4 +303,4 @@ export function Dialog({
   );
 }
 
-export default Dialog; 
+export default Dialog;

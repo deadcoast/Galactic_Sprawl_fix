@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Droplet, Leaf, TrendingUp, Users, Zap } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
 import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
 import { StandardizedEvent } from '../../../types/events/StandardizedEvents';
@@ -41,7 +40,7 @@ export function PopulationGrowthModule({
   baseGrowthRate,
   growthModifiers,
   cycleLength,
-  quality: _quality,
+  quality,
   onPopulationChange,
   onModifierToggle,
 }: PopulationGrowthModuleProps) {
@@ -51,8 +50,6 @@ export function PopulationGrowthModule({
   const [showModifiers, setShowModifiers] = useState(false);
   const [autoGrowth, setAutoGrowth] = useState(false);
   const [growthInterval, setGrowthInterval] = useState<NodeJS.Timeout | null>(null);
-
-  const { subscribe } = useModuleEvents();
 
   // Calculate effective growth rate with all active modifiers
   const effectiveGrowthRate = useCallback(() => {
@@ -180,7 +177,14 @@ export function PopulationGrowthModule({
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium text-white">Population Growth</h3>
+        <div className="flex items-center space-x-2">
+          <h3 className="text-lg font-medium text-white">Population Growth</h3>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${quality === 'high' ? 'bg-green-800 text-green-300' : quality === 'medium' ? 'bg-yellow-800 text-yellow-300' : 'bg-red-800 text-red-300'}`}
+          >
+            {quality.charAt(0).toUpperCase() + quality.slice(1)} Quality
+          </span>
+        </div>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-400">Auto Growth</span>
           <button

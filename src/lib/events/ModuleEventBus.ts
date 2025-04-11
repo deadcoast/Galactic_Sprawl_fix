@@ -11,12 +11,12 @@ import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/Er
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import {
-    isValidModuleStatusEventData,
-    isValidPopulationEventData,
-    isValidResourceEventData,
-    isValidStandardizedEvent,
-    isValidTradeRouteEventData,
-    StandardizedEvent,
+  isValidModuleStatusEventData,
+  isValidPopulationEventData,
+  isValidResourceEventData,
+  isValidStandardizedEvent,
+  isValidTradeRouteEventData,
+  StandardizedEvent,
 } from '../../types/events/StandardizedEvents';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventBus, EventListener, SubscriptionOptions } from './EventBus';
@@ -109,7 +109,9 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
 
       if (!isValid) {
         errorLoggingService.logError(
-          new Error(`Invalid event data for type: ${event?.type} Data: ${JSON.stringify(event?.data)}`),
+          new Error(
+            `Invalid event data for type: ${event?.type} Data: ${JSON.stringify(event?.data)}`
+          ),
           ErrorType.EVENT_HANDLING,
           ErrorSeverity.MEDIUM,
           { componentName: 'ModuleEventBus', action: 'emit', eventType: event?.type }
@@ -144,7 +146,7 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
 
   /**
    * Subscribe to multiple event types with a single listener
-   * 
+   *
    * @param eventTypes Array of event types to subscribe to
    * @param listener Event listener function
    * @param options Subscription options
@@ -157,13 +159,13 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
   ): () => void {
     // Create array to hold all unsubscribe functions
     const unsubscribers: Array<() => void> = [];
-    
+
     // Subscribe to each event type
     for (const eventType of eventTypes) {
       const unsubscribe = this.subscribe(eventType, listener, options);
       unsubscribers.push(unsubscribe);
     }
-    
+
     // Return a function that unsubscribes from all event types
     return () => {
       unsubscribers.forEach(unsubscribe => unsubscribe());

@@ -42,7 +42,7 @@
     "lint:workflow:interactive": "node tools/run-lint-workflow.mjs --interactive",
     "lint:workflow:auto-fix": "node tools/run-lint-workflow.mjs --auto-fix",
     "lint:workflow:analyze": "node tools/run-lint-workflow.mjs --skip-fix",
-    "typecheck": "node tools/run-typecheck.mjs",
+    "typecheck": "tsc --noEmit --downlevelIteration --skipLibCheck",
     "typecheck:specific": "node tools/run-typecheck.mjs"
   },
   "dependencies": {
@@ -79,6 +79,7 @@
     "react-window": "^1.8.11",
     "react-window-infinite-loader": "^1.0.10",
     "recharts": "^2.15.1",
+    "reselect": "^5.1.1",
     "rxjs": "^7.8.1",
     "serve-static": "^1.16.2",
     "tailwind-merge": "^2.1.0",
@@ -116,9 +117,11 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.3",
     "prettier": "^3.5.0",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.0.15",
     "ts-node": "^10.9.2",
-    "typescript": "5.7.3",
+    "typescript": "^5.8.3",
     "vite": "^5.4.2",
     "vitest": "^1.3.1",
     "ws": "^8.18.1"

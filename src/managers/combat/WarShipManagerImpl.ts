@@ -1,9 +1,10 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
-import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { Position } from '../../types/core/GameTypes';
+import { EventType } from '../../types/events/EventTypes';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { WeaponConfig, WeaponState } from '../../types/weapons/WeaponTypes';
+import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 import { getCombatManager } from '../ManagerRegistry';
 
 interface WarShip {
@@ -85,20 +86,18 @@ interface AttackData {
   targetId?: string;
 }
 
-interface WarShipEvents extends Record<string, unknown> {
-  shipRegistered: { shipId: string };
-  shipUnregistered: { shipId: string };
-  taskAssigned: { shipId: string; task: CombatTask };
-  taskCompleted: { shipId: string; task: CombatTask };
-  techBonusesUpdated: {
-    shipId: string;
-    bonuses: { weaponEfficiency: number; shieldRegeneration: number; energyEfficiency: number };
-  };
-  formationCreated: { formationId: string; type: string; ships: string[] };
-  shipStatusUpdated: { shipId: string; status: string };
+// Type Guards for Automation Event Data
+function isFormationChangeData(data: unknown): data is FormationChangeData {
+  return typeof data === 'object' && data !== null && 'formation' in data;
+}
+function isEngagementData(data: unknown): data is EngagementData {
+  return typeof data === 'object' && data !== null && 'targetId' in data;
+}
+function isAttackData(data: unknown): data is AttackData {
+  return typeof data === 'object' && data !== null && 'targetId' in data;
 }
 
-export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
+export class WarShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   private ships: Map<string, WarShip> = new Map();
   private tasks: Map<string, CombatTask> = new Map();
   private formations: Map<
@@ -112,302 +111,29 @@ export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
     }
   > = new Map();
 
-  constructor() {
-    super();
+  protected constructor() {
+    super('WarShipManager');
+  }
+
+  protected async onInitialize(): Promise<void> {
     this.initializeAutomationHandlers();
+    gameLoopManager.registerUpdate(
+      this.managerName,
+      this.onUpdate.bind(this),
+      UpdatePriority.NORMAL
+    );
+    await Promise.resolve();
   }
 
-  private initializeAutomationHandlers(): void {
-    moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
-      if (event?.moduleType === 'hangar' && event?.data?.type) {
-        const ship = this.ships.get(event?.moduleId);
-        if (ship) {
-          switch (event?.data?.type) {
-            case 'formation':
-              this.handleFormationChange(ship, event?.data as FormationChangeData);
-              break;
-            case 'engagement':
-              this.handleEngagement(ship, event?.data as EngagementData);
-              break;
-            case 'repair':
-              this.handleRepair(ship);
-              break;
-            case 'shield':
-              this.handleShieldBoost(ship);
-              break;
-            case 'attack':
-              this.handleAttack(ship, event?.data as AttackData);
-              break;
-            case 'retreat':
-              this.handleRetreat(ship);
-              break;
-          }
-        }
-      }
-    });
+  protected async onDispose(): Promise<void> {
+    gameLoopManager.unregisterUpdate(this.managerName);
+    this.ships.clear();
+    this.tasks.clear();
+    this.formations.clear();
+    await Promise.resolve();
   }
 
-  private handleFormationChange(ship: WarShip, data: FormationChangeData): void {
-    const { formation } = data;
-    if (formation) {
-      const formationId = `formation-${Date.now()}`;
-      this.formations.set(formationId, {
-        type: formation.type,
-        ships: [ship.id],
-        spacing: formation.spacing,
-        facing: formation.facing,
-      });
-    }
-  }
-
-  private handleEngagement(ship: WarShip, data: EngagementData): void {
-    const { targetId } = data;
-    if (targetId) {
-      const task: CombatTask = {
-        id: `combat-${targetId}`,
-        type: 'combat',
-        target: {
-          id: targetId,
-          position: { x: 0, y: 0 }, // Position will be updated in the update loop
-        },
-        priority: this.getPriorityForShipType(ship.type),
-        assignedAt: Date.now(),
-        status: 'in-progress',
-      };
-      this.tasks.set(ship.id, task);
-      this.updateShipStatus(ship.id, 'engaging');
-    }
-  }
-
-  private handleRepair(ship: WarShip): void {
-    if (ship.health < ship.maxHealth) {
-      ship.health = Math.min(ship.maxHealth, ship.health + ship.maxHealth * 0.2);
-      if (ship.health > ship.maxHealth * 0.3) {
-        this.updateShipStatus(ship.id, 'idle');
-      }
-    }
-  }
-
-  private handleShieldBoost(ship: WarShip): void {
-    if (ship.shield < ship.maxShield) {
-      ship.shield = Math.min(ship.maxShield, ship.shield + ship.maxShield * 0.3);
-    }
-  }
-
-  private handleAttack(ship: WarShip, data: AttackData): void {
-    const { targetId } = data;
-    if (targetId) {
-      const readyWeapon = ship.weapons.find(w => w.state.status === 'ready');
-      if (readyWeapon) {
-        readyWeapon.state.status = 'cooling';
-        readyWeapon.state.currentStats.cooldown = Date.now();
-        ship.energy -=
-          readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);
-
-        // Update combat stats
-        ship.combatStats.damageDealt +=
-          readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);
-      }
-    }
-  }
-
-  private handleRetreat(ship: WarShip): void {
-    this.updateShipStatus(ship.id, 'retreating');
-    const task = this.tasks.get(ship.id);
-    if (task) {
-      task.status = 'failed';
-      this.tasks.delete(ship.id);
-    }
-  }
-
-  public registerShip(ship: WarShip): void {
-    if (ship.capabilities.canJump) {
-      this.ships.set(ship.id, ship);
-
-      // Emit events
-      this.emit('shipRegistered', { shipId: ship.id });
-      moduleEventBus.emit({
-        type: 'MODULE_ACTIVATED',
-        moduleId: ship.id,
-        moduleType: 'war' as ModuleType,
-        timestamp: Date.now(),
-        data: { ship },
-      });
-    }
-  }
-
-  public unregisterShip(shipId: string): void {
-    if (this.ships.has(shipId)) {
-      // Remove from formations
-      this.formations.forEach(formation => {
-        const index = formation.ships.indexOf(shipId);
-        if (index !== -1) {
-          formation.ships.splice(index, 1);
-          if (formation.leader === shipId) {
-            formation.leader = formation.ships[0];
-          }
-        }
-      });
-
-      this.ships.delete(shipId);
-      this.tasks.delete(shipId);
-
-      // Emit events
-      this.emit('shipUnregistered', { shipId });
-      moduleEventBus.emit({
-        type: 'MODULE_DEACTIVATED',
-        moduleId: shipId,
-        moduleType: 'war' as ModuleType,
-        timestamp: Date.now(),
-      });
-    }
-  }
-
-  public assignCombatTask(
-    shipId: string,
-    targetId: string,
-    position: Position,
-    formation?: {
-      type: 'offensive' | 'defensive' | 'balanced';
-      spacing: number;
-      facing: number;
-    }
-  ): void {
-    const ship = this.ships.get(shipId);
-    if (!ship || ship.status === 'disabled') {
-      return;
-    }
-
-    const task: CombatTask = {
-      id: `combat-${targetId}`,
-      type: 'combat',
-      target: {
-        id: targetId,
-        position,
-      },
-      priority: this.getPriorityForShipType(ship.type),
-      assignedAt: Date.now(),
-      status: 'queued',
-      formation,
-    };
-
-    this.tasks.set(shipId, task);
-    this.updateShipStatus(shipId, 'engaging');
-
-    // Emit events
-    this.emit('taskAssigned', { shipId, task });
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED',
-      moduleId: shipId,
-      moduleType: 'war' as ModuleType,
-      timestamp: Date.now(),
-      data: { task },
-    });
-  }
-
-  public completeTask(shipId: string): void {
-    const task = this.tasks.get(shipId);
-    const ship = this.ships.get(shipId);
-
-    if (task && ship) {
-      this.tasks.delete(shipId);
-      this.updateShipStatus(shipId, 'returning');
-
-      // Emit events
-      this.emit('taskCompleted', { shipId, task });
-      moduleEventBus.emit({
-        type: 'AUTOMATION_CYCLE_COMPLETE',
-        moduleId: shipId,
-        moduleType: 'war' as ModuleType,
-        timestamp: Date.now(),
-        data: { task, combatStats: ship.combatStats },
-      });
-    }
-  }
-
-  public updateShipTechBonuses(
-    shipId: string,
-    bonuses: { weaponEfficiency: number; shieldRegeneration: number; energyEfficiency: number }
-  ): void {
-    const ship = this.ships.get(shipId);
-    if (ship) {
-      ship.techBonuses = bonuses;
-      this.emit('techBonusesUpdated', { shipId, bonuses });
-    }
-  }
-
-  public createFormation(
-    type: 'offensive' | 'defensive' | 'balanced',
-    shipIds: string[],
-    spacing: number = 100
-  ): string {
-    const formationId = `formation-${Date.now()}`;
-    const validShips = shipIds.filter(id => this.ships.has(id));
-
-    if (validShips.length > 0) {
-      this.formations.set(formationId, {
-        type,
-        ships: validShips,
-        leader: validShips[0],
-        spacing,
-        facing: 0,
-      });
-
-      // Update tasks with formation info
-      validShips.forEach(shipId => {
-        const task = this.tasks.get(shipId);
-        if (task) {
-          task.formation = {
-            type,
-            spacing,
-            facing: 0,
-          };
-        }
-      });
-
-      this.emit('formationCreated', { formationId, type, ships: validShips });
-    }
-
-    return formationId;
-  }
-
-  private updateShipStatus(shipId: string, status: WarShip['status']): void {
-    const ship = this.ships.get(shipId);
-    if (ship) {
-      ship.status = status;
-
-      // Emit events
-      this.emit('shipStatusUpdated', { shipId, status });
-      moduleEventBus.emit({
-        type: 'STATUS_CHANGED',
-        moduleId: shipId,
-        moduleType: 'war' as ModuleType,
-        timestamp: Date.now(),
-        data: { status },
-      });
-    }
-  }
-
-  private getPriorityForShipType(type: WarShip['type']): number {
-    switch (type) {
-      case 'motherEarthRevenge':
-        return 5;
-      case 'midwayCarrier':
-        return 4;
-      case 'harbringerGalleon':
-        return 3;
-      case 'orionFrigate':
-        return 2;
-      case 'starSchooner':
-      case 'spitflare':
-        return 1;
-      default:
-        return 0;
-    }
-  }
-
-  // Update method for periodic tasks
-  public update(deltaTime: number): void {
+  protected onUpdate(deltaTime: number): void {
     // Update formations
     this.formations.forEach(formation => {
       if (formation.ships.length > 0) {
@@ -498,5 +224,298 @@ export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
         this.updateShipStatus(ship.id, 'retreating');
       }
     });
+  }
+
+  private initializeAutomationHandlers(): void {
+    this.subscribe(EventType.AUTOMATION_STARTED as string, (event: BaseEvent) => {
+      if (
+        event.moduleId &&
+        typeof event.moduleId === 'string' &&
+        event.data &&
+        typeof event.data === 'object' &&
+        'type' in event.data
+      ) {
+        const ship = this.ships.get(event.moduleId);
+        if (ship) {
+          switch (event.data.type) {
+            case 'formation':
+              if (isFormationChangeData(event.data)) {
+                this.handleFormationChange(ship, event.data);
+              }
+              break;
+            case 'engagement':
+              if (isEngagementData(event.data)) {
+                this.handleEngagement(ship, event.data);
+              }
+              break;
+            case 'repair':
+              this.handleRepair(ship);
+              break;
+            case 'shield':
+              this.handleShieldBoost(ship);
+              break;
+            case 'attack':
+              if (isAttackData(event.data)) {
+                this.handleAttack(ship, event.data);
+              }
+              break;
+            case 'retreat':
+              this.handleRetreat(ship);
+              break;
+          }
+        }
+      }
+    });
+  }
+
+  private handleFormationChange(ship: WarShip, data: FormationChangeData): void {
+    const { formation } = data;
+    if (formation) {
+      const formationId = `formation-${Date.now()}`;
+      this.formations.set(formationId, {
+        type: formation.type,
+        ships: [ship.id],
+        spacing: formation.spacing,
+        facing: formation.facing,
+      });
+    }
+  }
+
+  private handleEngagement(ship: WarShip, data: EngagementData): void {
+    const { targetId } = data;
+    if (targetId) {
+      const task: CombatTask = {
+        id: `combat-${targetId}`,
+        type: 'combat',
+        target: {
+          id: targetId,
+          position: { x: 0, y: 0 }, // Position will be updated in the update loop
+        },
+        priority: this.getPriorityForShipType(ship.type),
+        assignedAt: Date.now(),
+        status: 'in-progress',
+      };
+      this.tasks.set(ship.id, task);
+      this.updateShipStatus(ship.id, 'engaging');
+    }
+  }
+
+  private handleRepair(ship: WarShip): void {
+    if (ship.health < ship.maxHealth) {
+      ship.health = Math.min(ship.maxHealth, ship.health + ship.maxHealth * 0.2);
+      if (ship.health > ship.maxHealth * 0.3) {
+        this.updateShipStatus(ship.id, 'idle');
+      }
+    }
+  }
+
+  private handleShieldBoost(ship: WarShip): void {
+    if (ship.shield < ship.maxShield) {
+      ship.shield = Math.min(ship.maxShield, ship.shield + ship.maxShield * 0.3);
+    }
+  }
+
+  private handleAttack(ship: WarShip, data: AttackData): void {
+    const { targetId } = data;
+    if (targetId) {
+      const readyWeapon = ship.weapons.find(w => w.state.status === 'ready');
+      if (readyWeapon) {
+        readyWeapon.state.status = 'cooling';
+        readyWeapon.state.currentStats.cooldown = Date.now();
+        ship.energy -=
+          readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);
+
+        // Update combat stats
+        ship.combatStats.damageDealt +=
+          readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);
+      }
+    }
+  }
+
+  private handleRetreat(ship: WarShip): void {
+    this.updateShipStatus(ship.id, 'retreating');
+    const task = this.tasks.get(ship.id);
+    if (task) {
+      task.status = 'failed';
+      this.tasks.delete(ship.id);
+    }
+  }
+
+  public registerShip(ship: WarShip): void {
+    if (ship.capabilities.canJump) {
+      this.ships.set(ship.id, ship);
+
+      this.publish({
+        type: EventType.MODULE_ACTIVATED as string,
+        managerId: this.managerName,
+        moduleId: ship.id,
+        timestamp: Date.now(),
+        data: { ship, moduleType: 'war' },
+      });
+    }
+  }
+
+  public unregisterShip(shipId: string): void {
+    const ship = this.ships.get(shipId);
+    if (ship) {
+      // Remove from formations
+      this.formations.forEach(formation => {
+        const index = formation.ships.indexOf(shipId);
+        if (index !== -1) {
+          formation.ships.splice(index, 1);
+          if (formation.leader === shipId) {
+            formation.leader = formation.ships[0];
+          }
+        }
+      });
+
+      this.ships.delete(shipId);
+      this.tasks.delete(shipId);
+
+      this.publish({
+        type: EventType.MODULE_DEACTIVATED as string,
+        managerId: this.managerName,
+        moduleId: shipId,
+        timestamp: Date.now(),
+        data: { moduleType: 'war' },
+      });
+    }
+  }
+
+  public assignCombatTask(
+    shipId: string,
+    targetId: string,
+    position: Position,
+    formation?: {
+      type: 'offensive' | 'defensive' | 'balanced';
+      spacing: number;
+      facing: number;
+    }
+  ): void {
+    const ship = this.ships.get(shipId);
+    if (!ship || ship.status === 'disabled') {
+      return;
+    }
+
+    const task: CombatTask = {
+      id: `combat-${targetId}`,
+      type: 'combat',
+      target: {
+        id: targetId,
+        position,
+      },
+      priority: this.getPriorityForShipType(ship.type),
+      assignedAt: Date.now(),
+      status: 'queued',
+      formation,
+    };
+
+    this.tasks.set(shipId, task);
+    this.updateShipStatus(shipId, 'engaging');
+
+    this.publish({
+      type: EventType.AUTOMATION_STARTED as string,
+      managerId: this.managerName,
+      moduleId: shipId,
+      timestamp: Date.now(),
+      data: { task, moduleType: 'war' },
+    });
+  }
+
+  public completeTask(shipId: string): void {
+    const task = this.tasks.get(shipId);
+    const ship = this.ships.get(shipId);
+
+    if (task && ship) {
+      this.tasks.delete(shipId);
+      this.updateShipStatus(shipId, 'returning');
+
+      this.publish({
+        type: EventType.AUTOMATION_CYCLE_COMPLETE as string,
+        managerId: this.managerName,
+        moduleId: shipId,
+        timestamp: Date.now(),
+        data: { task, combatStats: ship.combatStats, moduleType: 'war' },
+      });
+    }
+  }
+
+  public updateShipTechBonuses(
+    shipId: string,
+    bonuses: { weaponEfficiency: number; shieldRegeneration: number; energyEfficiency: number }
+  ): void {
+    const ship = this.ships.get(shipId);
+    if (ship) {
+      ship.techBonuses = bonuses;
+    }
+  }
+
+  public createFormation(
+    type: 'offensive' | 'defensive' | 'balanced',
+    shipIds: string[],
+    spacing: number = 100
+  ): string {
+    const formationId = `formation-${Date.now()}`;
+    const validShips = shipIds.filter(id => this.ships.has(id));
+
+    if (validShips.length > 0) {
+      this.formations.set(formationId, {
+        type,
+        ships: validShips,
+        leader: validShips[0],
+        spacing,
+        facing: 0,
+      });
+
+      // Update tasks with formation info
+      validShips.forEach(shipId => {
+        const task = this.tasks.get(shipId);
+        if (task) {
+          task.formation = {
+            type,
+            spacing,
+            facing: 0,
+          };
+        }
+      });
+    }
+
+    return formationId;
+  }
+
+  private updateShipStatus(shipId: string, status: WarShip['status']): void {
+    const ship = this.ships.get(shipId);
+    if (ship) {
+      const previousStatus = ship.status;
+      ship.status = status;
+
+      if (previousStatus !== status) {
+        this.publish({
+          type: EventType.STATUS_CHANGED as string,
+          managerId: this.managerName,
+          moduleId: shipId,
+          timestamp: Date.now(),
+          data: { status, previousStatus, moduleType: 'war' },
+        });
+      }
+    }
+  }
+
+  private getPriorityForShipType(type: WarShip['type']): number {
+    switch (type) {
+      case 'motherEarthRevenge':
+        return 5;
+      case 'midwayCarrier':
+        return 4;
+      case 'harbringerGalleon':
+        return 3;
+      case 'orionFrigate':
+        return 2;
+      case 'starSchooner':
+      case 'spitflare':
+        return 1;
+      default:
+        return 0;
+    }
   }
 }
