@@ -68,9 +68,9 @@ export interface EventDevToolsConfig {
   detectMemoryLeaks: boolean;
 
   /**
-   * Warning threshold for number of subscribers to a single event
+   * warning threshold for number of subscribers to a single event
    */
-  subscriberWarningThreshold: number;
+  subscriberwarningThreshold: number;
 }
 
 /**
@@ -84,7 +84,7 @@ const DEFAULT_CONFIG: EventDevToolsConfig = {
   trackPerformance: true,
   slowEventThreshold: 50, // ms
   detectMemoryLeaks: true,
-  subscriberWarningThreshold: 20,
+  subscriberwarningThreshold: 20,
 };
 
 /**
@@ -321,9 +321,9 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
 
     // Check for subscriber count warnings
     const subscriberCount = this.targetEventBus.getSubscriptionCountForType(eventType);
-    if (subscriberCount > this.config.subscriberWarningThreshold && action === 'subscribe') {
+    if (subscriberCount > this.config.subscriberwarningThreshold && action === 'subscribe') {
       console.warn(
-        `[EventDevTools] High subscriber count: ${eventType} has ${subscriberCount} subscribers (threshold: ${this.config.subscriberWarningThreshold})`
+        `[EventDevTools] High subscriber count: ${eventType} has ${subscriberCount} subscribers (threshold: ${this.config.subscriberwarningThreshold})`
       );
     }
 

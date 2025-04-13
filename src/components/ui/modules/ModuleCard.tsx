@@ -23,16 +23,24 @@ const useUpgradeProgressTracking = (moduleId: string): number => {
 
   useEffect(() => {
     const handleUpgradeProgress = (event: BaseEvent) => {
-      if (!event) return;
+      if (!event) {
+        return;
+      }
 
       // Check moduleId match
-      if (event.moduleId !== moduleId) return;
+      if (event.moduleId !== moduleId) {
+        return;
+      }
 
       // Validate data structure
-      if (!event.data || typeof event.data !== 'object') return;
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
 
-      const data = event.data;
-      if (!('progress' in data) || typeof data.progress !== 'number') return;
+      const { data } = event;
+      if (!('progress' in data) || typeof data.progress !== 'number') {
+        return;
+      }
 
       // Set progress from validated data
       setProgress(data.progress);
@@ -45,7 +53,9 @@ const useUpgradeProgressTracking = (moduleId: string): number => {
     );
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [moduleId]);
 
@@ -73,21 +83,16 @@ export const ModuleCard = memo(function ModuleCard({
 
   // Use updateStatus to track status changes
   useEffect(() => {
-    if (module && typeof updateStatus === 'function') {
-      // We don't have direct access to current status update events,
-      // but we can leverage the current status in our component to refresh it
-      if (currentStatus) {
-        // Create a small interval to check if module needs status refresh
-        const statusCheckInterval = setInterval(() => {
-          // Only update if module exists and has a status
-          if (module) {
-            // Refresh with current status
-            updateStatus(currentStatus);
-          }
-        }, 30000); // Check every 30 seconds
+    if (module && typeof updateStatus === 'function' && currentStatus) {
+      const statusCheckInterval = setInterval(() => {
+        // Only update if module exists and has a status
+        if (module) {
+          // Refresh with current status
+          updateStatus(currentStatus);
+        }
+      }, 30000); // Check every 30 seconds
 
-        return () => clearInterval(statusCheckInterval);
-      }
+      return () => clearInterval(statusCheckInterval);
     }
   }, [moduleId, module, updateStatus, currentStatus]);
 
@@ -127,17 +132,23 @@ export const ModuleCard = memo(function ModuleCard({
   if (error || !module) {
     return (
       <div className={`module-card module-card--error ${compact ? 'module-card--compact' : ''}`}>
-        <div className="module-card__error">{error || 'Module not found'}</div>
+        <div className="module-card__error">{error ?? 'Module not found'}</div>
       </div>
     );
   }
 
   // Determine efficiency class based on metrics
   const getEfficiencyClass = () => {
-    if (!metrics || !metrics.efficiency) return '';
+    if (!metrics?.efficiency) {
+      return '';
+    }
 
-    if (metrics.efficiency >= 0.9) return 'module-card--high-efficiency';
-    if (metrics.efficiency >= 0.7) return 'module-card--medium-efficiency';
+    if (metrics.efficiency >= 0.9) {
+      return 'module-card--high-efficiency';
+    }
+    if (metrics.efficiency >= 0.7) {
+      return 'module-card--medium-efficiency';
+    }
     return 'module-card--low-efficiency';
   };
 

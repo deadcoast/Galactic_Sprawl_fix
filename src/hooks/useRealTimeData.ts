@@ -115,7 +115,7 @@ export function useRealTimeData<T>({
               action: 'cleanupEffect',
               bufferId,
             }
-          );
+          ).slice(________);
         });
       }
     };

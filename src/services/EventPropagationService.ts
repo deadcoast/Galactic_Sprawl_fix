@@ -47,13 +47,13 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           serviceName: 'EventPropagationService',
           timestamp: Date.now(),
         });
-        errorLoggingService.logWarn(
+        errorLoggingService.logwarn(
           '[EventPropagationService] Notified component registry of initialization'
         );
       }
     } else {
       // Log that we're initializing without component registry
-      errorLoggingService.logWarn(
+      errorLoggingService.logwarn(
         '[EventPropagationService] Initializing without component registry dependency'
       );
     }
@@ -62,7 +62,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (_dependencies) {
       // Log the dependencies we received
       const dependencyNames = Object.keys(_dependencies).join(', ');
-      errorLoggingService.logWarn(
+      errorLoggingService.logwarn(
         `[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`
       );
 
@@ -72,7 +72,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
         // Configure error handling with the error logging service
         if (errorLogging) {
-          errorLoggingService.logWarn('[EventPropagationService] Error logging service available');
+          errorLoggingService.logwarn('[EventPropagationService] Error logging service available');
 
           // Set up a custom error handler using the provided error logging service
           this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {
@@ -221,7 +221,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
       return;
     }
 
-    // Forward to error logging service
+    // Forcombatd to error logging service
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       service: 'EventPropagationService',
       ...context,

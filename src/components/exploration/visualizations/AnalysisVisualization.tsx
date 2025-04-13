@@ -22,14 +22,14 @@ import {
   TrendAnalysisConfig,
 } from '../../../types/exploration/DataAnalysisTypes';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
-import { BarChart } from './charts/BarChart';
-import { ClusterVisualization } from './charts/ClusterVisualization';
-import { HeatMap } from './charts/HeatMap';
-import { LineChart } from './charts/LineChart';
-import { PredictionVisualization } from './charts/PredictionVisualization';
-import { ResourceMappingVisualization } from './charts/ResourceMappingVisualization';
-import { ScatterPlot } from './charts/ScatterPlot';
-import { VirtualizedDataTable } from './charts/VirtualizedDataTable';
+import { BarChart } from './BarChart';
+import { ClusterVisualization } from './ClusterVisualization';
+import { HeatMap } from './HeatMap';
+import { LineChart } from './LineChart';
+import { PredictionVisualization } from './PredictionVisualization';
+import { ResourceMappingVisualization } from './ResourceMappingVisualization';
+import { ScatterPlot } from './ScatterPlot';
+import { VirtualizedDataTable } from './VirtualizedDataTable';
 
 // Define the maximum number of data points to display at once
 const MAX_DATA_POINTS = 100;

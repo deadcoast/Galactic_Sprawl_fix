@@ -673,7 +673,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
               <p>Memory is growing at a rate that indicates a probable leak.</p>
               {analysis.isAccelerating && (
                 <p>
-                  <strong>Warning:</strong> Growth rate is accelerating!
+                  <strong>warning:</strong> Growth rate is accelerating!
                 </p>
               )}
             </div>

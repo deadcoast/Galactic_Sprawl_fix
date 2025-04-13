@@ -10,7 +10,7 @@ import { ResourceType } from '../types/resources/ResourceTypes';
 import { stringToResourceType } from '../utils/resources/ResourceTypeConverter';
 import { RegistryEventData, ResourceRegistry } from './ResourceRegistry';
 
-// Forward declaration of ResourceFlowManager to avoid circular dependencies
+// Forcombatd declaration of ResourceFlowManager to avoid circular dependencies
 interface ResourceFlowManager {
   // Add minimal interface needed for this integration
   getAllResourceStates?: () => Map<string, { available: number }>;

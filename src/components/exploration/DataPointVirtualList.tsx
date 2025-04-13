@@ -89,7 +89,7 @@ const PropertyRow = styled('div')(({ theme }) => ({
 
 // Create styled Paper components for selected and unselected states
 const DataPointPaper = styled(Paper, {
-  shouldForwardProp: prop => prop !== 'isSelected',
+  shouldForcombatdProp: prop => prop !== 'isSelected',
 })<{ isSelected?: boolean }>(({ theme, isSelected }) => ({
   padding: theme.spacing(1.5),
   margin: theme.spacing(0.5),

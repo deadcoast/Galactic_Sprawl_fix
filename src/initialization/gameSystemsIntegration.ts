@@ -377,7 +377,7 @@ export function integrateWithGameSystems(): () => void {
             console.log('Mining tech unlocked:', payload.nodeId);
             break;
 
-          case 'warFleet':
+          case 'combatFleet':
           case 'weapons':
           case 'defense':
             // Notify combat systems of the new tech
@@ -506,7 +506,7 @@ function setupCrossManagerCommunication() {
     if (isTechTreeNodeUnlockedEvent(payload)) {
       // Ensure node exists before proceeding
       if (!payload.node) {
-        errorLoggingService.logWarn('Received TECH_NODE_UNLOCKED event without node data', {
+        errorLoggingService.logwarn('Received TECH_NODE_UNLOCKED event without node data', {
           system: 'gameSystemsIntegration',
           event: EventType.TECH_NODE_UNLOCKED,
           nodeId: payload.nodeId,
@@ -564,7 +564,7 @@ function setupCrossManagerCommunication() {
           // Example: Trigger unique game events or unlock powerful abilities
           break;
         default:
-          errorLoggingService.logWarn(`Unknown tech category unlocked: ${payload.node.category}`, {
+          errorLoggingService.logwarn(`Unknown tech category unlocked: ${payload.node.category}`, {
             system: 'gameSystemsIntegration',
             event: EventType.TECH_NODE_UNLOCKED,
             nodeId: payload.nodeId,

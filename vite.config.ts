@@ -110,7 +110,7 @@ export default defineConfig({
     // Optimize CSS and split into separate files
     cssCodeSplit: true,
     // Set chunk size warnings threshold
-    chunkSizeWarningLimit: 1000, // 1MB
+    chunkSizewarningLimit: 1000, // 1MB
   },
   esbuild: {
     target: 'es2020',

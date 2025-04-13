@@ -149,7 +149,7 @@
 /* Superstructure Section Styles */
 .superstructure-section {
   position: absolute;
-  animation: expand var(--expansion-speed) ease-out forwards;
+  animation: expand var(--expansion-speed) ease-out forcombatds;
 }
 
 .superstructure-core {

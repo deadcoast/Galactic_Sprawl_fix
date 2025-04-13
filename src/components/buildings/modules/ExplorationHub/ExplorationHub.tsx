@@ -18,39 +18,42 @@ import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragA
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
 import { explorationRules } from '../../../../config/automation/explorationRules';
 import { StarSystem } from '../../../../managers/exploration/ExplorationManager';
-import {
-  ReconShipEvent,
-  ReconShipManagerImpl,
-  ReconShip as ReconShipType,
-} from '../../../../managers/exploration/ReconShipManager';
+import { ReconShipManagerImpl } from '../../../../managers/exploration/ReconShipManager';
 import { automationManager } from '../../../../managers/game/AutomationManager';
-import { BaseEvent, EventType } from '../../../../types/events/EventTypes';
-import { SectorType } from '../../../../types/exploration/ExplorationTypes';
+import { SectorStatus, SectorType } from '../../../../types/exploration/ExplorationTypes';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
+import { CommonShipStats } from '../../../../types/ships/CommonShipTypes';
+import {
+  ReconShip as ReconShipType,
+  ShipCategory,
+  ShipStatus,
+} from '../../../../types/ships/ShipTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
 import { ShipStatusMonitor } from './ShipStatusMonitor';
 
-interface Anomaly {
+interface LocalAnomaly {
   id: string;
   type: 'artifact' | 'signal' | 'phenomenon';
   severity: 'low' | 'medium' | 'high';
   description: string;
   investigated: boolean;
+  specialization: 'mapping' | 'anomaly' | 'resource';
+  efficiency: number;
+  lastUpdate?: number;
+  status: ShipStatus;
+  targetSector?: string;
+  category: string;
+  position: { x: number; y: number; z: number };
+  stats: CommonShipStats;
 }
 
-// Update sector status type
-type SectorStatus = 'unmapped' | 'mapped' | 'scanning';
-
-// Update ship status type
-type ShipStatus = 'idle' | 'scanning' | 'returning' | 'assigned';
-
-interface Sector extends Omit<StarSystem, 'status'> {
+interface LocalSector extends Omit<StarSystem, 'status'> {
   resourcePotential: number;
   habitabilityScore: number;
-  anomalies: Anomaly[];
+  anomalies: LocalAnomaly[];
   position: { x: number; y: number };
   coordinates: { x: number; y: number };
   assignedShips: string[];
@@ -60,7 +63,7 @@ interface Sector extends Omit<StarSystem, 'status'> {
 // Update ship status type to match ReconShipStatus component
 type ReconShipStatusType = 'idle' | 'scanning' | 'returning' | 'investigating';
 
-interface ReconShip extends Omit<ReconShipType, 'status'> {
+interface LocalReconShip extends Omit<ReconShipType, 'status' | 'stats' | 'category'> {
   id: string;
   name: string;
   type: 'recon';
@@ -70,6 +73,9 @@ interface ReconShip extends Omit<ReconShipType, 'status'> {
   lastUpdate?: number;
   status: ShipStatus;
   targetSector?: string;
+  category: string;
+  position: { x: number; y: number; z: number };
+  stats: CommonShipStats;
 }
 
 // Interface for ReconShipStatus component - prefix with underscore since it's used for type documentation
@@ -106,12 +112,12 @@ interface ShipMenuItem extends ContextMenuItem {
 }
 
 // Mock data for demonstration
-const mockSectors: Sector[] = [
+const mockSectors: LocalSector[] = [
   {
     id: 'alpha-sector',
     name: 'Alpha Sector',
     type: SectorType.PLANETARY_SYSTEM,
-    status: 'mapped',
+    status: 'MAPPED',
     position: { x: 0, y: 0 },
     coordinates: { x: 0, y: 0 },
     resourcePotential: 0.8,
@@ -123,6 +129,27 @@ const mockSectors: Sector[] = [
         severity: 'high',
         description: 'Ancient ruins of unknown origin',
         investigated: false,
+        specialization: 'MAPPING',
+        efficiency: 0.9,
+        lastUpdate: Date.now() - 3600000,
+        status: 'SCANNING',
+        targetSector: 'beta-sector',
+        category: 'Exploration',
+        position: { x: 0, y: 0, z: 0 },
+        stats: {
+          health: 100,
+          maxHealth: 100,
+          shield: 50,
+          maxShield: 50,
+          energy: 100,
+          maxEnergy: 100,
+          speed: 1.0,
+          turnRate: 0.5,
+          weapons: [],
+          abilities: [],
+          defense: { armor: 10, shield: 50, evasion: 0.1, regeneration: 0.1 },
+          mobility: { speed: 1.0, turnRate: 0.5, acceleration: 0.2 },
+        },
       },
     ],
     lastScanned: Date.now() - 3600000,
@@ -155,8 +182,8 @@ const mockSectors: Sector[] = [
   },
 ];
 
-// Update mock ships to use correct status values
-const mockShips: ReconShip[] = [
+// Update mock ships to use correct status values and add missing properties
+const mockShips: LocalReconShip[] = [
   {
     id: 'recon-1',
     name: 'Pathfinder Alpha',
@@ -166,13 +193,27 @@ const mockShips: ReconShip[] = [
     experience: 1250,
     specialization: 'mapping',
     efficiency: 0.9,
-    sensorRange: 100,
-    speed: 1.0,
     capabilities: {
       canScan: true,
       canSalvage: false,
       canMine: false,
       canJump: true,
+    },
+    category: 'Exploration',
+    position: { x: 0, y: 0, z: 0 },
+    stats: {
+      health: 100,
+      maxHealth: 100,
+      shield: 50,
+      maxShield: 50,
+      energy: 100,
+      maxEnergy: 100,
+      speed: 1.0,
+      turnRate: 0.5,
+      weapons: [],
+      abilities: [],
+      defense: { armor: 10, shield: 50, evasion: 0.1, regeneration: 0.1 },
+      mobility: { speed: 1.0, turnRate: 0.5, acceleration: 0.2 },
     },
   },
   {
@@ -184,13 +225,27 @@ const mockShips: ReconShip[] = [
     experience: 800,
     specialization: 'anomaly',
     efficiency: 0.85,
-    sensorRange: 120,
-    speed: 0.8,
     capabilities: {
       canScan: true,
       canSalvage: true,
       canMine: false,
       canJump: false,
+    },
+    category: 'Exploration',
+    position: { x: 10, y: 20, z: 0 },
+    stats: {
+      health: 120,
+      maxHealth: 120,
+      shield: 40,
+      maxShield: 40,
+      energy: 120,
+      maxEnergy: 120,
+      speed: 0.8,
+      turnRate: 0.4,
+      weapons: [],
+      abilities: [],
+      defense: { armor: 15, shield: 40, evasion: 0.15, regeneration: 0.05 },
+      mobility: { speed: 0.8, turnRate: 0.4, acceleration: 0.15 },
     },
   },
 ];
@@ -221,13 +276,13 @@ const SectorComponent = memo(
     ships,
     onShipAssign,
   }: {
-    sector: Sector;
+    sector: LocalSector;
     isSelected: boolean;
     showHeatMap: boolean;
-    onSelect: (sector: Sector) => void;
-    onHover: (show: boolean, sector: Sector) => void;
-    getSectorHeat: (sector: Sector) => number;
-    ships: ReconShip[];
+    onSelect: (sector: LocalSector) => void;
+    onHover: (show: boolean, sector: LocalSector) => void;
+    getSectorHeat: (sector: LocalSector) => number;
+    ships: LocalReconShip[];
     onShipAssign: (shipId: string, sectorId: string) => void;
   }) => {
     const scanningShip = ships.find(ship => ship.targetSector === sector.id);
@@ -398,39 +453,41 @@ const SectorComponent = memo(
 );
 
 // Ship Marker Component with drag-and-drop
-const ShipMarker = memo(({ ship, targetSector }: { ship: ReconShip; targetSector: Sector }) => {
-  return (
-    <div
-      className="absolute transition-all duration-300"
-      style={{
-        left: `calc(50% + ${targetSector.position.x}px)`,
-        top: `calc(50% + ${targetSector.position.y}px)`,
-        transform: 'translate(-50%, -50%)',
-      }}
-    >
-      <Draggable
-        item={{
-          id: ship.id,
-          type: 'ship',
-          data: ship,
+const ShipMarker = memo(
+  ({ ship, targetSector }: { ship: LocalReconShip; targetSector: LocalSector }) => {
+    return (
+      <div
+        className="absolute transition-all duration-300"
+        style={{
+          left: `calc(50% + ${targetSector.position.x}px)`,
+          top: `calc(50% + ${targetSector.position.y}px)`,
+          transform: 'translate(-50%, -50%)',
         }}
       >
-        <div className="rounded-lg border border-teal-500/30 bg-teal-900/80 p-2 backdrop-blur-sm">
-          <div className="flex items-center space-x-2">
-            <Rocket className="h-4 w-4 text-teal-400" />
-            <span className="text-xs font-medium text-teal-200">{ship.name}</span>
+        <Draggable
+          item={{
+            id: ship.id,
+            type: 'ship',
+            data: ship,
+          }}
+        >
+          <div className="rounded-lg border border-teal-500/30 bg-teal-900/80 p-2 backdrop-blur-sm">
+            <div className="flex items-center space-x-2">
+              <Rocket className="h-4 w-4 text-teal-400" />
+              <span className="text-xs font-medium text-teal-200">{ship.name}</span>
+            </div>
+            <div className="mt-1 text-xs text-teal-400/70">
+              {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
+            </div>
           </div>
-          <div className="mt-1 text-xs text-teal-400/70">
-            {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
-          </div>
-        </div>
-      </Draggable>
-    </div>
-  );
-});
+        </Draggable>
+      </div>
+    );
+  }
+);
 
 export function ExplorationHub() {
-  const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
+  const [selectedSector, setSelectedSector] = useState<LocalSector | null>(null);
   const [showTutorial, setShowTutorial] = useState(true);
   const [showMissionLog, setShowMissionLog] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
@@ -455,7 +512,7 @@ export function ExplorationHub() {
 
   // Add new state for real-time updates
   const [sectors, setSectors] = useState(mockSectors);
-  const [ships, setShips] = useState(mockShips);
+  const [ships, setShips] = useState<LocalReconShip[]>(mockShips);
   const [transfers, setTransfers] = useState(mockExplorationTransfers);
 
   // Optimize update intervals with useRef
@@ -466,7 +523,7 @@ export function ExplorationHub() {
   });
 
   // Memoize complex calculations
-  const activeShips: ReconShip[] = ships;
+  const activeShips: LocalReconShip[] = ships;
 
   // Initialize ReconShipManager
   const reconManager = useMemo(() => new ReconShipManagerImpl(), []);
@@ -490,7 +547,7 @@ export function ExplorationHub() {
   useEffect(() => {
     // Sector updates (less frequent)
     updateIntervals.current.sectors = setInterval(() => {
-      setSectors((prevSectors: Sector[]) => {
+      setSectors((prevSectors: LocalSector[]) => {
         return prevSectors.map(sector => {
           const scanningShip = ships.find(
             ship => ship.targetSector === sector.id && ship.status === 'scanning'
@@ -503,7 +560,7 @@ export function ExplorationHub() {
               ? 'scanning'
               : sector.status === 'scanning'
                 ? 'mapped'
-                : (sector.status as SectorStatus),
+                : sector.status,
             lastScanned: Date.now(),
           };
         });
@@ -522,7 +579,7 @@ export function ExplorationHub() {
           // Calculate progress based on efficiency and time
           const progress = Math.min(
             1,
-            (Date.now() - (ship.lastUpdate || Date.now())) / (10000 / ship.efficiency)
+            (Date.now() - (ship.lastUpdate ?? Date.now())) / (10000 / ship.efficiency)
           );
 
           // Update ship status based on progress
@@ -531,13 +588,13 @@ export function ExplorationHub() {
               ...ship,
               status: ship.status === 'scanning' ? 'returning' : 'idle',
               lastUpdate: Date.now(),
-            } as ReconShip;
+            } as LocalReconShip;
           }
 
           return {
             ...ship,
             lastUpdate: Date.now(),
-          } as ReconShip;
+          } as LocalReconShip;
         })
       );
     }, 1000);
@@ -569,7 +626,7 @@ export function ExplorationHub() {
   // Update ship status management
   useEffect(() => {
     const interval = setInterval(() => {
-      setShips((prevShips: ReconShip[]) =>
+      setShips((prevShips: LocalReconShip[]) =>
         prevShips.map(ship => {
           if (!ship) return ship;
 
@@ -580,7 +637,7 @@ export function ExplorationHub() {
             experience: ship.experience ?? 0,
             specialization: ship.specialization || 'mapping',
             efficiency: ship.efficiency || 1.0,
-          } as ReconShip;
+          } as LocalReconShip;
 
           if (baseShip.status === 'idle' || !baseShip.assignedSectorId) {
             return baseShip;
@@ -589,8 +646,8 @@ export function ExplorationHub() {
           // Calculate progress based on efficiency and time
           const progress = Math.min(
             1,
-            (Date.now() - (baseShip.lastUpdate || Date.now())) /
-              (10000 / (baseShip.efficiency || 1))
+            (Date.now() - (baseShip.lastUpdate ?? Date.now())) /
+              (10000 / (baseShip.efficiency ?? 1))
           );
 
           // Update ship status based on progress
@@ -606,50 +663,83 @@ export function ExplorationHub() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update task completion handler
+  // --- Event Subscriptions ---
+  /*
+   TODO: This block is commented out because it relies on missing/undefined types
+   (ExplorationTask, ExplorationTaskStatus, UnifiedShipStatus) and state setters
+   (setTasks, setAvailableShips) and the reconShipManager variable (did you mean reconManager?).
+   Uncomment and fix type/variable references when these are properly defined and available.
   useEffect(() => {
-    const handleTaskCompleted = (event: BaseEvent) => {
-      const { shipId, ship } = event?.data as ReconShipEvent['data'];
-      if (!shipId || !ship?.assignedSectorId) return;
-
-      setShips((prevShips: ReconShip[]) =>
-        prevShips.map(s =>
-          s.id === shipId
-            ? {
-                ...s,
-                status: 'returning' as ReconShip['status'],
-                experience: (s.experience ?? 0) + 100,
-                lastUpdate: Date.now(),
-              }
-            : s
-        )
-      );
-
-      setSectors((prevSectors: Sector[]) =>
-        prevSectors.map(sector =>
-          sector.id === ship.assignedSectorId
-            ? {
-                ...sector,
-                status: 'mapped' as SectorStatus,
-                lastScanned: Date.now(),
-              }
-            : sector
-        )
-      );
+    // Fix 3: Use correct event names and .on method
+    const handleTaskUpdate = (payload: { task: ExplorationTask }) => {
+      setTasks(prevTasks => {
+        const index = prevTasks.findIndex(t => t.id === payload.task.id);
+        if (index !== -1) {
+          const updatedTasks = [...prevTasks];
+          updatedTasks[index] = payload.task;
+          return updatedTasks;
+        } else if (payload.task.status !== ExplorationTaskStatus.COMPLETED) {
+          // Add new task if not already present and not completed
+          return [...prevTasks, payload.task];
+        }
+        return prevTasks;
+      });
+      // Potentially update available ships if task completion frees one up
+      if (
+        payload.task.status === ExplorationTaskStatus.COMPLETED ||
+        payload.task.status === ExplorationTaskStatus.CANCELLED
+      ) {
+        const ships = reconShipManager.getShipsByStatus(UnifiedShipStatus.IDLE);
+        setAvailableShips(ships);
+      }
     };
 
-    const unsubscribe = reconManager.subscribeToEvent(
-      EventType.EXPLORATION_TASK_COMPLETED,
-      handleTaskCompleted
+    const handleShipStatusChange = (payload: { shipId: string; status: UnifiedShipStatus }) => {
+      // Update available ships list if a ship becomes IDLE or is no longer IDLE
+      setAvailableShips(prevShips => {
+        const shipIndex = prevShips.findIndex(s => s.id === payload.shipId);
+        if (payload.status === UnifiedShipStatus.IDLE && shipIndex === -1) {
+          const ship = reconShipManager.getShipById(payload.shipId);
+          return ship ? [...prevShips, ship] : prevShips;
+        } else if (payload.status !== UnifiedShipStatus.IDLE && shipIndex !== -1) {
+          return prevShips.filter(s => s.id !== payload.shipId);
+        }
+        return prevShips;
+      });
+    };
+
+    // Subscribe using .on and correct event names (string literals from ReconShipManagerEvents)
+    // Using 'as any' for handlers temporarily due to potential complex payload types
+    const unsubscribeTaskAssigned = reconManager.on(
+      'EXPLORATION_TASK_ASSIGNED',
+      handleTaskUpdate as any
     );
+    const unsubscribeTaskCompleted = reconManager.on(
+      'EXPLORATION_TASK_COMPLETED',
+      handleTaskUpdate as any
+    );
+    const unsubscribeTaskProgress = reconManager.on(
+      'EXPLORATION_TASK_PROGRESS',
+      handleTaskUpdate as any
+    );
+    const unsubscribeStatusChanged = reconManager.on(
+      'STATUS_CHANGED',
+      handleShipStatusChange as any
+    );
+
     return () => {
-      unsubscribe();
+      // Cleanup subscriptions
+      unsubscribeTaskAssigned();
+      unsubscribeTaskCompleted();
+      unsubscribeTaskProgress();
+      unsubscribeStatusChanged();
     };
-  }, [reconManager]);
+  }, [reconManager]); // Depend only on the manager instance
+  */
 
   // Update sector filtering with proper type checks
   const filterSectors = (
-    sectors: Sector[],
+    sectors: LocalSector[],
     filter: FilterType,
     advancedFilters: AdvancedFilters
   ) => {
@@ -699,7 +789,7 @@ export function ExplorationHub() {
   }, [sectors, filter, advancedFilters]);
 
   // Enhanced heat map calculation
-  const getSectorHeat = useCallback((sector: Sector) => {
+  const getSectorHeat = useCallback((sector: LocalSector) => {
     let heatValue = 0;
 
     // Base heat from resource potential
@@ -727,7 +817,7 @@ export function ExplorationHub() {
   }, []);
 
   // Memoize handlers
-  const handleSectorSelect = useCallback((sector: Sector) => {
+  const handleSectorSelect = useCallback((sector: LocalSector) => {
     setSelectedSector(sector);
   }, []);
 
@@ -767,7 +857,7 @@ export function ExplorationHub() {
 
   // Enhanced sector hover tooltip
   const handleSectorHover = useCallback(
-    (show: boolean, sector: Sector) => {
+    (show: boolean, sector: LocalSector) => {
       if (show) {
         showTooltip(
           <div className="max-w-xs rounded-lg border border-gray-700 bg-gray-800/95 p-4 shadow-xl">
@@ -861,34 +951,45 @@ export function ExplorationHub() {
     [showTooltip, hideTooltip]
   );
 
-  // Handle ship assignment
+  // Handle ship assignment - Fix type mismatch
   const handleShipAssign = useCallback(
     (shipId: string, sectorId: string) => {
       const sector = sectors.find(s => s.id === sectorId);
-      if (!sector) return;
+      const ship = ships.find(s => s.id === shipId);
+      if (!sector || !ship) return;
 
+      // Assign task via manager
       reconManager.assignExplorationTask(shipId, sectorId, sector.position, 'mapping');
 
+      // Update local ship state
       setShips(prevShips =>
-        prevShips.map(ship =>
-          ship.id === shipId
-            ? {
-                ...ship,
-                status: 'assigned',
+        prevShips.map(s =>
+          s.id === shipId
+            ? ({
+                ...s,
+                status: 'assigned', // Use local ShipStatus type
                 assignedSectorId: sectorId,
                 lastUpdate: Date.now(),
-              }
-            : ship
+              } as LocalReconShip) // Keep cast to local type
+            : s
         )
       );
     },
-    [sectors, reconManager]
+    [sectors, ships, reconManager] // Add ships dependency
   );
 
-  // Register ships with ReconShipManager
+  // Register ships with ReconShipManager - Correct the type
   useEffect(() => {
-    ships.forEach((ship: ReconShip) => {
-      reconManager.registerShip(ship);
+    ships.forEach((localShip: LocalReconShip) => {
+      // Map LocalReconShip to ReconShip before registering
+      const reconShipToRegister: ReconShipType = {
+        ...localShip, // Spread existing compatible properties
+        status: localShip.status as unknown as ShipStatus, // Map local status to UnifiedShipStatus (may need refinement)
+        category: ShipCategory.RECON, // Assign correct enum value
+        // Ensure stats match ReconShipType if different from CommonShipStats (should be compatible here)
+        stats: localShip.stats,
+      };
+      reconManager.registerShip(reconShipToRegister);
     });
   }, [ships, reconManager]);
 

@@ -121,7 +121,7 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
 
   /**
    * Creates a new EventBatcher
-   * @param targetEventBus The event bus to forward processed events to
+   * @param targetEventBus The event bus to forcombatd processed events to
    * @param config Configuration options for batching
    */
   constructor(

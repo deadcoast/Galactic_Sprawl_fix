@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCombatSystem } from '../../../hooks/combat/useCombatSystem';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
-import { FactionId } from '../../../types/ships/FactionTypes';
+import { FactionId } from '../../../types/ships/FactionShipTypes';
 import { FormationTacticsPanel } from './FormationTacticsPanel';
 
 interface FormationTacticsContainerProps {

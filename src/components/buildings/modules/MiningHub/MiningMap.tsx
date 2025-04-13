@@ -176,7 +176,7 @@ export function MiningMap({
                       </div>
                     </div>
 
-                    {/* Depletion Warning */}
+                    {/* Depletion warning */}
                     {resource.depletion > 0.5 && (
                       <AlertTriangle className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500" />
                     )}

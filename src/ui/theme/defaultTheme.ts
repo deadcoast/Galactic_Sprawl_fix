@@ -26,7 +26,7 @@ export const defaultTheme: Theme = {
 
     // Status colors
     [ThemeColorName.SUCCESS]: '#10B981',
-    [ThemeColorName.WARNING]: '#F59E0B',
+    [ThemeColorName.combatNING]: '#F59E0B',
     [ThemeColorName.DANGER]: '#EF4444',
     [ThemeColorName.INFO]: '#3B82F6',
 

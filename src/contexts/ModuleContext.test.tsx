@@ -269,7 +269,7 @@ class ModuleManagerWrapper implements IModuleManager {
     return Object.values(this.modules);
   }
 
-  // For backward compatibility
+  // For backcombatd compatibility
   getAllModules() {
     return this.getModules();
   }

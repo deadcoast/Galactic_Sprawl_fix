@@ -107,7 +107,7 @@ export function WeaponSpecialization({
                     <div className="grid grid-cols-2 gap-2">
                       {spec.requirements.upgrades.map(upgradeId => {
                         const upgrade = availableUpgrades.find(u => u.id === upgradeId);
-                        const isUnlocked = upgrade?.unlocked || false;
+                        const isUnlocked = upgrade?.unlocked ?? false;
                         return (
                           <div
                             key={upgradeId}
@@ -117,7 +117,7 @@ export function WeaponSpecialization({
                                 : 'bg-gray-800 text-gray-400'
                             }`}
                           >
-                            {upgrade?.name || upgradeId}
+                            {upgrade?.name ?? upgradeId}
                           </div>
                         );
                       })}

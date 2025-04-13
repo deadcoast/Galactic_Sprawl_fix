@@ -103,7 +103,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         break;
 
       default:
-        throw new Error(`Unknown message type: ${type}`);
+        throw new Error(`Unknown message type: ${'type'}`);
     }
 
     // Send the successful result back to the main thread
@@ -172,9 +172,15 @@ function sortData(payload: SortingPayload): Record<string, unknown>[] {
     const bValue = b[key];
 
     // Handle null/undefined values
-    if (aValue == null && bValue == null) return 0;
-    if (aValue == null) return order === 'asc' ? -1 : 1;
-    if (bValue == null) return order === 'asc' ? 1 : -1;
+    if (aValue == null && bValue == null) {
+      return 0;
+    }
+    if (aValue == null) {
+      return order === 'asc' ? -1 : 1;
+    }
+    if (bValue == null) {
+      return order === 'asc' ? 1 : -1;
+    }
 
     // Compare numbers
     if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -182,8 +188,8 @@ function sortData(payload: SortingPayload): Record<string, unknown>[] {
     }
 
     // Convert to strings for comparison
-    const aString = String(aValue);
-    const bString = String(bValue);
+    const aString = String('aValue');
+    const bString = String('bValue');
 
     return order === 'asc' ? aString.localeCompare(bString) : bString.localeCompare(aString);
   });

@@ -9,8 +9,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
-import { ReconShip, ShipCategory, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes';
-
+import { ReconShip, ShipCategory, UnifiedShipStatus } from '../../types/ships/ShipTypes';
 /**
  * Define Event Map for this manager using string literals
  * Added index signature
@@ -28,7 +27,7 @@ interface ReconShipManagerEvents {
     position: Position;
     ship: ReconShip;
   }) => void;
-  [key: string]: (...args: any[]) => any; // Added index signature
+  [key: string]: (...args: unknown[]) => void; // Added index signature
 }
 
 /**
@@ -36,7 +35,7 @@ interface ReconShipManagerEvents {
  */
 export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEvents> {
   private ships: Map<string, ReconShip> = new Map();
-  private tasks: Map<string, any> = new Map(); // TODO: Define ExplorationTask type properly
+  private tasks: Map<string, unknown> = new Map(); // TODO: Define ExplorationTask type properly
 
   constructor() {
     super();
@@ -220,7 +219,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
             status: assignedShip.status,
             ship: assignedShip,
           };
-          this.emit('STATUS_CHANGED', statusPayload as any);
+          this.emit('STATUS_CHANGED', statusPayload as ReconShipManagerEvents['STATUS_CHANGED']);
         }
       }
     }
@@ -228,7 +227,9 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
 
   public updateShipPosition(shipId: string, position: Position): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
     ship.position = position;
     const payload: { shipId: string; position: Position; ship: ReconShip } = {
       shipId,

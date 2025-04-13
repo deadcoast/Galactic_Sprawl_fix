@@ -284,5 +284,5 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
   );
 };
 
-// Export as default for backward compatibility
+// Export as default for backcombatd compatibility
 export default ResourceOptimizationSuggestions;

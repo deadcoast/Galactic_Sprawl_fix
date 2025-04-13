@@ -10,7 +10,7 @@ import { ResourceType, ResourceTypeString } from '../types/resources/ResourceTyp
 import { ResourceTypeConverter } from './ResourceTypeConverter';
 
 /**
- * Type alias for string-based resource types (for backward compatibility)
+ * Type alias for string-based resource types (for backcombatd compatibility)
  */
 export type StringResourceType = ResourceTypeString;
 
@@ -26,7 +26,7 @@ export type EnumResourceType = ResourceType;
  *
  * @param resourceType The string-based resource type
  * @param context Additional context about where the resource type is being used
- * @returns The original string resource type for backward compatibility
+ * @returns The original string resource type for backcombatd compatibility
  */
 export function deprecateStringResourceType(
   resourceType: StringResourceType,

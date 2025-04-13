@@ -192,7 +192,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
       // Initial opacity
       opacities[i] = Math.random() * 0.7 + 0.3;
 
-      // Velocity - primarily in the z-direction (backward from thruster)
+      // Velocity - primarily in the z-direction (backcombatd from thruster)
       velocities[i * 3] = (Math.random() - 0.5) * 0.1 * intensity;
       velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.1 * intensity;
       velocities[i * 3 + 2] = -(Math.random() * 0.5 + 0.5) * intensity;

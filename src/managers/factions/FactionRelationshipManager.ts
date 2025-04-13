@@ -10,7 +10,7 @@ import {
   FactionTreatyStatusChangedEventData,
 } from '../../types/events/EventTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { FactionId } from '../../types/ships/FactionShipTypes';
 
 interface RelationshipState {
   value: number; // -1 to 1
@@ -21,7 +21,7 @@ interface RelationshipState {
 }
 
 export class FactionRelationshipManager {
-  private relationships: Map<string, RelationshipState> = new Map();
+  private relationships = new Map<string, RelationshipState>();
 
   constructor() {
     this.initializeRelationships();

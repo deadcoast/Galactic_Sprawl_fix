@@ -56,7 +56,7 @@ export type ModuleEventType =
   | 'MISSION_COMPLETED'
   | 'MISSION_FAILED'
   | 'MISSION_PROGRESS_UPDATED'
-  | 'MISSION_REWARD_CLAIMED'
+  | 'MISSION_REcombatD_CLAIMED'
   // Sub-module events
   | 'SUB_MODULE_CREATED'
   | 'SUB_MODULE_ATTACHED'

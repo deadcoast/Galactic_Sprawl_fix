@@ -391,7 +391,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Initialize the WebGL renderer
    */
   private initialize(container: HTMLElement, options: ExtendedChartOptions): void {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      return;
+    }
 
     // Create canvas
     this.canvas = document.createElement('canvas');
@@ -461,7 +463,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Update canvas dimensions based on container size
    */
   private updateDimensions(container: HTMLElement): void {
-    if (!this.canvas || !this.gl || !this.svgCanvas) return;
+    if (!this.canvas || !this.gl || !this.svgCanvas) {
+      return;
+    }
 
     const rect = container.getBoundingClientRect();
     this.containerWidth = rect.width;
@@ -484,7 +488,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Initialize WebGL shaders
    */
   private initShaders(): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     // Point shader program
     const pointVsSource = `
@@ -526,7 +532,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const pointProgram = this.createShaderProgram(pointVsSource, pointFsSource);
-    if (!pointProgram) return;
+    if (!pointProgram) {
+      return;
+    }
 
     const pointAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const positionInfo = this.getShaderAttributeInfo(pointProgram, 'a_position');
@@ -596,7 +604,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const lineProgram = this.createShaderProgram(lineVsSource, lineFsSource);
-    if (!lineProgram) return;
+    if (!lineProgram) {
+      return;
+    }
 
     const lineAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const linePositionInfo = this.getShaderAttributeInfo(lineProgram, 'a_position');
@@ -673,7 +683,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const areaProgram = this.createShaderProgram(areaVsSource, areaFsSource);
-    if (!areaProgram) return;
+    if (!areaProgram) {
+      return;
+    }
 
     const areaAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const areaPositionInfo = this.getShaderAttributeInfo(areaProgram, 'a_position');
@@ -717,12 +729,16 @@ export class WebGLRenderer implements ChartRenderer {
    * Creates and initializes a WebGL shader program
    */
   private createShaderProgram(vertexSource: string, fragmentSource: string): WebGLProgram | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     try {
       // Create shaders
       const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-      if (!vertexShader) throw new Error('Failed to create vertex shader');
+      if (!vertexShader) {
+        throw new Error('Failed to create vertex shader');
+      }
 
       const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
       if (!fragmentShader) {
@@ -783,14 +799,20 @@ export class WebGLRenderer implements ChartRenderer {
     program: WebGLProgram,
     name: ShaderAttributeName
   ): ShaderAttributeInfo | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const location = this.gl.getAttribLocation(program, name);
-    if (location === -1) return null;
+    if (location === -1) {
+      return null;
+    }
 
     // Get attribute information
     const info = this.gl.getActiveAttrib(program, location);
-    if (!info) return null;
+    if (!info) {
+      return null;
+    }
 
     return {
       location,
@@ -809,10 +831,14 @@ export class WebGLRenderer implements ChartRenderer {
     program: WebGLProgram,
     name: ShaderUniformName
   ): ShaderUniformInfo | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const location = this.gl.getUniformLocation(program, name);
-    if (!location) return null;
+    if (!location) {
+      return null;
+    }
 
     // First get the number of active uniforms
     const numUniforms = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
@@ -827,7 +853,9 @@ export class WebGLRenderer implements ChartRenderer {
       }
     }
 
-    if (!uniformInfo) return null;
+    if (!uniformInfo) {
+      return null;
+    }
 
     return {
       location,
@@ -840,7 +868,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Compile a WebGL shader
    */
   private compileShader(type: number, source: string): WebGLShader | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const shader = this.gl.createShader(type);
     if (!shader) {
@@ -851,7 +881,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.compileShader(shader);
 
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-      console.error('Error compiling shader:', this.gl.getShaderInfoLog(shader));
+      
       this.gl.deleteShader(shader);
       return null;
     }
@@ -867,7 +897,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -890,7 +922,9 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length === 0) return;
+      if (dataset.data?.length === 0) {
+        return;
+      }
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -992,7 +1026,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -1010,7 +1046,9 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length === 0) return;
+      if (dataset.data?.length === 0) {
+        return;
+      }
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -1075,7 +1113,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -1104,7 +1144,9 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length < 2) return;
+      if (dataset.data?.length < 2) {
+        return;
+      }
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -1298,10 +1340,14 @@ export class WebGLRenderer implements ChartRenderer {
    * Draw lines using the line shader
    */
   private drawLines(): void {
-    if (!this.gl || !this.buffers.lines) return;
+    if (!this.gl || !this.buffers.lines) {
+      return;
+    }
 
     const lineShader = this.shaders.get('line');
-    if (!lineShader) return;
+    if (!lineShader) {
+      return;
+    }
 
     this.gl.useProgram(lineShader.program);
 
@@ -1345,10 +1391,14 @@ export class WebGLRenderer implements ChartRenderer {
    * Draw points using the point shader
    */
   private drawPoints(pointSize = 3.0): void {
-    if (!this.gl || !this.buffers.points) return;
+    if (!this.gl || !this.buffers.points) {
+      return;
+    }
 
     const pointShader = this.shaders.get('point');
-    if (!pointShader) return;
+    if (!pointShader) {
+      return;
+    }
 
     this.gl.useProgram(pointShader.program);
 
@@ -1404,7 +1454,9 @@ export class WebGLRenderer implements ChartRenderer {
     type: ChartType,
     chartArea: ChartArea
   ): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     // Create SVG renderer instance from imported SVGRenderer
     const svgRenderer = new SVGFallbackRenderer(this.svgCanvas);
@@ -1415,7 +1467,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Render axes for charts
    */
   private renderAxes(data: ChartData, options: ExtendedChartOptions, chartArea: ChartArea): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     const xAxis = options?.axes?.x || { type: 'linear' };
     const yAxis = options?.axes?.y || { type: 'linear' };
@@ -1625,12 +1679,16 @@ export class WebGLRenderer implements ChartRenderer {
    * Render legend
    */
   private renderLegend(data: ChartData, options: ExtendedChartOptions, chartArea: ChartArea): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     const { datasets } = data;
     const legendOptions = options?.legend || { visible: true, position: 'top' };
 
-    if (!legendOptions.visible || datasets.length === 0) return;
+    if (!legendOptions.visible || datasets.length === 0) {
+      return;
+    }
 
     const padding = 10;
     const itemHeight = 20;
@@ -1717,7 +1775,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.canvas) return;
+    if (!this.canvas) {
+      return;
+    }
 
     // Remove existing tooltip if unknown
     if (this.tooltipElement) {
@@ -1876,10 +1936,8 @@ export class WebGLRenderer implements ChartRenderer {
 
     if (tooltipMode === 'nearest') {
       // Only include the nearest point
-      if (nearestPoints.length > 0) {
-        if (!intersect || nearestPoints[0].distance < 20) {
-          result = [nearestPoints[0]];
-        }
+      if (nearestPoints.length > 0 && (!intersect || nearestPoints[0].distance < 20)) {
+            result = [nearestPoints[0]];
       }
     } else if (tooltipMode === 'point') {
       // Include all points within a threshold distance

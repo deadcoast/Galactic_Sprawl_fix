@@ -106,11 +106,11 @@ export const BaseErrorState: React.FC<ErrorStateProps> = ({
 export const DataFetchErrorState: React.FC<ErrorStateProps> = props => {
   return (
     <BaseErrorState
-      message={props.message || 'Failed to load data'}
+      message={props.message ?? 'Failed to load data'}
       retryText="Reload Data"
-      className={`data-fetch-error ${props.className || ''}`}
+      className={`data-fetch-error ${props.className ?? ''}`}
       {...props}
-      showIcon={props.showIcon !== undefined ? props.showIcon : true}
+      showIcon={props.showIcon ?? true}
     />
   );
 };
@@ -121,11 +121,11 @@ export const DataFetchErrorState: React.FC<ErrorStateProps> = props => {
 export const FormErrorState: React.FC<ErrorStateProps> = props => {
   return (
     <BaseErrorState
-      message={props.message || 'There was a problem with your submission'}
+      message={props.message ?? 'There was a problem with your submission'}
       retryText="Try Again"
-      className={`form-error ${props.className || ''}`}
+      className={`form-error ${props.className ?? ''}`}
       {...props}
-      showIcon={props.showIcon !== undefined ? props.showIcon : true}
+      showIcon={props.showIcon ?? true}
     />
   );
 };
@@ -140,11 +140,11 @@ export const VisualizationErrorState: React.FC<ErrorStateProps & { height?: numb
   return (
     <div style={{ height }} className="flex items-center justify-center">
       <BaseErrorState
-        message={props.message || 'Failed to render visualization'}
+        message={props.message ?? 'Failed to render visualization'}
         retryText="Reload Chart"
-        className={`visualization-error w-full max-w-md ${props.className || ''}`}
+        className={`visualization-error w-full max-w-md ${props.className ?? ''}`}
         {...props}
-        showIcon={props.showIcon !== undefined ? props.showIcon : true}
+        showIcon={props.showIcon ?? true}
       />
     </div>
   );
@@ -163,14 +163,14 @@ export const ImageErrorState: React.FC<
     >
       <FileX size={32} className="mb-2 text-gray-400" />
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {props.message || 'Failed to load image'}
+        {props.message ?? 'Failed to load image'}
       </p>
       {props.onRetry && (
         <button
           onClick={props.onRetry}
           className="mt-2 text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          {props.retryText || 'Reload'}
+          {props.retryText ?? 'Reload'}
         </button>
       )}
     </div>
@@ -388,7 +388,7 @@ export const ComponentErrorState = forwardRef<HTMLDivElement, ComponentErrorStat
     React.useEffect(() => {
       if (logError && error) {
         const errorObj = typeof error === 'string' ? new Error(error) : error;
-        const severity = errorSeverity || mapLevelToSeverity(level);
+        const severity = errorSeverity ?? mapLevelToSeverity(level);
 
         errorLoggingService.logError(errorObj, errorType, severity, {
           componentName,
@@ -438,7 +438,7 @@ export const ComponentErrorState = forwardRef<HTMLDivElement, ComponentErrorStat
       .join(' ');
 
     // Parse error details
-    const errorMessage = error instanceof Error ? error.message : String(error || '');
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
     const errorStack = error instanceof Error ? error.stack : '';
     const isDev = process.env.NODE_ENV === 'development';
 

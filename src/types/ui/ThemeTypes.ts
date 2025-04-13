@@ -11,7 +11,7 @@ export enum ThemeColorName {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   SUCCESS = 'success',
-  WARNING = 'warning',
+  combatNING = 'warning',
   DANGER = 'danger',
   INFO = 'info',
   LIGHT = 'light',
@@ -128,20 +128,14 @@ export enum ThemeBreakpoint {
  */
 export interface Theme {
   name: string;
-  colors: {
-    [key in ThemeColorName]: string;
-  } & {
-    [key: string]: string | Record<string, string>;
-  };
+  colors: Record<ThemeColorName, PaletteColor | string> & Record<string, PaletteColor | string | Record<string, string>>;
   typography: {
     fontFamily: {
       base: string;
       heading: string;
       monospace: string;
     };
-    fontSizes: {
-      [key in ThemeFontSizeName]: string;
-    };
+    fontSizes: Record<ThemeFontSizeName, string>;
     fontWeights: {
       light: number;
       normal: number;
@@ -160,9 +154,7 @@ export interface Theme {
       wide: string;
     };
   };
-  spacing: {
-    [key in ThemeSpacingName]: string | number;
-  };
+  spacing: Record<ThemeSpacingName, string | number>;
   sizes: {
     maxWidth: string;
     navbarHeight: string;
@@ -180,16 +172,9 @@ export interface Theme {
       medium: number;
       thick: number;
     };
-    radius: {
-      [key in ThemeBorderRadius]: string;
-    };
+    radius: Record<ThemeBorderRadius, string>;
   };
-  shadows: {
-    none: string;
-    small: string;
-    medium: string;
-    large: string;
-  };
+  shadows: Record<string, string>;
   transitions: {
     duration: {
       fast: string;
@@ -204,18 +189,9 @@ export interface Theme {
       easeInOut: string;
     };
   };
-  zIndices: {
-    base: number;
-    dropdown: number;
-    sticky: number;
-    fixed: number;
-    modal: number;
-    tooltip: number;
-    toast: number;
-  };
-  breakpoints: {
-    [key in ThemeBreakpoint]: string;
-  };
+  zIndices: Record<string, number>;
+  breakpoints: Record<ThemeBreakpoint, string>;
+  components?: Record<string, unknown>;
 }
 
 /**
@@ -267,24 +243,272 @@ export function isThemeBreakpoint(value: unknown): value is ThemeBreakpoint {
 
 /**
  * Safely extracts a color value from the theme
- * @param theme The theme object
- * @param color The color token to extract
- * @param fallback Optional fallback value if color doesn't exist
  */
 export function getThemeColor(theme: Theme, color: ThemeColor, fallback?: string): string {
-  if (!color) return fallback || '';
+  if (!color) {
+    return fallback ?? '';
+  }
 
   // Handle direct color name
   if (isThemeColorName(color)) {
-    return theme.colors[color] || fallback || '';
+    const themeColorValue = theme.colors[color];
+    return typeof themeColorValue === 'object' && themeColorValue !== null && 'main' in themeColorValue ? 
+           themeColorValue.main ?? fallback ?? '' : 
+           typeof themeColorValue === 'string' ? 
+           themeColorValue ?? fallback ?? '' : 
+           fallback ?? '';
   }
 
   // Handle color with intensity (e.g., 'primary.500')
   const [colorName, intensity] = color.split('.');
   if (colorName && intensity && typeof theme.colors[colorName] === 'object') {
-    return (theme.colors[colorName] as Record<string, string>)[intensity] || fallback || '';
+    const paletteColor = theme.colors[colorName] as PaletteColor;
+    return paletteColor[intensity] ?? fallback ?? '';
   }
 
   // Return the raw value if it doesn't match pattern
   return color;
 }
+
+/**
+ * Specifies color configurations for different alert severities.
+ */
+export interface AlertColors {
+  // Use Record type instead of index signature
+  default: Record<ThemeColorName, string>;
+  success: Record<ThemeColorName, string>;
+  warning: Record<ThemeColorName, string>;
+  error: Record<ThemeColorName, string>;
+  info: Record<ThemeColorName, string>;
+}
+
+/**
+ * Defines the structure for the theme's color palette.
+ */
+export interface ColorPalette {
+  mode: 'light' | 'dark';
+  primary: PaletteColor;
+  secondary: PaletteColor;
+  error: PaletteColor;
+  warning: PaletteColor;
+  info: PaletteColor;
+  success: PaletteColor;
+  background: {
+    default: string;
+    paper: string;
+  };
+  text: {
+    primary: string;
+    secondary: string;
+    disabled: string;
+    hint?: string; // Made optional
+  };
+  // Use Record type instead of index signature
+  custom?: Record<string, string>;
+}
+
+/**
+ * Defines the overall structure for a theme configuration object.
+ */
+export interface ThemeConfiguration {
+  name: string;
+  palette: ColorPalette;
+  typography: {
+    fontFamily: string;
+    // Use Record type instead of index signature
+    fontSize: Record<ThemeFontSize, string>;
+  };
+  spacing: (factor: number) => string;
+  breakpoints: {
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+  };
+  shadows: string[];
+  components?: Record<string, unknown>; // Allow any component overrides
+}
+
+import { defaultTheme } from '../../ui/theme/defaultTheme';
+
+// Update deepMergePalette signature and logic
+function deepMergePalette(base: Theme['colors'], overrides: Partial<Theme['colors']>): Theme['colors'] {
+  // Clone the base object to avoid modifying it directly
+  const merged = JSON.parse(JSON.stringify(base)); 
+
+  for (const key in overrides) {
+    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
+      const overrideValue = overrides[key];
+      const baseValue = base[key];
+
+      // Check if both values are plain objects suitable for deep merge
+      const isPlainObject = (val: unknown): val is Record<string, unknown> => 
+        typeof val === 'object' && val !== null && !Array.isArray(val) && val.constructor === Object;
+
+      if (isPlainObject(overrideValue) && isPlainObject(baseValue)) {
+        // Recursively merge nested objects
+        merged[key] = deepMergePalette(baseValue, overrideValue);
+      } else if (overrideValue !== undefined) {
+        // Override primitive values or replace non-plain objects/arrays
+        merged[key] = overrideValue;
+      }
+    }
+  }
+  return merged;
+}
+
+// Update createTheme signature and logic
+export function createTheme(config: Partial<Theme> = {}): Theme {
+  const baseTheme = defaultTheme; // Use imported default theme constant (type Theme)
+
+  // Deep merge palettes
+  const mergedPalette = deepMergePalette(baseTheme.colors, config.colors ?? {});
+
+  // Construct the theme, ensuring types match Theme
+  const mergedTheme: Theme = {
+    // Merge top-level properties
+    ...baseTheme,
+    ...config,
+    // Deep merge nested structures explicitly
+    name: config.name ?? baseTheme.name,
+    colors: mergedPalette,
+    typography: {
+      ...baseTheme.typography,
+      ...(config.typography ?? {}),
+      fontFamily: { ...baseTheme.typography.fontFamily, ...(config.typography?.fontFamily ?? {}) },
+      fontSizes: { ...baseTheme.typography.fontSizes, ...(config.typography?.fontSizes ?? {}) },
+      fontWeights: { ...baseTheme.typography.fontWeights, ...(config.typography?.fontWeights ?? {}) },
+      lineHeights: { ...baseTheme.typography.lineHeights, ...(config.typography?.lineHeights ?? {}) },
+      letterSpacings: { ...baseTheme.typography.letterSpacings, ...(config.typography?.letterSpacings ?? {}) },
+    },
+    spacing: { ...baseTheme.spacing, ...(config.spacing ?? {}) },
+    sizes: {
+       ...baseTheme.sizes,
+       ...(config.sizes ?? {}),
+       modalWidth: { ...baseTheme.sizes.modalWidth, ...(config.sizes?.modalWidth ?? {}) },
+     },
+    borders: {
+       ...baseTheme.borders,
+       ...(config.borders ?? {}),
+       width: { ...baseTheme.borders.width, ...(config.borders?.width ?? {}) },
+       radius: { ...baseTheme.borders.radius, ...(config.borders?.radius ?? {}) },
+     },
+    shadows: { ...baseTheme.shadows, ...(config.shadows ?? {}) },
+    transitions: {
+       ...baseTheme.transitions,
+       ...(config.transitions ?? {}),
+       duration: { ...baseTheme.transitions.duration, ...(config.transitions?.duration ?? {}) },
+       timing: { ...baseTheme.transitions.timing, ...(config.transitions?.timing ?? {}) },
+     },
+    zIndices: { ...baseTheme.zIndices, ...(config.zIndices ?? {}) },
+    breakpoints: { ...baseTheme.breakpoints, ...(config.breakpoints ?? {}) },
+    components: { ...baseTheme.components, ...(config.components ?? {}) },
+  };
+  return mergedTheme;
+}
+
+// Update generateThemeCSSVariables signature
+export function generateThemeCSSVariables(theme: Theme): Record<string, string> {
+  const variables: Record<string, string> = {};
+  const colors = theme.colors;
+
+  // Palette colors
+  Object.keys(colors).forEach(key => {
+    const colorKey = key;
+    const value = colors[colorKey];
+
+    if (typeof value === 'string') {
+      variables[`--color-${key}`] = value;
+    } else if (typeof value === 'object' && value !== null && 'main' in value) {
+      // Handle PaletteColor objects
+      const paletteColor = value as PaletteColor;
+      Object.keys(paletteColor).forEach(shadeKey => {
+        const colorValue = paletteColor[shadeKey];
+        // Add check for undefined before assignment (Fix Line 444)
+        if (colorValue !== undefined) {
+          variables[`--color-${key}-${shadeKey}`] = colorValue;
+        }
+      });
+    } else if (key === 'background' || key === 'text') { // Assuming these are Record<string, string>
+      const nestedObj = value; 
+      Object.keys(nestedObj).forEach(nestedKey => {
+        if (nestedObj[nestedKey] !== undefined) { 
+           variables[`--color-${key}-${nestedKey}`] = nestedObj[nestedKey];
+        }
+      });
+    }
+    // Handle other potential nested color objects if necessary
+  });
+
+  // Custom colors are handled by the loop above if they are part of theme.colors
+
+  // Typography
+  if (theme.typography) {
+    if (theme.typography.fontFamily) {
+        Object.entries(theme.typography.fontFamily).forEach(([key, value]) => {
+            if (value !== undefined) { variables[`--font-family-${key}`] = value; }
+        });
+    }
+    if (theme.typography.fontSizes) {
+      Object.entries(theme.typography.fontSizes).forEach(([key, value]) => {
+        if (value !== undefined) { variables[`--font-size-${key}`] = value; }
+      });
+    }
+     // Add similar loops for fontWeights, lineHeights, letterSpacings
+     if (theme.typography.fontWeights) {
+        Object.entries(theme.typography.fontWeights).forEach(([key, value]) => {
+            if (value !== undefined) { variables[`--font-weight-${key}`] = String(value); } // Convert number to string
+        });
+     }
+     if (theme.typography.lineHeights) {
+         Object.entries(theme.typography.lineHeights).forEach(([key, value]) => {
+             if (value !== undefined) { variables[`--line-height-${key}`] = String(value); } // Convert number to string
+         });
+     }
+     if (theme.typography.letterSpacings) {
+         Object.entries(theme.typography.letterSpacings).forEach(([key, value]) => {
+             if (value !== undefined) { variables[`--letter-spacing-${key}`] = value; }
+         });
+     }
+  }
+
+  // Spacing
+  if (theme.spacing) {
+     Object.entries(theme.spacing).forEach(([key, value]) => {
+       if (value !== undefined) { variables[`--spacing-${key}`] = typeof value === 'number' ? `${value}px` : value; }
+     });
+  }
+
+  // Breakpoints
+  if (theme.breakpoints) {
+     Object.entries(theme.breakpoints).forEach(([key, value]) => {
+       if (value !== undefined) { variables[`--breakpoint-${key}`] = value; } // Already strings
+     });
+  }
+
+  // Shadows
+  if (theme.shadows) {
+      Object.entries(theme.shadows).forEach(([key, value]) => {
+         if (value !== undefined) { variables[`--shadow-${key}`] = value; }
+       });
+  }
+
+  // Add Borders, Transitions, zIndices, Sizes if needed
+  // ... (similar loops with undefined checks) ...
+
+  return variables;
+}
+
+// Refine ThemeColorShade type definition
+export type ThemeColorShade = 'main' | 'light' | 'dark' | 'contrastText';
+
+// PaletteColor definition
+export interface PaletteColor {
+  main: string;
+  light?: string;
+  dark?: string;
+  contrastText?: string;
+  [key: string]: string | undefined;
+}
+

@@ -105,7 +105,9 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
   };
 
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized) {
+      return;
+    }
 
     syncResourceState();
     syncModuleState();

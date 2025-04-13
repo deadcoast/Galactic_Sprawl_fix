@@ -1,22 +1,44 @@
 import {
   EquatorHorizonConfig,
   EquatorHorizonShipClass,
+  FactionBehaviorType,
   FactionConfig,
+  FactionId,
+  FactionShipClass,
   LostNovaConfig,
   LostNovaShipClass,
   SpaceRatsConfig,
   SpaceRatsShipClass,
 } from '../../types/ships/FactionShipTypes';
-import { FactionBehaviorType, FactionId } from '../../types/ships/FactionTypes';
 
 export const spaceRatsConfig: SpaceRatsConfig = {
   id: 'space-rats',
   name: 'Space Rats',
+  description: 'Scavengers and pirates operating in asteroid fields.',
+  baseRelationship: -0.5,
+  shipClasses: [
+    'ratKing',
+    'asteroidMarauder',
+    'rogueNebula',
+    'ratsRevenge',
+    'darkSectorCorsair',
+    'wailingWreck',
+    'galacticScourge',
+    'plasmaFang',
+    'verminVanguard',
+    'blackVoidBuccaneer',
+  ] as SpaceRatsShipClass[],
+  behaviorConfig: {
+    formation: 'swarm',
+    behavior: 'aggressive',
+    target: 'weakest',
+  },
   banner: {
     primaryColor: 'red',
     secondaryColor: 'gray',
     sigil: 'rat-skull',
   },
+
   defaultBehavior: 'aggressive' as FactionBehaviorType,
   spawnConditions: {
     minThreatLevel: 0, // Always hostile
@@ -29,9 +51,188 @@ export const spaceRatsConfig: SpaceRatsConfig = {
   },
 } as const;
 
+export const FACTION_SHIPS: Record<FactionId, string[]> = {
+  player: ['spitflare', 'starSchooner', 'orionFrigate'],
+  enemy: ['harbringerGalleon', 'midwayCarrier', 'motherEarthRevenge'],
+  neutral: ['starSchooner', 'orionFrigate'],
+  ally: ['spitflare', 'orionFrigate'],
+  'space-rats': [
+    'rat-king',
+    'asteroid-marauder',
+    'rogue-nebula',
+    'rats-revenge',
+    'dark-sector-corsair',
+    'wailing-wreck',
+    'galactic-scourge',
+    'plasma-fang',
+    'vermin-vanguard',
+    'black-void-buccaneer',
+  ],
+  'lost-nova': [
+    'nova-seeker',
+    'stellar-ghost',
+    'void-wanderer',
+    'astral-nomad',
+    'cosmic-drifter',
+    'nebula-phantom',
+    'starlight-exile',
+    'celestial-vagrant',
+    'galactic-hermit',
+    'interstellar-outcast',
+  ],
+  'equator-horizon': [
+    'horizon-guardian',
+    'equatorial-sentinel',
+    'meridian-protector',
+    'solstice-combatden',
+    'twilight-defender',
+    'daybreak-enforcer',
+    'dusk-keeper',
+    'dawn-watcher',
+    'noon-stalker',
+    'eclipse-hunter',
+  ],
+};
+
+export const FACTION_CONFIG: Record<
+  FactionId,
+  {
+    baseAggression: number;
+    expansionRate: number;
+    tradingPreference: number;
+    maxShips: number;
+    spawnRules: {
+      minTier: 1 | 2 | 3;
+      requiresCondition?: string;
+      spawnInterval: number;
+    };
+    specialRules: {
+      alwaysHostile?: boolean;
+      stealthBonus?: number;
+      tradingBonus?: number;
+    };
+  }
+> = {
+  player: {
+    baseAggression: 0.5,
+    expansionRate: 1,
+    tradingPreference: 0.7,
+    maxShips: 10,
+    spawnRules: {
+      minTier: 1,
+      spawnInterval: 60,
+    },
+    specialRules: {},
+  },
+  enemy: {
+    baseAggression: 0.8,
+    expansionRate: 1.2,
+    tradingPreference: 0.3,
+    maxShips: 15,
+    spawnRules: {
+      minTier: 2,
+      spawnInterval: 45,
+    },
+    specialRules: {
+      alwaysHostile: true,
+    },
+  },
+  neutral: {
+    baseAggression: 0.2,
+    expansionRate: 0.8,
+    tradingPreference: 0.9,
+    maxShips: 8,
+    spawnRules: {
+      minTier: 1,
+      spawnInterval: 90,
+    },
+    specialRules: {
+      tradingBonus: 0.2,
+    },
+  },
+  ally: {
+    baseAggression: 0.6,
+    expansionRate: 1,
+    tradingPreference: 0.8,
+    maxShips: 12,
+    spawnRules: {
+      minTier: 1,
+      spawnInterval: 60,
+    },
+    specialRules: {},
+  },
+  'space-rats': {
+    baseAggression: 0.9,
+    expansionRate: 1.5,
+    tradingPreference: 0.1,
+    maxShips: 20,
+    spawnRules: {
+      minTier: 1,
+      spawnInterval: 30,
+    },
+    specialRules: {
+      alwaysHostile: true,
+    },
+  },
+  'lost-nova': {
+    baseAggression: 0.4,
+    expansionRate: 0.7,
+    tradingPreference: 0.5,
+    maxShips: 12,
+    spawnRules: {
+      minTier: 2,
+      requiresCondition: 'nebula',
+      spawnInterval: 60,
+    },
+    specialRules: {
+      stealthBonus: 0.3,
+    },
+  },
+  'equator-horizon': {
+    baseAggression: 0.6,
+    expansionRate: 1.2,
+    tradingPreference: 0.6,
+    maxShips: 15,
+    spawnRules: {
+      minTier: 2,
+      spawnInterval: 45,
+    },
+    specialRules: {},
+  },
+};
+
+export const FACTION_STATES: Record<FactionId, string> = {
+  player: 'active',
+  enemy: 'hostile',
+  neutral: 'passive',
+  ally: 'friendly',
+  'space-rats': 'patrolling',
+  'lost-nova': 'hiding',
+  'equator-horizon': 'dormant',
+};
+
 export const lostNovaConfig: LostNovaConfig = {
   id: 'lost-nova',
   name: 'Lost Nova',
+  description: 'Mysterious faction utilizing forbidden technology.',
+  baseRelationship: 0.0,
+  shipClasses: [
+    'eclipseScythe',
+    'nullsRevenge',
+    'darkMatterReaper',
+    'quantumPariah',
+    'entropyScale',
+    'voidRevenant',
+    'scytheOfAndromeda',
+    'nebularPersistence',
+    'oblivionsWake',
+    'forbiddenVanguard',
+  ] as LostNovaShipClass[],
+  behaviorConfig: {
+    formation: 'scatter',
+    behavior: 'stealth',
+    target: 'isolated',
+  },
   banner: {
     primaryColor: 'violet',
     secondaryColor: 'indigo',
@@ -52,6 +253,25 @@ export const lostNovaConfig: LostNovaConfig = {
 export const equatorHorizonConfig: EquatorHorizonConfig = {
   id: 'equator-horizon',
   name: 'Equator Horizon',
+  description: 'Ancient faction dedicated to maintaining galactic balance.',
+  baseRelationship: 0.2,
+  shipClasses: [
+    'celestialArbiter',
+    'etherealGalleon',
+    'stellarEquinox',
+    'chronosSentinel',
+    'nebulasJudgement',
+    'aetherialHorizon',
+    'cosmicCrusader',
+    'balancekeepersWrath',
+    'eclipticWatcher',
+    'harmonysVanguard',
+  ] as EquatorHorizonShipClass[],
+  behaviorConfig: {
+    formation: 'phalanx',
+    behavior: 'balance',
+    target: 'strongest',
+  },
   banner: {
     primaryColor: 'amber',
     secondaryColor: 'violet',
@@ -133,6 +353,14 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
   player: {
     id: 'player',
     name: 'Player Faction',
+    description: 'The players faction.',
+    baseRelationship: 1.0,
+    shipClasses: [] as FactionShipClass[],
+    behaviorConfig: {
+      formation: 'flexible',
+      behavior: 'defensive',
+      target: 'nearest',
+    },
     banner: {
       primaryColor: 'blue',
       secondaryColor: 'gold',
@@ -148,6 +376,14 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
   enemy: {
     id: 'enemy',
     name: 'Enemy Faction',
+    description: 'A generic hostile faction.',
+    baseRelationship: -1.0,
+    shipClasses: [] as FactionShipClass[],
+    behaviorConfig: {
+      formation: 'line',
+      behavior: 'aggressive',
+      target: 'player',
+    },
     banner: {
       primaryColor: 'red',
       secondaryColor: 'black',
@@ -163,6 +399,14 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
   neutral: {
     id: 'neutral',
     name: 'Neutral Faction',
+    description: 'A neutral faction focused on trade or other goals.',
+    baseRelationship: 0.0,
+    shipClasses: [] as FactionShipClass[],
+    behaviorConfig: {
+      formation: 'cluster',
+      behavior: 'passive',
+      target: 'none',
+    },
     banner: {
       primaryColor: 'gray',
       secondaryColor: 'white',
@@ -178,6 +422,14 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
   ally: {
     id: 'ally',
     name: 'Allied Faction',
+    description: 'A faction allied with the player.',
+    baseRelationship: 0.8,
+    shipClasses: [] as FactionShipClass[],
+    behaviorConfig: {
+      formation: 'support',
+      behavior: 'defensive',
+      target: 'player_target',
+    },
     banner: {
       primaryColor: 'green',
       secondaryColor: 'blue',

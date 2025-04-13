@@ -230,7 +230,7 @@ export function Chart({
           drawDoughnutChart(ctx, dataset.data, chartArea, colors);
           break;
         case 'area':
-          drawAreaChart(ctx, dataset.data, chartArea, maxValue, color);
+          dracombateaChart(ctx, dataset.data, chartArea, maxValue, color);
           break;
       }
     });
@@ -615,7 +615,7 @@ function drawDoughnutChart(
   });
 }
 
-function drawAreaChart(
+function dracombateaChart(
   ctx: CanvasRenderingContext2D,
   data: DataPoint[],
   chartArea: { x: number; y: number; width: number; height: number },

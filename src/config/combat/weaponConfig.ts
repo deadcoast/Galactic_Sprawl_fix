@@ -282,7 +282,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
         id: 'temporal-disruption-effect',
         type: 'damage',
         name: 'Temporal Disruption',
-        description: 'Time-warping damage',
+        description: 'Time-combatping damage',
         magnitude: 100,
         duration: 3,
         active: true,
@@ -602,7 +602,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
       areaOfEffect: 40,
     },
   },
-  swarmRockets: {
+  scombatmRockets: {
     damage: 20,
     rateOfFire: 4,
     accuracy: 0.9,
@@ -666,6 +666,6 @@ export const weaponTypes: Record<string, WeaponType> = {
 
   // Rockets
   emprRockets: createWeaponType('emprRockets', 'rockets', 'emprRockets'),
-  swarmRockets: createWeaponType('swarmRockets', 'rockets', 'swarmRockets'),
+  scombatmRockets: createWeaponType('scombatmRockets', 'rockets', 'scombatmRockets'),
   bigBangRockets: createWeaponType('bigBangRockets', 'rockets', 'bigBangRockets'),
 };

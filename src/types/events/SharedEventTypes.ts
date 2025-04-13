@@ -1,3 +1,5 @@
+import { TypedEvent } from '../events/TypedEvent';
+
 /**
  * @file SharedEventTypes.ts
  * Shared event types and interfaces for both production and test code
@@ -34,7 +36,7 @@ export interface EventBus<E extends BaseEvent = BaseEvent> extends EventEmitter<
  */
 export interface MockEventBus<E extends BaseEvent = BaseEvent> extends EventBus<E> {
   getEmittedEvents(): E[];
-  getSubscriptions(): Map<string, Array<EventHandler<E>>>;
+  getSubscriptions(): Map<string, EventHandler<E>[]>;
   reset(): void;
 }
 

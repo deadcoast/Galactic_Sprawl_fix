@@ -135,7 +135,7 @@ function ExplosionParticles({
     const timeScale = Math.sin(time * 0.5) * 0.1 + 0.9; // Creates a pulsing effect
 
     for (let i = 0; i < particleCount; i++) {
-      // Expand particles outward
+      // Expand particles outcombatd
       const idx = i * 3;
       const x = positions[idx];
       const y = positions[idx + 1];

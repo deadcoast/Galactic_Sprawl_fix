@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getCombatManager } from '../../managers/ManagerRegistry';
 import { factionManager } from '../../managers/factions/factionManager';
 import { Position } from '../../types/core/GameTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { FactionId } from '../../types/ships/FactionShipTypes';
 import { useAdaptiveAI } from './useAdaptiveAI';
 import { useFactionBehavior } from './useFactionBehavior';
 
@@ -79,11 +79,11 @@ interface CommandHierarchy {
     rank: number;
     commandRadius: number;
   };
-  supportOfficers: Array<{
+  supportOfficers: {
     id: string;
     rank: number;
     supportRadius: number;
-  }>;
+  }[];
 }
 
 interface FleetAIState {
@@ -131,22 +131,22 @@ interface FleetAIState {
 
 interface VisualFeedback {
   formationLines: {
-    points: Array<{ x: number; y: number }>;
+    points: { x: number; y: number }[];
     style: 'solid' | 'dashed';
     color: string;
     opacity: number;
   };
-  threatIndicators: Array<{
+  threatIndicators: {
     position: { x: number; y: number };
     severity: 'low' | 'medium' | 'high';
     radius: number;
-  }>;
-  rangeCircles: Array<{
+  }[];
+  rangeCircles: {
     center: { x: number; y: number };
     radius: number;
     type: 'engagement' | 'support';
     opacity: number;
-  }>;
+  }[];
 }
 
 export function useFleetAI(fleetId: string, factionId: FactionId) {
@@ -255,7 +255,7 @@ function updateFleetBehavior(
   const now = Date.now();
 
   // Apply officer bonuses if assigned
-  const officerBonuses = currentState.assignedOfficer?.bonuses || {
+  const officerBonuses = currentState.assignedOfficer?.bonuses ?? {
     combatEfficiency: 1,
     formationBonus: 1,
     experienceGain: 1,
@@ -293,7 +293,7 @@ function updateFleetBehavior(
   );
 
   // Check for formation changes
-  let formationPositions: Array<{ x: number; y: number }> = [];
+  let formationPositions: { x: number; y: number }[] = [];
   if (shouldChangeFormation(fleet, newState, adaptiveAI)) {
     newState.formation = selectNewFormation(fleet, newState, adaptiveAI, factionBehavior);
     // Apply all formation bonuses
@@ -497,8 +497,8 @@ function applyFleetFormation(fleet: { units: CombatUnit[] }, formation: FleetFor
 function calculateFormationPositions(
   fleet: { units: CombatUnit[] },
   formation: FleetFormation
-): Array<{ x: number; y: number }> {
-  const positions: Array<{ x: number; y: number }> = [];
+): { x: number; y: number }[] {
+  const positions: { x: number; y: number }[] = [];
   const center = getFleetCenter(fleet);
   const unitCount = fleet.units.length;
 
@@ -800,7 +800,7 @@ function updateHangarStatus(state: FleetAIState, fleet: { units: CombatUnit[] })
 function generateVisualFeedback(
   fleet: { units: CombatUnit[] },
   state: FleetAIState,
-  formationPositions: Array<{ x: number; y: number }>,
+  formationPositions: { x: number; y: number }[],
   strengthMultiplier: number
 ): VisualFeedback {
   const center = getFleetCenter(fleet);

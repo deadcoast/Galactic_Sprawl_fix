@@ -63,7 +63,9 @@ export function createDataFetchHook<T, P extends unknown[] = []>(
 
     // Memoized fetch function
     const fetch = useCallback(async () => {
-      if (!enabled) return;
+      if (!enabled) {
+        return;
+      }
 
       try {
         if (defaultOptions.resetOnFetch) {

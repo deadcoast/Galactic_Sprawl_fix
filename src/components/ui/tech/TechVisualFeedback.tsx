@@ -57,7 +57,7 @@ const categoryIcons = {
       <path d="M2 10h20"></path>
     </svg>
   ),
-  warFleet: (
+  combatFleet: (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"

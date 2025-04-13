@@ -25,7 +25,7 @@ interface HabitableWorldProps {
 
 export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldProps) {
   const [showTradeShip, setShowTradeShip] = useState(false);
-  const [satellitePositions, setSatellitePositions] = useState<Array<{ angle: number }>>([]);
+  const [satellitePositions, setSatellitePositions] = useState<{ angle: number }[]>([]);
 
   useEffect(() => {
     const satCount = planetData.satellites ?? 0;

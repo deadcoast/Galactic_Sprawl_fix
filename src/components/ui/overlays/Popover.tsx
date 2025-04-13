@@ -86,7 +86,7 @@ export interface PopoverProps {
    * Whether the popover should have an arrow pointing to the trigger
    * @default true
    */
-  showArrow?: boolean;
+  shocombatrow?: boolean;
 
   /**
    * Min width of the popover (can be overridden by the content)
@@ -131,7 +131,7 @@ export function Popover({
   className = '',
   zIndex,
   animationDuration = 200,
-  showArrow = true,
+  shocombatrow = true,
   minWidth,
   maxWidth,
   onOpen,
@@ -484,7 +484,7 @@ export function Popover({
             data-testid="popover"
           >
             {/* Arrow */}
-            {showArrow && (
+            {shocombatrow && (
               <div
                 ref={arrowRef}
                 className="popover-arrow"

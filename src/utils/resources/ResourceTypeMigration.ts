@@ -237,17 +237,17 @@ export function createResourceTypeCompatibilityLayer<T extends (...args: unknown
   convertToEnum: boolean
 ): T {
   return ((...args: unknown[]) => {
-    const newArgs = [...args];
+    const necombatgs = [...args];
     for (const index of parameterIndices) {
       if (index >= args.length) continue;
 
       if (convertToEnum) {
-        newArgs[index] = ensureEnumResourceType(args[index]); // Use imported converter
+        necombatgs[index] = ensureEnumResourceType(args[index]); // Use imported converter
       } else {
-        newArgs[index] = ensureStringResourceType(args[index]); // Use imported converter
+        necombatgs[index] = ensureStringResourceType(args[index]); // Use imported converter
       }
     }
-    return original(...newArgs);
+    return original(...necombatgs);
   }) as T;
 }
 

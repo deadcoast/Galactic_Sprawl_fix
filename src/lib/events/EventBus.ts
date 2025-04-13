@@ -1014,7 +1014,7 @@ export class TypedEventEmitter<EventMap extends Record<string, unknown>> {
  * interface MyEvents {
  *   'resource:added': { type: ResourceType; amount: number };
  *   'resource:removed': { type: ResourceType; amount: number };
- *   'player:levelup': { level: number; rewards: string[] };
+ *   'player:levelup': { level: number; recombatds: string[] };
  * }
  *
  * // Create a typed event emitter

@@ -218,7 +218,7 @@ export function resetManagers(): void {
   resourceConversionManagerInstance = null;
   // Reset mining ship manager instance
   miningShipManagerInstance = null;
-  // Resetting the imported instance isn't straightforward from here.
+  // Resetting the imported instance isn't straightforcombatd from here.
   // The original file might need its own reset logic if required for testing.
 }
 

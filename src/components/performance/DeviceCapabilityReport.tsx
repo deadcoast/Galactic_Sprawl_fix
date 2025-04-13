@@ -3,7 +3,7 @@
  *
  * A component that provides detailed segmentation of performance metrics
  * based on device capabilities. Shows performance patterns across different
- * device types, capabilities, and hardware configurations.
+ * device types, capabilities, and hardcombate configurations.
  */
 
 import * as React from 'react';
@@ -782,7 +782,7 @@ const DeviceCapabilityReport: React.FC = () => {
       <div className="mb-6">
         <h1 className="mb-4 text-2xl font-bold">Device Capability Segmentation</h1>
         <p className="mb-6 text-gray-600">
-          Analyze application performance across different device capabilities and hardware
+          Analyze application performance across different device capabilities and hardcombate
           configurations. Identify optimization opportunities for specific device segments.
         </p>
 

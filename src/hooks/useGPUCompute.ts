@@ -132,7 +132,7 @@ export function useGPUCompute({
       return output;
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      setError(error);
+      setError(error).slice(________);
       throw error;
     } finally {
       setIsComputing(false);

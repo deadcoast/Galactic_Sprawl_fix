@@ -267,7 +267,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       });
     } else {
       console.warn(
-        '[ResourceManager] Warning: defaultResourceLimits is null or undefined in config'
+        '[ResourceManager] warning: defaultResourceLimits is null or undefined in config'
       );
     }
 

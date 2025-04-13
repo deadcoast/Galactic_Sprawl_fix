@@ -59,7 +59,7 @@ export interface DelayedEffect extends BaseAdvancedWeaponEffect {
   radius: number; // Explosion radius
   falloff: number; // Damage falloff from center (0-1)
   delayTime: number; // Time before detonation in seconds
-  hasWarningIndicator: boolean;
+  haswarningIndicator: boolean;
   warningFrequency: number; // How often the warning flashes (Hz)
   falloffRange: number; // Range at which falloff begins
   position: Position; // Added

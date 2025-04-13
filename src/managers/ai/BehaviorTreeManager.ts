@@ -97,7 +97,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
             {
               id: 'approach-target',
               type: 'action',
-              execute: context => this.moveTowardsTarget(context),
+              execute: context => this.moveTocombatdsTarget(context),
             },
             {
               id: 'attack-target',
@@ -326,7 +326,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
     }
   }
 
-  private moveTowardsTarget(context: BehaviorContext): void {
+  private moveTocombatdsTarget(context: BehaviorContext): void {
     const target = context.nearbyEnemies.find(e => e.id === context.unit.target);
     if (!target) {
       return;

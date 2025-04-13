@@ -6,7 +6,7 @@ import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
-import ResourceFlowDiagram from '../../exploration/visualizations/charts/ResourceFlowDiagram';
+import ResourceFlowDiagram from '../../exploration/visualizations/ResourceFlowDiagram';
 import ChainManagementInterface from './ChainManagementInterface';
 import ConverterDashboard from './ConverterDashboard';
 import ResourceForecastingVisualization from './ResourceForecastingVisualization';

@@ -73,7 +73,7 @@ export function ResourceDashboard({ resources, onResourceClick }: ResourceDashbo
         </div>
       );
     } else if (netChange < 0) {
-      // Warning: Negative change
+      // warning: Negative change
       return (
         <div className="flex items-center space-x-1 text-amber-400">
           <TrendingDown className="h-4 w-4" />
@@ -81,7 +81,7 @@ export function ResourceDashboard({ resources, onResourceClick }: ResourceDashbo
         </div>
       );
     } else if (storagePercentage > 90) {
-      // Warning: Almost full
+      // warning: Almost full
       return (
         <div className="flex items-center space-x-1 text-amber-400">
           <AlertTriangle className="h-4 w-4" />

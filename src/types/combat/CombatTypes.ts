@@ -13,7 +13,7 @@ import {
   WeaponVariant,
 } from '../weapons/WeaponTypes';
 
-// Re-export weapon types for backward compatibility
+// Re-export weapon types for backcombatd compatibility
 export type {
   WeaponCategory,
   WeaponConfig,

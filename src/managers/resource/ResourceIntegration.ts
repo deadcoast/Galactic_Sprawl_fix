@@ -20,6 +20,9 @@ import { ResourcePoolManager } from './ResourcePoolManager';
 import { ResourceStorageManager, StorageContainerConfig } from './ResourceStorageManager';
 import { ResourceThresholdManager, ThresholdConfig } from './ResourceThresholdManager';
 
+// Access instance via getInstance() at the top level
+const resourceFlowManager = ResourceFlowManager.getInstance();
+
 /**
  * ResourceIntegration
  *
@@ -34,7 +37,7 @@ export class ResourceIntegration {
   private costManager: ResourceCostManager;
   private exchangeManager: ResourceExchangeManager;
   private poolManager: ResourcePoolManager;
-  private initialized: boolean = false;
+  private initialized = false;
   private transferHistory: ResourceTransfer[] = [];
 
   constructor(
@@ -261,9 +264,7 @@ export class ResourceIntegration {
    */
   private initializeThresholds(): void {
     // Get all resource types
-    const resourceTypes = Array.from(
-      this.resourceManager['resources'].keys()
-    ) as ResourceTypeString[];
+    const resourceTypes = Array.from(this.resourceManager.resources.keys());
 
     // Create thresholds for each resource type
     resourceTypes.forEach(type => {
@@ -301,9 +302,7 @@ export class ResourceIntegration {
    */
   private initializeStorage(): void {
     // Get all resource types
-    const resourceTypes = Array.from(
-      this.resourceManager['resources'].keys()
-    ) as ResourceTypeString[];
+    const resourceTypes = Array.from(this.resourceManager.resources.keys());
 
     // Create a main storage container for each resource type
     resourceTypes.forEach(type => {
@@ -335,9 +334,7 @@ export class ResourceIntegration {
    */
   private initializeFlows(): void {
     // Get all resource types
-    const resourceTypes = Array.from(
-      this.resourceManager['resources'].keys()
-    ) as ResourceTypeString[];
+    const resourceTypes = Array.from(this.resourceManager.resources.keys());
 
     // Create producer and consumer nodes for each resource type
     resourceTypes.forEach(type => {
@@ -564,3 +561,164 @@ export function createResourceIntegration(resourceManager: ResourceManager): Res
 
   return integration;
 }
+
+/**
+ * Integrates resource logic with module events.
+ */
+export function initializeResourceIntegration(): void {
+  // Cast event strings to ModuleEventType for subscribe
+  moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, event => {
+    if (isModuleEventWithId(event)) {
+      // initializeResourceState(event.moduleId, ResourceType.ENERGY, { current: 0, max: 1000, capacity: 1000 });
+    }
+  });
+
+  moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, event => {
+    if (isModuleEventWithId(event)) {
+      // Placeholder
+    }
+  });
+
+  moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, event => {
+    if (isModuleEventWithId(event)) {
+      // Placeholder
+    }
+  });
+
+  moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
+    if (isResourceEvent(event)) {
+      const { moduleId, resourceType, amount } = event;
+      const currentState =
+        resourceFlowManager.getNodeResourceState(moduleId, resourceType) ??
+        createDefaultResourceState();
+      const newAmount = currentState.current + amount;
+      const newState: ResourceState = {
+        ...currentState,
+        current: currentState.max !== undefined ? Math.min(currentState.max, newAmount) : newAmount,
+        capacity: currentState.capacity ?? 1000,
+        min: currentState.min ?? 0,
+        production: currentState.production ?? 0,
+        consumption: currentState.consumption ?? 0,
+        rate: currentState.rate ?? 0,
+        value: currentState.value ?? 0,
+      };
+      resourceFlowManager.updateNodeResourceState(moduleId, resourceType, newState);
+    }
+  });
+
+  moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, event => {
+    if (isResourceEvent(event)) {
+      const { moduleId, resourceType, amount } = event;
+      const currentState =
+        resourceFlowManager.getNodeResourceState(moduleId, resourceType) ??
+        createDefaultResourceState();
+      const consumedAmount = Math.min(currentState.current, amount);
+      if (consumedAmount > 0) {
+        const newState: ResourceState = {
+          ...currentState,
+          current: currentState.current - consumedAmount,
+          capacity: currentState.capacity ?? 1000,
+          min: currentState.min ?? 0,
+          production: currentState.production ?? 0,
+          consumption: currentState.consumption ?? 0,
+          rate: currentState.rate ?? 0,
+          value: currentState.value ?? 0,
+        };
+        resourceFlowManager.updateNodeResourceState(moduleId, resourceType, newState);
+      }
+    }
+  });
+
+  // Removed RESOURCE_TRANSFER_REQUESTED subscriber
+}
+
+// Helper function to initialize resource state
+function initializeResourceState(
+  moduleId: string,
+  resourceType: ResourceType,
+  state: Partial<ResourceState>
+): void {
+  const currentState =
+    resourceFlowManager.getNodeResourceState(moduleId, resourceType) ??
+    createDefaultResourceState();
+  const newState: ResourceState = {
+    current: state.current ?? currentState.current ?? 0,
+    max: state.max ?? currentState.max ?? Infinity,
+    capacity: state.capacity ?? currentState.capacity ?? 1000,
+    min: state.min ?? currentState.min ?? 0,
+    production: state.production ?? currentState.production ?? 0,
+    consumption: state.consumption ?? currentState.consumption ?? 0,
+    rate: state.rate ?? currentState.rate ?? 0,
+    value: state.value ?? currentState.value ?? 0,
+  };
+  resourceFlowManager.updateNodeResourceState(moduleId, resourceType, newState);
+}
+
+// Default state helper
+function createDefaultResourceState(): ResourceState {
+  return {
+    current: 0,
+    max: Infinity,
+    production: 0,
+    consumption: 0,
+    rate: 0,
+    min: 0,
+    value: 0,
+    capacity: 1000,
+  };
+}
+
+// Type guards using unknown and 'in' operator
+function isModuleEventWithId(event: unknown): event is { moduleId: string } {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'moduleId' in event &&
+    typeof (event as { moduleId: unknown }).moduleId === 'string'
+  );
+}
+
+function isResourceEvent(
+  event: unknown
+): event is { moduleId: string; resourceType: ResourceType; amount: number } {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'moduleId' in event &&
+    typeof (event as { moduleId: unknown }).moduleId === 'string' &&
+    'resourceType' in event &&
+    Object.values(ResourceType).includes(
+      (event as { resourceType: unknown }).resourceType as ResourceType
+    ) &&
+    'amount' in event &&
+    typeof (event as { amount: unknown }).amount === 'number'
+  );
+}
+
+function isResourceTransferEvent(
+  event: unknown
+): event is {
+  sourceModuleId: string;
+  targetModuleId: string;
+  resourceType: ResourceType;
+  amount: number;
+} {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'sourceModuleId' in event &&
+    typeof (event as { sourceModuleId: unknown }).sourceModuleId === 'string' &&
+    'targetModuleId' in event &&
+    typeof (event as { targetModuleId: unknown }).targetModuleId === 'string' &&
+    'resourceType' in event &&
+    Object.values(ResourceType).includes(
+      (event as { resourceType: unknown }).resourceType as ResourceType
+    ) &&
+    'amount' in event &&
+    typeof (event as { amount: unknown }).amount === 'number'
+  );
+}
+
+// Removed all transfer logic and example code causing promise errors
+
+// initializeResourceIntegration(); // Call during setup

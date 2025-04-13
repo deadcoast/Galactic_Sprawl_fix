@@ -17,7 +17,7 @@ export const moduleEvents$ = moduleEventSubject.asObservable().pipe(
  * Initialize the RxJS integration with the moduleEventBus
  */
 export function initializeRxJSIntegration(): () => void {
-  // Subscribe to all module events and forward them to the subject
+  // Subscribe to all module events and forcombatd them to the subject
   const unsubscribe = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, event => {
     moduleEventSubject.next(event);
   });
@@ -108,7 +108,7 @@ export function createEventTypeSubject<T extends ModuleEventType>(
 ): Subject<ModuleEvent> {
   const subject = new Subject<ModuleEvent>();
 
-  // Subscribe to the event type and forward to the subject
+  // Subscribe to the event type and forcombatd to the subject
   const unsubscribe = moduleEventBus.subscribe(eventType, event => {
     subject.next(event);
   });

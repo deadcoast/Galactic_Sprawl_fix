@@ -26,7 +26,7 @@ export enum ComponentVariant {
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
   SUCCESS = 'success',
-  WARNING = 'warning',
+  combatNING = 'warning',
   DANGER = 'danger',
   INFO = 'info',
   LIGHT = 'light',

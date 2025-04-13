@@ -22,7 +22,7 @@ import {
 // Category icons for the TechVisualFeedback component
 export const categoryIcons = {
   infrastructure: <Database className="h-6 w-6" />,
-  warFleet: <Sword className="h-6 w-6" />,
+  combatFleet: <Sword className="h-6 w-6" />,
   reconFleet: <Radar className="h-6 w-6" />,
   miningFleet: <Ship className="h-6 w-6" />,
   weapons: <Crosshair className="h-6 w-6" />,
@@ -212,7 +212,7 @@ const techNodes: TechNode[] = [
     type: 'infrastructure',
   },
 
-  // War Fleet - Tier 1
+  // combat Fleet - Tier 1
   {
     id: 'basic-weapons',
     name: 'Basic Weapons',
@@ -220,8 +220,8 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: [],
     unlocked: true,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'light-armor',
@@ -230,8 +230,8 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: ['basic-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'fleet-coordination',
@@ -240,11 +240,11 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: ['light-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
-  // War Fleet - Tier 2
+  // combat Fleet - Tier 2
   {
     id: 'enhanced-weapons',
     name: 'Enhanced Weapon Systems',
@@ -252,8 +252,8 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['basic-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'medium-armor',
@@ -262,8 +262,8 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['light-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'advanced-coordination',
@@ -272,21 +272,21 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['fleet-coordination'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'cutting-laser',
     name: 'Cutting Laser',
-    description: 'Enables war ships to salvage resources from destroyed enemy ships',
+    description: 'Enables combat ships to salvage resources from destroyed enemy ships',
     tier: 2,
     requirements: ['enhanced-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
-  // War Fleet - Tier 3
+  // combat Fleet - Tier 3
   {
     id: 'advanced-weapons',
     name: 'Advanced Weapon Systems',
@@ -294,8 +294,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['enhanced-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'heavy-armor',
@@ -304,8 +304,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['medium-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'fleet-command-ai',
@@ -314,8 +314,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['advanced-coordination'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
   // Recon Fleet - Tier 1
@@ -476,7 +476,7 @@ const techNodes: TechNode[] = [
   {
     id: 'specialized-variants',
     name: 'Specialized Variants',
-    description: 'Unlock Plasma Rounds, EMPR & Swarm Rockets, and Gauss Planer',
+    description: 'Unlock Plasma Rounds, EMPR & Scombatm Rockets, and Gauss Planer',
     tier: 2,
     requirements: ['base-weapons'],
     unlocked: false,
@@ -731,7 +731,7 @@ interface Category {
 
 const categories: Category[] = [
   { id: 'infrastructure', name: 'Infrastructure', icon: Database },
-  { id: 'warFleet', name: 'War Fleet', icon: Sword },
+  { id: 'combatFleet', name: 'combat Fleet', icon: Sword },
   { id: 'reconFleet', name: 'Recon Fleet', icon: Radar },
   { id: 'miningFleet', name: 'Mining Fleet', icon: Ship },
   { id: 'weapons', name: 'Weapons', icon: Crosshair },
@@ -775,7 +775,7 @@ const getIconComponent = (category: TechNode['category']) => {
   switch (category) {
     case 'infrastructure':
       return nodeIcons.database;
-    case 'warFleet':
+    case 'combatFleet':
       return nodeIcons.sword;
     case 'reconFleet':
       return nodeIcons.radar;

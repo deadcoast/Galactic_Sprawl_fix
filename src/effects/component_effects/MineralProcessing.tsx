@@ -264,7 +264,7 @@ export function MineralProcessing({
       )
     ),
 
-    /* Warnings */
+    /* warnings */
     nodes.some(n => n.status === 'depleted') &&
       React.createElement(
         'div',

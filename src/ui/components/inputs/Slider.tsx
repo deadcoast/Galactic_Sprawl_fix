@@ -214,7 +214,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
       }
     }, [value]);
 
-    // Forward ref
+    // Forcombatd ref
     React.useImperativeHandle(ref, () => internalRef.current!);
 
     // Format value for display

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { factionConfigs } from '../../config/factions/factions';
 import { factionManager } from '../../managers/factions/factionManager';
 import type { AIState } from '../../types/debug/DebugTypes';
-import type { FactionShip } from '../../types/ships/FactionShipTypes';
-import type { FactionId } from '../../types/ships/FactionTypes';
+import type { FactionId, FactionShip } from '../../types/ships/FactionShipTypes';
 
 interface FactionBehavior {
   isHostile: boolean;
@@ -24,7 +24,7 @@ interface FactionAIState {
   lastUpdate: number;
 }
 
-export function useFactionAI(factionId: FactionId) {
+export function useFactionAI(factionId: FactionId): FactionAIState {
   const [aiState, setAIState] = useState<FactionAIState>({
     isActive: false,
     behavior: {
@@ -91,16 +91,33 @@ export function useFactionAI(factionId: FactionId) {
   return aiState;
 }
 
-export function useActiveFactions() {
+export function useActiveFactions(): FactionId[] {
   const [activeFactions, setActiveFactions] = useState<FactionId[]>([]);
 
   useEffect(() => {
     const updateInterval = setInterval(() => {
-      const active = Object.keys(factionManager.getFactionState).filter(
-        id => factionManager.getFactionState(id)?.isActive
-      ) as FactionId[];
+      // Get all known faction IDs from config
+      const allFactionIds = Object.keys(factionConfigs) as FactionId[];
+      const activeFactionIds: FactionId[] = [];
 
-      setActiveFactions(active);
+      allFactionIds.forEach(id => {
+        const state = factionManager.getFactionState(id);
+        // Check if state exists and faction has fleet strength
+        if (state && state.fleetStrength > 0.1) {
+          activeFactionIds.push(id);
+        }
+      });
+
+      // Only update state if the list of active factions has actually changed
+      setActiveFactions(currentActive => {
+        if (
+          currentActive.length === activeFactionIds.length &&
+          currentActive.every(id => activeFactionIds.includes(id))
+        ) {
+          return currentActive; // No change
+        }
+        return activeFactionIds; // Update state
+      });
     }, 1000);
 
     return () => clearInterval(updateInterval);

@@ -131,7 +131,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                   </span>
                 </div>
 
-                {/* Special Rules Warning */}
+                {/* Special Rules warning */}
                 {behavior.specialRules.alwaysHostile && (
                   <div className="mt-2 flex items-center space-x-2 text-xs text-red-400">
                     <AlertTriangle className="h-4 w-4" />

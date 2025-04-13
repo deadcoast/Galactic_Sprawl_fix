@@ -117,7 +117,7 @@ export class AssetManager {
             });
             resolve();
           } else {
-            console.warn('[AssetManager] Warning: loaded assets is null or undefined');
+            console.warn('[AssetManager] warning: loaded assets is null or undefined');
             resolve(); // Still resolve to avoid blocking game initialization
           }
         })
