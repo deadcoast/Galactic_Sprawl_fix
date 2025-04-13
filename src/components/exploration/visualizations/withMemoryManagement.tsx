@@ -1,6 +1,6 @@
 import { ComponentType, useEffect, useState } from 'react';
 import { errorLoggingService } from '../../../services/ErrorLoggingService';
-import { BaseChartProps } from './charts/BaseChart';
+import { BaseChartProps } from './BaseChart';
 
 /**
  * Options for memory management behavior

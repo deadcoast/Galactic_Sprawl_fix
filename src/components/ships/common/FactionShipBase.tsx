@@ -5,7 +5,7 @@ import { useShipActions } from '../../../hooks/ships/useShipActions';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import type { FactionShipProps } from '../../../types/ships/FactionShipTypes';
 import { FactionId } from '../../../types/ships/FactionTypes';
-import { UnifiedShipStatus } from '../../../types/ships/UnifiedShipTypes';
+import { UnifiedShipStatus } from '../../../types/ships/ShipTypes';
 import { AbilityButtonContainer } from '../../ui/buttons/AbilityButton';
 import { StatusEffectContainer } from '../../ui/status/StatusEffect';
 import { BaseShip } from '../base/BaseShip';

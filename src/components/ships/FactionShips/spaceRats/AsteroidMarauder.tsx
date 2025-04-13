@@ -2,9 +2,9 @@ import { AlertTriangle, Bomb, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { SpaceRatShip } from '../../common/SpaceRatShip';
+import { SpaceRatShip } from './SpaceRatShip';
 
 interface AsteroidMarauderProps {
   id: string;
@@ -74,7 +74,7 @@ export function AsteroidMarauder({
         rotation={rotation}
       />
 
-      {/* Warning indicator for damaged state */}
+      {/* warning indicator for damaged state */}
       {status === UnifiedShipStatus.DAMAGED && (
         <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />

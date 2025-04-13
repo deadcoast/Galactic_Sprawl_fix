@@ -1,3 +1,18 @@
+import { v4 as uuidv4 } from 'uuid';
+import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import {
+  ExtendedResourceMetadata,
+  ResourceQuality,
+  ResourceRegistrationOptions,
+  ResourceRegistry,
+} from '../../registry/ResourceRegistry';
+import { ResourceRegistryIntegration } from '../../registry/ResourceRegistryIntegration';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventType } from '../../types/events/EventTypes';
+import { ProcessStatus } from '../../types/resources/ProductionChainTypes';
+import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
 import {
   ChainExecutionStatus,
   ConversionChain,
@@ -12,46 +27,24 @@ import {
   ResourceQuantity,
   ResourceState,
   ResourceStateClass,
+  ResourceTransfer,
   ResourceType,
   ResourceTypeInfo,
   ResourceTypeString,
 } from '../../types/resources/ResourceTypes';
-// Import new utility classes
-import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
-import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { EventType } from '../../types/events/EventTypes';
-import { ResourceTransfer } from '../../types/resources/ResourceTypes';
-import { SpatialIndex, SpatialObject } from '../../utils/spatial/SpatialPartitioning';
-import {
-  FlowOptimizationResult,
-  ResourceFlowWorkerUtil,
-} from '../../utils/workers/ResourceFlowWorkerUtil';
-// Import ResourceRegistry and ResourceRegistryIntegration
-import { ResourceRegistry } from '../../registry/ResourceRegistry';
-import { ResourceRegistryIntegration } from '../../registry/ResourceRegistryIntegration';
-// Import ResourceTypeConverter functions
 import {
   ensureEnumResourceType,
   ensureStringResourceType,
   stringToResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
-// Import type guards
-// Import ExtendedResourceConversionRecipe
-import { errorLoggingService } from '../../services/ErrorLoggingService';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
-// Import converter functions
-// Import ProcessStatus for fixing status literals
-import { v4 as uuidv4 } from 'uuid';
+import { SpatialIndex, SpatialObject } from '../../utils/spatial/SpatialPartitioning';
 import {
-  ExtendedResourceMetadata,
-  ResourceQuality,
-  ResourceRegistrationOptions,
-} from '../../registry/ResourceRegistry'; // Added import
-import { ProcessStatus } from '../../types/resources/ProductionChainTypes';
+  FlowOptimizationResult,
+  ResourceFlowWorkerUtil,
+} from '../../utils/workers/ResourceFlowWorkerUtil';
 // Import TechTreeManager for tech checks
+import { LoggingService } from '../../services/LoggingService';
 import { TechTreeManager } from '../game/techTreeManager'; // Removed getTechTreeManager
-
 // Helper function to create a default ResourceState
 function createDefaultResourceState(): ResourceState {
   // Added capacity property
@@ -70,7 +63,7 @@ function initializeResourceRecord(): Record<ResourceType, ResourceState> {
   return record as Record<ResourceType, ResourceState>; // Cast after initialization
 }
 
-// Add type alias for StandardizedResourceType for backward compatibility
+// Add type alias for StandardizedResourceType for backcombatd compatibility
 type StandardizedResourceType = ResourceType;
 
 // Add StandardizedResourceTransfer type definition
@@ -108,10 +101,10 @@ export interface IResourceFlowManager {
   createFlow(flow: ResourceFlow): boolean;
   optimizeFlows(): Promise<FlowOptimizationResult>;
   getAllResourceStates(): Map<string, { available: number }>;
-  getAllConversionRecipes(): Array<{
+  getAllConversionRecipes(): {
     input: { type: string; amount: number };
     output: { type: string; amount: number };
-  }>;
+  }[];
   setConversionRate(sourceType: string, targetType: string, rate: number): void;
 }
 
@@ -214,14 +207,14 @@ export class ResourceFlowManager
   public setCacheTTL(ttlMs: number): void {
     if (ttlMs > 0) {
       this.cacheTTL = ttlMs;
-      console.log(`[RFM Config] Cache TTL set to ${ttlMs}ms`);
+      LoggingService.log(`[RFM Config] Cache TTL set to ${ttlMs}ms`);
     }
   }
 
   public setBatchSize(size: number): void {
     if (size > 0) {
       this.batchSize = size;
-      console.log(`[RFM Config] Batch size set to ${size}`);
+      LoggingService.log(`[RFM Config] Batch size set to ${size}`);
     }
   }
 
@@ -230,22 +223,22 @@ export class ResourceFlowManager
       // Set a minimum reasonable interval
       this.optimizationIntervalMs = intervalMs;
       this.startAsyncOptimizationInterval(); // Restart interval with new timing
-      console.log(`[RFM Config] Optimization interval set to ${intervalMs}ms`);
+      LoggingService.log(`[RFM Config] Optimization interval set to ${intervalMs}ms`);
     }
   }
   // --- End Configuration Setters ---
 
   // Flow network data structures
-  private nodes: Map<string, FlowNode> = new Map();
-  private connections: Map<string, FlowConnection> = new Map();
-  private sourceConnections: Map<string, string[]> = new Map();
-  private targetConnections: Map<string, string[]> = new Map();
+  private nodes = new Map<string, FlowNode>();
+  private connections = new Map<string, FlowConnection>();
+  private sourceConnections = new Map<string, string[]>();
+  private targetConnections = new Map<string, string[]>();
 
   // Categorized nodes for faster lookups
-  private producerNodes: Map<string, FlowNode> = new Map();
-  private consumerNodes: Map<string, FlowNode> = new Map();
-  private storageNodes: Map<string, FlowNode> = new Map();
-  private converterNodes: Map<string, ConverterFlowNode> = new Map();
+  private producerNodes = new Map<string, FlowNode>();
+  private consumerNodes = new Map<string, FlowNode>();
+  private storageNodes = new Map<string, FlowNode>();
+  private converterNodes = new Map<string, ConverterFlowNode>();
 
   // Resource state tracking
   private resourceStates: ResourceStateMap = new Map();
@@ -255,7 +248,7 @@ export class ResourceFlowManager
   private resourceConverters: ResourceConvertersMap = new Map();
 
   // Caching - Properties added from optimization plan
-  private resourceCache: Map<ResourceTypeString, ResourceCacheEntry> = new Map();
+  private resourceCache = new Map<ResourceTypeString, ResourceCacheEntry>();
   private cacheTTL = 5000; // Default 5 seconds TTL
 
   // Transfer history
@@ -265,9 +258,9 @@ export class ResourceFlowManager
   // Conversion processing
   private processingQueue: ExtendedResourceConversionProcess[] = [];
   private _completedProcesses: ExtendedResourceConversionProcess[] = [];
-  private conversionRecipes: Map<string, ResourceConversionRecipe> = new Map();
-  private conversionChains: Map<string, ConversionChain> = new Map();
-  private chainExecutions: Map<string, ChainExecutionStatus> = new Map(); // Map executionId to status
+  private conversionRecipes = new Map<string, ResourceConversionRecipe>();
+  private conversionChains = new Map<string, ConversionChain>();
+  private chainExecutions = new Map<string, ChainExecutionStatus>(); // Map executionId to status
 
   // Optimization state
   private isOptimizing = false;
@@ -318,7 +311,7 @@ export class ResourceFlowManager
    * Implementation of abstract method from AbstractBaseManager
    * Initialize the manager
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
     // Initialize resource states
     this.initializeResourceStates();
@@ -375,10 +368,10 @@ export class ResourceFlowManager
     // Cast to a specific interface to avoid circular dependency issues
     interface MinimalResourceFlowManager {
       getAllResourceStates?: () => Map<string, { available: number }>;
-      getAllConversionRecipes?: () => Array<{
+      getAllConversionRecipes?: () => {
         input: { type: string; amount: number };
         output: { type: string; amount: number };
-      }>;
+      }[];
       setConversionRate?: (sourceType: string, targetType: string, rate: number) => void;
     }
 
@@ -419,7 +412,7 @@ export class ResourceFlowManager
       if ('sourceType' in data && 'targetType' in data && 'rate' in data) {
         // Update conversion recipes when rates change
         // This is a placeholder for actual implementation
-        console.warn(
+        LoggingService.log(
           `Conversion rate changed: ${data?.sourceType} -> ${data?.targetType} = ${data?.rate}`
         );
       }
@@ -678,18 +671,18 @@ export class ResourceFlowManager
       connection.resourceTypes.length === 0 ||
       (connection.maxRate !== undefined && connection.maxRate <= 0)
     ) {
-      console.warn('Invalid connection:', connection);
+      LoggingService.log('Invalid connection:', connection);
       return false;
     }
 
     // Ensure source and target nodes exist
     if (!this.nodes.has(connection.source)) {
-      console.warn(`Source node ${connection.source} does not exist`);
+      LoggingService.log(`Source node ${connection.source} does not exist`);
       return false;
     }
 
     if (!this.nodes.has(connection.target)) {
-      console.warn(`Target node ${connection.target} does not exist`);
+      LoggingService.log(`Target node ${connection.target} does not exist`);
       return false;
     }
 
@@ -705,7 +698,7 @@ export class ResourceFlowManager
         Object.prototype.hasOwnProperty.call(sourceNode.resources, type)
       )
     ) {
-      console.warn(
+      LoggingService.log(
         `Source node ${connection.source} does not have all resource types ${connection.resourceTypes.join(', ')}`
       );
       return false;
@@ -840,7 +833,7 @@ export class ResourceFlowManager
     // Prevent concurrent optimization runs
     if (this.isOptimizing) {
       return (
-        this.lastOptimizationResult || {
+        this.lastOptimizationResult ?? {
           transfers: [],
           updatedConnections: [],
           bottlenecks: [],
@@ -922,7 +915,7 @@ export class ResourceFlowManager
           this.isOptimizing = false;
           return this.lastOptimizationResult;
         } catch (error) {
-          console.warn('Web Worker optimization failed, falling back to main thread:', error);
+          LoggingService.log('Web Worker optimization failed, falling back to main thread:', error);
           // Fall back to main thread optimization
         }
       }
@@ -1026,7 +1019,7 @@ export class ResourceFlowManager
           demand: Partial<Record<ResourceTypeString, number>>;
         };
       } catch (error) {
-        console.warn('Worker calculation failed, falling back to main thread', error);
+        LoggingService.log('Worker calculation failed, falling back to main thread', error);
       }
     }
 
@@ -1076,7 +1069,10 @@ export class ResourceFlowManager
           transfers: result?.transfers.map(t => this.convertResourceTransfer(t)),
         };
       } catch (error) {
-        console.warn('Worker flow rate optimization failed, falling back to main thread:', error);
+        LoggingService.log(
+          'Worker flow rate optimization failed, falling back to main thread:',
+          error
+        );
         // Fall back to main thread optimization
       }
     }
@@ -1124,8 +1120,8 @@ export class ResourceFlowManager
       const modifiers = converter.configuration.efficiencyModifiers;
 
       // Apply general modifiers
-      if (modifiers['global']) {
-        efficiency *= modifiers['global'];
+      if (modifiers.global) {
+        efficiency *= modifiers.global;
       }
 
       // Apply recipe-specific modifiers
@@ -1147,7 +1143,7 @@ export class ResourceFlowManager
     const qualityFactors = this.calculateResourceQualityFactors(recipe.inputs);
     for (const [resourceType, factor] of Object.entries(qualityFactors)) {
       // IMPLEMENTATION: Log the resource type being used in efficiency calculation
-      console.log(
+      LoggingService.log(
         `[RFM Efficiency] Applying quality factor ${factor} for resource ${resourceType}`
       );
       efficiency *= factor;
@@ -1286,7 +1282,7 @@ export class ResourceFlowManager
    */
   public createFlow(flow: ResourceFlow): boolean {
     if (!flow.source || !flow.target || !flow.resources || flow.resources.length === 0) {
-      console.warn('[ResourceFlowManager] Invalid flow configuration:', flow);
+      LoggingService.log('[ResourceFlowManager] Invalid flow configuration:', flow);
       return false;
     }
 
@@ -1424,14 +1420,14 @@ export class ResourceFlowManager
   private registerModuleAsNode(moduleId: string, moduleType: ModuleType): void {
     // Implementation will determine node type based on module type
     // This is a placeholder
-    console.warn(`Registering module ${moduleId} of type ${moduleType} as node`);
+    LoggingService.log(`Registering module ${moduleId} of type ${moduleType} as node`);
   }
 
   // Update a node based on module changes
   private updateNodeFromModule(moduleId: string, changes: unknown): void {
     // Implementation will update node properties based on module changes
     // This is a placeholder
-    console.warn(`Updating node for module ${moduleId} with changes`, changes);
+    LoggingService.log(`Updating node for module ${moduleId} with changes`, changes);
   }
 
   // Set a node's active state
@@ -1452,7 +1448,7 @@ export class ResourceFlowManager
 
     // Use activeProcessIds?.length with explicit cast
     while (
-      ((converter as ConverterFlowNode).activeProcessIds?.length ?? 0) < maxProcesses &&
+      (converter.activeProcessIds?.length ?? 0) < maxProcesses &&
       startedCount < maxProcesses
     ) {
       let processStarted = false;
@@ -1468,7 +1464,7 @@ export class ResourceFlowManager
 
         // Check resource availability
         let canStart = true;
-        const inputsToConsume: Array<{ type: ResourceType; amount: number }> = [];
+        const inputsToConsume: { type: ResourceType; amount: number }[] = [];
         for (const input of recipe.inputs) {
           const resourceState = converter.resources[input.type];
           if (!resourceState || resourceState.current < input.amount) {
@@ -1489,7 +1485,7 @@ export class ResourceFlowManager
             });
 
             // Add to converter status
-            (converter as ConverterFlowNode).activeProcessIds?.push(result.processId);
+            converter.activeProcessIds?.push(result.processId);
             // Update the node in the main map
             this.nodes.set(converter.id, converter);
 
@@ -1524,7 +1520,7 @@ export class ResourceFlowManager
     // Check concurrency limit
     const maxProcesses = converter.configuration?.maxConcurrentProcesses ?? 1;
     // Use activeProcessIds?.length with explicit cast
-    if (((converter as ConverterFlowNode).activeProcessIds?.length ?? 0) >= maxProcesses) {
+    if ((converter.activeProcessIds?.length ?? 0) >= maxProcesses) {
       return { success: false, processId: '', recipeId, error: 'Max concurrent processes reached' };
     }
 
@@ -1569,7 +1565,7 @@ export class ResourceFlowManager
     };
 
     this.processingQueue.push(newProcess);
-    (converter as ConverterFlowNode).activeProcessIds?.push(processId); // Use the declared processId
+    converter.activeProcessIds?.push(processId); // Use the declared processId
     this.nodes.set(converterId, converter); // Ensure node map is updated
 
     this.publish({
@@ -1580,7 +1576,7 @@ export class ResourceFlowManager
       data: { recipeId },
     });
 
-    console.log(
+    LoggingService.log(
       `[RFM] Starting conversion process ${processId} for converter ${converterId} with recipe ${recipeId}`
     ); // Keep log for now
     return {
@@ -1644,16 +1640,16 @@ export class ResourceFlowManager
    *
    * @returns Array of conversion recipes including their IDs
    */
-  public getAllConversionRecipes(): Array<{
+  public getAllConversionRecipes(): {
     recipeId: string; // Added recipeId
     input: { type: string; amount: number };
     output: { type: string; amount: number };
-  }> {
-    const result: Array<{
+  }[] {
+    const result: {
       recipeId: string; // Added recipeId
       input: { type: string; amount: number };
       output: { type: string; amount: number };
-    }> = [];
+    }[] = [];
 
     // Convert conversion recipes to the expected format
     for (const [recipeId, recipe] of this.conversionRecipes.entries()) {
@@ -1927,7 +1923,7 @@ export class ResourceFlowManager
     deltaAmount: number
   ): boolean {
     const node = this.nodes.get(nodeId);
-    if (!node || !node.resources) {
+    if (!node?.resources) {
       // Check if node.resources exists
       return false;
     }
@@ -1986,7 +1982,7 @@ export class ResourceFlowManager
    */
   public findPotentialConsumers(sourceNodeId: string, resourceType: ResourceType): string[] {
     const consumers: string[] = [];
-    const visited: Set<string> = new Set();
+    const visited = new Set<string>();
 
     const queue: string[] = [sourceNodeId];
     visited.add(sourceNodeId);
@@ -2009,7 +2005,7 @@ export class ResourceFlowManager
           visited.add(targetNodeId);
           const targetNode = this.nodes.get(targetNodeId);
 
-          if (targetNode && targetNode.resources) {
+          if (targetNode?.resources) {
             // Ensure targetNode.resources exists
             // Check if target node consumes this resource type
             // Placeholder check: assumes targetNode.resources indicates consumption needs
@@ -2054,15 +2050,23 @@ export class ResourceFlowManager
       !sourceNode?.resources[resourceType] ||
       sourceNode.resources[resourceType].current < amountToDistribute
     ) {
-      console.warn(
-        `[ResourceFlowManager] Insufficient ${ResourceType[resourceType]} at source ${sourceNodeId}.`
+      errorLoggingService.logwarn(
+        new Error(
+          `[ResourceFlowManager] Insufficient ${ResourceType[resourceType]} at source ${sourceNodeId}.`
+        ),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
       ); // Use enum name for logging
     }
 
     const potentialConsumers = this.findPotentialConsumers(sourceNodeId, resourceType);
     if (potentialConsumers.length === 0) {
-      console.log(
-        `[ResourceFlowManager] No consumers found for ${ResourceType[resourceType]} from ${sourceNodeId}.`
+      errorLoggingService.logError(
+        new Error(
+          `[ResourceFlowManager] No consumers found for ${ResourceType[resourceType]} from ${sourceNodeId}.`
+        ),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
       ); // Use enum name
       return false; // No consumers found
     }
@@ -2140,8 +2144,12 @@ export class ResourceFlowManager
             },
           });
         } else {
-          console.error(
-            `[ResourceFlowManager] Failed to update resource amounts during transfer from ${sourceNodeId} to ${consumerId}.`
+          errorLoggingService.logError(
+            new Error(
+              `[ResourceFlowManager] Failed to update resource amounts during transfer from ${sourceNodeId} to ${consumerId}.`
+            ),
+            ErrorType.RUNTIME,
+            ErrorSeverity.HIGH
           );
           // Handle potential rollback or error state
         }
@@ -2236,8 +2244,12 @@ export class ResourceFlowManager
 
       // Calculate number of batches
       const batchCount = Math.ceil(allConverters.length / this.batchSize);
-      console.log(
-        `[RFM Batch] Processing ${allConverters.length} converters in ${batchCount} batches (size: ${this.batchSize})`
+      errorLoggingService.logInfo(
+        new Error(
+          `[RFM Batch] Processing ${allConverters.length} converters in ${batchCount} batches (size: ${this.batchSize})`
+        ),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
       );
 
       for (let i = 0; i < batchCount; i++) {
@@ -2346,7 +2358,7 @@ export class ResourceFlowManager
     const processesToRemove: string[] = [];
 
     // 1. Update ongoing processes for this converter
-    for (const processId of (converter as ConverterFlowNode).activeProcessIds ?? []) {
+    for (const processId of converter.activeProcessIds ?? []) {
       const processIndex = this.processingQueue.findIndex(p => p.processId === processId);
       if (processIndex === -1) {
         this.handleError(
@@ -2392,7 +2404,7 @@ export class ResourceFlowManager
     // Remove completed/lost processes from the converter's active list
     if (processesToRemove.length > 0) {
       // Update activeProcessIds with explicit cast
-      converter.activeProcessIds = ((converter as ConverterFlowNode).activeProcessIds ?? []).filter(
+      converter.activeProcessIds = (converter.activeProcessIds ?? []).filter(
         id => !processesToRemove.includes(id)
       );
       this.nodes.set(converter.id, converter); // Update the node state
@@ -2419,14 +2431,22 @@ export class ResourceFlowManager
     // Logic remains sync, return Promise.resolve
     const node = this.nodes.get(nodeId);
     if (!node) {
-      console.error(`[RFM] Node ${nodeId} not found for resource check.`);
+      errorLoggingService.logError(
+        new Error(`[RFM] Node ${nodeId} not found for resource check.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return Promise.resolve(false);
     }
     for (const required of requiredResources) {
       const availableAmount = node.resources?.[required.type]?.current ?? 0;
       if (availableAmount < required.amount) {
-        console.warn(
-          `[RFM] Insufficient ${required.type} on node ${nodeId}. Required: ${required.amount}, Available: ${availableAmount}`
+        errorLoggingService.logwarn(
+          new Error(
+            `[RFM] Insufficient ${required.type} on node ${nodeId}. Required: ${required.amount}, Available: ${availableAmount}`
+          ),
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH
         );
         return Promise.resolve(false);
       }
@@ -2455,9 +2475,13 @@ export class ResourceFlowManager
 
     // Get node again after delay
     const node = this.nodes.get(nodeId);
-    if (!node || !node.resources) {
-      console.error(
-        `[RFM] Node ${nodeId} not found or missing resources during consumption attempt after delay.`
+    if (!node ?? !node.resources) {
+      errorLoggingService.logError(
+        new Error(
+          `[RFM] Node ${nodeId} not found or missing resources during consumption attempt after delay.`
+        ),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
       );
       return false;
     }
@@ -2468,8 +2492,12 @@ export class ResourceFlowManager
         const amountToConsume = Math.min(resource.amount, node.resources[resource.type].current);
         node.resources[resource.type].current -= amountToConsume;
       } else {
-        console.error(
-          `[RFM] Resource ${resource.type} not found on node ${nodeId} during consumption.`
+        errorLoggingService.logError(
+          new Error(
+            `[RFM] Resource ${resource.type} not found on node ${nodeId} during consumption.`
+          ),
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH
         );
         return false; // Should ideally roll back
       }
@@ -2492,7 +2520,11 @@ export class ResourceFlowManager
         },
       });
     }
-    console.log(`[RFM] Consumed resources from ${nodeId}:`, resourcesToConsume);
+    errorLoggingService.logInfo(
+      new Error(`[RFM] Consumed resources from ${nodeId}:`, resourcesToConsume),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
+    );
     return true; // Return boolean directly
   }
 
@@ -2511,11 +2543,19 @@ export class ResourceFlowManager
 
     const node = this.nodes.get(nodeId);
     if (!node) {
-      console.error(`[RFM] Node ${nodeId} not found for adding resources.`);
+      errorLoggingService.logError(
+        new Error(`[RFM] Node ${nodeId} not found for adding resources.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return;
     }
     if (!node.resources) {
-      console.warn(`[RFM] Node ${nodeId} has no resource map. Initializing.`);
+      errorLoggingService.logwarn(
+        new Error(`[RFM] Node ${nodeId} has no resource map. Initializing.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       node.resources = {} as Record<ResourceType, ResourceState>;
     }
 
@@ -2534,7 +2574,7 @@ export class ResourceFlowManager
         };
       }
       const currentAmount = node.resources[resource.type].current;
-      const capacity = node.resources[resource.type].capacity;
+      const { capacity } = node.resources[resource.type];
       // Ensure we don't exceed capacity if state changed during delay
       const amountToAdd = Math.min(resource.amount, capacity - currentAmount);
       node.resources[resource.type].current += amountToAdd;
@@ -2557,7 +2597,11 @@ export class ResourceFlowManager
         },
       });
     }
-    console.log(`[RFM] Added resources to ${nodeId}:`, resourcesToAdd);
+    errorLoggingService.logInfo(
+      new Error(`[RFM] Added resources to ${nodeId}:`, resourcesToAdd),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
+    );
   }
 
   /**
@@ -2574,7 +2618,11 @@ export class ResourceFlowManager
 
     const node = this.nodes.get(nodeId);
     if (!node) {
-      console.error(`[RFM] Node ${nodeId} not found for update.`);
+      errorLoggingService.logError(
+        new Error(`[RFM] Node ${nodeId} not found for update.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return;
     }
 
@@ -2582,7 +2630,11 @@ export class ResourceFlowManager
 
     const currentData = this.nodes.get(nodeId);
     if (!currentData) {
-      console.error(`[RFM] Node ${nodeId} disappeared before update.`);
+      errorLoggingService.logError(
+        new Error(`[RFM] Node ${nodeId} disappeared before update.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return;
     }
     const updatedNode: FlowNode = { ...currentData }; // Change let to const
@@ -2604,7 +2656,11 @@ export class ResourceFlowManager
         updatedNode: updatedNode, // Correct key
       },
     });
-    console.log(`[RFM] Updated node ${nodeId} data:`, data);
+    errorLoggingService.logInfo(
+      new Error(`[RFM] Updated node ${nodeId} data:`, data),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
+    );
   }
 
   /**
@@ -2617,9 +2673,13 @@ export class ResourceFlowManager
     targetNodeId: string,
     resourcesToTransfer: ResourceQuantity[]
   ): Promise<boolean> {
-    console.log(
-      `[RFM] Attempting transfer from ${sourceNodeId} to ${targetNodeId}:`,
-      resourcesToTransfer
+    errorLoggingService.logInfo(
+      new Error(
+        `[RFM] Attempting transfer from ${sourceNodeId} to ${targetNodeId}:`,
+        resourcesToTransfer
+      ),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
     );
     let available = false;
     let consumed = false;
@@ -2657,7 +2717,11 @@ export class ResourceFlowManager
           }));
 
           // Wait for the calculated delay
-          console.log(`[RFM Transfer] Applying delay: ${calculatedDelayMs.toFixed(2)}ms`);
+          errorLoggingService.logInfo(
+            new Error(`[RFM Transfer] Applying delay: ${calculatedDelayMs.toFixed(2)}ms`),
+            ErrorType.RUNTIME,
+            ErrorSeverity.HIGH
+          );
           await new Promise(resolve => setTimeout(resolve, calculatedDelayMs));
 
           // --- IMPLEMENT Transfer Delay & Efficiency --- END
@@ -2677,18 +2741,30 @@ export class ResourceFlowManager
               resources: efficientResources, // Use the adjusted amounts
             },
           });
-          console.log(`[RFM] Transfer success: ${sourceNodeId} -> ${targetNodeId}`);
+          errorLoggingService.logInfo(
+            new Error(`[RFM] Transfer success: ${sourceNodeId} -> ${targetNodeId}`),
+            ErrorType.RUNTIME,
+            ErrorSeverity.HIGH
+          );
           return true; // Explicitly return true on success
         }
       }
     } catch (error) {
-      console.error(`[RFM] Error during transfer from ${sourceNodeId} to ${targetNodeId}:`, error);
+      errorLoggingService.logError(
+        new Error(`[RFM] Error during transfer from ${sourceNodeId} to ${targetNodeId}:`, error),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       // TODO: Rollback consumption if addResources fails?
       return false; // Return false on error
     }
     // If checks or consumption failed
-    console.warn(
-      `[RFM] Transfer failed: ${sourceNodeId} -> ${targetNodeId}. Available: ${available}, Consumed: ${consumed}`
+    errorLoggingService.logwarn(
+      new Error(
+        `[RFM] Transfer failed: ${sourceNodeId} -> ${targetNodeId}. Available: ${available}, Consumed: ${consumed}`
+      ),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
     );
     return false; // Return false on failure
   }
@@ -2812,12 +2888,16 @@ export class ResourceFlowManager
    * @returns True if registration was successful, false otherwise.
    */
   public registerConversionChain(chain: ConversionChain): boolean {
-    if (!chain || !chain.id || !chain.steps || chain.steps.length === 0) {
+    if (!chain?.id || !chain.steps || chain.steps.length === 0) {
       this.handleError(new Error('Invalid conversion chain definition provided.'), { chain });
       return false;
     }
     if (this.conversionChains.has(chain.id)) {
-      console.warn(`[RFM] Conversion chain ${chain.id} already registered. Overwriting.`);
+      errorLoggingService.logwarn(
+        new Error(`[RFM] Conversion chain ${chain.id} already registered. Overwriting.`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
     }
     // Validate that all recipe steps exist
     for (const recipeId of chain.steps) {
@@ -2830,7 +2910,11 @@ export class ResourceFlowManager
       }
     }
     this.conversionChains.set(chain.id, chain);
-    console.log(`[RFM] Registered conversion chain: ${chain.id}`);
+    errorLoggingService.logInfo(
+      new Error(`[RFM] Registered conversion chain: ${chain.id}`),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
+    );
     return true;
   }
 
@@ -2867,7 +2951,11 @@ export class ResourceFlowManager
     };
 
     this.chainExecutions.set(executionId, initialStatus);
-    console.log(`[RFM] Starting execution ${executionId} for chain ${chainId}`);
+    errorLoggingService.logInfo(
+      new Error(`[RFM] Starting execution ${executionId} for chain ${chainId}`),
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH
+    );
 
     // Try to kick off the first step immediately
     let initialConverter: ConverterFlowNode | undefined;
@@ -2891,7 +2979,11 @@ export class ResourceFlowManager
     if (process && process.active && !process.paused) {
       process.paused = true;
       // TODO: Add event publishing for process pause/resume?
-      console.log(`[RFM] Paused process ${processId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Paused process ${processId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return true;
     }
     return false;
@@ -2907,7 +2999,11 @@ export class ResourceFlowManager
     if (process && process.active && process.paused) {
       process.paused = false;
       // TODO: Add event publishing for process pause/resume?
-      console.log(`[RFM] Resumed process ${processId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Resumed process ${processId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       return true;
     }
     return false;
@@ -2926,12 +3022,16 @@ export class ResourceFlowManager
 
       // Update the converter node's active process list
       const converter = this.converterNodes.get(cancelledProcess.sourceId);
-      if (converter && converter.activeProcessIds) {
+      if (converter?.activeProcessIds) {
         converter.activeProcessIds = converter.activeProcessIds.filter(id => id !== processId);
         this.nodes.set(converter.id, converter);
       }
       // TODO: Publish PROCESS_CANCELLED event?
-      console.log(`[RFM] Cancelled process ${processId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Cancelled process ${processId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       // Note: This doesn't explicitly handle associated chain steps - cancellation might break chains.
       // Consider adding logic to fail the chain if a step is cancelled.
       return true;
@@ -2954,7 +3054,11 @@ export class ResourceFlowManager
           this.pauseConversionProcess(step.processId);
         }
       });
-      console.log(`[RFM] Paused chain execution ${executionId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Paused chain execution ${executionId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       // TODO: Publish CHAIN_PAUSED event?
       return true;
     }
@@ -2974,11 +3078,15 @@ export class ResourceFlowManager
       chainStatus.stepStatus.forEach(step => {
         const process = this.processingQueue.find(p => p.processId === step.processId);
         // Resume only if the process itself was paused (might have finished while chain was paused)
-        if (process && process.paused) {
+        if (process?.paused) {
           this.resumeConversionProcess(step.processId);
         }
       });
-      console.log(`[RFM] Resumed chain execution ${executionId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Resumed chain execution ${executionId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       // TODO: Publish CHAIN_RESUMED event?
       return true;
     }
@@ -2992,7 +3100,7 @@ export class ResourceFlowManager
    */
   public cancelChainExecution(executionId: string): boolean {
     const chainStatus = this.chainExecutions.get(executionId);
-    if (chainStatus && chainStatus.active) {
+    if (chainStatus?.active) {
       chainStatus.active = false;
       chainStatus.failed = true; // Mark as failed due to cancellation
       chainStatus.errorMessage = 'Chain execution cancelled by user.';
@@ -3002,7 +3110,11 @@ export class ResourceFlowManager
           this.cancelConversionProcess(step.processId);
         }
       });
-      console.log(`[RFM] Cancelled chain execution ${executionId}`);
+      errorLoggingService.logInfo(
+        new Error(`[RFM] Cancelled chain execution ${executionId}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH
+      );
       // TODO: Publish CHAIN_CANCELLED event?
       return true;
     }
@@ -3058,8 +3170,7 @@ export class ResourceFlowManager
         if (
           (conv.supportedRecipeIds?.includes(recipeId) || !conv.supportedRecipeIds) &&
           // Add explicit cast
-          ((conv as ConverterFlowNode).activeProcessIds?.length ?? 0) <
-            (conv.configuration?.maxConcurrentProcesses ?? 1)
+          (conv.activeProcessIds?.length ?? 0) < (conv.configuration?.maxConcurrentProcesses ?? 1)
         ) {
           targetConverter = conv;
           break;
@@ -3135,7 +3246,9 @@ export class ResourceFlowManager
   ): void {
     // Iterate through active chain executions
     for (const [executionId, chainStatus] of this.chainExecutions.entries()) {
-      if (!chainStatus.active || chainStatus.completed || chainStatus.failed) continue;
+      if (!chainStatus.active || chainStatus.completed || chainStatus.failed) {
+        continue;
+      }
 
       const stepIndex = chainStatus.stepStatus.findIndex(
         step => step.processId === completedProcess.processId
@@ -3156,7 +3269,11 @@ export class ResourceFlowManager
           if (allLastStepsComplete) {
             chainStatus.completed = true;
             chainStatus.active = false;
-            console.log(`[RFM] Conversion Chain Execution ${executionId} completed.`);
+            errorLoggingService.logInfo(
+              new Error(`[RFM] Conversion Chain Execution ${executionId} completed.`),
+              ErrorType.RUNTIME,
+              ErrorSeverity.HIGH
+            );
             // TODO: Publish CHAIN_EXECUTION_COMPLETED event
           }
         } else if (chainDefinition && chainStatus.currentStepIndex < chainDefinition.steps.length) {

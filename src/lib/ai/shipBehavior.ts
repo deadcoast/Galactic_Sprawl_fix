@@ -80,9 +80,13 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         const category = getShipCategory(ship.type);
         const capabilities = getDefaultCapabilities(category);
 
-        // War ships can salvage if they have the cutting laser
+        // combat ships can salvage if they have the cutting laser
         const techTreeManager = getTechTreeManager();
-        if (category === 'war' && techTreeManager && techTreeManager.isUnlocked('cutting_laser')) {
+        if (
+          category === 'combat' &&
+          techTreeManager &&
+          techTreeManager.isUnlocked('cutting_laser')
+        ) {
           capabilities.canSalvage = true;
         }
 

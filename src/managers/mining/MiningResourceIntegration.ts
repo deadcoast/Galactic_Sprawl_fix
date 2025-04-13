@@ -13,7 +13,7 @@ import {
   ResourceState,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
-import { MiningShip, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes'; // Use this MiningShip
+import { MiningShip, UnifiedShipStatus } from '../../types/ships/ShipTypes'; // Use this MiningShip
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 // Fix import path for ShipStatus

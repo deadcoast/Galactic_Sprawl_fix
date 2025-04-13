@@ -638,7 +638,7 @@ const LongSessionMemoryPage: React.FC = () => {
           padding: 12px 16px;
           margin-bottom: 20px;
           border-radius: 4px;
-          animation: fadeOut 5s forwards;
+          animation: fadeOut 5s forcombatds;
         }
 
         @keyframes fadeOut {

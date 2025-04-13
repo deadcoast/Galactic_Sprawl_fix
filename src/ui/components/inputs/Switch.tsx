@@ -146,7 +146,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       }
     }, [checked]);
 
-    // Forward ref
+    // Forcombatd ref
     React.useImperativeHandle(ref, () => internalRef.current!);
 
     // Handle change

@@ -142,7 +142,7 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
       // Calculate target rotation (in radians)
       const targetRotation = Math.atan2(dy, dx);
 
-      // Smoothly rotate towards target
+      // Smoothly rotate tocombatds target
       let rotationDiff = targetRotation - state.currentRotation;
       if (rotationDiff > Math.PI) {
         rotationDiff -= Math.PI * 2;
@@ -154,7 +154,7 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
       state.currentRotation +=
         Math.sign(rotationDiff) * Math.min(Math.abs(rotationDiff), state.rotationSpeed * deltaTime);
 
-      // Accelerate if pointing roughly towards target
+      // Accelerate if pointing roughly tocombatds target
       if (Math.abs(rotationDiff) < Math.PI / 4) {
         state.currentSpeed = Math.min(
           state.maxSpeed,

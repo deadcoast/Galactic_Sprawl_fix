@@ -41,8 +41,8 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
     const category = getShipCategory(type);
     const capabilities = getDefaultCapabilities(category);
 
-    // Enable salvage for war ships if they have the cutting laser
-    if (category === 'war' && TechTreeManager.getInstance().hasWarShipSalvage()) {
+    // Enable salvage for combat ships if they have the cutting laser
+    if (category === 'combat' && TechTreeManager.getInstance().hasCombatShipSalvage()) {
       capabilities.canSalvage = true;
     }
 

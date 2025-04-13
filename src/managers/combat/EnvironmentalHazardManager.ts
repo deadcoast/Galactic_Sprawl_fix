@@ -795,7 +795,7 @@ export class EnvironmentalHazardManager extends TypedEventEmitter<EnvironmentalH
         specialEffect = 'vortex';
         break;
       case 'temporalRift':
-        specialEffect = 'timewarp';
+        specialEffect = 'timecombatp';
         break;
       case 'quantumFluctuation':
         specialEffect = 'quantum';

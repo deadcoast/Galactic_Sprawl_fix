@@ -92,7 +92,7 @@ export class DataProcessingService {
         resolve(data);
       }
     } else {
-      errorLoggingService.logWarn(`Received response for unknown request ID: ${id}`);
+      errorLoggingService.logwarn(`Received response for unknown request ID: ${id}`);
     }
   };
 

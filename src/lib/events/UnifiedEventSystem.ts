@@ -406,15 +406,13 @@ export class EventSystem {
       const [lastEvent, setLastEvent] = useState<T | null>(null);
 
       useEffect(() => {
-        const unsubscribe = this.subscribe<T>(
-          eventType,
-          event => {
-            setLastEvent(event);
-          },
-          options
-        );
-
-        return unsubscribe;
+        return this.subscribe<T>(
+                  eventType,
+                  event => {
+                    setLastEvent(event);
+                  },
+                  options
+                );
       }, [eventType, JSON.stringify(options)]);
 
       return lastEvent;

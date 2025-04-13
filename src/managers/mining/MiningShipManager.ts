@@ -22,7 +22,7 @@ import {
   ShipCategory,
   MiningShip as UnifiedMiningShip, // Keep the alias for clarity within this file
   UnifiedShipStatus,
-} from '../../types/ships/UnifiedShipTypes';
+} from '../../types/ships/ShipTypes';
 import { getAsteroidFieldManager } from '../ManagerRegistry'; // Import the registry function
 
 // Define the expected structure for event data passed to publish

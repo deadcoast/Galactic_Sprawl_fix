@@ -2,7 +2,7 @@
  * @file ModuleEventBus.ts
  * Standardized implementation of the ModuleEventBus using the new EventBus base class.
  *
- * This file maintains backward compatibility with the original ModuleEvents.ts
+ * This file maintains backcombatd compatibility with the original ModuleEvents.ts
  * while leveraging the new standardized architecture.
  */
 
@@ -23,7 +23,7 @@ import { EventBus, EventListener, SubscriptionOptions } from './EventBus';
 
 /**
  * Legacy type definition for ModuleEvent
- * Kept for backward compatibility
+ * Kept for backcombatd compatibility
  */
 export type ModuleEvent = StandardizedEvent;
 

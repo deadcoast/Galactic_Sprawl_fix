@@ -8,7 +8,7 @@ import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { GameEvent, GameEventType, Position } from '../../types/core/GameTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { FactionId } from '../../types/ships/FactionShipTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -99,7 +99,7 @@ interface BattleEnvironmentProps {
 }
 
 interface FormationLines {
-  points: Array<{ x: number; y: number }>;
+  points: { x: number; y: number }[];
   style: 'solid' | 'dashed';
   color: string;
   opacity: number;
@@ -154,6 +154,27 @@ interface __FleetAIResult {
   };
 }
 
+// Define enum for worker message types
+enum CombatWorkerMessageType {
+  WEAPON_FIRE = 'WEAPON_FIRE',
+  UNIT_MOVE = 'UNIT_MOVE',
+  // Add other potential types here as enums
+}
+
+// Define interface for worker messages
+interface CombatWorkerMessageData {
+  weaponId?: string;
+  targetId?: string;
+  weaponType?: string;
+  unitId?: string;
+  position?: Position;
+}
+
+interface CombatWorkerMessage {
+  type: CombatWorkerMessageType; // Use only the enum type
+  data?: CombatWorkerMessageData;
+}
+
 export function BattleEnvironment({
   hazards,
   units,
@@ -169,18 +190,18 @@ export function BattleEnvironment({
 }: BattleEnvironmentProps) {
   // Use refs for mutable state that doesn't need re-renders
   const activeHazardsRef = useRef(hazards);
-  const particlePositionsRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
+  const particlePositionsRef = useRef<Record<string, { x: number; y: number }[]>>({});
   const weaponEffectsRef = useRef<Record<string, { active: boolean; type: string }>>({});
 
   // State that needs re-renders
   const [impactAnimations, setImpactAnimations] = useState<Record<string, boolean>>({});
   const [automationEffects, setAutomationEffects] = useState<
-    Array<{
+    {
       id: string;
       type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
       position: Position;
       timestamp: number;
-    }>
+    }[]
   >([]);
 
   // Memoize event handlers
@@ -321,7 +342,7 @@ export function BattleEnvironment({
       return;
     }
 
-    const newPositions: Record<string, Array<{ x: number; y: number }>> = {};
+    const newPositions: Record<string, { x: number; y: number }[]> = {};
     activeHazardsRef.current.forEach(hazard => {
       const baseParticleCount = quality === 'high' ? 20 : 10;
       const tierMultiplier = 1 + (tier - 1) * 0.5;
@@ -385,15 +406,67 @@ export function BattleEnvironment({
   useEffect(() => {
     const worker = new Worker(new URL('../../workers/combatWorker.ts', import.meta.url));
 
-    worker.onmessage = e => {
+    // Type guard for worker message data
+    const isCombatWorkerMessage = (message: unknown): message is CombatWorkerMessage => {
+      return (
+        typeof message === 'object' &&
+        message !== null &&
+        'type' in message &&
+        typeof message.type === 'string' && // Type is initially string from worker
+        Object.values(CombatWorkerMessageType).includes(message.type as CombatWorkerMessageType) // Check if it's a valid enum value
+      );
+    };
+
+    worker.onmessage = (e: MessageEvent) => {
+      // Validate message structure
+      if (!isCombatWorkerMessage(e.data)) {
+        console.error('Received invalid message from combat worker:', e.data);
+        return;
+      }
+
+      // Now e.data.type is guaranteed to be CombatWorkerMessageType by the guard
       const { type, data } = e.data;
+
+      // Use type guards for data properties
+      const safelyGetString = (
+        obj: CombatWorkerMessageData | undefined,
+        key: keyof CombatWorkerMessageData
+      ): string => {
+        return obj && typeof obj[key] === 'string' ? obj[key] : '';
+      };
+
+      const safelyGetPosition = (
+        obj: CombatWorkerMessageData | undefined,
+        key: keyof CombatWorkerMessageData
+      ): Position => {
+        const pos = obj?.[key];
+        if (
+          typeof pos === 'object' &&
+          pos !== null &&
+          'x' in pos &&
+          'y' in pos &&
+          typeof pos.x === 'number' &&
+          typeof pos.y === 'number'
+        ) {
+          return pos;
+        }
+        return { x: 0, y: 0 }; // Default position if invalid
+      };
+
+      // Use enum values in switch statement
       switch (type) {
-        case 'WEAPON_FIRE':
-          handleWeaponFire(data?.weaponId, data?.targetId, data?.weaponType);
+        case CombatWorkerMessageType.WEAPON_FIRE:
+          handleWeaponFire(
+            safelyGetString(data, 'weaponId'),
+            safelyGetString(data, 'targetId'),
+            safelyGetString(data, 'weaponType')
+          );
           break;
-        case 'UNIT_MOVE':
-          onUnitMove(data?.unitId, data?.position);
+        case CombatWorkerMessageType.UNIT_MOVE:
+          onUnitMove(safelyGetString(data, 'unitId'), safelyGetPosition(data, 'position'));
           break;
+        // No default needed if all enum cases are handled, but good practice
+        // default: const _exhaustiveCheck: never = type; // Ensures all cases are handled
       }
     };
 
@@ -504,7 +577,7 @@ export function BattleEnvironment({
         color: baseColor,
         glowIntensity: tier * (hazard.severity === 'high' ? 1.5 : 1),
         animations: vprAnimations,
-        particlePattern: hazard.vpr?.particleSystem.pattern || 'circular',
+        particlePattern: hazard.vpr?.particleSystem.pattern ?? 'circular',
       };
     },
     [tier, getVPRAnimationSet]
@@ -921,23 +994,23 @@ document.head.appendChild(style);
  * Safely extracts position data from event
  */
 function getPositionFromEvent(event: { data?: { position?: unknown } }): Position {
-  if (!event || !event.data || !event.data.position) {
+  // Use optional chaining for conciseness
+  const position = event?.data?.position;
+  if (!position) {
     return { x: 50, y: 50 }; // Default position
   }
-
-  const position = event.data.position;
 
   if (
     typeof position === 'object' &&
     position !== null &&
     'x' in position &&
     'y' in position &&
-    typeof position.x !== 'undefined' &&
-    typeof position.y !== 'undefined'
+    typeof position.x === 'number' && // Check type explicitly
+    typeof position.y === 'number' // Check type explicitly
   ) {
     return {
-      x: Number(position.x),
-      y: Number(position.y),
+      x: position.x,
+      y: position.y,
     };
   }
 
@@ -956,8 +1029,8 @@ const CombatControls = () => {
     console.warn('Combat simulation skipped back');
   };
 
-  const handleSkipForward = () => {
-    console.warn('Combat simulation skipped forward');
+  const handleSkipForcombatd = () => {
+    console.warn('Combat simulation skipped forcombatd');
   };
 
   const handleClose = () => {
@@ -976,7 +1049,7 @@ const CombatControls = () => {
           <Play className="h-5 w-5 text-teal-400" />
         )}
       </button>
-      <button onClick={handleSkipForward} aria-label="Skip forward">
+      <button onClick={handleSkipForcombatd} aria-label="Skip forcombatd">
         <SkipForward className="h-5 w-5 text-teal-400" />
       </button>
       <button onClick={handleClose} aria-label="Close">

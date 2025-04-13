@@ -1,19 +1,19 @@
 import * as React from 'react';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, useEffect, useMemo, useState } from 'react';
 import { SystemIntegration } from './components/core/SystemIntegration';
 import { ThresholdIntegration } from './components/core/ThresholdIntegration';
-import { GameStateMonitor } from './components/debug/GameStateMonitor';
-import { TooltipProvider } from './components/ui/TooltipProvider';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
-import { GameActionType, GameProvider, useGameDispatch } from './contexts/GameContext';
-import { ModuleActionType, ModuleProvider, useModuleDispatch } from './contexts/ModuleContext';
-import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
-import { ThresholdProvider } from './contexts/ThresholdContext';
+import {
+  createUpdateResourcesAction,
+  GameActionType,
+  GameProvider,
+  useGameDispatch,
+} from './contexts/GameContext';
+import { ModuleActionType, useModuleDispatch } from './contexts/ModuleContext';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
 // import { TechTreeManager } from './managers/game/techTreeManager';
-import { Profiler } from 'react';
 import { TechNode } from './managers/game/techTreeManager';
 import { getTechTreeManager } from './managers/ManagerRegistry';
 import { moduleManager } from './managers/module/ModuleManager';
@@ -24,16 +24,37 @@ import { ModuleStatus } from './types/modules/ModuleTypes';
 import { ResourceType } from './types/resources/ResourceTypes';
 
 // Import the GlobalErrorBoundary component
-import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
 // Import error services
+import {
+  Box,
+  CircularProgress,
+  CssBaseline,
+  GlobalStyles,
+  ThemeProvider,
+  Typography,
+} from '@mui/material';
+import { Suspense } from 'react';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { ShipHangar } from './components/buildings/modules/hangar/ShipHangar';
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
+import { Layout } from './components/layout/Layout';
 import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
+import { initializeAllConfigs } from './config/initializeConfigs';
+import { SystemIntegrationProvider } from './contexts/SystemIntegrationContext';
+import { ThresholdIntegrationProvider } from './contexts/ThresholdIntegrationContext';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
-import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
-import { getResourceManager, getShipHangarManager } from './managers/ManagerRegistry';
+import { getResourceManager } from './managers/ManagerRegistry';
+import { initializeResourceIntegration } from './managers/resource/ResourceIntegration';
+import { StandardShipHangarManager } from './managers/ships/ShipManager';
+import { ColonyManagement } from './pages/ColonyManagement';
+import { Dashboard } from './pages/Dashboard';
+import { ExplorationMap } from './pages/ExplorationMap';
+import { FleetManagement } from './pages/FleetManagement';
+import { ResearchTree } from './pages/ResearchTree';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
 import { eventPropagationService } from './services/EventPropagationService';
 import { recoveryService } from './services/RecoveryService';
+import { darkTheme } from './styles/themes/darkTheme';
 import { BaseEvent } from './types/events/EventTypes';
 
 // Lazy load components that aren't needed on initial render
@@ -222,7 +243,12 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
           // Initialize the ship hangar manager
           console.warn('Initializing ship hangar manager...');
-          const shipHangarManager = getShipHangarManager();
+          const shipHangarManager = new StandardShipHangarManager(
+            'hangar-main',
+            20,
+            resourceManagerInstance,
+            officerManager
+          );
 
           // Register the ship hangar manager with the global window object for development access
           if (process.env.NODE_ENV === 'development') {
@@ -372,72 +398,134 @@ const GameLayoutWrapper = () => {
   );
 };
 
-export default function App() {
-  // Enable app-level profiling with React Profiler API
-  // const profilerRef = React.createRef<typeof Profiler>(); // Removed unused ref
+// Initialization function
+function initializeManagers(): void {
+  try {
+    errorLoggingService.logInfo('[App] Initializing configurations...');
+    initializeAllConfigs();
+    errorLoggingService.logInfo('[App] Configurations initialized.');
 
-  // Set up callback for the React Profiler
-  const handleProfilerRender = (
-    id: string,
-    phase: string,
-    actualDuration: number,
-    baseDuration: number,
-    startTime: number,
-    commitTime: number
-  ) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(
-        `[Profiler] ${id} ${phase}: actual=${actualDuration.toFixed(2)}ms, ` +
-          `base=${baseDuration.toFixed(2)}ms, at ${new Date(commitTime).toLocaleTimeString()}`
-      );
-    }
-  };
+    errorLoggingService.logInfo('[App] Initializing managers...');
+    const resourceManager = getResourceManager();
+    errorLoggingService.logInfo('[App] Managers initialized.');
 
-  // Show profiling overlay in development
-  useProfilingOverlay({
-    enabledByDefault: process.env.NODE_ENV === 'development',
-    enableInProduction: false,
-    toggleKey: 'p',
-    persistState: true,
-  });
+    errorLoggingService.logInfo('[App] Initializing resource integration...');
+    initializeResourceIntegration();
+    errorLoggingService.logInfo('[App] Resource integration initialized.');
+  } catch (error) {
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error('Initialization failed'),
+      undefined,
+      undefined,
+      { componentName: 'App', action: 'initializeManagers' }
+    );
+    throw error;
+  }
+}
 
-  // Make the ResourceManager accessible in development
-  const [resourceManager] = React.useState(() => new ResourceManager());
+// Remove async, fix dispatch type
+function loadGameData(dispatch: React.Dispatch<GameAction>): void {
+  try {
+    errorLoggingService.logInfo('[App] Loading game data...');
+    dispatch(
+      createUpdateResourcesAction({
+        [ResourceType.MINERALS]: 5000,
+        [ResourceType.ENERGY]: 10000,
+        [ResourceType.POPULATION]: 50,
+      })
+    );
+    errorLoggingService.logInfo('[App] Initial resources loaded.');
 
-  if (process.env.NODE_ENV === 'development') {
-    // Make ResourceManager available for debugging
-    (window as Window & typeof globalThis & { resourceManager: ResourceManager }).resourceManager =
-      resourceManager;
+    // Placeholder for loading other data or adding initial ships
+
+    errorLoggingService.logInfo('[App] Game data loaded.');
+  } catch (error) {
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error('Game data loading failed'),
+      undefined,
+      undefined,
+      { componentName: 'App', action: 'loadGameData' }
+    );
+  }
+}
+
+function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const resourceManager = useMemo(() => getResourceManager(), []);
+  const officerManager = useMemo(() => new OfficerManager(), []);
+  const mainHangarManager = useMemo<ShipHangarManager>(() => {
+    errorLoggingService.logInfo('[App] Creating Main Hangar Manager');
+    return new StandardShipHangarManager('hangar-main', 20, resourceManager, officerManager);
+  }, [resourceManager, officerManager]);
+
+  useEffect(() => {
+    const initApp = () => {
+      try {
+        initializeManagers();
+        setIsInitialized(true);
+        errorLoggingService.logInfo('[App] Initialization sequence complete.');
+      } catch (error) {
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('App Initialization failed'),
+          undefined,
+          undefined,
+          { componentName: 'App', action: 'useEffect init' }
+        );
+      }
+    };
+    initApp();
+  }, []);
+
+  if (!isInitialized) {
+    return (
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+      >
+        <CircularProgress />
+        <Typography ml={2}>Initializing Galactic Sprawl...</Typography>
+      </Box>
+    );
   }
 
-  // Development mode debug tools
-  const showDebugTools = process.env.NODE_ENV === 'development';
-
   return (
-    <div className="app-container">
-      <Profiler id="GalacticSprawl-App" onRender={handleProfilerRender}>
-        <GlobalErrorBoundary onError={handleGlobalError}>
-          <GameProvider>
-            <ModuleProvider>
-              <ResourceRatesProvider>
-                <ThresholdProvider>
-                  <TooltipProvider>
-                    <GameInitializer>
-                      <Suspense fallback={<LoadingComponent />}>
-                        <GameLayoutWrapper />
-                        {showDebugTools && <GameStateMonitor expanded={false} />}
-                      </Suspense>
-                    </GameInitializer>
-                  </TooltipProvider>
-                </ThresholdProvider>
-              </ResourceRatesProvider>
-            </ModuleProvider>
-          </GameProvider>
-        </GlobalErrorBoundary>
-      </Profiler>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <GlobalStyles
+        styles={
+          {
+            /* global styles here */
+          }
+        }
+      />
+      <GameProvider>
+        <SystemIntegrationProvider>
+          <ThresholdIntegrationProvider>
+            <Router>
+              <Layout>
+                <Suspense fallback={<CircularProgress />}>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/colony" element={<ColonyManagement />} />
+                    <Route path="/exploration" element={<ExplorationMap />} />
+                    <Route path="/research" element={<ResearchTree />} />
+                    <Route path="/fleet" element={<FleetManagement />} />
+                    <Route
+                      path="/hangar"
+                      element={<ShipHangar hangarId="hangar-main" manager={mainHangarManager} />}
+                    />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            </Router>
+          </ThresholdIntegrationProvider>
+        </SystemIntegrationProvider>
+      </GameProvider>
+    </ThemeProvider>
   );
 }
+
+export default App;
 
 // Resource Provider - Consider if this is needed if ResourceManager is a global singleton
 interface ResourceProviderProps {

@@ -187,7 +187,7 @@ export function FactionShip({
         </button>
       </div>
 
-      {/* Status Warnings */}
+      {/* Status warnings */}
       {ship.status === 'disabled' && (
         <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />

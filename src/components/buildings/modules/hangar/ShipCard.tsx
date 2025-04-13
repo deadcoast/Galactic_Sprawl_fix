@@ -1,78 +1,84 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import { Eye, Shield, Spade, Zap } from 'lucide-react';
-import React from 'react';
-import {
-  ShipCategory,
-  UnifiedShip,
-  UnifiedShipStatus,
-} from '../../../../types/ships/UnifiedShipTypes';
+import { Ship, ShipCategory, ShipStatus } from '../../../../types/ships/ShipTypes';
 
-const getStatusColor = (status: UnifiedShipStatus): string => {
-  switch (status) {
-    case UnifiedShipStatus.READY:
-      return '#4caf50';
-    case UnifiedShipStatus.ENGAGING:
-    case UnifiedShipStatus.ATTACKING:
-      return '#f44336';
-    case UnifiedShipStatus.PATROLLING:
-      return '#2196f3';
-    case UnifiedShipStatus.RETREATING:
-    case UnifiedShipStatus.RETURNING:
-    case UnifiedShipStatus.WITHDRAWING:
-      return '#ff9800';
-    case UnifiedShipStatus.DISABLED:
-      return '#9e9e9e';
-    case UnifiedShipStatus.DAMAGED:
-      return '#f44336';
-    case UnifiedShipStatus.REPAIRING:
-      return '#ffeb3b';
-    case UnifiedShipStatus.UPGRADING:
-      return '#9c27b0';
-    case UnifiedShipStatus.IDLE:
-      return '#2196f3';
-    case UnifiedShipStatus.MAINTENANCE:
-      return '#607d8b';
-    case UnifiedShipStatus.MINING:
-      return '#795548';
-    case UnifiedShipStatus.SCANNING:
-    case UnifiedShipStatus.INVESTIGATING:
-      return '#00bcd4';
-    default:
-      console.warn(`[ShipCard] Unexpected status: ${status}`);
-      return '#607d8b';
-  }
-};
-
-const getCategoryIcon = (category: ShipCategory): React.ReactNode => {
-  switch (category) {
-    case ShipCategory.WAR:
-    case ShipCategory.FIGHTER:
-    case ShipCategory.CRUISER:
-    case ShipCategory.BATTLESHIP:
-    case ShipCategory.CARRIER:
-      return <Shield size={18} />;
-    case ShipCategory.RECON:
-    case ShipCategory.SCOUT:
-      return <Eye size={18} />;
-    case ShipCategory.MINING:
-      return <Spade size={18} />;
-    case ShipCategory.TRANSPORT:
-      return <Zap size={18} />;
-    default:
-      console.warn(`[ShipCard] Unexpected category: ${category}`);
-      return <Zap size={18} />;
-  }
+const statusColors: Record<ShipStatus, string> = {
+  [ShipStatus.READY]: 'success.main',
+  [ShipStatus.IDLE]: 'grey.500',
+  [ShipStatus.ENGAGING]: 'warning.main',
+  [ShipStatus.ATTACKING]: 'error.main',
+  [ShipStatus.PATROLLING]: 'info.main',
+  [ShipStatus.MINING]: 'info.dark',
+  [ShipStatus.RETREATING]: 'warning.light',
+  [ShipStatus.RETURNING]: 'info.light',
+  [ShipStatus.WITHDRAWING]: 'warning.dark',
+  [ShipStatus.DISABLED]: 'error.dark',
+  [ShipStatus.SCANNING]: 'info.main',
+  [ShipStatus.DAMAGED]: 'error.light',
+  [ShipStatus.INVESTIGATING]: 'info.light',
+  [ShipStatus.REPAIRING]: 'secondary.main',
+  [ShipStatus.HIDING]: 'grey.700',
+  [ShipStatus.UPGRADING]: 'secondary.light',
+  [ShipStatus.PREPARING]: 'info.main',
+  [ShipStatus.AMBUSHING]: 'warning.dark',
+  [ShipStatus.RETALIATING]: 'error.dark',
+  [ShipStatus.DORMANT]: 'grey.800',
+  [ShipStatus.AWAKENING]: 'info.light',
+  [ShipStatus.ENFORCING]: 'primary.main',
+  [ShipStatus.OVERWHELMING]: 'primary.dark',
+  [ShipStatus.PURSUING]: 'warning.main',
+  [ShipStatus.AGGRESSIVE]: 'error.dark',
+  [ShipStatus.MAINTENANCE]: 'secondary.dark',
 };
 
 interface ShipCardProps {
-  ship: UnifiedShip;
+  ship: Ship;
   isSelected?: boolean;
   onClick?: (shipId: string) => void;
 }
 
+const getStatusColor = (status: ShipStatus): string => {
+  const color = statusColors[status];
+  if (!color) {
+    console.warn(`[ShipCard] Unexpected or unmapped status: ${status as string}`);
+    return 'grey.600'; // Default color
+  }
+  return color;
+};
+
+const getCategoryIcon = (category: ShipCategory): JSX.Element => {
+  const iconProps = { size: 18, className: 'mr-2' };
+  switch (category) {
+    case ShipCategory.combat:
+    case ShipCategory.FIGHTER:
+    case ShipCategory.CRUISER:
+    case ShipCategory.BATTLESHIP:
+    case ShipCategory.CARRIER:
+      return <Zap {...iconProps} />; // Combat icon
+    case ShipCategory.MINING:
+      return <Spade {...iconProps} />; // Mining icon
+    case ShipCategory.RECON:
+    case ShipCategory.SCOUT:
+      return <Eye {...iconProps} />; // Recon icon
+    case ShipCategory.TRANSPORT:
+      return <Shield {...iconProps} />; // Use Shield as placeholder for Transport
+    default:
+      console.warn(`[ShipCard] Unexpected category: ${category as string}`);
+      return <Zap {...iconProps} />; // Default icon
+  }
+};
+
 export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) => {
+  const healthPercentage = ship.stats?.maxHealth
+    ? (ship.stats.health / ship.stats.maxHealth) * 100
+    : 0;
+  const shieldPercentage = ship.stats?.maxShield
+    ? (ship.stats.shield / ship.stats.maxShield) * 100
+    : 0;
+
+  const displayStatus = ship.status.toUpperCase();
   const statusColor = getStatusColor(ship.status);
-  const categoryIcon = getCategoryIcon(ship.category);
+  const categoryIcon = getCategoryIcon(ship.category as ShipCategory);
 
   const handleCardClick = () => {
     if (onClick) {
@@ -101,9 +107,9 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
             variant="h6"
             component="div"
             className="mx-2 flex-grow truncate"
-            title={ship.name || 'Unnamed Ship'}
+            title={ship.name ?? 'Unnamed Ship'}
           >
-            {ship.name || 'Unnamed Ship'}
+            {ship.name ?? 'Unnamed Ship'}
           </Typography>
           <Typography
             variant="caption"

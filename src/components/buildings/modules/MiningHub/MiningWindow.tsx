@@ -1,18 +1,19 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import {
-  ArrowDown,
-  ArrowUp,
-  HelpCircle,
-  Info,
-  Microscope,
-  MoreHorizontal,
-  Search,
-  Settings,
-  Ship,
-  Sliders,
-  Target,
-} from 'lucide-react';
+import
+  {
+    ArrowDown,
+    ArrowUp,
+    HelpCircle,
+    Info,
+    Microscope,
+    MoreHorizontal,
+    Search,
+    Settings,
+    Ship,
+    Sliders,
+    Target,
+  } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
@@ -744,7 +745,7 @@ export function MiningWindow() {
                       resource: resource,
                       isSelected: selectedNode?.id === resource.id,
                       techBonuses: techBonuses,
-                      onClick: () => setSelectedNode(resource as Resource),
+                      onClick: () => setSelectedNode(renderSearchAndControls()resource),
                       assignedShip:
                         mockShips.find(ship => ship.targetNode === resource.id)?.id ?? '',
                     })

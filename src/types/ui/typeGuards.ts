@@ -19,7 +19,9 @@ export function isUIEventType(value: unknown): value is UIEventType {
  * Type guard for checking if a value has base component props
  */
 export function hasBaseComponentProps(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
@@ -39,13 +41,17 @@ export function hasBaseComponentProps(value: unknown): boolean {
  * Type guard for checking if a value has a valid color prop
  */
 export function hasValidColorProp(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
-  if (!('color' in obj)) return false;
+  if (!('color' in obj)) {
+    return false;
+  }
 
-  const color = obj.color;
+  const {color} = obj;
 
   // Color can be a ThemeColorName enum value or a string
   return (
@@ -59,13 +65,17 @@ export function hasValidColorProp(value: unknown): boolean {
  * Type guard for checking if a value has a valid size prop
  */
 export function hasValidSizeProp(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
-  if (!('size' in obj)) return false;
+  if (!('size' in obj)) {
+    return false;
+  }
 
-  const size = obj.size;
+  const {size} = obj;
 
   // Size can be a ComponentSize enum value or a string
   return (
@@ -79,13 +89,17 @@ export function hasValidSizeProp(value: unknown): boolean {
  * Type guard for checking if a value has a valid variant prop
  */
 export function hasValidVariantProp(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
-  if (!('variant' in obj)) return false;
+  if (!('variant' in obj)) {
+    return false;
+  }
 
-  const variant = obj.variant;
+  const {variant} = obj;
 
   // Variant can be a ComponentVariant enum value or a string
   return (
@@ -99,7 +113,9 @@ export function hasValidVariantProp(value: unknown): boolean {
  * Type guard for checking if a value is a valid CSS property name
  */
 export function isValidCSSPropertyName(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
+  if (typeof value !== 'string') {
+    return false;
+  }
 
   // Simple check for common CSS properties - this is not exhaustive
   const commonCSSProperties = [
@@ -145,14 +161,18 @@ export function isValidCSSPropertyName(value: unknown): value is string {
  * Type guard for checking if a value is a valid CSS style object
  */
 export function isValidStyleObject(value: unknown): value is React.CSSProperties {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
   // Check a few random keys to see if they look like CSS properties
   const keys = Object.keys(obj);
 
-  if (keys.length === 0) return true; // Empty style object is valid
+  if (keys.length === 0) {
+    return true;
+  } // Empty style object is valid
 
   // Check at least some of the keys are valid CSS properties
   return keys.some(key => {
@@ -223,7 +243,11 @@ export function isValidLayoutProp(prop: string): boolean {
  * Type guard for checking if a value is a valid theme object
  */
 export function isValidTheme(value: unknown): value is Theme {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+    return false;
+  }
 
   const theme = value as Partial<Theme>;
 
@@ -241,7 +265,9 @@ export function isValidTheme(value: unknown): value is Theme {
  * Type guard for checking if a value is a valid React event handler
  */
 export function isEventHandler(value: unknown): value is (event: React.SyntheticEvent) => void {
-  if (typeof value !== 'function') return false;
+  if (typeof value !== 'function') {
+    return false;
+  }
 
   // Check if the property name follows React event handler pattern
   return true;
@@ -258,7 +284,9 @@ export function isEventHandlerProp(propName: string): boolean {
  * Type guard for checking if a value is a valid React element
  */
 export function isReactElement(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
@@ -274,16 +302,16 @@ export function isReactElement(value: unknown): boolean {
  * Type guard for checking if a value is a valid responsive prop - one that changes based on breakpoint
  */
 export function isResponsiveProp(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
   const obj = value as Record<string, unknown>;
 
   // Check if the object has breakpoint keys
-  const hasBreakpointKeys = Object.keys(obj).some(key =>
-    Object.values(ThemeBreakpoint).includes(key as ThemeBreakpoint)
-  );
-
-  return hasBreakpointKeys;
+  return Object.keys(obj).some(key =>
+      Object.values(ThemeBreakpoint).includes(key as ThemeBreakpoint)
+    );
 }
 
 /**
@@ -307,12 +335,18 @@ export function extractColorProp(
   props: Record<string, unknown>,
   defaultColor?: string
 ): string | undefined {
-  if (!('color' in props)) return defaultColor;
+  if (!('color' in props)) {
+    return defaultColor;
+  }
 
-  const color = props.color;
+  const {color} = props;
 
-  if (color === undefined) return defaultColor;
-  if (typeof color !== 'string') return defaultColor;
+  if (color === undefined) {
+    return defaultColor;
+  }
+  if (typeof color !== 'string') {
+    return defaultColor;
+  }
 
   return color;
 }
@@ -324,11 +358,15 @@ export function extractSizeProp(
   props: Record<string, unknown>,
   defaultSize?: ComponentSize
 ): ComponentSize | undefined {
-  if (!('size' in props)) return defaultSize;
+  if (!('size' in props)) {
+    return defaultSize;
+  }
 
-  const size = props.size;
+  const {size} = props;
 
-  if (size === undefined) return defaultSize;
+  if (size === undefined) {
+    return defaultSize;
+  }
 
   if (typeof size === 'string' && Object.values(ComponentSize).includes(size as ComponentSize)) {
     return size as ComponentSize;
@@ -344,11 +382,15 @@ export function extractVariantProp(
   props: Record<string, unknown>,
   defaultVariant?: ComponentVariant
 ): ComponentVariant | undefined {
-  if (!('variant' in props)) return defaultVariant;
+  if (!('variant' in props)) {
+    return defaultVariant;
+  }
 
-  const variant = props.variant;
+  const {variant} = props;
 
-  if (variant === undefined) return defaultVariant;
+  if (variant === undefined) {
+    return defaultVariant;
+  }
 
   if (
     typeof variant === 'string' &&

@@ -1,4 +1,9 @@
 import React, { forwardRef, MouseEventHandler, useMemo } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../../services/ErrorLoggingService'; // Import logging service
 import type { ConverterFlowNode } from '../../../../types/resources/ResourceConversionTypes'; // Import the specific type
 import { Text } from '../../typography/Text'; // Assuming path
 import { Card, CardProps } from '../Card';
@@ -39,19 +44,19 @@ export const ConverterNodeCard = forwardRef<HTMLDivElement, ConverterNodeCardPro
     ref
   ) => {
     const utilization = useMemo(() => {
-      const activeCount = converter.status?.activeProcesses?.length || 0;
+      const activeCount = converter.activeProcessIds?.length ?? 0;
       const maxCount = converter.configuration?.maxConcurrentProcesses;
       if (typeof maxCount !== 'number' || maxCount <= 0) {
         return 'N/A'; // Cannot calculate if max is unknown or zero
       }
       return `${((activeCount / maxCount) * 100).toFixed(0)}%`;
-    }, [converter.status, converter.configuration]);
+    }, [converter.activeProcessIds, converter.configuration]);
 
     const supportedRecipesCount = converter.supportedRecipeIds?.length ?? 0;
 
     // Validate the title prop before passing it to the base Card
     let cardTitle: React.ReactNode = null; // Default to null
-    const potentialTitle = converter.name || `Converter ${converter.id}`;
+    const potentialTitle = converter.name ?? `Converter ${converter.id}`;
 
     if (
       typeof potentialTitle === 'string' ||
@@ -62,11 +67,14 @@ export const ConverterNodeCard = forwardRef<HTMLDivElement, ConverterNodeCardPro
     } else if (React.isValidElement(potentialTitle)) {
       cardTitle = potentialTitle;
     } else {
-      // Log a warning if the title is an unexpected type (like an object)
-      console.warn(
-        '[ConverterNodeCard] Unexpected type for title prop:',
-        potentialTitle,
-        'Defaulting to ID.'
+      errorLoggingService.logwarn(
+        `[ConverterNodeCard] Unexpected type for title prop: ${String('[potentialTitle]')}. Defaulting to ID.`,
+        {
+          component: 'ConverterNodeCard',
+          converterId: converter.id,
+          warningType: ErrorType.UI,
+          severity: ErrorSeverity.LOW,
+        }
       );
       cardTitle = `Converter ${converter.id}`; // Fallback to ID string
     }
@@ -85,8 +93,9 @@ export const ConverterNodeCard = forwardRef<HTMLDivElement, ConverterNodeCardPro
       >
         {/* Content structure specific to displaying converter info */}
         <Text className="mb-1 text-sm text-gray-600 dark:text-gray-400">
-          Status: {converter.status?.activeProcesses?.length > 0 ? 'Active' : 'Idle'} (
-          {converter.status?.activeProcesses?.length || 0} processes)
+          Status:{' '}
+          {converter.activeProcessIds && converter.activeProcessIds.length > 0 ? 'Active' : 'Idle'}{' '}
+          ({converter.activeProcessIds?.length ?? 0} processes)
         </Text>
         <Text className="mb-1 text-sm text-gray-600 dark:text-gray-400">
           Utilization: {utilization}

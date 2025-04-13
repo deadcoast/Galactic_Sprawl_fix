@@ -412,7 +412,7 @@ export class TypedEventEmitter<T extends Record<string, unknown>> {
     console.warn(
       'TypedEventEmitter.off() is deprecated. Use the returned function from on() instead.'
     );
-    // This method is kept for backward compatibility but doesn't actually work
+    // This method is kept for backcombatd compatibility but doesn't actually work
     // since we can't identify the original subscription
   }
 

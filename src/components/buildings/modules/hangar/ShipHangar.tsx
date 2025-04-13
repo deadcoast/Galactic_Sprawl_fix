@@ -1,335 +1,270 @@
-import * as React from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ShipCard } from './ShipCard';
+// Correct ShipHangarManager import and add dependencies
 import { getResourceManager } from '../../../../managers/ManagerRegistry';
 import { OfficerManager } from '../../../../managers/module/OfficerManager';
 import { StandardShipHangarManager } from '../../../../managers/ships/ShipManager';
+// Fix import path for formatNumber
+import { formatResourceAmount as formatNumber } from '../../../../types/resources/ResourceTypeUtils';
 import { PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
-import { UnifiedShip, UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
+import { Ship, ShipStatus } from '../../../../types/ships/ShipTypes';
+
+// Move helper function outside the component
+const calculateTotalCargoUsed = (ship: Ship): number => {
+  if (!ship.cargo || !(ship.cargo.resources instanceof Map) || ship.cargo.resources.size === 0) {
+    return 0;
+  }
+  let sum = 0;
+  // Explicitly cast resources to Map after check
+  const resourcesMap = ship.cargo.resources;
+  for (const amount of resourcesMap.values()) {
+    if (typeof amount === 'number') {
+      sum += amount;
+    }
+  }
+  return sum;
+};
 
 interface ShipHangarProps {
   hangarId: string;
-  capacity?: number;
+  capacity?: number; // Add capacity prop if needed by manager
 }
 
-/**
- * Ship Hangar Component
- * Displays ships and allows interaction using UnifiedShip types and StandardShipHangarManager
- */
 export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
+  // Instantiate manager using useMemo and dependencies
   const resourceManager = useMemo(() => getResourceManager(), []);
+  // Assuming OfficerManager can be instantiated directly or needs a getter
   const officerManager = useMemo(() => new OfficerManager(), []);
-
   const hangarManager = useMemo(() => {
-    console.log(`Creating StandardShipHangarManager for hangar: ${hangarId}`);
     return new StandardShipHangarManager(hangarId, capacity, resourceManager, officerManager);
   }, [hangarId, capacity, resourceManager, officerManager]);
 
-  const [ships, setShips] = useState<UnifiedShip[]>([]);
-  const [selectedShip, setSelectedShip] = useState<UnifiedShip | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-  const [showCreateUI, setShowCreateUI] = useState(false);
-  const [newShipName, setNewShipName] = useState('');
-  const [selectedClassToBuild, setSelectedClassToBuild] = useState<PlayerShipClass>(
+  const [ships, setShips] = useState<Ship[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
+  const [selectedBuildClass, setSelectedBuildClass] = useState<PlayerShipClass>(
     PlayerShipClass.STAR_SCHOONER
   );
+  const [alerts, setAlerts] = useState<Map<string, string[]>>(new Map());
 
-  const fetchShips = useCallback(async () => {
+  const fetchShips = useCallback(() => {
+    setLoading(true);
     try {
       const currentShips = hangarManager.getAllShips();
-      if (isMounted) {
-        setShips(currentShips);
-      }
-    } catch (error) {
-      console.error('Failed to fetch ships:', error);
+      setShips(currentShips);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch ships');
+      setShips([]); // Set to empty array on error
+    } finally {
+      setLoading(false);
     }
-  }, [hangarManager, isMounted]);
+  }, [hangarManager]);
 
   useEffect(() => {
-    setIsMounted(true);
     fetchShips();
+  }, [fetchShips]);
 
-    return () => {
-      setIsMounted(false);
-    };
-  }, [hangarManager, fetchShips]);
-
-  const handleSelectShip = (ship: UnifiedShip) => {
-    setSelectedShip(ship);
-  };
-
-  const handleDeployShip = () => {
-    if (selectedShip) {
-      const destination = prompt('Enter destination:');
-      if (destination) {
-        hangarManager.deployShip(selectedShip.id, destination);
-        fetchShips();
+  const updateAlerts = useCallback(() => {
+    const newAlertsMap = new Map<string, string[]>();
+    ships?.forEach(ship => {
+      const shipAlerts: string[] = [];
+      if ((ship.stats?.health ?? 0) < (ship.stats?.maxHealth ?? 0) * 0.2) {
+        shipAlerts.push('Critical hull damage');
       }
-    }
+      if ((ship.stats?.shield ?? 0) === 0 && (ship.stats?.maxShield ?? 0) > 0) {
+        shipAlerts.push('Shields down');
+      }
+      if ((ship.crew ?? 0) < (ship.maxCrew ?? 0) * 0.5) {
+        shipAlerts.push('Low crew');
+      }
+      // Add more alert conditions as needed
+
+      if (shipAlerts.length > 0) {
+        newAlertsMap.set(ship.id, shipAlerts);
+      }
+    });
+    // Create new Map instance before setting state
+    setAlerts(newAlertsMap);
+  }, [ships]);
+
+  // --- Event Handling Placeholder ---
+  // Add actual event types and logic based on ShipHangarManager events
+
+  // --- UI Handlers ---
+  const handleShipSelect = (shipId: string) => {
+    setSelectedShipId(prevId => (prevId === shipId ? null : shipId));
   };
 
-  const handleSetReady = () => {
-    if (selectedShip) {
-      hangarManager.changeShipStatus(selectedShip.id, UnifiedShipStatus.READY);
+  const handleRefreshShips = () => {
+    fetchShips();
+  };
+
+  const handleLaunchShip = (shipId: string) => {
+    void hangarManager.launchShip(shipId); // launchShip might not return a promise
+    fetchShips();
+  };
+
+  const handleRecallShip = (shipId: string) => {
+    // Use correct ShipStatus enum
+    hangarManager.changeShipStatus(shipId, ShipStatus.RETURNING); // changeShipStatus might not return promise
+    fetchShips();
+  };
+
+  const handleRepairShip = (shipId: string) => {
+    const ship = ships?.find(s => s.id === shipId);
+    if (ship?.stats?.maxHealth) {
+      // repairShip might not return a promise
+      hangarManager.repairShip(shipId, ship.stats.maxHealth);
       fetchShips();
     }
   };
 
-  const handleRepairShip = () => {
-    if (selectedShip) {
-      hangarManager.repairShip(selectedShip.id, 50);
-      fetchShips();
-    }
+  const handleBuildShip = () => {
+    // buildShip might not return a promise
+    const builtShip = hangarManager.buildShip(selectedBuildClass);
+    if (builtShip) {
+      fetchShips(); // Refresh only if build succeeded
+    } // Consider adding error handling/feedback if buildShip returns undefined
   };
 
-  const handleRemoveShip = () => {
-    if (selectedShip) {
-      if (window.confirm(`Are you sure you want to remove ${selectedShip.name}?`)) {
-        hangarManager.removeShip(selectedShip.id);
-        setSelectedShip(null);
-        fetchShips();
-      }
-    }
-  };
+  // --- Calculations & Derived State ---
+  const selectedShip = ships?.find(ship => ship.id === selectedShipId);
 
-  const handleConfirmBuildNewShip = () => {
-    if (!newShipName || !selectedClassToBuild) {
-      alert('Please enter a name and select a class.');
-      return;
-    }
-    try {
-      const buildOptions = {
-        name: newShipName,
-        position: { x: 0, y: 0 },
-      };
-      const newShip = hangarManager.buildShip(selectedClassToBuild, buildOptions);
+  // --- Rendering ---
+  if (loading) {
+    return <CircularProgress />;
+  }
 
-      if (newShip) {
-        setNewShipName('');
-        setShowCreateUI(false);
-        fetchShips();
-      } else {
-        alert('Failed to build ship. Check console for details.');
-      }
-    } catch (error) {
-      console.error('Failed to create ship:', error);
-      alert(`Error creating ship: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  };
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
 
-  const getStatusColor = (status: UnifiedShipStatus) => {
-    switch (status) {
-      case UnifiedShipStatus.READY:
-        return 'bg-green-500';
-      case UnifiedShipStatus.ENGAGING:
-      case UnifiedShipStatus.ATTACKING:
-        return 'bg-red-600';
-      case UnifiedShipStatus.RETURNING:
-      case UnifiedShipStatus.WITHDRAWING:
-        return 'bg-orange-500';
-      case UnifiedShipStatus.DISABLED:
-        return 'bg-gray-600';
-      case UnifiedShipStatus.DAMAGED:
-        return 'bg-red-500';
-      case UnifiedShipStatus.REPAIRING:
-        return 'bg-yellow-500';
-      case UnifiedShipStatus.UPGRADING:
-        return 'bg-indigo-500';
-      case UnifiedShipStatus.IDLE:
-        return 'bg-blue-500';
-      case UnifiedShipStatus.MAINTENANCE:
-        return 'bg-teal-500';
-      default:
-        console.warn(`[ShipHangar] Encountered unexpected ship status: ${status}`);
-        return 'bg-gray-500';
-    }
-  };
+  // Pre-calculate cargo used if ship is selected
+  const totalCargoUsed = selectedShip ? calculateTotalCargoUsed(selectedShip) : 0;
 
   return (
-    <div className="ship-hangar rounded-lg bg-gray-800 p-4 text-white">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">Ship Hangar: {hangarId}</h2>
-        <div className="text-sm">
-          Ships: {ships.length} / {capacity}
-        </div>
-      </div>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h5" gutterBottom>
+        Ship Hangar ({hangarId})
+      </Typography>
+      <Button onClick={handleRefreshShips} sx={{ mb: 2 }}>
+        Refresh Ships
+      </Button>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="col-span-1 flex flex-col rounded bg-gray-700 p-3">
-          <h3 className="mb-2 text-lg font-semibold">Ships</h3>
-          <div className="mb-3 max-h-80 flex-grow space-y-2 overflow-y-auto">
-            {ships.map(ship => (
-              <div
-                key={ship.id}
-                className={`cursor-pointer rounded p-2 transition-colors ${selectedShip?.id === ship.id ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-500'}`}
-                onClick={() => handleSelectShip(ship)}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{ship.name}</span>
-                  <span
-                    className={`ml-2 rounded px-2 py-0.5 text-xs ${getStatusColor(ship.status)}`}
-                  >
-                    {ship.status}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">Category: {ship.category}</div>
-              </div>
+      {/* Ship Building Section */}
+      <Box sx={{ mb: 3, p: 2, border: '1px dashed grey' }}>
+        <Typography variant="h6" gutterBottom>
+          Build Ship
+        </Typography>
+        <FormControl fullWidth sx={{ mb: 1 }}>
+          <InputLabel>Ship Class</InputLabel>
+          <Select
+            value={selectedBuildClass}
+            label="Ship Class"
+            onChange={e => setSelectedBuildClass(e.target.value as PlayerShipClass)}
+          >
+            {/* Added curly braces for correct JSX map */}
+            {Object.values(PlayerShipClass).map(shipClass => (
+              <MenuItem key={shipClass} value={shipClass}>
+                {shipClass}
+              </MenuItem>
             ))}
-          </div>
+          </Select>
+        </FormControl>
+        <Button variant="contained" onClick={handleBuildShip}>
+          Build
+        </Button>
+      </Box>
 
-          {showCreateUI ? (
-            <div className="mt-auto border-t border-gray-600 pt-3">
-              <h4 className="text-md mb-2 font-semibold">Create New Ship</h4>
-              <input
-                type="text"
-                placeholder="Ship Name"
-                value={newShipName}
-                onChange={e => setNewShipName(e.target.value)}
-                className="mb-2 w-full rounded border border-gray-600 bg-gray-800 p-2 text-white"
+      {/* Ship List */}
+      <Grid container spacing={2}>
+        {ships && ships.length > 0 ? (
+          ships.map(ship => (
+            <Grid item xs={12} sm={6} md={4} key={ship.id}>
+              <ShipCard
+                ship={ship}
+                isSelected={selectedShipId === ship.id}
+                onClick={handleShipSelect}
               />
-              <select
-                value={selectedClassToBuild}
-                onChange={e => setSelectedClassToBuild(e.target.value as PlayerShipClass)}
-                className="mb-2 w-full rounded border border-gray-600 bg-gray-800 p-2 text-white"
-              >
-                {Object.values(PlayerShipClass).map(value => (
-                  <option key={value} value={value}>
-                    {value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </option>
-                ))}
-              </select>
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setShowCreateUI(false)}
-                  className="rounded bg-gray-600 px-3 py-1 text-sm font-semibold hover:bg-gray-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmBuildNewShip}
-                  className="rounded bg-indigo-600 px-3 py-1 text-sm font-semibold hover:bg-indigo-700"
-                >
-                  Confirm Build
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowCreateUI(true)}
-              disabled={ships.length >= capacity}
-              className="mt-auto w-full rounded bg-green-600 py-2 text-sm font-semibold hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:opacity-50"
-            >
-              Build New Ship
-            </button>
-          )}
-        </div>
+            </Grid>
+          ))
+        ) : (
+          <Typography sx={{ m: 2 }}>No ships currently in hangar.</Typography>
+        )}
+      </Grid>
 
-        <div className="col-span-2 rounded bg-gray-700 p-3">
-          {selectedShip ? (
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">{selectedShip.name} Details</h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <p>ID:</p>
-                <p className="truncate text-gray-300" title={selectedShip.id}>
-                  {selectedShip.id}
-                </p>
-                <p>Category:</p>
-                <p className="text-gray-300">{selectedShip.category}</p>
-                <p>Status:</p>
-                <p className="text-gray-300">{selectedShip.status}</p>
-                <p>Level:</p>
-                <p className="text-gray-300">{selectedShip.level ?? 'N/A'}</p>
-                <p>Health:</p>
-                <p className="text-gray-300">
-                  {selectedShip.stats?.health?.toFixed(0) ?? 'N/A'} /{' '}
-                  {selectedShip.stats?.maxHealth?.toFixed(0) ?? 'N/A'}
-                </p>
-                <p>Shield:</p>
-                <p className="text-gray-300">
-                  {selectedShip.stats?.shield?.toFixed(0) ?? 'N/A'} /{' '}
-                  {selectedShip.stats?.maxShield?.toFixed(0) ?? 'N/A'}
-                </p>
-                <p>Energy/Fuel:</p>
-                <p className="text-gray-300">
-                  {selectedShip.stats?.energy?.toFixed(0) ?? 'N/A'} /{' '}
-                  {selectedShip.stats?.maxEnergy?.toFixed(0) ?? 'N/A'}
-                </p>
-                <p>Crew:</p>
-                <p className="text-gray-300">
-                  {selectedShip.crew ?? 'N/A'} / {selectedShip.maxCrew ?? 'N/A'}
-                </p>
-                {selectedShip.location && (
-                  <>
-                    <p>Location:</p>
-                    <p className="text-gray-300">{selectedShip.location}</p>
-                  </>
-                )}
-                {selectedShip.destination && (
-                  <>
-                    <p>Destination:</p>
-                    <p className="text-gray-300">{selectedShip.destination}</p>
-                  </>
-                )}
-                {selectedShip.cargo && (
-                  <>
-                    <p>Cargo:</p>
-                    <p className="text-gray-300">
-                      {selectedShip.cargo.resources instanceof Map
-                        ? Array.from(selectedShip.cargo.resources.values()).reduce(
-                            (a, b) => a + b,
-                            0
-                          )
-                        : 'N/A'}{' '}
-                      / {selectedShip.cargo.capacity ?? 'N/A'}
-                    </p>
-                  </>
-                )}
-              </div>
-
-              <div className="mt-4 space-x-2">
-                <button
-                  onClick={handleDeployShip}
-                  disabled={!selectedShip || selectedShip.status !== UnifiedShipStatus.READY}
-                  className="rounded bg-green-500 px-3 py-1 text-sm hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Deploy
-                </button>
-                <button
-                  onClick={handleSetReady}
-                  disabled={
-                    !selectedShip ||
-                    selectedShip.status === UnifiedShipStatus.READY ||
-                    selectedShip.status === UnifiedShipStatus.ENGAGING ||
-                    selectedShip.status === UnifiedShipStatus.DISABLED ||
-                    selectedShip.status === UnifiedShipStatus.ATTACKING ||
-                    selectedShip.status === UnifiedShipStatus.RETURNING ||
-                    selectedShip.status === UnifiedShipStatus.WITHDRAWING
-                  }
-                  className="rounded bg-blue-500 px-3 py-1 text-sm hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Set Ready
-                </button>
-                <button
-                  onClick={handleRepairShip}
-                  disabled={!selectedShip || selectedShip.status !== UnifiedShipStatus.DAMAGED}
-                  className="rounded bg-yellow-500 px-3 py-1 text-sm hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Repair
-                </button>
-                <button
-                  onClick={handleRemoveShip}
-                  disabled={!selectedShip}
-                  className="rounded bg-red-500 px-3 py-1 text-sm hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-center text-gray-400">Select a ship to view details</p>
+      {/* Selected Ship Details & Actions */}
+      {selectedShip && (
+        <Box sx={{ mt: 3, p: 2, border: '1px solid grey' }}>
+          <Typography variant="h6">Selected: {selectedShip.name ?? 'N/A'}</Typography>
+          <Typography variant="body1">Status: {selectedShip.status}</Typography>
+          <Typography variant="body1">Category: {selectedShip.category}</Typography>
+          <Typography variant="body1">Level: {selectedShip.level ?? 'N/A'}</Typography>
+          {/* Use formatNumber with explicit number values */}
+          <Typography variant="body2">
+            Health: {formatNumber(selectedShip.stats?.health ?? 0)} /{' '}
+            {formatNumber(selectedShip.stats?.maxHealth ?? 0)}
+          </Typography>
+          <Typography variant="body2">
+            Shield: {formatNumber(selectedShip.stats?.shield ?? 0)} /{' '}
+            {formatNumber(selectedShip.stats?.maxShield ?? 0)}
+          </Typography>
+          <Typography variant="body2">
+            Armor: {formatNumber(selectedShip.stats?.defense?.armor ?? 0)}
+          </Typography>
+          <Typography variant="body2">
+            Crew: {selectedShip.crew ?? 0} / {selectedShip.maxCrew ?? 'N/A'}
+          </Typography>
+          <Typography variant="body2">Location: {selectedShip.location ?? 'Unknown'}</Typography>
+          {selectedShip.destination && (
+            <Typography variant="body2">Destination: {selectedShip.destination}</Typography>
           )}
-        </div>
-      </div>
-    </div>
+          {selectedShip.cargo && (
+            <Typography variant="body2">
+              Cargo: {totalCargoUsed} / {selectedShip.cargo.capacity}
+            </Typography>
+          )}
+
+          <Box sx={{ mt: 2 }}>
+            {/* Use correct ShipStatus enum member */}
+            {selectedShip.status === ShipStatus.IDLE && (
+              <Button onClick={() => handleLaunchShip(selectedShip.id)} sx={{ mr: 1 }}>
+                Launch
+              </Button>
+            )}
+            {[
+              ShipStatus.ENGAGING,
+              ShipStatus.ATTACKING,
+              ShipStatus.RETURNING,
+              ShipStatus.WITHDRAWING,
+            ].includes(selectedShip.status) && (
+              <Button onClick={() => handleRecallShip(selectedShip.id)} sx={{ mr: 1 }}>
+                Recall
+              </Button>
+            )}
+            {[ShipStatus.DAMAGED, ShipStatus.DISABLED].includes(selectedShip.status) && (
+              <Button onClick={() => handleRepairShip(selectedShip.id)} sx={{ mr: 1 }}>
+                Repair
+              </Button>
+            )}
+          </Box>
+        </Box>
+      )}
+    </Box>
   );
 };
 

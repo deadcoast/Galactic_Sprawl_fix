@@ -84,7 +84,7 @@ export function createPropsComparison<T extends Record<string, unknown>>(
       }
 
       if (trackRenders && renderCount % 10 === 0) {
-        console.warn(
+        console.Warn(
           `[ComponentOptimizer] ${componentName} - Render count: ${renderCount}, Memoized: ${memoizedRenderCount} (${((memoizedRenderCount / renderCount) * 100).toFixed(1)}%)`
         );
       }
@@ -335,7 +335,7 @@ export function createOptimizedComponent<P extends Record<string, unknown>>(
   const { componentName } = options;
 
   // Create an enhanced component that uses useMemo for expensive calculations
-  // Using standard functional component to avoid ref forwarding type issues
+  // Using standard functional component to avoid ref for warning type issues
   const EnhancedComponent = (props: P): React.ReactElement => {
     // Track render time
     const renderStart = performance.now();

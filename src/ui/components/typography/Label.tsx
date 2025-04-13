@@ -112,28 +112,26 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
   ) => {
     // Compute label classes
     const labelClasses = useMemo(() => {
-      const classes = [
-        'gs-label',
-        srOnly ? 'gs-label--sr-only' : '',
-        inline ? 'gs-label--inline' : '',
-        bold ? 'gs-label--bold' : '',
-        disabled ? 'gs-label--disabled' : '',
-        hasError ? 'gs-label--error' : '',
-        required ? 'gs-label--required' : '',
-        tooltip ? 'gs-label--with-tooltip' : '',
-        secondaryText ? 'gs-label--with-secondary' : '',
-        color ? `gs-label--color-${color}` : '',
-        fontSize ? `gs-label--font-size-${fontSize}` : '',
-        fontWeight ? `gs-label--font-weight-${fontWeight}` : '',
-        textAlign ? `gs-label--align-${textAlign}` : '',
-        truncate ? 'gs-label--truncate' : '',
-        textTransform ? `gs-label--text-transform-${textTransform}` : '',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      return classes;
+      return [
+              'gs-label',
+              srOnly ? 'gs-label--sr-only' : '',
+              inline ? 'gs-label--inline' : '',
+              bold ? 'gs-label--bold' : '',
+              disabled ? 'gs-label--disabled' : '',
+              hasError ? 'gs-label--error' : '',
+              required ? 'gs-label--required' : '',
+              tooltip ? 'gs-label--with-tooltip' : '',
+              secondaryText ? 'gs-label--with-secondary' : '',
+              color ? `gs-label--color-${color}` : '',
+              fontSize ? `gs-label--font-size-${fontSize}` : '',
+              fontWeight ? `gs-label--font-weight-${fontWeight}` : '',
+              textAlign ? `gs-label--align-${textAlign}` : '',
+              truncate ? 'gs-label--truncate' : '',
+              textTransform ? `gs-label--text-transform-${textTransform}` : '',
+              className,
+            ]
+              .filter(Boolean)
+              .join(' ');
     }, [
       srOnly,
       inline,
@@ -154,7 +152,9 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
 
     // Handle click with error boundary
     const handleClick = (event: React.MouseEvent<HTMLLabelElement>) => {
-      if (disabled) return;
+      if (disabled) {
+        return;
+      }
 
       try {
         onClick?.(event);

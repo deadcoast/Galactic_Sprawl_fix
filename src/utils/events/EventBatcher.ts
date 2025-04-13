@@ -91,7 +91,7 @@ const batchConfigs = new Map<string, EventBatchConfig>();
  * Initialize the event batcher
  */
 export function initializeEventBatcher(): () => void {
-  // Subscribe to all module events and forward them to the subject
+  // Subscribe to all module events and forcombatd them to the subject
   const unsubscribe = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, event => {
     moduleEventSubject.next(event);
   });

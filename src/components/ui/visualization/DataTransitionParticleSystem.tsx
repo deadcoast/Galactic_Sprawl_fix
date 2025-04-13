@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { ParticleSystemManager } from '../../../managers/effects/ParticleSystemManager';
+import { errorLoggingService } from '../../../services/ErrorLoggingService';
 import { Position } from '../../../types/core/Position';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 
@@ -59,9 +60,18 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
   // Register with component registry
   useComponentRegistration({
-    type: ResourceType.EXOTIC,
+    type: DataTransitionParticleSystem,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
     updatePriority: 'high',
+    component: DataTransitionParticleSystem,
+    props: {
+      width,
+      height,
+      quality,
+      className,
+      sourceData,
+      targetData,
+    },
   });
 
   // Initialize particle system
@@ -83,10 +93,10 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
   // Handle component lifecycle
   useComponentLifecycle({
     onMount: () => {
-      console.warn('DataTransitionParticleSystem mounted');
+      errorLoggingService.error('DataTransitionParticleSystem mounted');
     },
     onUnmount: () => {
-      console.warn('DataTransitionParticleSystem unmounted');
+      errorLoggingService.error('DataTransitionParticleSystem unmounted');
     },
   });
 
@@ -116,7 +126,7 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
         max: duration,
       },
       color: '#ffffff',
-      blendMode: blendMode as 'normal' | 'additive',
+      blendMode: blendMode,
       quality,
     };
 
@@ -129,8 +139,8 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
         position: source.position,
         color: getResourceColor(source.resourceType),
         size: {
-          min: source.size || 2,
-          max: target.size || 8,
+          min: source.size ?? 2,
+          max: target.size ?? 8,
         },
       });
     });
@@ -146,7 +156,7 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
       // Update particle positions
       sourceData.forEach((source, index) => {
-        const target = targetData[index] || targetData[targetData.length - 1];
+        const target = targetData[index] ?? targetData[targetData.length - 1];
         const particleProgress = easing(progress);
 
         particleSystemRef.current?.update(1 / 60);

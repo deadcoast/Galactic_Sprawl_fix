@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
 import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
-import { PopulationProjectionChart } from '../../exploration/visualizations/charts/PopulationProjectionChart';
+import { PopulationProjectionChart } from '../../exploration/visualizations/PopulationProjectionChart';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { AutomatedPopulationManager } from './AutomatedPopulationManager';
 import { ColonyMap } from './ColonyMap';
@@ -145,7 +145,7 @@ function isColonyStatsEvent(
 }
 
 function isResourceUpdateEvent(event: ModuleEvent): event is ModuleEvent & {
-  data: { resourceAmounts: { [key in ResourceData['type']]?: number } };
+  data: { resourceAmounts: Record<ResourceData['type'], number> };
 } {
   return (
     event?.data !== undefined &&
@@ -158,7 +158,7 @@ function isResourceUpdateEvent(event: ModuleEvent): event is ModuleEvent & {
 }
 
 function isTradeRouteEvent(event: ModuleEvent): event is ModuleEvent & {
-  data: { partnerId: string; tradeResources: Array<ResourceData['type']> };
+  data: { partnerId: string; tradeResources: ResourceData['type'][] };
 } {
   return (
     event?.data !== undefined &&
@@ -679,7 +679,6 @@ export function ColonyManagementSystem({
         {expandedSections.trade && (
           <div className="border-t border-gray-700 bg-gray-900 p-4">
             <TradeRouteVisualization
-              colonyId={colonyId}
               colonyName={colonyName}
               tradePartners={tradePartners}
               tradeRoutes={tradeRoutes}
@@ -790,7 +789,6 @@ export function ColonyManagementSystem({
           <div className="border-t border-gray-700 bg-gray-900 p-4">
             <AutomatedPopulationManager
               colonyId={colonyId}
-              colonyName={colonyName}
               currentPopulation={population}
               maxPopulation={maxPopulation}
               growthRate={calculateEffectiveGrowthRate()}

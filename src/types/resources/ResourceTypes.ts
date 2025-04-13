@@ -30,7 +30,7 @@ export enum ResourceType {
 }
 
 /**
- * For backward compatibility with string-based resource types
+ * For backcombatd compatibility with string-based resource types
  * @deprecated Use ResourceType enum instead for better type safety and intellisense support
  */
 export type ResourceTypeString = keyof typeof ResourceType;

@@ -9,9 +9,9 @@ export interface ShipType {
 }
 
 // Ship Categories
-export type ShipCategory = 'war' | 'mining' | 'recon' | 'transport' | 'support' | 'utility';
+export type ShipCategory = 'combat' | 'mining' | 'recon' | 'transport' | 'support' | 'utility';
 
-// Re-export weapon type for backward compatibility
+// Re-export weapon type for backcombatd compatibility
 export type WeaponType = WeaponTypeBase;
 
 // Ship Status - Changed from type alias to enum
@@ -38,7 +38,7 @@ export interface CommonShipStats {
   maxEnergy: number;
   speed: number;
   turnRate: number;
-  cargo?: number | ShipCargo; // Can be number or ShipCargo
+  cargo?: number | ShipCargo;
   weapons: WeaponMount[];
   abilities: CommonShipAbility[];
   defense: {
@@ -52,7 +52,6 @@ export interface CommonShipStats {
     turnRate: number;
     acceleration: number;
   };
-  [key: string]: any; // Allow additional stats
 }
 
 // Common Weapon Stats
@@ -135,8 +134,8 @@ export interface CommonShipCapabilities {
 
 // Common utility functions
 export function getShipCategory(type: string): ShipCategory {
-  if (type.toLowerCase().includes('war') || type.toLowerCase().includes('combat')) {
-    return 'war';
+  if (type.toLowerCase().includes('combat') || type.toLowerCase().includes('combat')) {
+    return 'combat';
   }
   if (type.toLowerCase().includes('recon') || type.toLowerCase().includes('scout')) {
     return 'recon';
@@ -146,7 +145,7 @@ export function getShipCategory(type: string): ShipCategory {
 
 export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabilities {
   switch (category) {
-    case 'war':
+    case 'combat':
       return {
         canSalvage: false,
         canScan: false,
@@ -170,7 +169,6 @@ export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabi
     // Add cases for transport, support, utility if specific defaults are needed
     default:
       // Ensure exhaustive check or throw error for unhandled categories
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unhandled ship category: ${category}`);
   }
 }

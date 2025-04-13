@@ -303,7 +303,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       ref: (node: HTMLElement | null) => {
         triggerRef.current = node;
 
-        // Forward ref if the child has one
+        // Forcombatd ref if the child has one
         // Using type assertion with unknown as intermediate step for type safety
         const childElement = children as unknown as { ref?: React.Ref<HTMLElement> };
         if (childElement.ref) {
@@ -317,7 +317,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       onMouseEnter: (e: React.MouseEvent) => {
         handleMouseEnter();
 
-        // Forward the original event handler if it exists
+        // Forcombatd the original event handler if it exists
         if (children.props.onMouseEnter) {
           children.props.onMouseEnter(e);
         }
@@ -325,7 +325,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       onMouseLeave: (e: React.MouseEvent) => {
         handleMouseLeave();
 
-        // Forward the original event handler if it exists
+        // Forcombatd the original event handler if it exists
         if (children.props.onMouseLeave) {
           children.props.onMouseLeave(e);
         }
@@ -333,7 +333,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       onFocus: (e: React.FocusEvent) => {
         handleFocus();
 
-        // Forward the original event handler if it exists
+        // Forcombatd the original event handler if it exists
         if (children.props.onFocus) {
           children.props.onFocus(e);
         }
@@ -341,7 +341,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       onBlur: (e: React.FocusEvent) => {
         handleBlur();
 
-        // Forward the original event handler if it exists
+        // Forcombatd the original event handler if it exists
         if (children.props.onBlur) {
           children.props.onBlur(e);
         }

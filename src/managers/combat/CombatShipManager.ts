@@ -3,7 +3,7 @@ import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { Position } from '../../types/core/GameTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
-import { CombatShip, isCombatShip, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes';
+import { CombatShip, isCombatShip, UnifiedShipStatus } from '../../types/ships/ShipTypes';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 import { getCombatManager } from '../ManagerRegistry';
 
@@ -338,7 +338,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
       managerId: this.managerName,
       moduleId: ship.id,
       timestamp: Date.now(),
-      data: { ship: ship as CombatShip, moduleType: 'war' },
+      data: { ship: ship as CombatShip, moduleType: 'combat' },
     });
   }
 
@@ -363,7 +363,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         managerId: this.managerName,
         moduleId: shipId,
         timestamp: Date.now(),
-        data: { moduleType: 'war' },
+        data: { moduleType: 'combat' },
       });
     }
   }
@@ -404,7 +404,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
       managerId: this.managerName,
       moduleId: shipId,
       timestamp: Date.now(),
-      data: { task, moduleType: 'war' },
+      data: { task, moduleType: 'combat' },
     });
   }
 
@@ -421,7 +421,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         managerId: this.managerName,
         moduleId: shipId,
         timestamp: Date.now(),
-        data: { task, combatStats: ship.combatStats ?? {}, moduleType: 'war' },
+        data: { task, combatStats: ship.combatStats ?? {}, moduleType: 'combat' },
       });
     }
   }
@@ -501,7 +501,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
           managerId: this.managerName,
           moduleId: shipId,
           timestamp: Date.now(),
-          data: { status: ship.status, previousStatus: previousSimpleStatus, moduleType: 'war' },
+          data: { status: ship.status, previousStatus: previousSimpleStatus, moduleType: 'combat' },
         });
       }
     }
