@@ -328,24 +328,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 For more detailed information about specific systems, please refer to the documentation in the `GalaxySprawlDocs` directory.
-
-# Error Correction - Simplified Tests
-
-This directory contains the essential test files for verifying the error correction workflow:
-
-- `test_resource_types.ts` - Test file with ResourceType errors
-- `test_unused_vars.ts` - Test file with unused variables
-
-## Manual Verification
-
-### To verify the ResourceType fix:
-
-1. Check that the test file contains `return "unknown"` (a string literal)
-2. Run the fix script: `../Scripts/fix_resource_types.sh --target=test_resource_types.ts`
-3. Verify the fix changed it to `return ResourceType.UNKNOWN`
-
-### To verify the unused variables fix:
-
-1. Check that test_unused_vars.ts has variables without underscore prefixes
-2. Run the fix script: `../Scripts/fix_unused_vars.sh --target=test_unused_vars.ts`
-3. Verify the fix added underscore prefixes to unused variables
