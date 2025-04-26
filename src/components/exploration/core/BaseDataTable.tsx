@@ -156,7 +156,7 @@ export function BaseDataTable<T>({
     if (!sortColumn) return filteredData;
 
     const column = columns.find(col => col.id === sortColumn);
-    if (!column || !column.sortable) return filteredData;
+    if (!column?.sortable) return filteredData;
 
     return [...filteredData].sort((a, b) => {
       const result = column.sortFn
@@ -171,7 +171,7 @@ export function BaseDataTable<T>({
   const handleSortChange = useCallback(
     (columnId: string) => {
       const column = columns.find(col => col.id === columnId);
-      if (!column || !column.sortable) return;
+      if (!column?.sortable) return;
 
       setSortColumn(columnId);
       setSortDirection(prev => {
@@ -401,7 +401,16 @@ function compareValues(a: React.ReactNode, b: React.ReactNode): number {
     return a.getTime() - b.getTime();
   }
 
-  // Convert to string for other types
+  // Fallback for other types: handle null/undefined and basic objects safely
+  if (a == null || b == null) {
+    return a == null && b == null ? 0 : a == null ? -1 : 1; // Sort nulls consistently
+  }
+  if (typeof a === 'object' && typeof b === 'object') {
+    // Comparing generic objects is ambiguous, return equal as a safe default
+    return 0; 
+  }
+
+  // Last resort: convert to string (still carries risk for complex objects)
   return String(a).localeCompare(String(b));
 }
 

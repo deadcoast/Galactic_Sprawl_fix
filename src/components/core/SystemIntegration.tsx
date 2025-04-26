@@ -4,32 +4,13 @@ import { useModuleContext } from '../../contexts/ModuleContext';
 import { useErrorHandler } from '../../hooks/errors/useErrorHandler';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { getResourceManager } from '../../managers/ManagerRegistry';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { ResourceState, ResourceType } from './../../types/resources/ResourceTypes';
 
 interface SystemIntegrationProps {
   children: ReactNode;
 }
-
-// Types of resource events to listen for
-const RESOURCE_EVENT_TYPES = [
-  EventType.RESOURCE_PRODUCED,
-  EventType.RESOURCE_CONSUMED,
-  EventType.RESOURCE_TRANSFERRED,
-  EventType.RESOURCE_SHORTAGE,
-  EventType.RESOURCE_PRODUCTION_REGISTERED,
-  EventType.RESOURCE_CONSUMPTION_REGISTERED,
-];
-
-// Types of module events to listen for
-const MODULE_EVENT_TYPES = [
-  'MODULE_CREATED',
-  'MODULE_UPDATED',
-  'STATUS_CHANGED',
-  'MODULE_ACTIVATED',
-  'MODULE_DEACTIVATED',
-] as const;
 
 /**
  * SystemIntegration component
@@ -42,7 +23,7 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
   const resourceManager = getResourceManager();
   const { logError } = useErrorHandler({ componentName: 'SystemIntegration' });
   const gameDispatch = useGameDispatch();
-  const { dispatch: moduleDispatch } = useModuleContext();
+  useModuleContext();
   const [isInitialized, setIsInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -57,41 +38,29 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
         });
       }
     };
-    initialize();
+    // Mark the async function call as intentionally not awaited
+    void initialize();
     return () => {
-      resourceManager.dispose();
+      // Mark the potential promise from dispose as intentionally not awaited in cleanup
+      void resourceManager.dispose();
     };
   }, [resourceManager, logError]);
 
   const syncResourceState = useCallback(() => {
     const state = resourceManager.getAllResourceStates();
-    const resourcesPayload: Partial<{
-      minerals: number;
-      energy: number;
-      population: number;
-      research: number;
-    }> = {};
+    const resourcesPayload: Partial<Record<ResourceType, number>> = {};
 
     Object.entries(state).forEach(([resTypeKey, resState]: [string, ResourceState]) => {
       const resType = ResourceType[resTypeKey as keyof typeof ResourceType];
+
       if (resType !== undefined) {
-        switch (resType) {
-          case ResourceType.MINERALS:
-            resourcesPayload.minerals = resState.current;
-            break;
-          case ResourceType.ENERGY:
-            resourcesPayload.energy = resState.current;
-            break;
-          case ResourceType.POPULATION:
-            resourcesPayload.population = resState.current;
-            break;
-          case ResourceType.RESEARCH:
-            resourcesPayload.research = resState.current;
-            break;
-        }
+        resourcesPayload[resType] = resState.current;
       }
     });
-    gameDispatch({ type: GameActionType.UPDATE_RESOURCES, payload: resourcesPayload });
+
+    if (Object.keys(resourcesPayload).length > 0) {
+      gameDispatch({ type: GameActionType.UPDATE_RESOURCES, payload: resourcesPayload });
+    }
   }, [resourceManager, gameDispatch]);
 
   const syncModuleState = () => {
@@ -139,6 +108,6 @@ export function SystemIntegration({ children }: SystemIntegrationProps) {
     );
   }
 
-  // Return children since this component doesn't render unknownthing itself when initialized
+  // Return children since this component doesn't render anything itself when initialized
   return <>{children}</>;
 }

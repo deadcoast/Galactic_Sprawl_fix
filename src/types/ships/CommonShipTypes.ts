@@ -11,7 +11,7 @@ export interface ShipType {
 // Ship Categories
 export type ShipCategory = 'combat' | 'mining' | 'recon' | 'transport' | 'support' | 'utility';
 
-// Re-export weapon type for backcombatd compatibility
+// Re-export weapon type for backcompatibility
 export type WeaponType = WeaponTypeBase;
 
 // Ship Status - Changed from type alias to enum
@@ -26,6 +26,11 @@ export enum ShipStatus {
   DAMAGED = 'damaged',
   DESTROYED = 'destroyed',
   READY = 'ready',
+  ASSIGNED = 'assigned', // Added for task assignment status
+  RETURNING = 'returning', // Added based on usage
+  ATTACKING = 'attacking', // Added based on usage
+  WITHDRAWING = 'withdrawing', // Added based on usage
+  DISABLED = 'disabled', // Added based on usage
 }
 
 // Common Ship Stats Interface

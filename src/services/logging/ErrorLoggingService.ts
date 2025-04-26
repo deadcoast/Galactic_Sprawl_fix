@@ -11,24 +11,8 @@
 
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-// Comment out ErrorTypes import again
-// import { ErrorDetails, ErrorSeverity, ErrorType, IErrorLog } from './ErrorTypes';
+import { ErrorDetails, ErrorSeverity, ErrorType, IErrorLog } from './ErrorTypes'; // Re-enabled import
 import { LogContext, logger } from './loggerService';
-
-// Re-add placeholder types locally
-type ErrorType = string;
-const ErrorType = { UNKNOWN: 'unknown' }; // Placeholder
-type ErrorSeverity = string;
-const ErrorSeverity = {
-  MEDIUM: 'medium',
-  CRITICAL: 'critical',
-  HIGH: 'high',
-  LOW: 'low',
-  INFO: 'info',
-}; // Placeholder
-type ErrorDetails = Record<string, unknown>;
-// Remove unused placeholder IErrorLog
-// interface IErrorLog { message: string; /* Placeholder */ }
 
 // Structure for error metadata
 export interface ErrorMetadata {
@@ -95,9 +79,8 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
 
   public logError(
     error: Error | string,
-    // Use placeholder defaults
-    type: ErrorType = ErrorType.UNKNOWN,
-    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+    type: ErrorType = ErrorType.UNKNOWN, // Assuming ErrorType has UNKNOWN
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM, // Assuming ErrorSeverity has MEDIUM
     details?: ErrorDetails
   ): void {
     const errorMessage = error instanceof Error ? error.message : error;
@@ -180,5 +163,6 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
 // Export singleton instance using the inherited getInstance
 export const errorLoggingService = ErrorLoggingServiceImpl.getInstance();
 
-// Comment out export - types should come from ErrorTypes.ts
-// export { ErrorDetails, ErrorSeverity, ErrorType, IErrorLog };
+// Export enums directly, use 'export type' for type aliases
+export { ErrorSeverity, ErrorType };
+export type { ErrorDetails, IErrorLog };

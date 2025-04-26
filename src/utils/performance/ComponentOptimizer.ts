@@ -11,7 +11,9 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
+import { ErrorSeverity, ErrorType } from '../../services/logging/ErrorTypes'; // Added imports
+import { logger } from '../../services/logging/loggerService'; // Added import
 
 /**
  * Configuration for component memoization
@@ -78,14 +80,16 @@ export function createPropsComparison<T extends Record<string, unknown>>(
       const duration = endTime - startTime;
 
       if (duration > renderTimeThreshold) {
-        console.warn(
-          `[ComponentOptimizer] ${componentName} props comparison took ${duration.toFixed(2)}ms, which exceeds the threshold of ${renderTimeThreshold}ms`
+        logger.warn(
+          `[ComponentOptimizer] ${componentName} props comparison took ${duration.toFixed(2)}ms, which exceeds the threshold of ${renderTimeThreshold}ms`,
+          { component: componentName }
         );
       }
 
       if (trackRenders && renderCount % 10 === 0) {
-        console.Warn(
-          `[ComponentOptimizer] ${componentName} - Render count: ${renderCount}, Memoized: ${memoizedRenderCount} (${((memoizedRenderCount / renderCount) * 100).toFixed(1)}%)`
+        logger.warn(
+          `[ComponentOptimizer] ${componentName} - Render count: ${renderCount}, Memoized: ${memoizedRenderCount} (${((memoizedRenderCount / renderCount) * 100).toFixed(1)}%)`,
+          { component: componentName }
         );
       }
     }
@@ -100,7 +104,7 @@ export function createPropsComparison<T extends Record<string, unknown>>(
  * @param componentName Name of the component for tracking
  * @param threshold Threshold in ms to log warning for slow renders
  */
-export function useRenderPerformance(componentName: string, threshold: number = 16) {
+export function useRenderPerformance(componentName: string, threshold = 16) {
   const renderCount = useRef(0);
   const startTimeRef = useRef(0);
 
@@ -109,15 +113,16 @@ export function useRenderPerformance(componentName: string, threshold: number = 
     renderCount.current++;
 
     if (renderTime > threshold) {
-      console.warn(
-        `[ComponentOptimizer] ${componentName} render #${renderCount.current} took ${renderTime.toFixed(2)}ms, which exceeds the threshold of ${threshold}ms`
+      logger.warn(
+        `[useRenderPerformance] ${componentName} slow render detected: ${renderTime.toFixed(2)}ms (threshold: ${threshold}ms, count: ${renderCount.current})`,
+        { component: componentName }
       );
 
       // Log to error service for significant performance issues
       if (renderTime > threshold * 2) {
         errorLoggingService.logError(
           new Error(`Slow render detected in ${componentName}`),
-          ErrorType.RUNTIME, // Using RUNTIME since PERFORMANCE is not available in ErrorType
+          ErrorType.PERFORMANCE, // Correct ErrorType for optimization error
           ErrorSeverity.LOW,
           {
             component: componentName,
@@ -295,15 +300,15 @@ export function useLazyComponent<T>(
           setLoading(false);
         }
       })
-      .catch(err => {
+      .catch(error => {
         if (isMounted) {
-          setError(err instanceof Error ? err : new Error(String(err)));
+          setError(error instanceof Error ? error : new Error(String(error)));
           setLoading(false);
 
           errorLoggingService.logError(
-            err instanceof Error ? err : new Error(String(err)),
-            ErrorType.RESOURCE,
-            ErrorSeverity.MEDIUM,
+            error instanceof Error ? error : new Error(String(error)),
+            ErrorType.RENDERING, // Correct ErrorType for rendering error
+            ErrorSeverity.HIGH,
             {
               component: 'useLazyComponent',
               factory: factory.toString().substring(0, 100),
@@ -379,9 +384,9 @@ export function createOptimizedComponent<P extends Record<string, unknown>>(
                 // Log slow handler executions
                 if (
                   options.logPerformance &&
-                  endTime - startTime > (options.renderTimeThreshold || 16)
+                  endTime - startTime > (options.renderTimeThreshold ?? 16)
                 ) {
-                  console.warn(
+                  logger.warn(
                     `[ComponentOptimizer] Slow handler execution for ${componentName}.${key}: ${(endTime - startTime).toFixed(2)}ms`
                   );
                 }
@@ -405,8 +410,8 @@ export function createOptimizedComponent<P extends Record<string, unknown>>(
       const renderEnd = performance.now();
       const renderTime = renderEnd - renderStart;
 
-      if (renderTime > (options.renderTimeThreshold || 16)) {
-        console.warn(
+      if (renderTime > (options.renderTimeThreshold ?? 16)) {
+        logger.warn(
           `[ComponentOptimizer] Slow render detected for ${componentName}: ${renderTime.toFixed(2)}ms`
         );
       }

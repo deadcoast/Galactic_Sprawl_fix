@@ -184,9 +184,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           data={data as Record<string, unknown>[]}
           width={chartWidth}
           height={chartHeight}
-          xAxisKey={options?.xAxisKey! || 'label'}
-          yAxisKeys={options?.yAxisKeys! || ['value']}
-          {...(options as Record<string, unknown>)}
+          xAxisKey={options?.xAxisKey ?? 'label'}
+          yAxisKeys={options?.yAxisKeys ?? ['value']}
         />
       );
     },
@@ -209,9 +208,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           data={data as Record<string, unknown>[]}
           width={chartWidth}
           height={chartHeight}
-          xAxisKey={options?.xAxisKey! || 'label'}
-          yAxisKeys={options?.yAxisKeys! || ['value']}
-          {...(options as Record<string, unknown>)}
+          xAxisKey={options?.xAxisKey ?? 'label'}
+          yAxisKeys={options?.yAxisKeys ?? ['value']}
         />
       );
     },
@@ -234,9 +232,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           data={data as Record<string, unknown>[]}
           width={chartWidth}
           height={chartHeight}
-          xAxisKey={options?.xAxisKey! || 'x'}
-          yAxisKey={(options?.yAxisKey as string) || 'y'}
-          {...(options as Record<string, unknown>)}
+          xAxisKey={options?.xAxisKey ?? 'x'}
+          yAxisKey={(options?.yAxisKey ?? 'y') as string}
         />
       );
     },
@@ -258,13 +255,16 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       const chartData: ChartData = {
         datasets: [
           {
-            label: options?.title! || 'Pie Chart Data',
+            label: options?.title ?? 'Pie Chart Data',
             // Assuming input data is like [{ label: string, value: number, color?: string }]
-            data: data.map(item => ({
-              label: (item.label as string) || 'Unknown',
-              value: (item.value as number) || 0,
-              color: item.color as string | undefined,
-            })),
+            data: data.map(itemInput => {
+              const item = itemInput as { label?: unknown; value?: unknown; color?: unknown };
+              return {
+                label: typeof item.label === 'string' ? item.label : 'Unknown',
+                value: typeof item.value === 'number' ? item.value : 0,
+                color: typeof item.color === 'string' ? item.color : undefined,
+              };
+            }),
           },
         ],
       };
@@ -276,7 +276,6 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           height={chartHeight}
           type="pie"
           colors={options?.colors}
-          animated={options?.animate}
           showLegend={options?.showLegend}
           showTooltips={options?.showTooltip}
           backgroundColor={options?.backgroundColor as string | undefined}
@@ -322,11 +321,9 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           data={heatmapData as ChartDataRecord[]}
           width={chartWidth}
           height={chartHeight}
-          valueKey={(options?.valueKey as string) || 'value'} // Default to 'value'
-          xKey={(options?.xKey as string) || 'x'} // Default to 'x'
-          yKey={(options?.yKey as string) || 'y'} // Default to 'y'
-          // Pass other heatmap-specific options if available
-          {...(options as Record<string, unknown>)}
+          valueKey={(options?.valueKey ?? 'value') as string}
+          xKey={(options?.xKey ?? 'x') as string}
+          yKey={(options?.yKey ?? 'y') as string}
         />
       );
     },
@@ -335,8 +332,8 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       data: Record<string, unknown>,
       width: number,
       height: number,
-      options?: VisualizationOptions
-    ) => {
+      _options?: VisualizationOptions
+    ): React.ReactNode => {
       // Validate data structure for network graph
       const networkData = data as { nodes?: NetworkNode[]; edges?: NetworkEdge[] }; // Type assertion
       if (
@@ -361,7 +358,6 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           edges={networkData.edges}
           width={width}
           height={height}
-          {...(options as Omit<VisualizationOptions, 'nodes' | 'edges'>)} // Spread remaining options
         />
       );
     },

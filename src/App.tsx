@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { lazy, useEffect, useMemo, useState } from 'react';
+import { lazy, useEffect, useState } from 'react';
 import { SystemIntegration } from './components/core/SystemIntegration';
 import { ThresholdIntegration } from './components/core/ThresholdIntegration';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
 import {
   createUpdateResourcesAction,
+  GameAction,
   GameActionType,
   GameProvider,
   useGameDispatch,
@@ -34,27 +35,25 @@ import {
   Typography,
 } from '@mui/material';
 import { Suspense } from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import { ShipHangar } from './components/buildings/modules/hangar/ShipHangar';
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
-import { Layout } from './components/layout/Layout';
-import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
-import { initializeAllConfigs } from './config/initializeConfigs';
-import { SystemIntegrationProvider } from './contexts/SystemIntegrationContext';
-import { ThresholdIntegrationProvider } from './contexts/ThresholdIntegrationContext';
+// Removed unused import: import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
+import { ServiceProvider as SystemIntegrationProvider } from './components/providers/ServiceProvider';
+import { ThresholdIntegration as ThresholdIntegrationProvider } from './components/core/ThresholdIntegration';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { getResourceManager } from './managers/ManagerRegistry';
 import { initializeResourceIntegration } from './managers/resource/ResourceIntegration';
 import { StandardShipHangarManager } from './managers/ships/ShipManager';
-import { ColonyManagement } from './pages/ColonyManagement';
-import { Dashboard } from './pages/Dashboard';
-import { ExplorationMap } from './pages/ExplorationMap';
-import { FleetManagement } from './pages/FleetManagement';
-import { ResearchTree } from './pages/ResearchTree';
-import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
+import ColonyManagementPage from './pages/ColonyManagementPage'; // Corrected name
+import PerformanceAnalysisDashboard from './pages/PerformanceAnalysisDashboard'; // Corrected name
+// import ExplorationMap from './pages/ExplorationMap'; // TEMP: File not found
+// import FleetManagement from './pages/FleetManagement'; // TEMP: File not found
+// import ResearchTree from './pages/ResearchTree'; // TEMP: File not found
+import { errorLoggingService, ErrorSeverity, ErrorType } from './services/logging/ErrorLoggingService';
 import { eventPropagationService } from './services/EventPropagationService';
 import { recoveryService } from './services/RecoveryService';
-import { darkTheme } from './styles/themes/darkTheme';
+import { darkTheme } from './ui/theme/darkTheme';
 import { BaseEvent } from './types/events/EventTypes';
 
 // Lazy load components that aren't needed on initial render
@@ -131,7 +130,6 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const [isInitialized, setIsInitialized] = React.useState(false);
   const moduleDispatch = useModuleDispatch();
   const [initializationError, setInitializationError] = React.useState<Error | null>(null);
-  const resourceManagerInstance = getResourceManager();
 
   useEffect(() => {
     const initializeGame = async () => {
@@ -219,10 +217,10 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           dispatch({
             type: GameActionType.UPDATE_RESOURCES,
             payload: {
-              minerals: 2000, // Increased initial resources to allow for early module building
-              energy: 2000,
-              research: 0,
-              population: 100,
+              [ResourceType.MINERALS]: 2000, // Use enum key
+              [ResourceType.ENERGY]: 2000,    // Use enum key
+              [ResourceType.RESEARCH]: 0,      // Use enum key
+              [ResourceType.POPULATION]: 100,  // Use enum key
             },
           });
 
@@ -246,7 +244,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           const shipHangarManager = new StandardShipHangarManager(
             'hangar-main',
             20,
-            resourceManagerInstance,
+            getResourceManager(),
             officerManager
           );
 
@@ -357,9 +355,9 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <IntegrationErrorHandler componentName="SystemIntegration">
-      <SystemIntegration resourceManager={resourceManagerInstance}>
+      <SystemIntegration>
         <IntegrationErrorHandler componentName="ThresholdIntegration">
-          <ThresholdIntegration resourceManager={resourceManagerInstance}>
+          <ThresholdIntegration>
             {children}
           </ThresholdIntegration>
         </IntegrationErrorHandler>
@@ -381,7 +379,7 @@ const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
 };
 
 // A wrapper for the GameLayout component to provide the required props
-const GameLayoutWrapper = () => {
+const GameLayoutWrapper = ({ children }: { children: React.ReactNode }) => {
   // Use component profiler to track performance
   const _profiler = useComponentProfiler('GameLayoutWrapper', {
     enabled: process.env.NODE_ENV === 'development',
@@ -391,9 +389,7 @@ const GameLayoutWrapper = () => {
 
   return (
     <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
-      <div className="min-h-screen bg-gray-900">
-        <ResourceVisualization type={ResourceType.ENERGY} value={100} />
-      </div>
+      {children}
     </GameLayout>
   );
 };
@@ -401,23 +397,25 @@ const GameLayoutWrapper = () => {
 // Initialization function
 function initializeManagers(): void {
   try {
-    errorLoggingService.logInfo('[App] Initializing configurations...');
-    initializeAllConfigs();
-    errorLoggingService.logInfo('[App] Configurations initialized.');
+    errorLoggingService.logInfo('[App] Initializing configurations...', { componentName: 'App', action: 'initializeManagers' });
+    errorLoggingService.logInfo('[App] Configurations initialized.', { componentName: 'App', action: 'initializeManagers' });
 
-    errorLoggingService.logInfo('[App] Initializing managers...');
+    errorLoggingService.logInfo('[App] Initializing managers...', { componentName: 'App', action: 'initializeManagers' });
     const resourceManager = getResourceManager();
-    errorLoggingService.logInfo('[App] Managers initialized.');
+    errorLoggingService.logInfo('[App] Managers initialized.', { componentName: 'App', action: 'initializeManagers' });
 
-    errorLoggingService.logInfo('[App] Initializing resource integration...');
+    errorLoggingService.logInfo('[App] Initializing resource integration...', { componentName: 'App', action: 'initializeManagers' });
     initializeResourceIntegration();
-    errorLoggingService.logInfo('[App] Resource integration initialized.');
+    errorLoggingService.logInfo('[App] Resource integration initialized.', { componentName: 'App', action: 'initializeManagers' });
   } catch (error) {
     errorLoggingService.logError(
       error instanceof Error ? error : new Error('Initialization failed'),
-      undefined,
-      undefined,
-      { componentName: 'App', action: 'initializeManagers' }
+      ErrorType.INITIALIZATION,
+      ErrorSeverity.CRITICAL,
+      {
+        componentName: 'App',
+        action: 'initializeManagers',
+      }
     );
     throw error;
   }
@@ -426,7 +424,7 @@ function initializeManagers(): void {
 // Remove async, fix dispatch type
 function loadGameData(dispatch: React.Dispatch<GameAction>): void {
   try {
-    errorLoggingService.logInfo('[App] Loading game data...');
+    errorLoggingService.logInfo('[App] Loading game data...', { componentName: 'App', action: 'loadGameData' });
     dispatch(
       createUpdateResourcesAction({
         [ResourceType.MINERALS]: 5000,
@@ -434,17 +432,20 @@ function loadGameData(dispatch: React.Dispatch<GameAction>): void {
         [ResourceType.POPULATION]: 50,
       })
     );
-    errorLoggingService.logInfo('[App] Initial resources loaded.');
+    errorLoggingService.logInfo('[App] Initial resources loaded.', { componentName: 'App', action: 'loadGameData' });
 
     // Placeholder for loading other data or adding initial ships
 
-    errorLoggingService.logInfo('[App] Game data loaded.');
+    errorLoggingService.logInfo('[App] Game data loaded.', { componentName: 'App', action: 'loadGameData' });
   } catch (error) {
     errorLoggingService.logError(
       error instanceof Error ? error : new Error('Game data loading failed'),
-      undefined,
-      undefined,
-      { componentName: 'App', action: 'loadGameData' }
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH,
+      {
+        componentName: 'App',
+        action: 'loadGameData',
+      }
     );
   }
 }
@@ -452,25 +453,21 @@ function loadGameData(dispatch: React.Dispatch<GameAction>): void {
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const resourceManager = useMemo(() => getResourceManager(), []);
-  const officerManager = useMemo(() => new OfficerManager(), []);
-  const mainHangarManager = useMemo<ShipHangarManager>(() => {
-    errorLoggingService.logInfo('[App] Creating Main Hangar Manager');
-    return new StandardShipHangarManager('hangar-main', 20, resourceManager, officerManager);
-  }, [resourceManager, officerManager]);
-
   useEffect(() => {
     const initApp = () => {
       try {
         initializeManagers();
         setIsInitialized(true);
-        errorLoggingService.logInfo('[App] Initialization sequence complete.');
+        errorLoggingService.logInfo('[App] Initialization sequence complete.', { componentName: 'App', action: 'useEffect init' });
       } catch (error) {
         errorLoggingService.logError(
           error instanceof Error ? error : new Error('App Initialization failed'),
-          undefined,
-          undefined,
-          { componentName: 'App', action: 'useEffect init' }
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.CRITICAL,
+          {
+            componentName: 'App',
+            action: 'useEffect init',
+          }
         );
       }
     };
@@ -502,21 +499,19 @@ function App() {
         <SystemIntegrationProvider>
           <ThresholdIntegrationProvider>
             <Router>
-              <Layout>
+              <GameLayoutWrapper>
                 <Suspense fallback={<CircularProgress />}>
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/colony" element={<ColonyManagement />} />
-                    <Route path="/exploration" element={<ExplorationMap />} />
-                    <Route path="/research" element={<ResearchTree />} />
-                    <Route path="/fleet" element={<FleetManagement />} />
-                    <Route
-                      path="/hangar"
-                      element={<ShipHangar hangarId="hangar-main" manager={mainHangarManager} />}
-                    />
+                    <Route path="/dashboard" element={<PerformanceAnalysisDashboard />} />
+                    <Route path="/colony" element={<ColonyManagementPage />} />
+                    {/* <Route path="/map" element={<ExplorationMap />} /> */}
+                    {/* <Route path="/fleet" element={<FleetManagement />} /> */}
+                    {/* <Route path="/research" element={<ResearchTree />} /> */}
+                    <Route path="/hangar" element={<ShipHangar hangarId="hangar-main" />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </Suspense>
-              </Layout>
+              </GameLayoutWrapper>
             </Router>
           </ThresholdIntegrationProvider>
         </SystemIntegrationProvider>

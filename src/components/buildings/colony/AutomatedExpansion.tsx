@@ -126,7 +126,7 @@ export function AutomatedExpansion({
 
   // Get VPR animations based on tech level
   const getExpansionAnimations = (expansion: ExpansionData) => {
-    const baseSet = getVPRAnimationSet('expansion', expansion.tier || 1);
+    const baseSet = getVPRAnimationSet('expansion', expansion.tier ?? 1);
 
     return {
       ...baseSet,
@@ -243,7 +243,7 @@ export function AutomatedExpansion({
                     0,
                     Math.ceil(
                       (expansion.estimatedTime -
-                        (Date.now() - (expansion.lastUpdate || Date.now()))) /
+                        (Date.now() - (expansion.lastUpdate ?? Date.now()))) /
                         60000
                     )
                   )}
@@ -265,13 +265,13 @@ export function AutomatedExpansion({
               {showParticles && (
                 <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
                   {Array.from({
-                    length: expansion.vprData?.particleSystem?.density || 5,
+                    length: expansion.vprData?.particleSystem?.density ?? 5,
                   }).map((_, i) => (
                     <div
                       key={i}
                       className={`absolute h-1 w-1 rounded-full ${animations.idle}`}
                       style={{
-                        backgroundColor: expansion.vprData?.particleSystem?.color || '#6366f1',
+                        backgroundColor: expansion.vprData?.particleSystem?.color ?? '#6366f1',
                         left: `${Math.random() * 100}%`,
                         top: `${Math.random() * 100}%`,
                         opacity: 0.6,

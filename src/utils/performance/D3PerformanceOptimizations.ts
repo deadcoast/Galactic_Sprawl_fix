@@ -59,6 +59,7 @@ export function optimizeForceSimulation(
   // Optimize force distances based on node count
   const nodeCount = simulation.nodes().length;
   const linkForce = simulation.force('link');
+  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   const chargeForce = simulation.force('charge') as d3.ForceManyBody<d3.SimulationNodeDatum>;
 
   if (linkForce && 'distance' in linkForce) {
@@ -258,13 +259,13 @@ export function createOptimizedAccessor<T>(
       }
 
       // Check cache first
-      if (cache.has(node as object)) {
-        return cache.get(node as object) as T;
+      if (cache.has(node)) {
+        return cache.get(node) as T;
       }
 
       // Calculate and cache result
       const result = accessor(node);
-      cache.set(node as object, result);
+      cache.set(node, result);
       return result;
     };
   }

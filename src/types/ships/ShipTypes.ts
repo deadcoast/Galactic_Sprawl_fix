@@ -6,41 +6,12 @@ import {
   CommonShipCapabilities,
   CommonShipStats,
   ShipCargo,
+  ShipStatus,
 } from './CommonShipTypes';
 import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
 import { PlayerShipClass } from './PlayerShipTypes';
 
-/**
- * Consolidated Ship Status Enum
- */
-export enum ShipStatus {
-  IDLE = 'idle',
-  READY = 'ready',
-  ENGAGING = 'engaging',
-  PATROLLING = 'patrolling',
-  RETREATING = 'retreating',
-  DISABLED = 'disabled',
-  DAMAGED = 'damaged',
-  REPAIRING = 'repairing',
-  UPGRADING = 'upgrading',
-  SCANNING = 'scanning',
-  INVESTIGATING = 'investigating',
-  RETURNING = 'returning',
-  MINING = 'mining',
-  MAINTENANCE = 'maintenance',
-  HIDING = 'hiding',
-  PREPARING = 'preparing',
-  AMBUSHING = 'ambushing',
-  RETALIATING = 'retaliating',
-  WITHDRAWING = 'withdrawing',
-  DORMANT = 'dormant',
-  AWAKENING = 'awakening',
-  ENFORCING = 'enforcing',
-  OVERWHELMING = 'overwhelming',
-  PURSUING = 'pursuing',
-  ATTACKING = 'attacking',
-  AGGRESSIVE = 'aggressive',
-}
+export { ShipStatus };
 
 /**
  * Consolidated Ship Category Enum

@@ -16,6 +16,8 @@ import {
   AnalysisResult,
   AnalysisType,
   Anomaly,
+  AnomalyType, // Added AnomalyType
+  DangerLevel,
   DetailLevel,
   ExplorationStatus,
   MapSelection,
@@ -26,6 +28,7 @@ import {
   ResourceDeposit,
   Sector,
   StarSystem,
+  StarType,
   TradeRoute,
 } from '../../../types/exploration';
 import { cn } from '../../../utils/cn';
@@ -372,25 +375,25 @@ const GalaxyExplorationSystemInner: React.FC<
 
           // Set color based on star type
           switch (system.starType) {
-            case 'main_sequence':
+            case StarType.MAIN_SEQUENCE:
               ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
               break;
-            case 'red_dcombatf':
-              ctx.fillStyle = 'rgba(255, 150, 150, 0.9)';
+            case StarType.RED_DWARF:
+              ctx.fillStyle = 'rgba(255, 180, 120, 0.9)';
               break;
-            case 'white_dcombatf':
+            case StarType.WHITE_DWARF:
               ctx.fillStyle = 'rgba(230, 230, 255, 0.9)';
               break;
-            case 'blue_giant':
+            case StarType.BLUE_GIANT:
               ctx.fillStyle = 'rgba(150, 150, 255, 0.9)';
               break;
-            case 'red_giant':
+            case StarType.RED_GIANT:
               ctx.fillStyle = 'rgba(255, 100, 100, 0.9)';
               break;
-            case 'neutron_star':
+            case StarType.NEUTRON_STAR:
               ctx.fillStyle = 'rgba(200, 200, 255, 0.9)';
               break;
-            case 'black_hole':
+            case StarType.BLACK_HOLE:
               ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
               break;
             default:
@@ -437,7 +440,7 @@ const GalaxyExplorationSystemInner: React.FC<
 
             // Different shapes for different anomaly types
             switch (anomaly.anomalyType) {
-              case 'spatial_distortion':
+              case AnomalyType.SPATIAL_DISTORTION:
                 // Draw a diamond
                 ctx.moveTo(screenX, screenY - 8 * viewport.scale);
                 ctx.lineTo(screenX + 8 * viewport.scale, screenY);
@@ -446,7 +449,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 ctx.closePath();
                 break;
 
-              case 'energy_signature':
+              case AnomalyType.ENERGY_SIGNATURE:
                 // Draw a triangle
                 ctx.moveTo(screenX, screenY - 8 * viewport.scale);
                 ctx.lineTo(screenX + 8 * viewport.scale, screenY + 8 * viewport.scale);
@@ -454,7 +457,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 ctx.closePath();
                 break;
 
-              case 'gravitational_anomaly':
+              case AnomalyType.GRAVITATIONAL_ANOMALY:
                 // Draw a square
                 ctx.rect(
                   screenX - 7 * viewport.scale,
@@ -464,7 +467,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 );
                 break;
 
-              case 'radiation_source':
+              case AnomalyType.RADIATION_SOURCE:
                 // Draw a pentagon
                 for (let i = 0; i < 5; i++) {
                   const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
@@ -479,7 +482,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 ctx.closePath();
                 break;
 
-              case 'temporal_anomaly':
+              case AnomalyType.TEMPORAL_ANOMALY:
                 // Draw a star
                 for (let i = 0; i < 10; i++) {
                   const angle = (i * Math.PI) / 5 - Math.PI / 2;
@@ -495,27 +498,29 @@ const GalaxyExplorationSystemInner: React.FC<
                 ctx.closePath();
                 break;
 
+              case AnomalyType.QUANTUM_FLUCTUATION:
+                // Draw a circle (already handled by default arc below, maybe add effect?)
+                ctx.arc(screenX, screenY, 8 * viewport.scale, 0, Math.PI * 2);
+                break;
+
               default:
                 // Draw a circle for unknown types
-                ctx.arc(screenX, screenY, 7 * viewport.scale, 0, Math.PI * 2);
+                ctx.arc(screenX, screenY, 6 * viewport.scale, 0, Math.PI * 2);
                 break;
             }
 
             // Set color based on danger level
             switch (anomaly.dangerLevel) {
-              case 'none':
+              case DangerLevel.LOW:
                 ctx.fillStyle = 'rgba(100, 200, 100, 0.8)';
                 break;
-              case 'low':
+              case DangerLevel.MODERATE:
                 ctx.fillStyle = 'rgba(200, 200, 100, 0.8)';
                 break;
-              case 'moderate':
-                ctx.fillStyle = 'rgba(200, 150, 100, 0.8)';
+              case DangerLevel.HIGH:
+                ctx.fillStyle = 'rgba(255, 150, 50, 0.8)';
                 break;
-              case 'high':
-                ctx.fillStyle = 'rgba(200, 100, 100, 0.8)';
-                break;
-              case 'extreme':
+              case DangerLevel.EXTREME:
                 ctx.fillStyle = 'rgba(200, 50, 50, 0.8)';
                 break;
               default:

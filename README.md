@@ -326,5 +326,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspiration from classic space strategy games
 
 ---
-
-For more detailed information about specific systems, please refer to the documentation in the `GalaxySprawlDocs` directory.

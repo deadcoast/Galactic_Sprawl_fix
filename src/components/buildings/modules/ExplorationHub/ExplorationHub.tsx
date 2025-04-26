@@ -60,9 +60,6 @@ interface LocalSector extends Omit<StarSystem, 'status'> {
   status: SectorStatus;
 }
 
-// Update ship status type to match ReconShipStatus component
-type ReconShipStatusType = 'idle' | 'scanning' | 'returning' | 'investigating';
-
 interface LocalReconShip extends Omit<ReconShipType, 'status' | 'stats' | 'category'> {
   id: string;
   name: string;
@@ -76,17 +73,6 @@ interface LocalReconShip extends Omit<ReconShipType, 'status' | 'stats' | 'categ
   category: string;
   position: { x: number; y: number; z: number };
   stats: CommonShipStats;
-}
-
-// Interface for ReconShipStatus component - prefix with underscore since it's used for type documentation
-interface _ReconShipStatusProps {
-  id: string;
-  name: string;
-  status: ReconShipStatusType;
-  targetSector?: string;
-  experience: number;
-  specialization: 'mapping' | 'anomaly' | 'resource';
-  efficiency: number;
 }
 
 interface MapOffset {
@@ -129,10 +115,10 @@ const mockSectors: LocalSector[] = [
         severity: 'high',
         description: 'Ancient ruins of unknown origin',
         investigated: false,
-        specialization: 'MAPPING',
+        specialization: 'mapping',
         efficiency: 0.9,
         lastUpdate: Date.now() - 3600000,
-        status: 'SCANNING',
+        status: ShipStatus.SCANNING,
         targetSector: 'beta-sector',
         category: 'Exploration',
         position: { x: 0, y: 0, z: 0 },
@@ -159,7 +145,7 @@ const mockSectors: LocalSector[] = [
     id: 'beta-sector',
     name: 'Beta Sector',
     type: SectorType.ASTEROID_FIELD,
-    status: 'scanning',
+    status: 'SCANNING',
     position: { x: 200, y: -150 },
     coordinates: { x: 200, y: -150 },
     resourcePotential: 0.5,
@@ -172,7 +158,7 @@ const mockSectors: LocalSector[] = [
     id: 'gamma-sector',
     name: 'Gamma Sector',
     type: SectorType.DEEP_SPACE,
-    status: 'unmapped',
+    status: 'UNMAPPED',
     position: { x: -180, y: 120 },
     coordinates: { x: -180, y: 120 },
     resourcePotential: 0.4,
@@ -188,7 +174,7 @@ const mockShips: LocalReconShip[] = [
     id: 'recon-1',
     name: 'Pathfinder Alpha',
     type: 'recon',
-    status: 'scanning' as ShipStatus,
+    status: ShipStatus.SCANNING,
     assignedSectorId: 'beta-sector',
     experience: 1250,
     specialization: 'mapping',
@@ -220,7 +206,7 @@ const mockShips: LocalReconShip[] = [
     id: 'recon-2',
     name: 'Signal Hunter Beta',
     type: 'recon',
-    status: 'assigned' as ShipStatus,
+    status: ShipStatus.ASSIGNED,
     assignedSectorId: 'alpha-sector',
     experience: 800,
     specialization: 'anomaly',
@@ -302,9 +288,10 @@ const SectorComponent = memo(
           id: 'assign-ship',
           label: assignedShip ? 'Reassign Ship' : 'Assign Ship',
           icon: <Rocket className="h-4 w-4" />,
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {}, // No-op action for parent menu
           children: ships
-            .filter(ship => ship.status === 'idle' || ship.targetSector === sector.id)
+            .filter(ship => ship.status === ShipStatus.IDLE || ship.targetSector === sector.id)
             .map(ship => ({
               id: ship.id,
               label: ship.name,
@@ -318,7 +305,7 @@ const SectorComponent = memo(
           icon: <Flag className="h-4 w-4" />,
           action: () => {
             // Handle priority marking
-            console.warn(`Marking ${sector.name} as priority`);
+            // console.warn(`Marking ${sector.name} as priority`);
           },
         },
       ];
@@ -356,9 +343,9 @@ const SectorComponent = memo(
             {/* Sector Visualization */}
             <div
               className={`h-24 w-24 rounded-lg transition-all duration-300 ${
-                sector.status === 'unmapped'
+                sector.status === 'UNMAPPED'
                   ? 'bg-gray-800/50'
-                  : sector.status === 'scanning'
+                  : sector.status === 'SCANNING'
                     ? 'animate-pulse bg-teal-900/50'
                     : 'bg-teal-800/30'
               } relative ${
@@ -366,7 +353,7 @@ const SectorComponent = memo(
               }`}
             >
               {/* Heat Map Overlay */}
-              {showHeatMap && sector.status !== 'unmapped' && (
+              {showHeatMap && sector.status !== 'UNMAPPED' && (
                 <div
                   className="absolute inset-0 rounded-lg mix-blend-overlay"
                   style={{
@@ -376,7 +363,7 @@ const SectorComponent = memo(
               )}
 
               {/* Resource Potential Indicator */}
-              {sector.status !== 'unmapped' && (
+              {sector.status !== 'UNMAPPED' && (
                 <div
                   className="absolute inset-2 rounded border-2 border-teal-500/30 transition-all"
                   style={{
@@ -386,7 +373,7 @@ const SectorComponent = memo(
               )}
 
               {/* Habitability Score Ring */}
-              {sector.status !== 'unmapped' && (
+              {sector.status !== 'UNMAPPED' && (
                 <div
                   className="absolute inset-0 rounded-lg border-4 border-teal-400/20 transition-all"
                   style={{
@@ -429,9 +416,9 @@ const SectorComponent = memo(
             {/* Sector Label */}
             <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 text-center">
               <div className="font-medium text-teal-200">{sector.name}</div>
-              {sector.status !== 'unmapped' && (
+              {sector.status !== 'UNMAPPED' && (
                 <div className="text-sm text-teal-300/70">
-                  {sector.status === 'scanning' ? 'Scanning in Progress' : 'Mapped'}
+                  {sector.status === 'SCANNING' ? 'Scanning in Progress' : 'Mapped'}
                 </div>
               )}
             </div>
@@ -550,16 +537,16 @@ export function ExplorationHub() {
       setSectors((prevSectors: LocalSector[]) => {
         return prevSectors.map(sector => {
           const scanningShip = ships.find(
-            ship => ship.targetSector === sector.id && ship.status === 'scanning'
+            ship => ship.targetSector === sector.id && ship.status === ShipStatus.SCANNING
           );
 
           // Create new sector with proper status type
           return {
             ...sector,
             status: scanningShip
-              ? 'scanning'
-              : sector.status === 'scanning'
-                ? 'mapped'
+              ? 'SCANNING'
+              : sector.status === 'SCANNING'
+                ? 'MAPPED'
                 : sector.status,
             lastScanned: Date.now(),
           };
@@ -571,7 +558,7 @@ export function ExplorationHub() {
     updateIntervals.current.ships = setInterval(() => {
       setShips(prevShips =>
         prevShips.map(ship => {
-          if (ship.status === 'idle' || !ship.targetSector) return ship;
+          if (ship.status === ShipStatus.IDLE || !ship.targetSector) return ship;
 
           const targetSector = sectors.find(s => s.id === ship.targetSector);
           if (!targetSector) return ship;
@@ -586,15 +573,15 @@ export function ExplorationHub() {
           if (progress >= 1) {
             return {
               ...ship,
-              status: ship.status === 'scanning' ? 'returning' : 'idle',
+              status: ship.status === ShipStatus.SCANNING ? ShipStatus.RETURNING : ShipStatus.IDLE,
               lastUpdate: Date.now(),
-            } as LocalReconShip;
+            };
           }
 
           return {
             ...ship,
             lastUpdate: Date.now(),
-          } as LocalReconShip;
+          };
         })
       );
     }, 1000);
@@ -633,13 +620,13 @@ export function ExplorationHub() {
           const baseShip = {
             ...ship,
             lastUpdate: Date.now(),
-            status: ship.status || 'idle',
+            status: ship.status,
             experience: ship.experience ?? 0,
             specialization: ship.specialization || 'mapping',
             efficiency: ship.efficiency || 1.0,
-          } as LocalReconShip;
+          };
 
-          if (baseShip.status === 'idle' || !baseShip.assignedSectorId) {
+          if (baseShip.status === ShipStatus.IDLE || !baseShip.assignedSectorId) {
             return baseShip;
           }
 
@@ -652,7 +639,7 @@ export function ExplorationHub() {
 
           // Update ship status based on progress
           if (progress >= 1) {
-            baseShip.status = baseShip.status === 'scanning' ? 'assigned' : 'returning';
+            baseShip.status = baseShip.status === ShipStatus.SCANNING ? ShipStatus.RETURNING : ShipStatus.IDLE;
           }
 
           return baseShip;
@@ -745,7 +732,7 @@ export function ExplorationHub() {
   ) => {
     return sectors.filter(sector => {
       // Basic filters
-      if (filter === 'unmapped' && sector.status !== 'unmapped') {
+      if (filter === 'unmapped' && sector.status !== 'UNMAPPED') {
         return false;
       }
 
@@ -865,9 +852,9 @@ export function ExplorationHub() {
               <div className="font-medium text-white">{sector.name}</div>
               <div
                 className={`rounded px-2 py-0.5 text-xs ${
-                  sector.status === 'unmapped'
+                  sector.status === 'UNMAPPED'
                     ? 'bg-gray-700 text-gray-400'
-                    : sector.status === 'scanning'
+                    : sector.status === 'SCANNING'
                       ? 'bg-teal-900/50 text-teal-400'
                       : 'bg-teal-800/30 text-teal-300'
                 }`}
@@ -876,7 +863,7 @@ export function ExplorationHub() {
               </div>
             </div>
 
-            {sector.status !== 'unmapped' && (
+            {sector.status !== 'UNMAPPED' && (
               <>
                 {/* Resource and Habitability Bars */}
                 <div className="mb-3 space-y-2">
@@ -965,12 +952,12 @@ export function ExplorationHub() {
       setShips(prevShips =>
         prevShips.map(s =>
           s.id === shipId
-            ? ({
+            ? {
                 ...s,
-                status: 'assigned', // Use local ShipStatus type
+                status: ShipStatus.ASSIGNED,
                 assignedSectorId: sectorId,
                 lastUpdate: Date.now(),
-              } as LocalReconShip) // Keep cast to local type
+              }
             : s
         )
       );
@@ -984,7 +971,7 @@ export function ExplorationHub() {
       // Map LocalReconShip to ReconShip before registering
       const reconShipToRegister: ReconShipType = {
         ...localShip, // Spread existing compatible properties
-        status: localShip.status as unknown as ShipStatus, // Map local status to UnifiedShipStatus (may need refinement)
+        status: localShip.status,
         category: ShipCategory.RECON, // Assign correct enum value
         // Ensure stats match ReconShipType if different from CommonShipStats (should be compatible here)
         stats: localShip.stats,
@@ -1286,11 +1273,11 @@ export function ExplorationHub() {
             <ExplorationControls
               sector={{
                 ...selectedSector,
-                status: (selectedSector.status === 'unmapped'
+                status: selectedSector.status.toLowerCase() === 'unmapped'
                   ? 'unmapped'
-                  : selectedSector.status === 'scanning'
+                  : selectedSector.status.toLowerCase() === 'scanning'
                     ? 'scanning'
-                    : 'mapped') as SectorStatus,
+                    : 'mapped',
               }}
               onClose={() => setSelectedSector(null)}
             />
