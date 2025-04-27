@@ -581,7 +581,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
             },
           });
         } else {
-          errorLoggingService.logWarn(
+          errorLoggingService.logwarn(
             `Invalid event type specified in EMIT_EVENT action: ${action.target}`,
             {
               action: action,
@@ -593,7 +593,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
       }
 
       default:
-        errorLoggingService.logWarn(`Unsupported action type in executeAction: ${action.type}`, {
+        errorLoggingService.logwarn(`Unsupported action type in executeAction: ${action.type}`, {
           action: action,
           manager: this.managerName,
         });

@@ -6,9 +6,8 @@ import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position, Tier, Velocity } from '../../types/core/GameTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { CommonShipAbility, CommonShipStats, ShipCargo } from '../../types/ships/CommonShipTypes';
-import { FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { CommonShipAbility, CommonShipStats } from '../../types/ships/CommonShipTypes';
+import { FactionId, FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import { PlayerShipClass } from '../../types/ships/PlayerShipTypes';
 import {
   BaseShip,
@@ -19,11 +18,11 @@ import {
   isWeaponMountWithWeapon,
   MiningShip,
   ReconShip,
+  Ship,
   ShipCategory,
-  UnifiedShip,
-  UnifiedShipStatus,
+  ShipStatus,
   WeaponDataSource,
-} from '../../types/ships/UnifiedShipTypes';
+} from '../../types/ships/ShipTypes';
 import {
   WeaponCategory,
   WeaponConfig,
@@ -36,15 +35,16 @@ import {
 } from '../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../utils/weapons/weaponEffectUtils';
 
-interface CreateShipOptions {
+// Export the interface
+export interface CreateShipOptions {
   id?: string;
   name?: string;
   factionId?: FactionId;
-  position: Position;
+  position?: Position;
   rotation?: number;
   velocity?: Velocity;
   level?: number;
-  status?: UnifiedShipStatus;
+  status?: ShipStatus;
 }
 
 export class ShipFactory {
@@ -62,7 +62,7 @@ export class ShipFactory {
   public createShip(
     shipClass: PlayerShipClass | FactionShipClass,
     options: CreateShipOptions
-  ): UnifiedShip {
+  ): Ship {
     const blueprint = this.findBlueprint(shipClass);
     const factionStats = getShipStats(shipClass as FactionShipClass);
 
@@ -81,7 +81,7 @@ export class ShipFactory {
       id: options.id || uuidv4(),
       name: effectiveName,
       category: effectiveCategory,
-      status: options.status || UnifiedShipStatus.IDLE,
+      status: options.status || ShipStatus.IDLE,
       position: options.position,
       rotation: options.rotation ?? 0,
       velocity: options.velocity ?? { dx: 0, dy: 0 },
@@ -115,10 +115,10 @@ export class ShipFactory {
       maxCrew: 10,
     };
 
-    let ship: UnifiedShip;
+    let ship: Ship;
 
     switch (baseShip.category) {
-      case ShipCategory.WAR:
+      case ShipCategory.combat:
       case ShipCategory.FIGHTER:
       case ShipCategory.CRUISER:
       case ShipCategory.BATTLESHIP:
@@ -137,7 +137,7 @@ export class ShipFactory {
         break;
       default:
         console.warn(`Unknown ship category: ${baseShip.category}. Creating base ship.`);
-        ship = baseShip as UnifiedShip;
+        ship = baseShip as Ship;
     }
 
     moduleEventBus.emit({
@@ -186,7 +186,7 @@ export class ShipFactory {
       sourceCargo !== null &&
       'capacity' in sourceCargo
     ) {
-      cargoCapacity = (sourceCargo as ShipCargo).capacity;
+      cargoCapacity = sourceCargo.capacity;
     } else if (typeof base?.cargo === 'number') {
       cargoCapacity = base.cargo;
     }
@@ -240,7 +240,7 @@ export class ShipFactory {
     const combatShip: CombatShip = {
       ...baseShip,
       category: baseShip.category as
-        | ShipCategory.WAR
+        | ShipCategory.combat
         | ShipCategory.FIGHTER
         | ShipCategory.CRUISER
         | ShipCategory.BATTLESHIP
@@ -332,7 +332,7 @@ export class ShipFactory {
     let baseCategory: WeaponCategory = 'machineGun';
     let mountSize: WeaponMountSize = 'medium';
     let mountPosition: WeaponMountPosition = 'front';
-    let mountRotation: number = 0;
+    let mountRotation = 0;
     let allowedCategories: WeaponCategory[] = [baseCategory];
     let configId: string | undefined;
     let baseStats: WeaponStats | undefined;
@@ -387,12 +387,19 @@ export class ShipFactory {
       range = blueprintWeapon.range;
       cooldown = blueprintWeapon.cooldown;
       const nameLower = name.toLowerCase();
-      if (nameLower.includes('laser')) baseCategory = 'energyLaser';
-      else if (nameLower.includes('plasma')) baseCategory = 'plasmaCannon';
-      else if (nameLower.includes('gauss')) baseCategory = 'gaussCannon';
-      else if (nameLower.includes('railgun')) baseCategory = 'railGun';
-      else if (nameLower.includes('missile')) baseCategory = 'missileLauncher';
-      else if (nameLower.includes('rocket')) baseCategory = 'rockets';
+      if (nameLower.includes('laser')) {
+        baseCategory = 'energyLaser';
+      } else if (nameLower.includes('plasma')) {
+        baseCategory = 'plasmaCannon';
+      } else if (nameLower.includes('gauss')) {
+        baseCategory = 'gaussCannon';
+      } else if (nameLower.includes('railgun')) {
+        baseCategory = 'railGun';
+      } else if (nameLower.includes('missile')) {
+        baseCategory = 'missileLauncher';
+      } else if (nameLower.includes('rocket')) {
+        baseCategory = 'rockets';
+      }
       allowedCategories = [baseCategory];
       extraProps = { ...blueprintWeapon };
     } else {
@@ -494,7 +501,7 @@ export class ShipFactory {
     shipClasses: (PlayerShipClass | FactionShipClass)[],
     position: Position,
     formation: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
-  ): UnifiedShip[] {
+  ): Ship[] {
     return shipClasses.map((shipClass, index) => {
       const offset = index * formation.spacing;
       const shipPosition = {

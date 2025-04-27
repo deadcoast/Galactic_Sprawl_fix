@@ -1,26 +1,19 @@
 import { AlertTriangle, ChevronRight, Map, Rocket, X } from 'lucide-react';
+import { Discovery } from '../../../../types/exploration/ExplorationTypes'; // Import Discovery
+
+type SectorStatus = 'UNMAPPED' | 'MAPPED' | 'SCANNING';
 
 interface Sector {
   id: string;
   name: string;
-  status: 'unmapped' | 'mapped' | 'scanning';
-  coordinates: { x: number; y: number };
+  status: SectorStatus;
   resourcePotential: number;
   habitabilityScore: number;
-  anomalies: Anomaly[];
-  lastScanned?: number;
-}
-
-interface Anomaly {
-  id: string;
-  type: 'artifact' | 'signal' | 'phenomenon';
-  severity: 'low' | 'medium' | 'high';
-  description: string;
-  investigated: boolean;
+  anomalies: Discovery[]; // Use Discovery[]
 }
 
 interface ExplorationControlsProps {
-  sector: Sector;
+  sector: Sector; 
   onClose: () => void;
 }
 
@@ -40,18 +33,18 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
           <h3 className="text-sm font-medium text-white">Sector Status</h3>
           <div
             className={`rounded px-2 py-1 text-sm ${
-              sector.status === 'mapped'
+              sector.status === 'MAPPED'
                 ? 'bg-green-900/50 text-green-400'
-                : sector.status === 'scanning'
+                : sector.status === 'SCANNING'
                   ? 'bg-teal-900/50 text-teal-400'
                   : 'bg-gray-700 text-gray-400'
             }`}
           >
-            {sector.status.charAt(0).toUpperCase() + sector.status.slice(1)}
+            {sector.status.charAt(0).toUpperCase() + sector.status.slice(1).toLowerCase()}
           </div>
         </div>
 
-        {sector.status !== 'unmapped' && (
+        {sector.status !== 'UNMAPPED' && (
           <div className="space-y-4">
             <div>
               <div className="mb-1 flex justify-between text-sm">
@@ -91,9 +84,9 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
               <div
                 key={anomaly.id}
                 className={`rounded-lg p-3 ${
-                  anomaly.severity === 'high'
+                  anomaly.classification?.details?.anomalyIntensity === 'high'
                     ? 'border border-red-700/30 bg-red-900/20'
-                    : anomaly.severity === 'medium'
+                    : anomaly.classification?.details?.anomalyIntensity === 'medium'
                       ? 'border border-yellow-700/30 bg-yellow-900/20'
                       : 'border border-blue-700/30 bg-blue-900/20'
                 }`}
@@ -102,24 +95,26 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
                   <div className="flex items-center space-x-2">
                     <AlertTriangle
                       className={`h-4 w-4 ${
-                        anomaly.severity === 'high'
+                        anomaly.classification?.details?.anomalyIntensity === 'high'
                           ? 'text-red-400'
-                          : anomaly.severity === 'medium'
+                          : anomaly.classification?.details?.anomalyIntensity === 'medium'
                             ? 'text-yellow-400'
                             : 'text-blue-400'
                       }`}
                     />
                     <span className="text-sm font-medium text-white">
-                      {anomaly.type.charAt(0).toUpperCase() + anomaly.type.slice(1)}
+                      {anomaly.classification?.details?.anomalyType ?? anomaly.type}
                     </span>
                   </div>
-                  {anomaly.investigated ? (
+                  {/* Check analysisProgress to determine if investigated */}
+                  {anomaly.analysisProgress >= 1 ? (
                     <span className="text-xs text-green-400">Investigated</span>
                   ) : (
                     <span className="text-xs text-gray-400">Pending Investigation</span>
                   )}
                 </div>
-                <p className="text-sm text-gray-300">{anomaly.description}</p>
+                {/* TODO: Source of anomaly.description is unclear in current Discovery type */}
+                {/* <p className="text-sm text-gray-300">{anomaly.description}</p> */}
               </div>
             ))}
           </div>

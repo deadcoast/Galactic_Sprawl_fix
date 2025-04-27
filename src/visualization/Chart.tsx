@@ -265,7 +265,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Initialize renderer
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     try {
       // Destroy previous renderer if it exists
@@ -331,7 +333,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Update chart when data or options change
   useEffect(() => {
-    if (!containerRef.current || !rendererRef.current) return;
+    if (!containerRef.current || !rendererRef.current) {
+      return;
+    }
 
     try {
       rendererRef.current.update(containerRef.current, data, mergedOptions, type);
@@ -364,7 +368,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Handle container resize
   useEffect(() => {
-    if (!containerRef.current || !rendererRef.current || !mergedOptions.responsive) return;
+    if (!containerRef.current || !rendererRef.current || !mergedOptions.responsive) {
+      return;
+    }
 
     const resizeObserver = new ResizeObserver(() => {
       if (containerRef.current && rendererRef.current) {

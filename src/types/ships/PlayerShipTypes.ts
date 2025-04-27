@@ -1,6 +1,6 @@
 import { Tier } from '../core/GameTypes';
 import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats } from './CommonShipTypes';
-import { UnifiedShipStatus } from './UnifiedShipTypes';
+import { ShipStatus } from './ShipTypes';
 
 // Player Ship Classes - Changed from type alias to enum
 export enum PlayerShipClass {
@@ -22,13 +22,32 @@ export enum PlayerShipClass {
 }
 
 // Player Ship Categories
-export type PlayerShipCategory = 'war' | 'recon' | 'mining';
+export type PlayerShipCategory = 'combat' | 'recon' | 'mining';
+
+// Fighter state (relevant for carriers)
+export interface Fighter {
+  id: string;
+  status: 'docked' | 'deployed' | 'returning' | 'lost';
+  health: number;
+  // Add maxHealth or other relevant fighter stats if needed
+}
+
+// Docking Bay state (relevant for specific carriers/motherships)
+export interface DockingBay {
+  id: string;
+  type: 'fighter' | 'frigate' | 'carrier';
+  status: 'empty' | 'occupied' | 'launching' | 'docking';
+  shipId?: string;
+}
 
 // Player Ship Stats
 export interface PlayerShipStats extends CommonShipStats {
   experience: number;
   level: number;
   tier: Tier;
+  // Add optional carrier-specific stats here
+  maxFighters?: number;
+  repairRate?: number;
 }
 
 // Player Ship Ability
@@ -53,10 +72,13 @@ export interface PlayerShip /* extends CommonShip */ {
   // Add PlayerShip specific properties
   class: PlayerShipClass;
   // Use UnifiedShipStatus
-  status: UnifiedShipStatus;
+  status: ShipStatus;
   stats: PlayerShipStats;
   abilities: PlayerShipAbility[];
   upgrades: string[];
+  fighters?: Fighter[]; // Add optional fighters list
+  dockingBays?: DockingBay[]; // Add optional dockingBays list
+  alerts?: string[]; // ADD optional alerts here
 }
 
 // Player Ship Config

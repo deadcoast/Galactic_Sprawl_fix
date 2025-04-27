@@ -209,7 +209,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
 
-    // Forward to error logging service
+    // Forcombatd to error logging service
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       service: 'ComponentRegistryService',
       ...context,

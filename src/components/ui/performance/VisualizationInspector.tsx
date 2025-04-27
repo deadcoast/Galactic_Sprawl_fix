@@ -686,7 +686,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         const now = performance.now();
 
         return prev.map(comp => {
-          // Simulate render time (1-20ms, weighted towards lower values)
+          // Simulate render time (1-20ms, weighted tocombatds lower values)
           const renderTime = Math.pow(Math.random(), 2) * 19 + 1;
 
           // Simulate DOM updates (0-10, integer)

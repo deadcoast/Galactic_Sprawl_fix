@@ -279,6 +279,7 @@ export class ForceSimulationProfiler {
    */
   attachToSimulation(simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>): void {
     this.simulation = simulation;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     this.originalTick = simulation.tick as (...args: unknown[]) => unknown;
 
     // Wrap the tick function to measure performance
@@ -546,7 +547,7 @@ export class ForceSimulationProfiler {
  */
 export function profileCoordinateAccess(
   nodes: SimulationNodeDatum[],
-  iterations: number = 1000
+  iterations = 1000
 ): PerformanceProfile {
   const profiler = new D3Profiler();
   profiler.startProfiling();
@@ -597,7 +598,7 @@ export function profileCoordinateAccess(
  */
 export function profileDOMOperations(
   containerSelector: string,
-  nodeCount: number = 1000
+  nodeCount = 1000
 ): PerformanceProfile {
   const profiler = new D3Profiler();
   profiler.startProfiling();
@@ -712,38 +713,38 @@ export const memoizedD3Accessors = {
   /**
    * Get the x coordinate of a node (with memoization)
    */
-  getX: (node: unknown): number => {
+  getX: (node: object): number => {
     if (!node || typeof node !== 'object') {
       return 0;
     }
 
     // Check cache first
-    if (memoizedD3Accessors.xCache.has(node as object)) {
-      return memoizedD3Accessors.xCache.get(node as object) ?? 0;
+    if (memoizedD3Accessors.xCache.has(node)) {
+      return memoizedD3Accessors.xCache.get(node) ?? 0;
     }
 
     // Calculate and cache result
     const result = d3Accessors.getX(node);
-    memoizedD3Accessors.xCache.set(node as object, result);
+    memoizedD3Accessors.xCache.set(node, result);
     return result;
   },
 
   /**
    * Get the y coordinate of a node (with memoization)
    */
-  getY: (node: unknown): number => {
+  getY: (node: object): number => {
     if (!node || typeof node !== 'object') {
       return 0;
     }
 
     // Check cache first
-    if (memoizedD3Accessors.yCache.has(node as object)) {
-      return memoizedD3Accessors.yCache.get(node as object) ?? 0;
+    if (memoizedD3Accessors.yCache.has(node)) {
+      return memoizedD3Accessors.yCache.get(node) ?? 0;
     }
 
     // Calculate and cache result
     const result = d3Accessors.getY(node);
-    memoizedD3Accessors.yCache.set(node as object, result);
+    memoizedD3Accessors.yCache.set(node, result);
     return result;
   },
 

@@ -84,10 +84,8 @@ export function AlertSystemUI({
     if (hasCritical) {
       // Play critical alert sound
       // This would be implemented with actual sound effects in a real app
-      console.warn('Playing critical alert sound');
     } else if (hasDanger) {
       // Play danger alert sound
-      console.warn('Playing danger alert sound');
     }
   }, [sortedAlerts, muted]);
 

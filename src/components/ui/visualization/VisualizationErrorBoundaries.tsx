@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ErrorInfo } from 'react';
-import ResourceDistributionChart from '../../exploration/visualizations/charts/ResourceDistributionChart';
+import ResourceDistributionChart from '../../exploration/visualizations/ResourceDistributionChart';
 import {
   createTypedErrorBoundary,
   D3VisualizationErrorBoundary,

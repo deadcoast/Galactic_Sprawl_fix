@@ -215,7 +215,7 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         break;
 
       default:
-        throw new Error(`Unknown task type: ${type}`);
+        throw new Error(`Unknown task type: ${'type'}`);
     }
 
     // Send successful result back to main thread
@@ -384,7 +384,7 @@ function calculateResourceBalance(
     connection.resourceTypes.forEach(resourceType => {
       if (connection.maxFlow && availability[resourceType]) {
         // If this connection has a bottleneck, adjust the available throughput
-        availability[resourceType] = Math.min(availability[resourceType]!, connection.maxFlow);
+        availability[resourceType] = Math.min(availability, connection.maxFlow);
       }
     });
   }

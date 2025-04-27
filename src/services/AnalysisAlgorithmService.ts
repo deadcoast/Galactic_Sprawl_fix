@@ -90,7 +90,7 @@ export class AnalysisAlgorithmService {
   // WebWorker pool for parallel processing
   private workerPool: Worker[] = [];
   private isWorkerSupported = typeof Worker !== 'undefined';
-  private maxWorkers = navigator.hardwareConcurrency || 4;
+  private maxWorkers = navigator.hardcombateConcurrency || 4;
 
   constructor() {
     // Initialize WebWorker pool if supported
@@ -2736,7 +2736,7 @@ export class AnalysisAlgorithmService {
           const x = normalizedTrainFeatures[idx];
           const y = normalizedTrainTargets[idx];
 
-          // Forward pass
+          // Forcombatd pass
           // Hidden layer with ReLU activation
           const hidden = Array(hiddenSize).fill(0);
           for (let i = 0; i < hiddenSize; i++) {
@@ -2759,7 +2759,7 @@ export class AnalysisAlgorithmService {
           const error = output - y;
           batchLoss += error * error;
 
-          // Backward pass
+          // Backcombatd pass
           // Output layer gradient
           const gradOutput = 2 * error;
 
@@ -2803,7 +2803,7 @@ export class AnalysisAlgorithmService {
         (value, i) => (value - featureMeans[i]) / featureStdDevs[i]
       );
 
-      // Forward pass through the network
+      // Forcombatd pass through the network
       const hidden = Array(hiddenSize).fill(0);
       for (let i = 0; i < hiddenSize; i++) {
         for (let j = 0; j < numFeatures; j++) {
@@ -3029,9 +3029,9 @@ export class AnalysisAlgorithmService {
       const lastPrediction = forecast[forecast.length - 1].predicted;
       const trend =
         lastPrediction > firstPrediction
-          ? 'upward'
+          ? 'upcombatd'
           : lastPrediction < firstPrediction
-            ? 'downward'
+            ? 'downcombatd'
             : 'stable';
 
       insights.push(

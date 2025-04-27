@@ -274,8 +274,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
         allowedCategories: ['rockets'],
         currentWeapon: {
           config: {
-            id: 'swarm-rockets',
-            name: 'Swarm Rockets',
+            id: 'scombatm-rockets',
+            name: 'Scombatm Rockets',
             category: 'rockets',
             tier: 2,
             baseStats: {
@@ -287,7 +287,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 4,
               effects: [EXPLOSIVE_EFFECT],
             },
-            visualAsset: 'weapons/rockets/swarm',
+            visualAsset: 'weapons/rockets/scombatm',
             mountRequirements: {
               size: 'medium' as WeaponMountSize,
               power: 35,

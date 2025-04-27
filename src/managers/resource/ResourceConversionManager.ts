@@ -6,7 +6,7 @@
  */
 
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService'; // Import the service
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { ProcessStatus } from '../../types/resources/ProductionChainTypes';
@@ -52,9 +52,9 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   // Conversion processing
   private processingQueue: ResourceConversionProcess[] = [];
   private _completedProcesses: ResourceConversionProcess[] = [];
-  private conversionRecipes: Map<string, ResourceConversionRecipe> = new Map();
-  private conversionChains: Map<string, ConversionChain> = new Map();
-  private chainExecutions: Map<string, ChainExecutionStatus> = new Map();
+  private conversionRecipes: Map<string, ResourceConversionRecipe> = new Map<string, ResourceConversionRecipe>();
+  private conversionChains: Map<string, ConversionChain> = new Map<string, ConversionChain>();
+  private chainExecutions: Map<string, ChainExecutionStatus> = new Map<string, ChainExecutionStatus>();
 
   // Intervals
   private processingInterval: number | null = null;
@@ -71,8 +71,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   // // Parent manager reference for event publishing - Handled by AbstractBaseManager now
   // private parentManager: AbstractBaseManager<ResourceFlowEvent> | null = null;
 
-  private conversionProcesses: Map<string, ResourceConversionProcess> = new Map();
-  private activeChains: Map<string, ChainExecutionStatus> = new Map();
+  private conversionProcesses: Map<string, ResourceConversionProcess> = new Map<string, ResourceConversionProcess>();
+  private activeChains: Map<string, ChainExecutionStatus> = new Map<string, ChainExecutionStatus>();
 
   /**
    * Private constructor to enforce singleton pattern
@@ -182,8 +182,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
     this.chainExecutions.set(chainId, executionStatus);
 
-    // Start the first step
-    this.processNextChainStep(chainId);
+    // Start the first step, explicitly ignore promise
+    void this.processNextChainStep(chainId);
 
     return true;
   }
@@ -247,7 +247,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       result = await this.startConversionProcess(availableConverter.id, currentRecipeId);
     } catch (error) {
       const errorMsg = `[RCM] Error during startConversionProcess for ${currentRecipeId}: ${error instanceof Error ? error.message : String(error)}`;
-      console.error(errorMsg);
+      errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.HIGH, { recipeId: currentRecipeId });
       status.failed = true;
       status.errorMessage = errorMsg;
       // TODO: Publish CHAIN_FAILED event
@@ -257,7 +257,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     if (!result?.success) {
       status.failed = true;
       status.errorMessage =
-        result?.error || `Failed to start conversion for recipe ${currentRecipeId}`; // Access error from awaited result
+        result?.error ?? `Failed to start conversion for recipe ${currentRecipeId}`; // Use ?? for safer default
       // TODO: Publish CHAIN_FAILED event
       return;
     }
@@ -298,14 +298,16 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   private getConvertersForRecipe(recipeId: string): ConverterFlowNode[] {
     const recipe = this.conversionRecipes.get(recipeId);
     if (!recipe) {
-      console.warn(`[RCM] Recipe ${recipeId} not found when searching for converters.`);
+      const warnMsg = `[RCM] Recipe ${recipeId} not found when searching for converters.`;
+      errorLoggingService.logWarn(warnMsg, { recipeId });
       return [];
     }
 
     try {
       // Use the stored reference, check for null
       if (!this.resourceFlowManager) {
-        console.error('[RCM] ResourceFlowManager not set. Cannot get converters.');
+        const errorMsg = '[RCM] ResourceFlowManager not set. Cannot get converters.';
+        errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.CRITICAL, { recipeId });
         return [];
       }
       const allNodes = this.resourceFlowManager.getNodes();
@@ -321,12 +323,14 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       });
 
       if (suitableConverters.length === 0) {
-        console.warn(`[RCM] No suitable converters found supporting recipe ${recipeId}`);
+        const warnMsg = `[RCM] No suitable converters found supporting recipe ${recipeId}`;
+        errorLoggingService.logWarn(warnMsg, { recipeId });
       }
 
       return suitableConverters;
     } catch (error) {
-      console.error(`[RCM] Error fetching or filtering converters for recipe ${recipeId}:`, error);
+      const errorMsg = `[RCM] Error fetching or filtering converters for recipe ${recipeId}: ${error instanceof Error ? error.message : String(error)}`;
+      errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { recipeId, originalError: error instanceof Error ? error : undefined });
       return [];
     }
   }
@@ -370,7 +374,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
       // Check if process is complete
       if (process.progress >= 1) {
-        this.completeProcess(process);
+        void this.completeProcess(process); // Explicitly ignore promise
         this.processingQueue.splice(i, 1);
         i--;
       }
@@ -397,9 +401,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     // Get the recipe
     const recipe = this.conversionRecipes.get(process.recipeId) as ExtendedResourceConversionRecipe;
     if (!recipe) {
-      console.error(
-        `[RCM] Recipe ${process.recipeId} not found for completed process ${process.processId}.`
-      );
+      const errorMsg = `[RCM] Recipe ${process.recipeId} not found for completed process ${process.processId}.`;
+      errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.HIGH, { recipeId: process.recipeId, processId: process.processId });
       return;
     }
 
@@ -421,16 +424,13 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
           );
           process.appliedEfficiency = efficiency; // Store it back
         } else {
-          console.warn(
-            `[RCM] Converter node ${process.sourceId} not found or invalid for efficiency calc.`
-          );
+          const warnMsg = `[RCM] Converter node ${process.sourceId} not found or invalid for efficiency calc.`;
+          errorLoggingService.logWarn(warnMsg, { processId: process.processId });
           efficiency = 0; // Default to 0 if converter not found
         }
       } catch (error) {
-        console.error(
-          `[RCM] Error getting converter/calculating efficiency for process ${process.processId}:`,
-          error
-        );
+        const errorMsg = `[RCM] Error getting converter/calculating efficiency for process ${process.processId}: ${error instanceof Error ? error.message : String(error)}`;
+        errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { processId: process.processId, originalError: error instanceof Error ? error : undefined });
         efficiency = 0; // Default to 0 on error
       }
     }
@@ -475,9 +475,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       // or assume resources go to a temporary holding area/back to source node.
       // For now, assume transfer only happens if nextConverterId is known.
       if (nextConverterId && this.resourceFlowManager) {
-        console.log(
-          `[RCM] Attempting direct transfer from ${process.sourceId} to ${nextConverterId}`
-        );
+        const infoMsg = `[RCM] Attempting direct transfer from ${process.sourceId} to ${nextConverterId}`;
+        errorLoggingService.logInfo(infoMsg, { processId: process.processId });
         try {
           transferredDirectly = await this.resourceFlowManager.transferResources(
             process.sourceId,
@@ -485,22 +484,17 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
             efficientOutputs
           );
           if (!transferredDirectly) {
-            console.warn(
-              `[RCM] Direct transfer failed from ${process.sourceId} to ${nextConverterId}. Resources will be added back to source.`
-            );
+            const warnMsg = `[RCM] Direct transfer failed from ${process.sourceId} to ${nextConverterId}. Resources will be added back to source.`;
+            errorLoggingService.logWarn(warnMsg, { processId: process.processId });
           }
         } catch (error) {
           const errorMsg = `[RCM] Error during direct transfer: ${error instanceof Error ? error.message : String(error)}`;
-          console.error(errorMsg);
-          errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, undefined, {
-            /* context */
-          });
+          errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { processId: process.processId, originalError: error instanceof Error ? error : undefined });
           transferredDirectly = false; // Ensure flag is false on error
         }
       } else {
-        console.warn(
-          `[RCM] Cannot attempt direct transfer: Next converter ID for step ${nextStepIndex} is unknown.`
-        );
+        const warnMsg = `[RCM] Cannot attempt direct transfer: Next converter ID for step ${nextStepIndex} is unknown.`;
+        errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       }
     }
 
@@ -514,14 +508,13 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
           errorLoggingService.logError(
             error instanceof Error ? error : new Error(String(error)), // Pass error here
             ErrorType.RUNTIME,
-            undefined,
-            {
-              /* context */
-            }
+            ErrorSeverity.MEDIUM,
+            { processId: process.processId }
           );
         }
       } else {
-        console.error('[RCM] ResourceFlowManager not set. Cannot add completed resources.');
+        const warnMsg = '[RCM] ResourceFlowManager not set. Cannot add completed resources.';
+        errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       }
     }
 
@@ -529,7 +522,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     if (this.resourceFlowManager) {
       const converterNode = this.resourceFlowManager.getNode(process.sourceId);
       if (converterNode && converterNode.type === FlowNodeType.CONVERTER) {
-        const currentActiveIds = (converterNode as ConverterFlowNode).activeProcessIds || [];
+        const currentActiveIds = (converterNode as ConverterFlowNode).activeProcessIds ?? []; // Use ?? for safer default
         const updatedNodeData: Partial<ConverterFlowNode> = {
           activeProcessIds: currentActiveIds.filter(id => id !== process.processId),
           // Potentially update status if it becomes idle?
@@ -539,16 +532,12 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
           await this.resourceFlowManager.updateNodeData(process.sourceId, updatedNodeData);
         } catch (error) {
           const errorMsg = `[RCM] Error updating node ${process.sourceId} after completing process ${process.processId}: ${error instanceof Error ? error.message : String(error)}`;
-          console.error(errorMsg);
-          errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, undefined, {
-            /* context */
-          });
+          errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { processId: process.processId, originalError: error instanceof Error ? error : undefined });
           // Node update failed, but process is complete. Log and continue.
         }
       } else {
-        console.warn(
-          `[RCM] Could not find converter node ${process.sourceId} to remove completed process ${process.processId}.`
-        );
+        const warnMsg = `[RCM] Could not find converter node ${process.sourceId} to remove completed process ${process.processId}.`;
+        errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       }
     }
 
@@ -619,7 +608,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
             });
           } else {
             // Process the next step if chain is not complete
-            this.processNextChainStep(chainIdForProcess);
+            await this.processNextChainStep(chainIdForProcess); // Await the async call
           }
         }
       }
@@ -636,7 +625,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   ): Promise<ConversionResult> {
     if (!this.resourceFlowManager) {
       const errorMsg = '[RCM] ResourceFlowManager not set. Cannot start conversion process.';
-      console.error(errorMsg);
+      errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.CRITICAL, { recipeId });
       return { success: false, error: errorMsg, recipeId, processId: '' };
     }
 
@@ -645,13 +634,13 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
     if (!recipe) {
       const errorMsg = `[RCM] Recipe ${recipeId} not found.`;
-      console.error(errorMsg);
+      errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.HIGH, { recipeId });
       return { success: false, error: errorMsg, recipeId, processId: '' };
     }
 
     if (!converterNode || converterNode.type !== FlowNodeType.CONVERTER) {
       const errorMsg = `[RCM] Converter node ${converterId} not found or invalid.`;
-      console.error(errorMsg);
+      errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.CRITICAL, { recipeId });
       return { success: false, error: errorMsg, recipeId, processId: '' };
     }
 
@@ -664,14 +653,14 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       );
     } catch (error) {
       const errorMsg = `[RCM] Error checking resources on ${converterId}: ${error instanceof Error ? error.message : String(error)}`;
-      console.error(errorMsg);
+      errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { recipeId, originalError: error instanceof Error ? error : undefined });
       return { success: false, error: errorMsg, recipeId, processId: '' };
     }
 
     if (!hasResources) {
-      const errorMsg = `[RCM] Insufficient resources on ${converterId} for recipe ${recipeId}.`;
-      console.warn(errorMsg);
-      return { success: false, error: errorMsg, recipeId, processId: '' };
+      const warnMsg = `[RCM] Insufficient resources on ${converterId} for recipe ${recipeId}.`;
+      errorLoggingService.logWarn(warnMsg, { recipeId });
+      return { success: false, error: warnMsg, recipeId, processId: '' };
     }
 
     // Consume resources (now uses await)
@@ -680,16 +669,16 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       consumed = await this.resourceFlowManager.consumeResources(converterId, recipe.inputs);
     } catch (error) {
       const errorMsg = `[RCM] Error consuming resources on ${converterId}: ${error instanceof Error ? error.message : String(error)}`;
-      console.error(errorMsg);
+      errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { recipeId, originalError: error instanceof Error ? error : undefined });
       // TODO: Consider resource rollback logic here if consumption fails mid-way through multiple resources
       return { success: false, error: errorMsg, recipeId, processId: '' };
     }
 
     if (!consumed) {
       // This might happen if resources became unavailable between check and consume
-      const errorMsg = `[RCM] Failed to consume resources on ${converterId} for recipe ${recipeId} (potentially unavailable now).`;
-      console.error(errorMsg);
-      return { success: false, error: errorMsg, recipeId, processId: '' };
+      const warnMsg = `[RCM] Failed to consume resources on ${converterId} for recipe ${recipeId} (potentially unavailable now).`;
+      errorLoggingService.logWarn(warnMsg, { recipeId });
+      return { success: false, error: warnMsg, recipeId, processId: '' };
     }
 
     // --- If resource checks/consumption succeed ---
@@ -714,7 +703,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     this.processingQueue.push(newProcess); // Add to active processing queue
 
     // Update the converter node state
-    const currentActiveIds = (converterNode as ConverterFlowNode).activeProcessIds || [];
+    const currentActiveIds = (converterNode as ConverterFlowNode).activeProcessIds ?? []; // Use ?? for safer default
     const updatedNodeData: Partial<ConverterFlowNode> = {
       activeProcessIds: [...currentActiveIds, processId],
       // status: ConverterStatus.ACTIVE
@@ -725,15 +714,9 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       await this.resourceFlowManager.updateNodeData(converterId, updatedNodeData);
     } catch (error) {
       const errorMsg = `[RCM] Error updating node ${converterId} after starting process ${processId}: ${error instanceof Error ? error.message : String(error)}`;
-      console.error(errorMsg);
+      errorLoggingService.logError(error instanceof Error ? error : new Error(errorMsg), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { processId, originalError: error instanceof Error ? error : undefined });
       // Process started, but node update failed. Log and continue, but maybe flag the node?
       // Or should we try to roll back the process? For now, just log.
-      errorLoggingService.logError(new Error(errorMsg), ErrorType.RUNTIME, undefined, {
-        context: 'startConversionProcess - updateNodeData',
-        processId: processId,
-        converterId: converterId,
-        manager: this.managerName,
-      });
     }
 
     // Publish PROCESS_STARTED event (or similar)
@@ -765,9 +748,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   ): void {
     // 1. Verify the node is actually a converter
     if (converterNode.type !== FlowNodeType.CONVERTER) {
-      console.error(
-        `[RCM] Attempted to apply efficiency using a non-converter node (${converterNode.id}) for process ${process.processId}`
-      );
+      const warnMsg = `[RCM] Attempted to apply efficiency using a non-converter node (${converterNode.id}) for process ${process.processId}`;
+      errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       process.appliedEfficiency = 0; // Or handle error appropriately
       return;
     }
@@ -777,9 +759,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     // 2. Get the recipe
     const recipe = this.conversionRecipes.get(process.recipeId) as ExtendedResourceConversionRecipe;
     if (!recipe) {
-      console.error(
-        `[RCM] Recipe ${process.recipeId} not found for process ${process.processId} during efficiency calculation.`
-      );
+      const warnMsg = `[RCM] Recipe ${process.recipeId} not found for process ${process.processId} during efficiency calculation.`;
+      errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       process.appliedEfficiency = 0; // Or handle error
       return;
     }
@@ -802,10 +783,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
         }
       );
     } catch (error) {
-      console.error(
-        `[RCM] Error calculating efficiency for process ${process.processId} on converter ${converter.id}:`,
-        error
-      );
+      const warnMsg = `[RCM] Error calculating efficiency for process ${process.processId} on converter ${converter.id}:`;
+      errorLoggingService.logWarn(warnMsg, { processId: process.processId });
       process.appliedEfficiency = 0; // Default to 0 on error
     }
   }
@@ -879,7 +858,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
    */
   private calculateNetworkStressFactor(converter: ConverterFlowNode): number {
     // Basic implementation: stress increases as the converter approaches max capacity.
-    const maxProcesses = converter.configuration?.maxConcurrentProcesses || 1;
+    const maxProcesses = converter.configuration?.maxConcurrentProcesses ?? 1; // Use ?? for safer default
     // Use activeProcessIds.length
     const activeProcesses = converter.activeProcessIds?.length ?? 0;
 
@@ -903,7 +882,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     // Find the process in the conversionProcesses map
     const process = this.conversionProcesses.get(processId);
     if (!process) {
-      console.warn(`[RCM] Process ${processId} not found for update.`);
+      const warnMsg = `[RCM] Process ${processId} not found for update.`;
+      errorLoggingService.logWarn(warnMsg, { processId });
       return;
     }
 
@@ -925,7 +905,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
     // Log error if present
     if (error) {
-      console.error(`[RCM] Error in conversion process ${processId}:`, error);
+      const warnMsg = `[RCM] Error in conversion process ${processId}:`;
+      errorLoggingService.logWarn(warnMsg, { processId });
       // Handle error state appropriately
     }
 

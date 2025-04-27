@@ -76,7 +76,7 @@ const SHIP_STATUS_INDICATORS: Record<
 const SHIP_TYPE_ICONS: Record<string, React.ReactNode> = {
   recon: <Eye className="h-5 w-5" />,
   mining: <Box className="h-5 w-5" />,
-  war: <Shield className="h-5 w-5" />,
+  combat: <Shield className="h-5 w-5" />,
 };
 
 const resourceIcons: Record<ResourceType, JSX.Element> = {

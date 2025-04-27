@@ -138,7 +138,7 @@ export function TacticalBehaviorSelector({
     {
       id: 'sensor_jamming',
       name: 'Sensor Jamming',
-      description: 'Coordinate electronic warfare to disrupt enemy targeting systems',
+      description: 'Coordinate electronic combatfare to disrupt enemy targeting systems',
       category: 'special',
       bonuses: [
         { name: 'Enemy accuracy', value: '-25%' },

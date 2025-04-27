@@ -43,7 +43,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
   private workerPool: Map<Worker, WorkerTask | null> = new Map();
 
   private config: WorkerConfig = {
-    maxWorkers: navigator.hardwareConcurrency || 4,
+    maxWorkers: navigator.hardcombateConcurrency || 4,
     taskTimeout: 30000, // 30 seconds
     retryAttempts: 3,
     priorityLevels: {

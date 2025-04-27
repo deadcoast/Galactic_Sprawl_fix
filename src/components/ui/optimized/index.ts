@@ -11,7 +11,7 @@ import { FixedSizeList, FixedSizeListProps } from 'react-window'; // Import from
 export {
   createMemoizedComponent,
   withMemoization,
-  withMemoizationForwardRef,
+  withMemoizationForcombatdRef,
   type MemoizationOptions,
 } from './MemoizedComponent';
 export type { FixedSizeListProps as VirtualizedListProps };

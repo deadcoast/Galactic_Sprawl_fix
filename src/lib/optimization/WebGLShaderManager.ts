@@ -227,7 +227,7 @@ export class WebGLShaderManager {
     this.setupDataVisualizationBuffers(program, config, data, positions);
 
     // Perform drawing
-    this.gl.drawArrays(this.gl.POINTS, 0, positions.length);
+    this.gl.dracombatrays(this.gl.POINTS, 0, positions.length);
   }
 
   /**

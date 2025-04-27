@@ -154,61 +154,6 @@ interface ResourceDragData {
   abundance: number;
 }
 
-/**
- * Interface for ship drag and drop operations
- *
- * This interface will be used in future implementations to:
- * 1. Enable ship assignment to resource nodes via drag and drop
- * 2. Support fleet management operations in the mining interface
- * 3. Display ship capabilities during drag operations
- * 4. Validate ship-to-resource compatibility during drops
- * 5. Implement specialized mining ship assignments based on resource types
- *
- * The efficiency property is particularly important for the upcoming
- * mining optimization system where ships with higher efficiency will
- * extract resources faster from compatible nodes.
- *
- * @deprecated This interface is not currently used but will be implemented
- * in the upcoming ship assignment system. It is kept here for reference.
- */
-interface _ShipDragData {
-  id: string;
-  name: string;
-  type: PlayerShipClass.ROCK_BREAKER | PlayerShipClass.VOID_DREDGER;
-  efficiency: number;
-}
-
-// Reference _ShipDragData in a type declaration to prevent "unused" error
-type DragDataTypes = ResourceDragData | _ShipDragData;
-
-// Define a base type for drag data input
-interface BaseDragDataInput {
-  id?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-// Use the DragDataTypes in a function to prevent "unused" error
-const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): DragDataTypes => {
-  if (type === 'resource') {
-    return {
-      id: data?.id ?? '',
-      name: data?.name ?? '',
-      type: (data?.type as 'mineral' | ResourceType.GAS | ResourceType.EXOTIC) || 'mineral',
-      abundance: typeof data?.abundance === 'number' ? data?.abundance : 0,
-    } as ResourceDragData;
-  } else {
-    // This will be implemented in the future
-    console.warn('Ship drag data creation not yet implemented');
-    return {
-      id: data?.id ?? '',
-      name: data?.name ?? '',
-      type: PlayerShipClass.ROCK_BREAKER,
-      efficiency: typeof data?.efficiency === 'number' ? data?.efficiency : 1.0,
-    } as _ShipDragData;
-  }
-};
-
 // Add helper functions to convert between types
 const convertToMiningResource = (resource: Resource): MiningResource => {
   // Map the string type to ResourceType enum
@@ -338,7 +283,6 @@ export function MiningWindow() {
 
   const handleMineAllToggle = useCallback(() => {
     setMineAll(prev => !prev);
-    console.warn(`Mine all resources: ${!mineAll}`);
     // In a real implementation, this would dispatch an action to mine all available resources
   }, [mineAll]);
 
@@ -355,7 +299,6 @@ export function MiningWindow() {
 
   const handleTierChange = useCallback((newTier: 1 | 2 | 3) => {
     setTier(newTier);
-    console.warn(`Mining tier set to: ${newTier}`);
     // In a real implementation, this would update the mining operations to match the new tier
   }, []);
 
@@ -390,7 +333,7 @@ export function MiningWindow() {
         id: 'resource-actions',
         label: 'Resource Actions',
         icon: React.createElement(MoreHorizontal, { className: 'h-4 w-4' }),
-        action: () => {}, // No-op action for parent menu
+        action: () => { /* TODO: Implement parent action */ },
         children: [
           {
             id: 'scan-deposits',
@@ -421,18 +364,15 @@ export function MiningWindow() {
     _storage: (typeof mockStorageData)[0]
   ) => {
     if (item?.type === 'resource') {
-      // Create a properly typed drag data object
-      const resourceData = createDragData('resource', item?.data as unknown as BaseDragDataInput);
-
       // Handle resource transfer
-      console.warn(`Transferring ${(resourceData as ResourceDragData).type} resource to storage`);
+      // In a real implementation, this would handle the resource transfer logic
     }
   };
 
   const toggleViewMode = () => {
     const newMode: ViewMode = viewMode === 'map' ? 'grid' : 'map';
     handleViewChange(newMode);
-    console.warn(`View mode changed to: ${newMode}`);
+    // In a real implementation, this would update the view mode
   };
 
   const toggleSortDirection = () => {
@@ -461,28 +401,28 @@ export function MiningWindow() {
     // Then perform the action
     switch (action) {
       case 'prioritize':
-        console.warn(`Prioritizing resource: ${resource.name}`);
+        // In a real implementation, this would prioritize the resource
         break;
       case 'assign-ship':
-        console.warn(`Assigning ship to resource: ${resource.name}`);
+        // In a real implementation, this would assign a ship to the resource
         break;
       case 'set-thresholds':
-        console.warn(`Setting thresholds for resource: ${resource.name}`);
+        // In a real implementation, this would set the thresholds for the resource
         break;
       case 'view-details':
         setSelectedNode(resource);
         break;
       case 'scan-deposits':
-        console.warn(`Scanning for deposits around resource: ${resource.name}`);
+        // In a real implementation, this would scan for deposits around the resource
         break;
       case 'analyze-composition':
-        console.warn(`Analyzing composition of resource: ${resource.name}`);
+        // In a real implementation, this would analyze the composition of the resource
         break;
       case 'mark-extraction':
-        console.warn(`Marking resource for extraction: ${resource.name}`);
+        // In a real implementation, this would mark the resource for extraction
         break;
       default:
-        console.warn(`Unknown action: ${action}`);
+        // In a real implementation, this would handle unknown actions
     }
   };
 
@@ -735,8 +675,8 @@ export function MiningWindow() {
                     type: 'resource',
                     data: resource,
                   },
-                  onDragStart: () => console.warn('Drag started', resource.id),
-                  onDragEnd: () => console.warn('Drag ended', resource.id),
+                  onDragStart: () => { /* TODO: Implement drag handler */ },
+                  onDragEnd: () => { /* TODO: Implement drag handler */ },
                   children: React.createElement(
                     'div',
                     { onContextMenu: e => handleContextMenuEvent(e, resource) },
@@ -744,7 +684,7 @@ export function MiningWindow() {
                       resource: resource,
                       isSelected: selectedNode?.id === resource.id,
                       techBonuses: techBonuses,
-                      onClick: () => setSelectedNode(resource as Resource),
+                      onClick: () => setSelectedNode(resource),
                       assignedShip:
                         mockShips.find(ship => ship.targetNode === resource.id)?.id ?? '',
                     })
@@ -789,8 +729,8 @@ export function MiningWindow() {
                   type: 'ship',
                   data: ship,
                 },
-                onDragStart: () => console.warn('Drag started', ship.id),
-                onDragEnd: () => console.warn('Drag ended', ship.id),
+                onDragStart: () => { /* TODO: Implement drag handler */ },
+                onDragEnd: () => { /* TODO: Implement drag handler */ },
                 children: React.createElement(
                   'div',
                   { className: 'rounded-lg bg-gray-800 p-4' },

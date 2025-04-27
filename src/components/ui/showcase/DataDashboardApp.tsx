@@ -254,7 +254,7 @@ interface HierarchyDatum {
   leaves(): HierarchyDatum[];
   find(filter: (node: HierarchyDatum) => boolean): HierarchyDatum | undefined;
   path(target: HierarchyDatum): HierarchyDatum[];
-  links(): Array<{ source: HierarchyDatum; target: HierarchyDatum }>;
+  links(): { source: HierarchyDatum; target: HierarchyDatum }[];
   sum(value: (d: D3HierarchyNode) => number): HierarchyDatum;
   sort(compare: (a: HierarchyDatum, b: HierarchyDatum) => number): HierarchyDatum;
   count(): HierarchyDatum;
@@ -642,7 +642,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
    */
   const initializeHierarchyVisualization = useCallback(() => {
     const rootNodeData = convertHierarchyDataToD3Format();
-    if (!hierarchyRef.current || hierarchyData.length === 0 || !rootNodeData) return;
+    if (!hierarchyRef.current || hierarchyData.length === 0 || !rootNodeData) {
+      return;
+    }
 
     console.warn(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
 
@@ -709,8 +711,12 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     // Apply category filter if selected entities exist
     const _filterByCategory = (node: D3HierarchyNode): boolean => {
-      if (selectedEntities.length === 0) return true;
-      if (selectedEntities.includes(node.category)) return true;
+      if (selectedEntities.length === 0) {
+        return true;
+      }
+      if (selectedEntities.includes(node.category)) {
+        return true;
+      }
       if (node.children) {
         // Include if any children match the filter
         return node.children.some(_filterByCategory);
@@ -765,10 +771,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
             child =>
               selectedEntities.length === 0 ||
               selectedEntities.includes(child.data?.category) ||
-              (child.children &&
-                child.children.some(grandchild =>
-                  selectedEntities.includes(grandchild.data?.category)
-                ))
+              child.children?.some(grandchild =>
+                selectedEntities.includes(grandchild.data?.category)
+              )
           );
         }
       });
@@ -1145,7 +1150,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
    * This uses D3's force layout with type-safe implementation
    */
   const initializeNetworkVisualization = useCallback(() => {
-    if (!networkRef.current || networkData.nodes.length === 0) return;
+    if (!networkRef.current || networkData.nodes.length === 0) {
+      return;
+    }
 
     console.warn('Initializing network visualization with force-directed graph');
 
@@ -1561,7 +1568,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
   // Initialize visualizations once data is loaded
   useEffect(() => {
-    if (!dataLoaded) return;
+    if (!dataLoaded) {
+      return;
+    }
 
     // Initialize visualizations based on current view
     switch (currentView) {

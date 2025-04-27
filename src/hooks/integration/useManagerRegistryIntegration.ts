@@ -111,7 +111,7 @@ export function useManager<T>(managerGetter: () => T, dependencies: unknown[] = 
         } else if (hasGetStatus(managerInstance)) {
           // Check if it has IBaseManager's getStatus
           const status = managerInstance.getStatus();
-          initialized = status === ManagerStatus.READY || status === 'ready';
+          initialized = status ===  ManagerStatus.READY || status === 'ready';
         } else {
           // Assume initialized if we got this far
           initialized = true;

@@ -62,7 +62,9 @@ export function useMultiEventSubscription(
 
   // Set up subscriptions
   useEffect(() => {
-    if (!eventTypes.length) return;
+    if (!eventTypes.length) {
+      return;
+    }
 
     const unsubscribes: Array<() => void> = [];
 
@@ -132,28 +134,25 @@ export function useEventMonitor(
     const typesToMonitor = eventTypes || Object.values(EventType);
 
     // Subscribe to events
-    const unsubscribe = moduleEventBus.subscribeToMunknown(typesToMonitor, (event: BaseEvent) => {
-      // Apply filter if provided
-      if (filter && !filter(event)) {
-        return;
-      }
-
-      // Update events state
-      setEvents(prev => {
-        // Add new event to beginning of array
-        const newEvents = [event, ...prev];
-
-        // Limit to maxEvents
-        if (newEvents.length > maxEvents) {
-          return newEvents.slice(0, maxEvents);
-        }
-
-        return newEvents;
-      });
-    });
-
-    // Return cleanup function
-    return unsubscribe;
+    return moduleEventBus.subscribeToMunknown(typesToMonitor, (event: BaseEvent) => {
+          // Apply filter if provided
+          if (filter && !filter(event)) {
+            return;
+          }
+    
+          // Update events state
+          setEvents(prev => {
+            // Add new event to beginning of array
+            const newEvents = [event, ...prev];
+    
+            // Limit to maxEvents
+            if (newEvents.length > maxEvents) {
+              return newEvents.slice(0, maxEvents);
+            }
+    
+            return newEvents;
+          });
+        });
   }, [maxEvents, JSON.stringify(eventTypes), filter]);
 
   // Function to clear events

@@ -300,7 +300,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 
 ### Core Automation Framework
 1. Automation Purpose (AP) System
-   [ ] War automation behavior system
+   [ ] combat automation behavior system
    [ ] Recon automation behavior system
    [ ] Mining automation behavior system
    [ ] AP event handling framework
@@ -334,13 +334,13 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Module status monitoring
 
 2. Fleet Control
-   [ ] War ship dispatch system
+   [ ] combat ship dispatch system
    [ ] Recon mission automation
    [ ] Mining operation coordination
    [ ] Fleet status tracking
 
 #### 2. Ship Systems Automation
-1. War Ships
+1. combat Ships
    [ ] Spitflare interception logic
    [ ] Star Schooner support system
    [ ] Orion's Frigate combat AI
@@ -379,7 +379,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 
 ### Scheduling & Updates
 1. Core Systems
-   [ ] Custom scheduling middleware
+   [ ] Custom scheduling middlecombate
    [ ] Background update manager
    [ ] Fleet dispatch coordinator
    [ ] Resource generation timer
@@ -467,7 +467,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Trade route intensification
 
 #### 3. Ship Progression
-1. War Ships
+1. combat Ships
    [ ] Tier-based upgrades
    [ ] Combat efficiency scaling
    [ ] Visual enhancement system
@@ -505,7 +505,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Upgrade option displays
    [ ] Research point allocation
    [ ] Milestone tracking
-   [ ] Reward collection system
+   [ ] Recombatd collection system
 
 ## Progress Tracking (Progression)
 - Core Framework: 0%
@@ -791,7 +791,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Ships & Combat Implementation
 
 ### Core Ship Framework
-1. War Ship Assets
+1. combat Ship Assets
    [ ] Spitflare (Tier 1) implementation
    [ ] Star Schooner (Tier 1/2) implementation
    [ ] Orion's Frigate (Tier 2) implementation
@@ -953,7 +953,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 
 ### Fleet Technologies
 
-#### 1. War Fleet Tech
+#### 1. combat Fleet Tech
 1. Weapon Systems
    [ ] Tier 1 basic weapons
    [ ] Tier 2 enhancements

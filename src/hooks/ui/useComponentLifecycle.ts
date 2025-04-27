@@ -75,18 +75,19 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
     isMounted.current = true;
 
     // Call onMount callback if provided
-    if (options?.onMount) {
-      try {
-        options?.onMount();
-      } catch (error) {
-        errorLoggingService.logError(
-          error instanceof Error ? error : new Error('Error in onMount callback'),
-          ErrorType.RUNTIME,
-          ErrorSeverity.MEDIUM,
-          { componentName: 'useComponentLifecycle', action: 'onMount' }
-        );
-      }
-    }
+    if (if (options?.onMount) {
+          try {
+            options?.onMount();
+          } catch (error) {
+            errorLoggingService.logError(
+              error instanceof Error ? error : new Error('Error in onMount callback'),
+              ErrorType.RUNTIME,
+              ErrorSeverity.MEDIUM,
+              { componentName: 'useComponentLifecycle', action: 'onMount' }
+            );
+          }
+        }) ___
+    else if (________) ___
 
     // Set up event subscriptions
     const unsubscribers: Array<() => void> = [];

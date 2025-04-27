@@ -87,7 +87,7 @@ const DEFAULT_MINING_SHIP_DESIGN = SHIP_BLUEPRINTS.find(
   bp => bp.category === 'mining' && bp.tier === 1
 );
 const DEFAULT_COMBAT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(
-  bp => bp.category === 'war' && bp.tier === 1
+  bp => bp.category === 'combat' && bp.tier === 1
 );
 
 /**
@@ -266,7 +266,7 @@ export class ShipHangarManager
    * Handle module activation
    */
   private handleModuleActivation(moduleId: string): void {
-    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} activated`);
+    errorLoggingService.logwarn(`[ShipHangarManager] Module ${moduleId} activated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -274,7 +274,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency *= 0.9; // 10% reduction in resource costs
     this.state.buildSpeedMultiplier *= 1.1; // 10% increase in build speed
 
-    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logwarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -283,7 +283,7 @@ export class ShipHangarManager
    * Handle module deactivation
    */
   private handleModuleDeactivation(moduleId: string): void {
-    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} deactivated`);
+    errorLoggingService.logwarn(`[ShipHangarManager] Module ${moduleId} deactivated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -291,7 +291,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency /= 0.9; // Remove 10% reduction
     this.state.buildSpeedMultiplier /= 1.1; // Remove 10% increase
 
-    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logwarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -300,7 +300,7 @@ export class ShipHangarManager
    * Handle module status change
    */
   private handleModuleStatusChange(moduleId: string, status: string): void {
-    errorLoggingService.logWarn(
+    errorLoggingService.logwarn(
       `[ShipHangarManager] Module ${moduleId} status changed to ${status}`
     );
     const oldEfficiency = this.state.resourceEfficiency;
@@ -324,7 +324,7 @@ export class ShipHangarManager
         break;
     }
 
-    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logwarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -541,7 +541,7 @@ export class ShipHangarManager
 
     // Add category-specific tech requirements
     switch (blueprint.category) {
-      case 'war':
+      case 'combat':
         requirements.prerequisites.technology.push(
           blueprint.tier === 3
             ? 'advanced-weapons'
@@ -861,7 +861,7 @@ export class ShipHangarManager
     if (shipClass.includes('andromeda') || shipClass.includes('schooner')) {
       return 'recon';
     }
-    return 'war';
+    return 'combat';
   }
 
   private createWeaponMount(
@@ -1998,8 +1998,8 @@ export class ShipHangarManager
 
     // Specialization bonuses
     switch (officer.specialization) {
-      case 'War':
-        if (ship.category === 'war') {
+      case 'combat':
+        if (ship.category === 'combat') {
           bonuses.combatEffectiveness = 0.2 + levelBonus; // 20% base + level bonus
           bonuses.buildSpeed = 0.1 + levelBonus; // 10% base + level bonus
         }
@@ -2363,7 +2363,7 @@ export class ShipHangarManager
    */
   private addShipDesign(design: ShipBlueprint | undefined): void {
     if (!design) {
-      errorLoggingService.logWarn('[ShipHangarManager] Attempted to add undefined ship design');
+      errorLoggingService.logwarn('[ShipHangarManager] Attempted to add undefined ship design');
       return;
     }
     // Implementation details would go here

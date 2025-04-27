@@ -58,7 +58,7 @@ export interface ManagerMetrics {
 }
 
 /**
- * Legacy Manager Metadata for backward compatibility
+ * Legacy Manager Metadata for backcombatd compatibility
  */
 export interface ManagerMetadata {
   id: string;
@@ -74,7 +74,7 @@ export interface ManagerMetadata {
 
 /**
  * Standard interface for all manager services in the application.
- * This interface is maintained for backward compatibility.
+ * This interface is maintained for backcombatd compatibility.
  */
 export interface BaseManager<TEvent extends LegacyBaseEvent = LegacyBaseEvent> {
   readonly id: string;
@@ -343,7 +343,7 @@ export abstract class AbstractBaseManager<T extends BaseEvent>
   }
 
   /**
-   * Legacy method for publishing events (for backward compatibility)
+   * Legacy method for publishing events (for backcombatd compatibility)
    */
   public publishEvent(event: LegacyBaseEvent): void {
     // Convert legacy event to new format

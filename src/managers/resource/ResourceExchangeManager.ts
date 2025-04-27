@@ -1,3 +1,4 @@
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/logging/ErrorLoggingService';
 import { ResourceExchangeRate } from '../../types/resources/ResourceConversionTypes';
 import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 
@@ -182,7 +183,7 @@ export class ResourceExchangeManager {
    */
   public registerExchangeRate(rate: ResourceExchangeRate): boolean {
     if (!rate.fromType || !rate.toType || rate.rate <= 0) {
-      console.error('Invalid exchange rate:', rate);
+      errorLoggingService.logError('Invalid exchange rate:', ErrorType.VALIDATION, ErrorSeverity.MEDIUM, { rate });
       return false;
     }
 
@@ -239,12 +240,12 @@ export class ResourceExchangeManager {
 
     // Check if amount is within limits
     if (rate.minAmount && amount < rate.minAmount) {
-      console.warn(`Exchange amount ${amount} is below minimum ${rate.minAmount}`);
+      errorLoggingService.logWarn(`Exchange amount ${amount} is below minimum ${rate.minAmount}`, { details: { amount, minAmount: rate.minAmount } });
       return 0;
     }
 
     if (rate.maxAmount && amount > rate.maxAmount) {
-      console.warn(`Exchange amount ${amount} is above maximum ${rate.maxAmount}`);
+      errorLoggingService.logWarn(`Exchange amount ${amount} is above maximum ${rate.maxAmount}`, { details: { amount, maxAmount: rate.maxAmount } });
       amount = rate.maxAmount;
     }
 
@@ -264,19 +265,20 @@ export class ResourceExchangeManager {
     // Get exchange rate
     const rate = this.getExchangeRate(fromType, toType);
     if (!rate) {
-      console.error(`No exchange rate defined for ${fromType} to ${toType}`);
+      errorLoggingService.logError(`No exchange rate defined for ${fromType} to ${toType}`, ErrorType.CONFIGURATION, ErrorSeverity.MEDIUM, { fromType, toType });
       return null;
     }
 
     // Check if amount is within limits
     if (rate.minAmount && amount < rate.minAmount) {
-      console.error(`Exchange amount ${amount} is below minimum ${rate.minAmount}`);
+      errorLoggingService.logError(`Exchange amount ${amount} is below minimum ${rate.minAmount}`, ErrorType.VALIDATION, ErrorSeverity.MEDIUM, { amount, minAmount: rate.minAmount });
       return null;
     }
 
     if (rate.maxAmount && amount > rate.maxAmount) {
-      console.warn(
-        `Exchange amount ${amount} is above maximum ${rate.maxAmount}, capping at maximum`
+      errorLoggingService.logWarn(
+        `Exchange amount ${amount} is above maximum ${rate.maxAmount}, capping at maximum`,
+        { details: { amount, maxAmount: rate.maxAmount } }
       );
       amount = rate.maxAmount;
     }
@@ -284,14 +286,14 @@ export class ResourceExchangeManager {
     // Check if source has enough resources
     const sourceState = this.resourceStates.get(fromType);
     if (!sourceState || sourceState.current < amount) {
-      console.error(`Insufficient ${fromType} resources for exchange`);
+      errorLoggingService.logError(`Insufficient ${fromType} resources for exchange`, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { resourceType: fromType });
       return null;
     }
 
     // Calculate exchange amount
     const exchangeAmount = this.calculateExchangeAmount(fromType, toType, amount);
     if (exchangeAmount <= 0) {
-      console.error(`Invalid exchange amount: ${exchangeAmount}`);
+      errorLoggingService.logError(`Invalid exchange amount: ${exchangeAmount}`, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { exchangeAmount });
       return null;
     }
 
@@ -333,7 +335,7 @@ export class ResourceExchangeManager {
    */
   public registerRateModifier(modifier: ExchangeRateModifier): boolean {
     if (!modifier.id || !modifier.affectedTypes || modifier.affectedTypes.length === 0) {
-      console.error('Invalid rate modifier:', modifier);
+      errorLoggingService.logError('Invalid rate modifier:', ErrorType.VALIDATION, ErrorSeverity.MEDIUM, { modifier });
       return false;
     }
 
@@ -446,7 +448,7 @@ export class ResourceExchangeManager {
     // Update rates based on new market condition
     this.updateCurrentRates();
 
-    console.warn(`[ResourceExchangeManager] Market condition updated to: ${this.marketCondition}`);
+    errorLoggingService.logInfo(`[ResourceExchangeManager] Market condition updated to: ${this.marketCondition}`, { marketCondition: this.marketCondition });
   }
 
   /**
@@ -551,7 +553,7 @@ export class ResourceExchangeManager {
       for (const [_rateKey, rate] of rateEntries) {
         // Cast to extended type for compatibility
         const extendedRate = rate as ExtendedRate;
-        const extendedModifier = modifier as ExchangeRateModifier;
+        const extendedModifier = modifier;
 
         // Check if modifier has sourceType and if it matches the rate's sourceType
         if (

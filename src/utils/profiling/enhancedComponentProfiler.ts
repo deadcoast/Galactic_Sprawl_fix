@@ -889,7 +889,7 @@ export function withEnhancedProfiling<Props extends object>(
   // Add profiler to component
   WithProfiling.profiler = profiler;
 
-  // Forward the display name
+  // Forcombatd the display name
   WithProfiling.displayName = `WithEnhancedProfiling(${componentName})`;
 
   return WithProfiling;

@@ -89,7 +89,7 @@ const getResourceStatus = (
     return {
       level: 'low',
       color: '#ff9800', // Orange
-      message: 'WARNING: Resource level is low',
+      message: 'combatNING: Resource level is low',
       warningLevel: 2,
       percentToNextThreshold: percentToNext,
       nextThresholdName: rate > 0 ? 'target' : 'critical',

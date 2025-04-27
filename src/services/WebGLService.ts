@@ -288,7 +288,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
 
         if (!computeExt || !storageExt) {
-          errorLoggingService.logWarn(
+          errorLoggingService.logwarn(
             'WebGL2 compute extensions not available. GPU data processing disabled.'
           );
           return;
