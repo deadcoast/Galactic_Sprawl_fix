@@ -16,7 +16,6 @@ import {
   formatAxisTick,
   getColor,
   processChartData,
-  ReferenceLinePosition,
   ReferenceLine as ReferenceLineType,
 } from './BaseChart';
 
@@ -116,7 +115,7 @@ export function LineChart({
         title={title}
         theme={theme}
         className={className}
-        errorMessage={errorMessage || 'No data available'}
+        errorMessage={errorMessage ?? 'No data available'}
       >
         <RechartsLineChart data={[]} />
       </BaseChart>
@@ -132,8 +131,8 @@ export function LineChart({
 
   // Handle dot click event
   const handleDotClick = (event: DotClickEvent, index: number) => {
-    if (onElementClick && event && event?.payload) {
-      onElementClick(event?.payload, index);
+    if (onElementClick && event?.payload) {
+      onElementClick(event.payload, index);
     }
   };
 
@@ -148,7 +147,13 @@ export function LineChart({
 
       <XAxis
         dataKey={dateFormat && xAxisKey === 'date' ? 'formattedDate' : xAxisKey}
-        tickFormatter={value => formatAxisTick(value, dateFormat)}
+        tickFormatter={value => {
+          if (typeof value === 'string' || typeof value === 'number') {
+            return formatAxisTick(value, dateFormat);
+          }
+          // Fallback for unexpected types
+          return String(value ?? ''); 
+        }}
         label={
           xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined
         }
@@ -158,7 +163,7 @@ export function LineChart({
         label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
       />
 
-      <Tooltip content={customTooltip || <DefaultTooltip />} />
+      <Tooltip content={customTooltip ?? <DefaultTooltip />} />
 
       {showLegend && <Legend />}
 
@@ -168,12 +173,12 @@ export function LineChart({
           key={`ref-line-${i}`}
           x={line.axis === 'x' ? line.value : undefined}
           y={line.axis === 'y' ? line.value : undefined}
-          stroke={line.color || '#ff7300'}
+          stroke={line.color ?? '#ff7300'}
           label={
             line.label
               ? {
                   value: line.label,
-                  position: (line.position || 'center') as ReferenceLinePosition,
+                  position: line.position ?? 'center',
                 }
               : undefined
           }

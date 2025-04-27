@@ -125,8 +125,10 @@ export function BarChart({
 
   // Handle click events
   const handleBarClick = (event: BarClickEvent, index: number) => {
-    if (onElementClick ?? event ?? event?.payload) {
-      onElementClick(event?.payload, index);
+    // Check if the callback exists AND if the event payload exists
+    if (onElementClick && event?.payload) {
+      // Now it's safe to call the callback and access payload
+      onElementClick(event.payload, index);
     }
   };
 

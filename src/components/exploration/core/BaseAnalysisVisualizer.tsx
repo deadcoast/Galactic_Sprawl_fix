@@ -362,7 +362,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    table: (data: Record<string, unknown>, width: number, height: number) => {
+    table: (data: Record<string, unknown>, _width: number, _height: number) => {
       // Extract keys and values for table
       const keys = Object.keys(data);
 
@@ -404,7 +404,10 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
         <p className="text-gray-500 italic">Custom visualization placeholder</p>
         <p className="text-xs text-gray-400 italic">
           (Data: {typeof data}, Size: {width}x{height}, CustomOption:{' '}
-          {String(options?.customProp ?? 'N/A')})
+          {typeof options?.customProp === 'string' || typeof options?.customProp === 'number'
+            ? String(options.customProp)
+            : 'N/A'}
+          )
         </p>
       </div>
     ),
@@ -595,10 +598,15 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
   );
 };
 
-// Helper function to format values for display
+/**
+ * Formats a value for display.
+ *
+ * @param value The value to format.
+ * @returns A string representation of the value.
+ */
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
-    return '-';
+    return '-'; // Or 'null' / 'undefined' if preferred
   }
 
   if (typeof value === 'boolean') {
@@ -617,14 +625,28 @@ function formatValue(value: unknown): string {
   }
 
   if (Array.isArray(value)) {
+    // Recursively format array elements
     return value.map(v => formatValue(v)).join(', ');
   }
 
+  // Handle general objects (excluding null, arrays, Date)
   if (typeof value === 'object') {
-    return JSON.stringify(value);
+    // Attempt to stringify, catch errors for complex objects if needed
+    try {
+      return JSON.stringify(value);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
+      return '[Object]'; // Fallback for complex/circular objects
+    }
+  } // <<< Added missing closing curly brace here
+
+  // Explicitly handle expected remaining primitives
+  if (typeof value === 'string' || typeof value === 'symbol' || typeof value === 'bigint') {
+    return String(value);
   }
 
-  return String(value);
+  // Fallback for any unexpected type that might reach here
+  return '[Unknown Type]';
 }
 
 export default BaseAnalysisVisualizer;

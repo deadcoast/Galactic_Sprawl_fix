@@ -199,12 +199,12 @@ export function ColonyManagementSystem({
   // State
   const [population, setPopulation] = useState(initialPopulation);
   const [growthModifiers, setGrowthModifiers] = useState(initialGrowthModifiers);
-  const [tradePartners, _setTradePartners] = useState(initialTradePartners);
+  const [tradePartners] = useState(initialTradePartners);
   const [tradeRoutes, setTradeRoutes] = useState(initialTradeRoutes);
   const [populationEvents, setPopulationEvents] = useState(initialPopulationEvents);
-  const [buildings, _setBuildings] = useState(initialBuildings);
+  const [buildings] = useState(initialBuildings);
   const [resources, _setResources] = useState(initialResources);
-  const [satisfactionFactors, _setSatisfactionFactors] = useState(initialSatisfactionFactors);
+  const [satisfactionFactors] = useState(initialSatisfactionFactors);
   const [autoGrowthEnabled, setAutoGrowthEnabled] = useState(false);
   const [cycleLength, setCycleLength] = useState(60000); // 1 minute default
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({

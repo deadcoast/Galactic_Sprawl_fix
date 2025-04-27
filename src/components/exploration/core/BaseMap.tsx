@@ -272,7 +272,7 @@ export const BaseMap: React.FC<BaseMapProps> = ({
 
           // Draw selection circle
           ctx.beginPath();
-          ctx.strokeStyle = selected.highlightColor || '#ffcc00';
+          ctx.strokeStyle = selected.highlightColor ?? '#ffcc00';
           ctx.lineWidth = 2;
           ctx.arc(screenX, screenY, 20 * viewport.scale, 0, Math.PI * 2);
           ctx.stroke();
@@ -280,7 +280,7 @@ export const BaseMap: React.FC<BaseMapProps> = ({
           // Draw pulsing effect
           const pulseSize = 20 * viewport.scale + Math.sin(Date.now() / 200) * 5;
           ctx.beginPath();
-          ctx.strokeStyle = selected.highlightColor || 'rgba(255, 204, 0, 0.5)';
+          ctx.strokeStyle = selected.highlightColor ?? 'rgba(255, 204, 0, 0.5)';
           ctx.lineWidth = 1;
           ctx.arc(screenX, screenY, pulseSize, 0, Math.PI * 2);
           ctx.stroke();

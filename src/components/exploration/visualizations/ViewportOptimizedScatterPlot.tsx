@@ -211,7 +211,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
         subtitle={subtitle}
         theme={theme}
         className={className}
-        errorMessage={errorMessage || 'No data available'}
+        errorMessage={errorMessage ?? 'No data available'}
       >
         <ScatterChart />
       </BaseChart>
@@ -254,7 +254,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
   // Fix the pointSizeValue possibly undefined error
   const pointSizeValue = useMemo(() => {
     // Use the pointSize prop to determine the default size for points
-    return colorKey ? undefined : pointSize || 60; // Provide default value
+    return colorKey ? undefined : pointSize ?? 60; // Provide default value
   }, [colorKey, pointSize]);
 
   // Fix the expected 2 arguments error for useCallback by adding proper dependencies
@@ -290,15 +290,17 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
           // The recharts library doesn't export proper types for chart events
           // We need to access the domain information from the event
           const event = e as unknown as {
-            xAxis?: Array<{ domain: [number, number] }>;
-            yAxis?: Array<{ domain: [number, number] }>;
+            xAxis?: { domain: [number, number] }[];
+            yAxis?: { domain: [number, number] }[];
           };
 
-          if (event && event?.xAxis && event?.yAxis && event?.xAxis[0] && event?.yAxis[0]) {
-            const domain = {
-              x: event?.xAxis[0].domain,
-              y: event?.yAxis[0].domain,
-            };
+          // Use optional chaining to safely access nested domains
+          const xDomain = event?.xAxis?.[0]?.domain;
+          const yDomain = event?.yAxis?.[0]?.domain;
+
+          // Check if both domains were successfully retrieved
+          if (xDomain && yDomain) {
+            const domain = { x: xDomain, y: yDomain };
             debouncedViewportChange(domain);
           }
         }}
@@ -308,7 +310,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
         <XAxis
           type="number"
           dataKey={xAxisKey}
-          name={xAxisLabel || xAxisKey}
+          name={xAxisLabel ?? xAxisKey}
           label={
             xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5 } : undefined
           }
@@ -318,22 +320,22 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
         <YAxis
           type="number"
           dataKey={yAxisKey}
-          name={yAxisLabel || yAxisKey}
+          name={yAxisLabel ?? yAxisKey}
           label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
           domain={viewportDomain ? viewportDomain.y : ['auto', 'auto']}
         />
 
         {zAxisKey && <ZAxis type="number" dataKey={zAxisKey} range={zAxisRange} />}
 
-        <Tooltip content={customTooltip || <DefaultTooltip />} />
+        <Tooltip content={customTooltip ?? <DefaultTooltip />} />
 
         <Legend />
 
         <Scatter
-          name={`${xAxisLabel || xAxisKey} vs ${yAxisLabel || yAxisKey}`}
+          name={`${xAxisLabel ?? xAxisKey} vs ${yAxisLabel ?? yAxisKey}`}
           data={visibleData}
-          fill={colors[0] || '#8884d8'}
-          stroke={colors[0] || '#8884d8'}
+          fill={colors[0] ?? '#8884d8'}
+          stroke={colors[0] ?? '#8884d8'}
           isAnimationActive={animate}
           onClick={handlePointClick}
           shape={(props: {
@@ -362,11 +364,11 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
               <circle
                 cx={typedProps.cx}
                 cy={typedProps.cy}
-                r={zAxisKey ? typedProps.r : (pointSizeValue || 30) / 2}
+                r={zAxisKey ? typedProps.r : (pointSizeValue ?? 30) / 2}
                 fill={
                   typedProps.payload
                     ? getPointColor(typedProps.payload, typedProps.index ?? 0)
-                    : typedProps.fill || '#8884d8'
+                    : typedProps.fill ?? '#8884d8'
                 }
                 stroke={typedProps.stroke}
               />

@@ -142,9 +142,28 @@ export const VirtualizedDataTable = React.memo(
           return order === 'asc' ? aValue - bValue : bValue - aValue;
         }
 
-        // Convert to strings for string comparison
-        const aString = String(aValue);
-        const bString = String(bValue);
+        // Compare booleans (true > false)
+        if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+          const aNum = aValue ? 1 : 0;
+          const bNum = bValue ? 1 : 0;
+          return order === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+
+        // Compare Dates by time
+        if (aValue instanceof Date && bValue instanceof Date) {
+          return order === 'asc' ? aValue.getTime() - bValue.getTime() : bValue.getTime() - aValue.getTime();
+        }
+
+        // Fallback: Only compare strings and numbers. Treat others (objects/arrays) as equal.
+        if (typeof aValue !== 'string' && typeof aValue !== 'number') {
+          return 0; // Treat non-sortable types as equal
+        }
+        if (typeof bValue !== 'string' && typeof bValue !== 'number') {
+          return 0; // Treat non-sortable types as equal
+        }
+
+        const aString = String(aValue); // Safe now
+        const bString = String(bValue); // Safe now
 
         return order === 'asc' ? aString.localeCompare(bString) : bString.localeCompare(aString);
       });
@@ -168,8 +187,8 @@ export const VirtualizedDataTable = React.memo(
             {columns.map(column => (
               <TableCell
                 key={column.id}
-                align={column.align || 'left'}
-                style={{ minWidth: column.minWidth || 100, fontWeight: 'bold' }}
+                align={column.align ?? 'left'} // Changed || to ??
+                style={{ minWidth: column.minWidth ?? 100, fontWeight: 'bold' }} // Changed || to ??
                 sortDirection={orderBy === column.id ? order : false}
               >
                 {enableSorting ? (
@@ -211,7 +230,7 @@ export const VirtualizedDataTable = React.memo(
             {columns.map(column => {
               const value = row[column.id];
               return (
-                <TableCell key={column.id} align={column.align || 'left'}>
+                <TableCell key={column.id} align={column.align ?? 'left'}>
                   {column.format && value !== undefined && value !== null
                     ? column.format(value)
                     : renderCellValue(value)}
@@ -237,8 +256,15 @@ export const VirtualizedDataTable = React.memo(
       if (typeof value === 'object') {
         if (Array.isArray(value)) {
           if (value.length === 0) return <span className="text-gray-400">Empty array</span>;
-          return value.map(v => String(v)).join(', ');
+          // Recursively render each element to handle nested objects/types correctly
+          return value.map((v, i) => (
+            <React.Fragment key={i}>
+              {renderCellValue(v)}
+              {i < value.length - 1 ? ', ' : ''}
+            </React.Fragment>
+          ));
         }
+        // For non-array objects
         return JSON.stringify(value);
       }
 
@@ -254,7 +280,13 @@ export const VirtualizedDataTable = React.memo(
         return value.toLocaleString();
       }
 
-      return String(value);
+      // Explicitly handle strings
+      if (typeof value === 'string') {
+        return value; // Strings are safe to render directly
+      }
+
+      // Fallback for other primitive types (symbol, bigint?) or unexpected types
+      return ''; // Return empty string for unhandled types
     }, []);
 
     // Handle empty data case

@@ -660,11 +660,11 @@ const GalaxyExplorationSystemInner: React.FC<
           tradeRoutes.forEach(route => {
             // Find source and target entities
             const source =
-              exploration.state.sectors.find(s => s.id === route.sourceId) ||
+              exploration.state.sectors.find(s => s.id === route.sourceId) ??
               exploration.state.systems.find(s => s.id === route.sourceId);
 
             const target =
-              exploration.state.sectors.find(s => s.id === route.targetId) ||
+              exploration.state.sectors.find(s => s.id === route.targetId) ??
               exploration.state.systems.find(s => s.id === route.targetId);
 
             if (!source || !target) {

@@ -97,11 +97,10 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
     // Prepare time series data for date-based visualization
     const timeSeriesData = useMemo<TimeSeriesDataPoint[]>(() => {
-      console.warn('Computing time series data'); // Helpful for debugging
       const result: TimeSeriesDataPoint[] = [];
 
       // Safely handle predictions
-      const predictions = data && data.predictions ? data.predictions : [];
+      const predictions = data?.predictions ?? [];
       // Add historical data points
       for (const point of predictions) {
         if (!point) continue;
@@ -116,7 +115,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
       }
 
       // Safely handle forecast
-      const forecast = data && data.forecast ? data.forecast : [];
+      const forecast = data?.forecast ?? [];
       // Add forecast data points
       for (const point of forecast) {
         if (!point) continue;
@@ -340,7 +339,13 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
               scale="time"
               type="number"
               domain={['dataMin', 'dataMax']}
-              tickFormatter={timestamp => new Date(timestamp).toLocaleDateString()}
+              tickFormatter={timestamp => {
+                if (typeof timestamp === 'number') {
+                  return new Date(timestamp).toLocaleDateString();
+                }
+                // Fallback for unexpected types
+                return '';
+              }}
             />
             <YAxis />
             <Tooltip content={TimeSeriesToolTipComponent} />
@@ -466,12 +471,16 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                       name="Model Trend"
                       type="monotone"
                       dataKey={(point: FeatureComparisonDataPoint) => {
-                        const coefficients = data?.modelDetails as LinearRegressionModelDetails;
-                        const intercept = coefficients.coefficients[0];
-                        const featureCoef =
-                          featureIndex >= 0 ? coefficients.coefficients[featureIndex + 1] : 0;
-
-                        return intercept + featureCoef * point.featureValue;
+                        // Check if the model is linear and details exist
+                        if (data?.model === 'linear' && isLinearRegressionModel(data.modelDetails)) {
+                          const { coefficients } = data.modelDetails; // Safe access after type guard
+                          const intercept = coefficients[0];
+                          const featureCoef =
+                            featureIndex >= 0 ? coefficients[featureIndex + 1] : 0;
+                          return intercept + featureCoef * point.featureValue;
+                        }
+                        // Return undefined if model is not linear or details are missing
+                        return undefined;
                       }}
                       data={featureComparisonData}
                       stroke={colorScale('2')}
@@ -540,10 +549,9 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
     const modelDetails = useMemo(() => {
       // Use type guards to safely access model-specific properties
-      if (data?.model === 'linear' && isLinearRegressionModel(data?.modelDetails)) {
-        const modelDetails = data?.modelDetails;
-        const intercept = modelDetails.coefficients[0];
-        const featureImportance = modelDetails.featureImportance;
+      if (data?.model === 'linear' && isLinearRegressionModel(data.modelDetails)) {
+        const { coefficients, featureImportance } = data.modelDetails;
+        const intercept = coefficients[0];
 
         return (
           <div>
@@ -559,7 +567,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
               {data?.features
                 .slice(1)
                 .map((feature, i) => {
-                  const coef = modelDetails.coefficients[i + 1];
+                  const coef = coefficients[i + 1];
                   return coef >= 0
                     ? ` + ${coef.toFixed(4)} × ${feature}`
                     : ` - ${Math.abs(coef).toFixed(4)} × ${feature}`;
@@ -596,8 +604,8 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
             )}
           </div>
         );
-      } else if (data?.model === 'neuralNetwork' && isNeuralNetworkModel(data?.modelDetails)) {
-        const modelDetails = data?.modelDetails;
+      } else if (data?.model === 'neuralNetwork' && isNeuralNetworkModel(data.modelDetails)) {
+        const modelDetails = data.modelDetails;
 
         return (
           <div>

@@ -18,13 +18,13 @@ interface Transfer {
 }
 
 interface ResourceTransferManagerProps {
-  storageNodes: Array<{
+  storageNodes: {
     id: string;
     resourceType: ResourceType | string;
     currentAmount: number;
     maxCapacity: number;
     transferRate: number;
-  }>;
+  }[];
 }
 
 export function ResourceTransferManager({ storageNodes }: ResourceTransferManagerProps) {

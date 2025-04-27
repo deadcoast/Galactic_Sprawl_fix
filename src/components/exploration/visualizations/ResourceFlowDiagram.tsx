@@ -7,7 +7,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { BaseEvent, EventType } from '../../../types/events/EventTypes';
 import {
   FlowConnection,
@@ -357,19 +357,19 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       node.call(
         d3
           .drag<SVGGElement, FlowNode>() // Use FlowNode here
-          .on('start', (event, d) => {
-            if (!event?.active) {
+          .on('start', (event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) => {
+            if (!event.active) {
               simulation.alphaTarget(0.3).restart();
             }
             d.fx = d.x; // Use d.x from D3 simulation
             d.fy = d.y; // Use d.y from D3 simulation
           })
-          .on('drag', (event, d) => {
-            d.fx = event?.x;
-            d.fy = event?.y;
+          .on('drag', (event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) => {
+            d.fx = event.x;
+            d.fy = event.y;
           })
-          .on('end', (event, d) => {
-            if (!event?.active) {
+          .on('end', (event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) => {
+            if (!event.active) {
               simulation.alphaTarget(0);
             }
             d.fx = null;

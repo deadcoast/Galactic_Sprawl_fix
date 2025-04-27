@@ -6,12 +6,12 @@ import { ShipType } from '../../types/ships/CommonShipTypes';
 
 interface SalvageSystemProps {
   salvageItems: Salvage[];
-  nearbyShips: Array<
+  nearbyShips: (
     ShipType & {
       id: string;
       position: { x: number; y: number };
     }
-  >;
+  )[];
   onCollect: (salvageId: string, shipId: string) => void;
 }
 

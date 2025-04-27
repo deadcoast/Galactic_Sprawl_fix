@@ -13,7 +13,6 @@ import {
 import {
   AnalysisConfig,
   AnalysisResult,
-  AnalysisType,
   ComparisonAnalysisConfig,
   CorrelationAnalysisConfig,
   DataPoint,
@@ -31,6 +30,25 @@ import { ResourceMappingVisualization } from './ResourceMappingVisualization';
 import { ScatterPlot } from './ScatterPlot';
 import { VirtualizedDataTable } from './VirtualizedDataTable';
 
+// Define the expected structure for feature statistics within a cluster
+interface FeatureStat {
+  feature: string;
+  mean: number;
+  min: number;
+  max: number;
+  count: number;
+}
+
+// Define the expected structure for cluster objects from the analysis result
+interface ClusterInfo {
+  cluster: number; // Cluster index or ID
+  pointIds: string[]; // IDs of points belonging to this cluster
+  size: number; // Number of points in the cluster
+  percentage: number; // Percentage of total points in this cluster
+  centroid: number[]; // Coordinates of the cluster centroid
+  featureStats: FeatureStat[]; // Statistics for each feature within the cluster
+}
+
 // Define the maximum number of data points to display at once
 const MAX_DATA_POINTS = 100;
 
@@ -45,7 +63,9 @@ interface AnalysisVisualizationProps {
 // Extract and memoize cluster data for better performance
 const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
   return useMemo(() => {
-    if (!result?.data?.clusters || !Array.isArray(result?.data?.clusters)) {
+    // Ensure clusters data exists and is an array before proceeding
+    const rawClusters = result?.data?.clusters;
+    if (!rawClusters || !Array.isArray(rawClusters)) {
       return {
         clusters: [],
         features: [],
@@ -53,17 +73,24 @@ const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
       };
     }
 
-    const clusters = result?.data?.clusters;
-    const features = Array.isArray(result?.data?.features)
-      ? (result?.data?.features as string[])
-      : [];
+    // Cast to our defined interface for type safety
+    const clusters = rawClusters as ClusterInfo[];
+
+    // Destructure features safely from result.data
+    const { data } = result ?? {};
+    const { features: rawFeatures } = data ?? {}; // Get rawFeatures from data
+
+    // Assign features, ensuring it's an array
+    const features = Array.isArray(rawFeatures) ? (rawFeatures as string[]) : [];
 
     // Extract all points data from the clustering result
     const clusterPoints: ClusterPoint[] = [];
 
     clusters.forEach(cluster => {
-      const clusterIndex = typeof cluster.cluster === 'number' ? cluster.cluster : 0;
-      const pointIds = Array.isArray(cluster.pointIds) ? (cluster.pointIds as string[]) : [];
+      // No need for typeof check now, cluster.cluster is known to be number
+      const clusterIndex = cluster.cluster;
+      // No need for Array.isArray check now, cluster.pointIds is known to be string[]
+      const { pointIds } = cluster;
 
       // Create points from the data stored in cluster information
       pointIds.forEach(pointId => {
@@ -72,14 +99,20 @@ const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
         if (!originalPoint) return;
 
         // Extract feature values or use null for missing values
+        const { properties } = originalPoint; // Extract properties
         const featureValues = features.map(feature => {
-          const value =
-            originalPoint[feature] !== undefined
-              ? originalPoint[feature]
-              : originalPoint.properties && typeof originalPoint.properties === 'object'
-                ? (originalPoint.properties as Record<string, unknown>)[feature]
-                : null;
+          const directValue = originalPoint[feature];
+          let value: unknown = null; // Initialize as unknown
 
+          if (directValue !== undefined) {
+            value = directValue;
+          } else if (properties && typeof properties === 'object') {
+            value = (properties as Record<string, unknown>)[feature];
+          } else {
+            value = null;
+          }
+
+          // Ensure the final value is a number or null
           return typeof value === 'number' ? value : null;
         });
 
@@ -141,7 +174,7 @@ const usePredictionData = (result: AnalysisResult, config: PredictionAnalysisCon
           : [0],
         weights: Array.isArray(modelObj.weights) ? (modelObj.weights as number[]) : undefined,
         featureImportance: Array.isArray(modelObj.featureImportance)
-          ? (modelObj.featureImportance as Array<{ feature: string; importance: number }>)
+          ? (modelObj.featureImportance as { feature: string; importance: number }[]) // Corrected array type
           : [],
       };
     }
@@ -364,7 +397,7 @@ export function AnalysisVisualization({
             } else if (typeof element === 'object') {
               // Convert object elements to Record<string, VisualizationValue>
               const safeObj: Record<string, VisualizationValue> = {};
-              Object.entries(element).forEach(([k, v]) => {
+              Object.entries(element as Record<string, unknown>).forEach(([k, v]) => {
                 if (
                   v === null ||
                   v === undefined ||
@@ -458,8 +491,8 @@ export function AnalysisVisualization({
       );
     }
 
-    const visualizationType = config.visualizationType;
-    const analysisType = config.type as AnalysisType;
+    const { visualizationType } = config;
+    const analysisType = config.type; // Removed 'as AnalysisType'
 
     // Use paginated data instead of all data
     const data = paginatedData;

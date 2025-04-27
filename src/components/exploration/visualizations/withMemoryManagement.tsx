@@ -1,5 +1,5 @@
 import { ComponentType, useEffect, useState } from 'react';
-import { errorLoggingService } from '../../../services/ErrorLoggingService';
+import { errorLoggingService } from '../../../services/logging/ErrorLoggingService';
 import { BaseChartProps } from './BaseChart';
 
 /**
@@ -108,7 +108,7 @@ export function withMemoryManagement<P extends BaseChartProps>(
   };
 
   // Set display name for better debugging
-  const wrappedName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  const wrappedName = WrappedComponent.displayName ?? WrappedComponent.name ?? 'Component';
   ManagedComponent.displayName = `WithMemory(${wrappedName})`;
 
   return ManagedComponent;

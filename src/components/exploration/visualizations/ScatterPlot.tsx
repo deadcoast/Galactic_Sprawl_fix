@@ -136,23 +136,19 @@ export function ScatterPlot({
         const metadata = dataPoint.metadata ?? {};
 
         // Try to find the required values in properties or metadata
-        x = properties[xAxisKey] !== undefined ? properties[xAxisKey] : metadata[xAxisKey];
-        y = properties[yAxisKey] !== undefined ? properties[yAxisKey] : metadata[yAxisKey];
-        z = zAxisKey
-          ? properties[zAxisKey] !== undefined
-            ? properties[zAxisKey]
-            : metadata[zAxisKey]
-          : undefined;
+        x = properties[xAxisKey] ?? metadata[xAxisKey];
+        y = properties[yAxisKey] ?? metadata[yAxisKey];
+        z = zAxisKey ? (properties[zAxisKey] ?? metadata[zAxisKey]) : undefined;
 
         name = nameKey
-          ? (properties[nameKey] !== undefined ? properties[nameKey] : metadata[nameKey]) ||
-            dataPoint.name
+          ? (properties[nameKey] ?? metadata[nameKey]) ?? dataPoint.name
           : dataPoint.name;
 
         // Ensure x and y values are numbers
         x = typeof x === 'number' ? x : (parseFloat(String(x)) ?? 0);
         y = typeof y === 'number' ? y : (parseFloat(String(y)) ?? 0);
-        z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
+        // Safely parse z: ensure it's number, else parse if string, else use pointSize
+        z = typeof z === 'number' ? z : (typeof z === 'string' ? parseFloat(z) : NaN) ?? pointSize;
 
         return {
           x,
@@ -176,13 +172,14 @@ export function ScatterPlot({
         // Ensure x and y values are numbers
         x = typeof x === 'number' ? x : (parseFloat(String(x)) ?? 0);
         y = typeof y === 'number' ? y : (parseFloat(String(y)) ?? 0);
-        z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
+        // Safely parse z: ensure it's number, else parse if string, else use pointSize
+        z = typeof z === 'number' ? z : (typeof z === 'string' ? parseFloat(z) : NaN) ?? pointSize;
 
         return {
           x,
           y,
           z,
-          name: name || `(${x}, ${y})`,
+          name: name ?? `(${x}, ${y})`,
           originalData: record,
         };
       }
@@ -198,7 +195,7 @@ export function ScatterPlot({
         title={title}
         theme={theme}
         className={className}
-        errorMessage={errorMessage || 'No data available'}
+        errorMessage={errorMessage ?? 'No data available'}
       >
         <RechartsScatterChart data={[]} />
       </BaseChart>
@@ -207,20 +204,16 @@ export function ScatterPlot({
 
   // Calculate quadrant values if not provided
   const xValue =
-    quadrantXValue !== undefined
-      ? quadrantXValue
-      : processedData.reduce((sum, item) => sum + item?.x, 0) / processedData.length;
+    quadrantXValue ??
+    (processedData.reduce((sum, item) => sum + (item?.x ?? 0), 0) / (processedData.length || 1));
 
   const yValue =
-    quadrantYValue !== undefined
-      ? quadrantYValue
-      : processedData.reduce((sum, item) => sum + item?.y, 0) / processedData.length;
+    quadrantYValue ??
+    (processedData.reduce((sum, item) => sum + (item?.y ?? 0), 0) / (processedData.length || 1));
 
   // Handle click events
   const handlePointClick = (event: PointClickEvent) => {
-    if (onElementClick && event && event?.payload) {
-      onElementClick(event?.payload, 0);
-    }
+    onElementClick?.(event?.payload, 0);
   };
 
   // Create the chart content
@@ -231,26 +224,26 @@ export function ScatterPlot({
       <XAxis
         type="number"
         dataKey="x"
-        name={xAxisLabel || xAxisKey}
+        name={xAxisLabel ?? xAxisKey}
         label={
           xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined
         }
-        tickFormatter={value => formatAxisTick(value, false)}
+        tickFormatter={(value: string | number) => formatAxisTick(value, false)}
       />
 
       <YAxis
         type="number"
         dataKey="y"
-        name={yAxisLabel || yAxisKey}
+        name={yAxisLabel ?? yAxisKey}
         label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
-        tickFormatter={value => formatAxisTick(value, false)}
+        tickFormatter={(value: string | number) => formatAxisTick(value, false)}
       />
 
       {zAxisKey && (
         <ZAxis type="number" dataKey="z" range={[zAxisSizeMin, zAxisSizeMax]} name={zAxisKey} />
       )}
 
-      <Tooltip content={customTooltip || <DefaultTooltip />} cursor={{ strokeDasharray: '3 3' }} />
+      <Tooltip content={customTooltip ?? <DefaultTooltip />} cursor={{ strokeDasharray: '3 3' }} />
 
       {showLegend && <Legend />}
 
@@ -260,12 +253,12 @@ export function ScatterPlot({
           key={`ref-line-${i}`}
           x={line.axis === 'x' ? line.value : undefined}
           y={line.axis === 'y' ? line.value : undefined}
-          stroke={line.color || '#ff7300'}
+          stroke={line.color ?? '#ff7300'}
           label={
             line.label
               ? ({
                   value: line.label,
-                  position: line.position || 'center',
+                  position: line.position ?? 'center',
                 } as LabelProps)
               : undefined
           }
@@ -326,7 +319,7 @@ export function ScatterPlot({
       )}
 
       <Scatter
-        name={`${xAxisLabel || xAxisKey} vs ${yAxisLabel || yAxisKey}`}
+        name={`${xAxisLabel ?? xAxisKey} vs ${yAxisLabel ?? yAxisKey}`}
         data={processedData}
         fill={color}
         onClick={(e: PointClickEvent) => handlePointClick(e)}

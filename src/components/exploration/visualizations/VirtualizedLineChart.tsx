@@ -25,22 +25,6 @@ import {
   ReferenceLine as ReferenceLineType,
 } from './BaseChart';
 
-// Define allowed positions for reference line labels
-type ReferenceLinePosition =
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right'
-  | 'insideTop'
-  | 'insideBottom'
-  | 'insideLeft'
-  | 'insideRight'
-  | 'insideTopRight'
-  | 'insideTopLeft'
-  | 'insideBottomRight'
-  | 'insideBottomLeft'
-  | 'center';
-
 // Define the dot click event interface
 interface DotClickEvent {
   payload: Record<string, unknown>;
@@ -157,7 +141,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         } as Record<string, VisualizationValue>;
 
         if (dateFormat && typeof item[xAxisKey] === 'number') {
-          result.formattedDate = new Date(item[xAxisKey] as number).toLocaleDateString();
+          result.formattedDate = new Date(item[xAxisKey]).toLocaleDateString();
         }
 
         // Extract all y-axis values
@@ -207,7 +191,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
       return record;
     });
 
-    // Calculate how munknown points to display based on available space
+    // Calculate how many points to display based on available space
     const downsampleFactor = Math.ceil(processedData.length / maxDisplayedPoints);
 
     // No downsampling needed
@@ -337,7 +321,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         title={title}
         theme={theme}
         className={className}
-        errorMessage={errorMessage || 'No data available'}
+        errorMessage={errorMessage ?? 'No data available'}
         subtitle={subtitle}
       >
         <RechartsLineChart data={[]} />
@@ -354,8 +338,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
 
   // Handle dot click event
   const handleDotClick = (event: DotClickEvent, index: number) => {
-    if (onElementClick && event && event?.payload) {
-      onElementClick(event?.payload, index);
+    if (onElementClick && event.payload) {
+      onElementClick(event.payload, index);
     }
   };
 
@@ -368,40 +352,46 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         onClick={chartData =>
           chartData && handleChartClick(chartData as Record<string, unknown>, 0)
         }
-        onMouseDown={() => console.warn('Starting zoom/pan')}
         onMouseUp={e => {
           // The recharts library doesn't export proper types for chart events
           const event = e as unknown as {
-            xAxis?: Array<{ domain: [number, number] }>;
-            yAxis?: Array<{ domain: [number, number] }>;
+            xAxis?: { domain: [number, number] }[];
+            yAxis?: { domain: [number, number] }[];
           };
 
-          if (event && event?.xAxis && event?.yAxis && event?.xAxis[0] && event?.yAxis[0]) {
-            const domain = {
-              x: event?.xAxis[0].domain,
-              y: event?.yAxis[0].domain,
-            };
+          // Use optional chaining to safely access nested domains
+          const xDomain = event?.xAxis?.[0]?.domain;
+          const yDomain = event?.yAxis?.[0]?.domain;
+
+          // Check if both domains were successfully retrieved
+          if (xDomain && yDomain) {
+            const domain = { x: xDomain, y: yDomain };
             handleZoom(domain);
           }
         }}
       >
-        {showGrid && <CartesianGrid strokeDasharray="3 3" />}
+        {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#444' : '#ddd'} />}
 
         <XAxis
           dataKey={dateFormat && xAxisKey === 'date' ? 'formattedDate' : xAxisKey}
-          tickFormatter={value => formatAxisTick(value, dateFormat)}
+          tickFormatter={value => {
+            if (typeof value === 'string' || typeof value === 'number') {
+              return formatAxisTick(value, dateFormat);
+            }
+            return ''; // Fallback for unexpected types
+          }}
           label={
             xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined
           }
-          domain={visibleDomain.x || ['dataMin', 'dataMax']}
+          domain={visibleDomain.x ?? ['dataMin', 'dataMax']}
         />
 
         <YAxis
           label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
-          domain={visibleDomain.y || ['auto', 'auto']}
+          domain={visibleDomain.y ?? ['auto', 'auto']}
         />
 
-        <Tooltip content={customTooltip || <DefaultTooltip />} />
+        <Tooltip content={customTooltip ?? <DefaultTooltip />} />
 
         {showLegend && <Legend />}
 
@@ -411,12 +401,12 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
             key={`ref-line-${i}`}
             x={line.axis === 'x' ? line.value : undefined}
             y={line.axis === 'y' ? line.value : undefined}
-            stroke={line.color || '#ff7300'}
+            stroke={line.color ?? '#ff7300'}
             label={
               line.label
                 ? ({
                     value: line.label,
-                    position: (line.position as ReferenceLinePosition) || 'center',
+                    position: line.position ?? 'center',
                   } as LabelProps)
                 : undefined
             }

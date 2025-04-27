@@ -1,9 +1,7 @@
 import { Position, Tier, Velocity } from '../core/GameTypes';
-import { Officer } from '../officers/OfficerTypes';
 import { WeaponMount } from '../weapons/WeaponTypes';
 import {
-  CommonShipAbility,
-  CommonShipCapabilities,
+  CommonShipCapabilities, // Re-add import
   CommonShipStats,
   ShipCargo,
   ShipStatus,
@@ -12,6 +10,7 @@ import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShi
 import { PlayerShipClass } from './PlayerShipTypes';
 
 export { ShipStatus };
+export type { Tier, FactionId, ShipCargo, Position }; // Export types only
 
 /**
  * Consolidated Ship Category Enum
@@ -29,116 +28,55 @@ export enum ShipCategory {
 }
 
 /**
- * Consolidated detailed Stats object (consider merging/extending CommonShipStats)
- */
-export interface DetailedShipStats extends CommonShipStats {
-  armor?: number; // From FactionCombatUnit / Defense
-  turnRate: number; // Already in CommonShipStats
-  accuracy?: number; // From FactionCombatUnit
-  evasion?: number; // From FactionCombatUnit / Defense
-  criticalChance?: number; // From FactionCombatUnit
-  criticalDamage?: number; // From FactionCombatUnit
-  armorPenetration?: number; // From FactionCombatUnit
-  shieldPenetration?: number; // From FactionCombatUnit
-  // Consider adding mobility/defense substructures if preferred over flat list
-}
-
-/**
  * Consolidated Experience object
  */
 export interface ShipExperience {
-  current?: number; // From FactionCombatUnit
-  total?: number; // From FactionCombatUnit
+  current?: number;
+  total?: number;
   level: number; // From FactionCombatUnit & PlayerShipStats
   skills?: string[]; // From FactionCombatUnit
 }
 
 /**
- * Base Ship Interface - Includes properties common across most definitions
+ * Core Ship Interface - Holds common properties.
+ * Category-specific details are in the 'details' discriminated union.
  */
-export interface BaseShip {
+export interface Ship {
   id: string;
   name: string;
   category: ShipCategory;
   status: ShipStatus;
   position: Position;
   rotation?: number;
-  // velocity?: Velocity; // Let's make velocity optional as it's not universal
   velocity?: Velocity;
-  faction?: FactionId;
-  tier?: Tier;
-  level?: number; // Base level (can be part of experience object)
-  experience?: number | ShipExperience; // Keep union type here
-  stats: CommonShipStats; // Keep CommonShipStats as the base
-  capabilities?: Partial<CommonShipCapabilities>; // Use partial for flexibility
-  officerBonuses?: {
-    buildSpeed?: number;
-    resourceEfficiency?: number;
-    combatEffectiveness?: number;
-  };
-  abilities?: CommonShipAbility[];
-  assignedOfficers?: Officer[];
-  // Properties from ShipEvents.ts
-  fuel?: number;
-  maxFuel?: number;
-  crew?: number;
-  maxCrew?: number;
-  location?: string;
-  destination?: string;
-  cargo?: ShipCargo; // Keep original ShipCargo type for now
-  assignedTo?: string;
+  faction: FactionId;
+  tier: Tier;
+  experience: ShipExperience;
+  fuel: number;
+  maxFuel: number;
+  crew: number;
+  maxCrew: number;
+  cargo: ShipCargo;
+  stats: CommonShipStats;
+  capabilities?: Partial<CommonShipCapabilities>;
+  details: ShipDetails | null; // Discriminated union for specific details
 }
 
-/**
- * Combat Ship Interface
- */
-export interface CombatShip extends BaseShip {
-  category:
-    | ShipCategory.combat
-    | ShipCategory.FIGHTER
-    | ShipCategory.CRUISER
-    | ShipCategory.BATTLESHIP
-    | ShipCategory.CARRIER;
+// --- DETAILS INTERFACES --- Keep these minimal with only category-specific fields
+
+export interface CombatShipDetails {
+  category: ShipCategory.combat | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER;
   class?: FactionShipClass | PlayerShipClass;
-  stats: DetailedShipStats; // Use more detailed stats for combat ships
-  experience?: number | ShipExperience; // Align experience type with BaseShip
+  combatDetails?: CombatStatsDetails; // Update reference to renamed interface
   tactics?: FactionBehaviorConfig;
-  formation?: {
-    type: 'offensive' | 'defensive' | 'balanced';
-    spacing: number;
-    facing: number;
-    position?: number;
-  };
-  specialAbility?: {
-    name: string;
-    description: string;
-    cooldown: number;
-    active: boolean;
-    effectiveness?: number; // Added from CombatShip
-  };
-  techBonuses?: {
-    weaponEfficiency?: number;
-    shieldRegeneration?: number;
-    energyEfficiency?: number;
-  };
-  combatStats?: {
-    damageDealt: number;
-    damageReceived: number;
-    killCount: number;
-    assistCount: number;
-  };
-  // Add optional detailed status, keeping base status compatible
-  combatStatusDetail?: {
-    main: 'active' | 'disabled' | 'destroyed';
-    secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting';
-    effects?: string[];
-  };
+  formation?: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number; };
+  specialAbility?: { name: string; description: string; cooldown: number; active: boolean; effectiveness?: number; };
+  techBonuses?: { weaponEfficiency?: number; shieldRegeneration?: number; energyEfficiency?: number; };
+  combatStats?: { damageDealt: number; damageReceived: number; killCount: number; assistCount: number; };
+  combatStatusDetail?: { main: 'active' | 'disabled' | 'destroyed'; secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting'; effects?: string[]; };
 }
 
-/**
- * Mining Ship Interface
- */
-export interface MiningShip extends BaseShip {
+export interface MiningShipDetails {
   category: ShipCategory.MINING;
   class?: PlayerShipClass.ROCK_BREAKER | PlayerShipClass.VOID_DREDGER | FactionShipClass;
   currentLoad?: number;
@@ -146,68 +84,67 @@ export interface MiningShip extends BaseShip {
   efficiency?: number;
 }
 
-/**
- * Recon Ship Interface
- */
-export interface ReconShip extends BaseShip {
+export interface ReconShipDetails {
   category: ShipCategory.RECON | ShipCategory.SCOUT;
   class?: PlayerShipClass.ANDROMEDA_CUTTER | PlayerShipClass.STAR_SCHOONER | FactionShipClass;
-  // Refined capabilities based on multiple sources
-  capabilities?: Partial<CommonShipCapabilities> & {
-    scanning?: number;
-    stealth?: number;
-    combat?: number; // Added from ReconCoordination
-    stealthActive?: boolean; // Added from ReconCoordination
-    speed?: number; // Added from ReconCoordination
-    range?: number; // Added from ReconCoordination
-    cargo?: number; // Added from ReconCoordination
-    weapons?: number; // Added from ReconCoordination
-  };
+  // ExplorationHub-specific tracking?
+  efficiency?: number;
+  lastUpdate?: number;
+  // Use ReconCapabilities defined earlier for specific scanning/stealth properties
+  reconCapabilities?: ReconCapabilities;
   assignedSectorId?: string;
   targetSector?: string;
-  specialization?: 'mapping' | 'anomaly' | 'resource';
-  efficiency?: number;
-  currentTask?: {
-    // From ReconCoordination
-    type: string;
-    target: string;
-    progress: number;
-  };
-  discoveries?: {
-    // From ReconShipManagerImpl
-    mappedSectors: number;
-    anomaliesFound: number;
-    resourcesLocated: number;
-  };
-  stealth?: {
-    // From ReconShipManagerImpl
-    active: boolean;
-    level: number;
-    cooldown: number;
-  };
-  sensors?: {
-    // From ReconShipManagerImpl
-    range: number;
-    accuracy: number;
-    anomalyDetection: number;
-  };
-  formationId?: string; // Added from ReconCoordination
-  formationRole?: 'leader' | 'support' | 'scout'; // Added from ReconCoordination
-  coordinationBonus?: number; // Added from ReconCoordination
+  currentTask?: { type: string; target: string; progress: number; };
+  discoveries?: { mappedSectors: number; anomaliesFound: number; resourcesLocated: number; };
+  stealth?: { active: boolean; level: number; cooldown: number; };
+  sensors?: { range: number; accuracy: number; anomalyDetection: number; };
 }
 
-/**
- * Transport Ship Interface
- */
-export interface TransportShip extends BaseShip {
+export interface TransportShipDetails {
   category: ShipCategory.TRANSPORT;
-  // Add specific properties if needed
+  // Add transport-specific details if any arise
 }
 
+// Discriminated union type for ship details
+export type ShipDetails =
+  | CombatShipDetails
+  | MiningShipDetails
+  | ReconShipDetails
+  | TransportShipDetails;
+
+// --- Define Specific Capabilities for Recon Ships ---
+export interface ReconCapabilities extends Partial<CommonShipCapabilities> {
+  // Assuming these are core capabilities, make non-optional initially
+  scanning: number;
+  stealth: number;
+  combat?: number;      // Optional combat capability value
+  stealthActive?: boolean; // Optional flag for active stealth
+  speed?: number;         // Optional speed override/detail
+  range?: number;         // Optional range override/detail
+  cargo?: number;         // Optional cargo override/detail
+  weapons?: number;       // Optional weapons override/detail
+  // Inherits canScan, canJump, etc. from CommonShipCapabilities via extends Partial<...>
+}
+
+// --- Define Specific Ship Type Aliases ---
+
 /**
- * Discriminated Union for any Ship type
+ * Represents a ship specifically identified as a Recon ship.
  */
-export type Ship = CombatShip | MiningShip | ReconShip | TransportShip;
+export type ReconShip = Ship & { details: ReconShipDetails };
+
+/**
+ * Represents a summarized view of a ship, suitable for lists.
+ */
+export interface ShipSummary {
+  id: string;
+  name: string;
+  category: ShipCategory;
+  status: ShipStatus;
+  tier: Tier; // Added Tier for potential list filtering/display
+}
+
+// Update Type Guards to use the new structure
 
 // Weapon Data Source Types
 export interface BlueprintWeaponData {
@@ -249,24 +186,41 @@ export function isWeaponMountWithWeapon(data: WeaponDataSource): data is WeaponM
   );
 }
 
-export function isCombatShip(ship: Ship): ship is CombatShip {
-  return [
-    ShipCategory.combat,
-    ShipCategory.FIGHTER,
-    ShipCategory.CRUISER,
-    ShipCategory.BATTLESHIP,
-    ShipCategory.CARRIER,
-  ].includes(ship.category);
+export function isCombatShip(ship: Ship): ship is Ship & { details: CombatShipDetails } {
+  return (
+    ship.details !== null && (
+      ship.details.category === ShipCategory.combat ||
+      ship.details.category === ShipCategory.FIGHTER ||
+      ship.details.category === ShipCategory.CRUISER ||
+      ship.details.category === ShipCategory.BATTLESHIP ||
+      ship.details.category === ShipCategory.CARRIER
+    )
+  );
 }
 
-export function isMiningShip(ship: Ship): ship is MiningShip {
-  return ship.category === ShipCategory.MINING;
+export function isMiningShip(ship: Ship): ship is Ship & { details: MiningShipDetails } {
+  return ship.details !== null && ship.details.category === ShipCategory.MINING;
 }
 
-export function isReconShip(ship: Ship): ship is ReconShip {
-  return [ShipCategory.RECON, ShipCategory.SCOUT].includes(ship.category);
+export function isReconShip(ship: Ship): ship is Ship & { details: ReconShipDetails } {
+  return ship.details !== null && (ship.details.category === ShipCategory.RECON || ship.details.category === ShipCategory.SCOUT);
 }
 
-export function isTransportShip(ship: Ship): ship is TransportShip {
-  return ship.category === ShipCategory.TRANSPORT;
+export function isTransportShip(ship: Ship): ship is Ship & { details: TransportShipDetails } {
+  return ship.details !== null && ship.details.category === ShipCategory.TRANSPORT;
+}
+
+/**
+ * Tier type
+ */
+// Removed duplicate export
+
+/**
+ * Combat-specific detailed stats, kept separate for complexity reduction.
+ */
+export interface CombatStatsDetails {
+  armor: number;
+  accuracy: number;
+  evasion: number;
+  // Add other combat stats as needed
 }

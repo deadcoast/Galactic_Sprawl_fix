@@ -477,7 +477,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
 
   // Fetch data on mount
   useEffect(() => {
-    refreshData();
+    void refreshData(); // Explicitly ignore the promise
   }, [refreshData]);
 
   // Create context value

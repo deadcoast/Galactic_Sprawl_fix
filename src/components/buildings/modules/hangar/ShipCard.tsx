@@ -1,38 +1,45 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import { Eye, Shield, Spade, Zap } from 'lucide-react';
-import { Ship, ShipCategory, ShipStatus } from '../../../../types/ships/ShipTypes';
+import { ShipCategory, ShipStatus } from '../../../../types/ships/ShipTypes';
 
 const statusColors: Record<ShipStatus, string> = {
   [ShipStatus.READY]: 'success.main',
   [ShipStatus.IDLE]: 'grey.500',
+  [ShipStatus.MOVING]: 'info.main',
   [ShipStatus.ENGAGING]: 'warning.main',
   [ShipStatus.ATTACKING]: 'error.main',
-  [ShipStatus.PATROLLING]: 'info.main',
   [ShipStatus.MINING]: 'info.dark',
-  [ShipStatus.RETREATING]: 'warning.light',
   [ShipStatus.RETURNING]: 'info.light',
   [ShipStatus.WITHDRAWING]: 'warning.dark',
   [ShipStatus.DISABLED]: 'error.dark',
   [ShipStatus.SCANNING]: 'info.main',
   [ShipStatus.DAMAGED]: 'error.light',
-  [ShipStatus.INVESTIGATING]: 'info.light',
   [ShipStatus.REPAIRING]: 'secondary.main',
-  [ShipStatus.HIDING]: 'grey.700',
   [ShipStatus.UPGRADING]: 'secondary.light',
-  [ShipStatus.PREPARING]: 'info.main',
-  [ShipStatus.AMBUSHING]: 'warning.dark',
-  [ShipStatus.RETALIATING]: 'error.dark',
-  [ShipStatus.DORMANT]: 'grey.800',
-  [ShipStatus.AWAKENING]: 'info.light',
-  [ShipStatus.ENFORCING]: 'primary.main',
-  [ShipStatus.OVERWHELMING]: 'primary.dark',
-  [ShipStatus.PURSUING]: 'warning.main',
-  [ShipStatus.AGGRESSIVE]: 'error.dark',
-  [ShipStatus.MAINTENANCE]: 'secondary.dark',
+  [ShipStatus.DESTROYED]: 'error.dark',
+  [ShipStatus.ASSIGNED]: 'primary.main',
 };
 
+// Define the simplified data structure for ShipCard
+export interface ShipCardData {
+  id: string;
+  name: string | null; // Allow null for unnamed ships
+  status: ShipStatus;
+  category: ShipCategory;
+  stats: {
+    maxHealth?: number;
+    health?: number;
+    maxShield?: number;
+    shield?: number;
+    speed?: number;
+    defense?: {
+      armor?: number;
+    };
+  } | null; // Allow stats to be potentially null/undefined
+}
+
 interface ShipCardProps {
-  ship: Ship;
+  ship: ShipCardData; // Use the simplified data type
   isSelected?: boolean;
   onClick?: (shipId: string) => void;
 }
@@ -40,7 +47,6 @@ interface ShipCardProps {
 const getStatusColor = (status: ShipStatus): string => {
   const color = statusColors[status];
   if (!color) {
-    console.warn(`[ShipCard] Unexpected or unmapped status: ${status as string}`);
     return 'grey.600'; // Default color
   }
   return color;
@@ -63,26 +69,17 @@ const getCategoryIcon = (category: ShipCategory): JSX.Element => {
     case ShipCategory.TRANSPORT:
       return <Shield {...iconProps} />; // Use Shield as placeholder for Transport
     default:
-      console.warn(`[ShipCard] Unexpected category: ${category as string}`);
       return <Zap {...iconProps} />; // Default icon
   }
 };
 
 export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) => {
-  const healthPercentage = ship.stats?.maxHealth
-    ? (ship.stats.health / ship.stats.maxHealth) * 100
-    : 0;
-  const shieldPercentage = ship.stats?.maxShield
-    ? (ship.stats.shield / ship.stats.maxShield) * 100
-    : 0;
-
-  const displayStatus = ship.status.toUpperCase();
   const statusColor = getStatusColor(ship.status);
-  const categoryIcon = getCategoryIcon(ship.category as ShipCategory);
+  const categoryIcon = getCategoryIcon(ship.category);
 
   const handleCardClick = () => {
     if (onClick) {
-      onClick(ship.id);
+      onClick(ship.id); // ID is directly on ShipCardData
     }
   };
 

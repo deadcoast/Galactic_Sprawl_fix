@@ -135,8 +135,10 @@ export const DefaultTooltip: React.FC<ChartTooltipProps> = ({ active, payload, l
   }
 
   // Format the label (often a date)
-  const formattedLabel =
-    typeof label === 'number' && label > 1000000000 ? new Date(label).toLocaleString() : label;
+  const formattedLabel: string = // Explicitly type as string
+    typeof label === 'number' && label > 1000000000
+      ? new Date(label).toLocaleString()
+      : String(label ?? ''); // Convert fallback to string, handle null/undefined
 
   return (
     <div className="custom-tooltip rounded border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800">
@@ -285,7 +287,7 @@ export function processChartData(
       // Format date if it's a timestamp and dateFormat is true
       formattedDate:
         dateFormat && xAxisKey === 'date' && typeof item?.date === 'number'
-          ? new Date(item?.date as number).toLocaleDateString()
+          ? new Date(item?.date).toLocaleDateString()
           : undefined,
     };
 

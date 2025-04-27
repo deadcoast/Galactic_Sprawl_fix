@@ -262,12 +262,16 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
   }
 
   // Determine points to render (apply downsampling if needed)
-  const activeData = enableMemoryOptimization ? memory.getCachedData('chartData') || data : data;
+  const activeData = enableMemoryOptimization ? memory.getCachedData('chartData') ?? data : data;
 
   // Function to render the appropriate chart based on the determined type
   const renderChart = () => {
     const actualYAxisKeys = Array.isArray(yAxisKeys) ? yAxisKeys : [yAxisKeys];
-    const chartData: Record<string, unknown>[] = Array.isArray(activeData) ? activeData : [];
+    // Safely assign activeData to chartData, ensuring it's an array of records
+    const chartData: Record<string, unknown>[] = 
+      Array.isArray(activeData) && activeData.every(item => typeof item === 'object' && item !== null)
+        ? activeData as Record<string, unknown>[]
+        : [];
 
     switch (detectedChartType) {
       case 'scatter':

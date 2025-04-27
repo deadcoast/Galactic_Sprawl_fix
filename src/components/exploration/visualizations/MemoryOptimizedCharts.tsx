@@ -1,15 +1,14 @@
 import { ComponentType } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/logging/ErrorLoggingService';
 import { BaseChartProps } from './BaseChart';
 import { ViewportOptimizedHeatMap } from './ViewportOptimizedHeatMap';
 import { ViewportOptimizedScatterPlot } from './ViewportOptimizedScatterPlot';
 import { VirtualizedLineChart } from './VirtualizedLineChart';
 import withMemoryManagement from './withMemoryManagement';
-// Corrected import path
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/ErrorLoggingService';
 
 /**
  * Memory-optimized version of VirtualizedLineChart that includes automatic

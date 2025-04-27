@@ -65,7 +65,7 @@ export interface BaseDataTableProps<T> {
   filter?: FilterFn<T>;
 
   /** Selected item keys */
-  selectedKeys?: Array<string | number>;
+  selectedKeys?: (string | number)[];
 
   /** Called when a row is selected */
   onRowSelect?: RowSelectionHandler<T>;
@@ -405,12 +405,14 @@ function compareValues(a: React.ReactNode, b: React.ReactNode): number {
   if (a == null || b == null) {
     return a == null && b == null ? 0 : a == null ? -1 : 1; // Sort nulls consistently
   }
-  if (typeof a === 'object' && typeof b === 'object') {
-    // Comparing generic objects is ambiguous, return equal as a safe default
-    return 0; 
+
+  // If either value is a non-null object at this stage, consider them equal (cannot compare reliably)
+  if ((typeof a === 'object' && a !== null) || (typeof b === 'object' && b !== null)) {
+    return 0; // Treat objects as equal in fallback
   }
 
-  // Last resort: convert to string (still carries risk for complex objects)
+  // Last resort: convert remaining primitives (e.g., symbol, bigint) to string
+  // Objects, nulls, and explicitly handled types are already filtered out.
   return String(a).localeCompare(String(b));
 }
 

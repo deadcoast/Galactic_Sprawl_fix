@@ -82,7 +82,6 @@ export class ResourceIntegration {
     this.thresholdManager.start();
 
     this.initialized = true;
-    console.warn('[ResourceIntegration] Resource management system integrated');
   }
 
   /**
@@ -203,11 +202,6 @@ export class ResourceIntegration {
         },
       });
 
-      // Log the status change
-      console.warn(
-        `[ResourceIntegration] Resource ${resourceType} status: ${status} (${currentAmount}/${requiredAmount})`
-      );
-
       // Find or create threshold configuration
       const existingConfig = this.thresholdManager
         .getThresholdConfigs()
@@ -264,19 +258,15 @@ export class ResourceIntegration {
    */
   private initializeThresholds(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager.resources.keys());
-
-    // Create thresholds for each resource type
-    resourceTypes.forEach(type => {
-      const enumType = toEnumResourceType(type);
-      const resourceState = this.resourceManager.getResourceState(enumType);
+    Object.entries(this.resourceManager.getAllResourceStates()).forEach(([typeString, resourceState]) => {
+      const enumType = toEnumResourceType(typeString as ResourceTypeString); // Cast needed as Object.entries keys are string
       if (!resourceState) {
         return;
       }
 
       // Create a threshold config
       const config: ThresholdConfig = {
-        id: `resource-${type}`,
+        id: `resource-${typeString}`,
         threshold: {
           resourceId: enumType,
           min: resourceState.min,
@@ -287,7 +277,7 @@ export class ResourceIntegration {
           {
             type: 'notification',
             target: 'system',
-            message: `${type} threshold triggered`,
+            message: `${typeString} threshold triggered`,
           },
         ],
         enabled: true,
@@ -302,20 +292,16 @@ export class ResourceIntegration {
    */
   private initializeStorage(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager.resources.keys());
-
-    // Create a main storage container for each resource type
-    resourceTypes.forEach(type => {
-      const enumType = toEnumResourceType(type);
-      const resourceState = this.resourceManager.getResourceState(enumType);
+    Object.entries(this.resourceManager.getAllResourceStates()).forEach(([typeString, resourceState]) => {
+      const enumType = toEnumResourceType(typeString as ResourceTypeString); // Cast needed
       if (!resourceState) {
         return;
       }
 
       // Create a storage container config
       const config: StorageContainerConfig = {
-        id: `main-storage-${type}`,
-        name: `Main ${type} Storage`,
+        id: `main-storage-${typeString}`,
+        name: `Main ${typeString} Storage`,
         type: 'storage',
         capacity: resourceState.max,
         resourceTypes: [enumType],
@@ -334,12 +320,8 @@ export class ResourceIntegration {
    */
   private initializeFlows(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager.resources.keys());
-
-    // Create producer and consumer nodes for each resource type
-    resourceTypes.forEach(type => {
-      const enumType = toEnumResourceType(type);
-      const resourceState = this.resourceManager.getResourceState(enumType);
+    Object.entries(this.resourceManager.getAllResourceStates()).forEach(([typeString, resourceState]) => {
+      const enumType = toEnumResourceType(typeString as ResourceTypeString); // Cast needed
       if (!resourceState) {
         return;
       }
@@ -370,7 +352,7 @@ export class ResourceIntegration {
 
       // Create producer node
       const producerNode: FlowNode = {
-        id: `producer-${type}`,
+        id: `producer-${typeString}`,
         type: FlowNodeType.PRODUCER,
         resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
@@ -379,10 +361,11 @@ export class ResourceIntegration {
         y: 0,
       };
       this.flowManager.registerNode(this.adaptFlowNode(producerNode));
+      this.flowManager.updateNodeResourceState(producerNode.id, enumType, resourceState);
 
       // Create consumer node
       const consumerNode: FlowNode = {
-        id: `consumer-${type}`,
+        id: `consumer-${typeString}`,
         type: FlowNodeType.CONSUMER,
         resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
@@ -394,7 +377,7 @@ export class ResourceIntegration {
 
       // Create storage node
       const storageNode: FlowNode = {
-        id: `storage-${type}`,
+        id: `storage-${typeString}`,
         type: FlowNodeType.STORAGE,
         resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
@@ -407,9 +390,9 @@ export class ResourceIntegration {
 
       // Create connections
       const productionConnection: FlowConnection = {
-        id: `production-${type}`,
-        source: `producer-${type}`,
-        target: `storage-${type}`,
+        id: `production-${typeString}`,
+        source: `producer-${typeString}`,
+        target: `storage-${typeString}`,
         resourceTypes: [enumType],
         maxRate: resourceState.production,
         currentRate: 0,
@@ -419,9 +402,9 @@ export class ResourceIntegration {
       this.flowManager.registerConnection(productionConnection);
 
       const consumptionConnection: FlowConnection = {
-        id: `consumption-${type}`,
-        source: `storage-${type}`,
-        target: `consumer-${type}`,
+        id: `consumption-${typeString}`,
+        source: `storage-${typeString}`,
+        target: `consumer-${typeString}`,
         resourceTypes: [enumType],
         maxRate: resourceState.consumption,
         currentRate: 0,
@@ -429,9 +412,6 @@ export class ResourceIntegration {
         active: true,
       };
       this.flowManager.registerConnection(consumptionConnection);
-
-      // Update resource state in flow manager
-      this.flowManager.updateNodeResourceState(enumType, resourceState);
     });
   }
 
@@ -465,7 +445,7 @@ export class ResourceIntegration {
     });
 
     // Update in flow manager
-    this.flowManager.updateNodeResourceState(enumType, state);
+    this.flowManager.updateGlobalResourceState(enumType, state);
 
     // Update in cost manager
     this.costManager.updateResourceState(enumType, state);
@@ -507,13 +487,15 @@ export class ResourceIntegration {
           }
         }
       });
+    }).catch(_error => {
+      // TODO: Add proper error handling/logging service call
     });
   }
 
   /**
    * Clean up resources
    */
-  public cleanup(): void {
+  public async cleanup(): Promise<void> {
     if (!this.initialized) {
       return;
     }
@@ -522,12 +504,12 @@ export class ResourceIntegration {
     this.thresholdManager.stop();
 
     // Clean up all managers
-    this.thresholdManager.cleanup();
-    this.flowManager.dispose(); // Use dispose instead of cleanup
-    this.storageManager.cleanup();
-    this.costManager.cleanup();
-    this.exchangeManager.cleanup();
-    this.poolManager.cleanup();
+    this.thresholdManager.cleanup(); // Assuming not async
+    await this.flowManager.dispose(); // Use dispose instead of cleanup
+    this.storageManager.cleanup(); // Assuming not async
+    this.costManager.cleanup(); // Assuming not async
+    this.exchangeManager.cleanup(); // Assuming not async
+    this.poolManager.cleanup(); // Assuming not async
 
     this.initialized = false;
   }
@@ -632,28 +614,6 @@ export function initializeResourceIntegration(): void {
   // Removed RESOURCE_TRANSFER_REQUESTED subscriber
 }
 
-// Helper function to initialize resource state
-function initializeResourceState(
-  moduleId: string,
-  resourceType: ResourceType,
-  state: Partial<ResourceState>
-): void {
-  const currentState =
-    resourceFlowManager.getNodeResourceState(moduleId, resourceType) ??
-    createDefaultResourceState();
-  const newState: ResourceState = {
-    current: state.current ?? currentState.current ?? 0,
-    max: state.max ?? currentState.max ?? Infinity,
-    capacity: state.capacity ?? currentState.capacity ?? 1000,
-    min: state.min ?? currentState.min ?? 0,
-    production: state.production ?? currentState.production ?? 0,
-    consumption: state.consumption ?? currentState.consumption ?? 0,
-    rate: state.rate ?? currentState.rate ?? 0,
-    value: state.value ?? currentState.value ?? 0,
-  };
-  resourceFlowManager.updateNodeResourceState(moduleId, resourceType, newState);
-}
-
 // Default state helper
 function createDefaultResourceState(): ResourceState {
   return {
@@ -686,30 +646,6 @@ function isResourceEvent(
     event !== null &&
     'moduleId' in event &&
     typeof (event as { moduleId: unknown }).moduleId === 'string' &&
-    'resourceType' in event &&
-    Object.values(ResourceType).includes(
-      (event as { resourceType: unknown }).resourceType as ResourceType
-    ) &&
-    'amount' in event &&
-    typeof (event as { amount: unknown }).amount === 'number'
-  );
-}
-
-function isResourceTransferEvent(
-  event: unknown
-): event is {
-  sourceModuleId: string;
-  targetModuleId: string;
-  resourceType: ResourceType;
-  amount: number;
-} {
-  return (
-    typeof event === 'object' &&
-    event !== null &&
-    'sourceModuleId' in event &&
-    typeof (event as { sourceModuleId: unknown }).sourceModuleId === 'string' &&
-    'targetModuleId' in event &&
-    typeof (event as { targetModuleId: unknown }).targetModuleId === 'string' &&
     'resourceType' in event &&
     Object.values(ResourceType).includes(
       (event as { resourceType: unknown }).resourceType as ResourceType

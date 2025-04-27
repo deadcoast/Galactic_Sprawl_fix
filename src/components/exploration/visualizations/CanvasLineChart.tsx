@@ -7,16 +7,16 @@ import { BaseChartProps } from './BaseChart';
 // LTTB (Largest Triangle Three Buckets) algorithm for downsampling time series data
 // This preserves visual characteristics better than naive approaches
 function downsampleLTTB(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   xKey: string,
   yKey: string,
   threshold: number
-): Array<Record<string, unknown>> {
+): Record<string, unknown>[] {
   if (data?.length <= threshold) {
     return data;
   }
 
-  const sampled: Array<Record<string, unknown>> = [];
+  const sampled: Record<string, unknown>[] = [];
 
   // Always add the first point
   sampled.push(data[0]);
@@ -91,7 +91,7 @@ function downsampleLTTB(
 
 export interface CanvasLineChartProps extends BaseChartProps {
   /** Data to visualize */
-  data: Array<Record<string, unknown>>;
+  data: Record<string, unknown>[];
 
   /** Key for X-axis values (usually time or date) */
   xAxisKey: string;
@@ -211,7 +211,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [animationProgress, setAnimationProgress] = useState(animate ? 0 : 1);
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
-  const [downsampledData, setDownsampledData] = useState<Array<Record<string, unknown>>>(data);
+  const [downsampledData, setDownsampledData] = useState<Record<string, unknown>[]>(data);
   const [tooltipContent, setTooltipContent] = useState<{
     title: string;
     value: string;
@@ -307,8 +307,8 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
   // Use provided domains or fall back to calculated ones
   const domains = {
-    x: xDomain || calculatedDomains.x,
-    y: yDomain || calculatedDomains.y,
+    x: xDomain ?? calculatedDomains.x,
+    y: yDomain ?? calculatedDomains.y,
   };
 
   // Layout measurements
@@ -732,9 +732,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
     (_event: React.MouseEvent<HTMLCanvasElement>) => {
       if (!onElementClick || !hoveredPoint) return;
 
-      // Type assertion to ensure TypeScript knows the structure
-      const point = hoveredPoint as HoveredPoint;
-      onElementClick(point.data, point.seriesIndex);
+      onElementClick(hoveredPoint.data, hoveredPoint.seriesIndex);
     },
     [onElementClick, hoveredPoint]
   );
@@ -813,8 +811,8 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
         // Format the tooltip content using the actual data values
         // and the converted coordinates from inverseScales
         setTooltipContent({
-          title: `${xAxisKey}: ${formatXAxisDate ? formatXAxisDate(Number(xValue)) : xValue}`,
-          value: `${yAxisKeys[point.seriesIndex]}: ${yValue}`,
+          title: `${xAxisKey}: ${formatXAxisDate ? formatXAxisDate(Number(xValue)) : String(xValue)}`,
+          value: `${yAxisKeys[point.seriesIndex]}: ${String(yValue)}`,
           dataX,
           dataY,
         });
@@ -872,7 +870,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
         }}
       >
         <Typography variant="body1" color="text.secondary">
-          {errorMessage || 'No data available'}
+          {errorMessage ?? 'No data available'}
         </Typography>
       </div>
     );
@@ -887,7 +885,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
       }}
     >
       {/* Chart title and subtitle */}
-      {(title || subtitle) && (
+      {(title ?? subtitle) && (
         <div className="mb-2 text-center">
           {title && <Typography variant="h6">{title}</Typography>}
           {subtitle && (
@@ -911,7 +909,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
                 className="mr-1 h-3 w-3 rounded-full"
                 style={{
                   backgroundColor:
-                    seriesColors?.[index] || defaultColors[index % defaultColors.length],
+                    seriesColors?.[index] ?? defaultColors[index % defaultColors.length],
                 }}
               />
               <Typography variant="caption">{key}</Typography>

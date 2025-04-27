@@ -49,20 +49,20 @@ interface ChartPoint {
 
 interface ClusterVisualizationProps {
   data: {
-    clusters: Array<{
+    clusters: {
       cluster: number;
       size: number;
       percentage: number;
       centroid: number[];
-      featureStats: Array<{
+      featureStats: {
         feature: string;
         mean: number;
         min: number;
         max: number;
         count: number;
-      }>;
+      }[];
       pointIds: string[];
-    }>;
+    }[];
     features: string[];
     points: ClusterPoint[];
   };
@@ -72,9 +72,9 @@ interface ClusterVisualizationProps {
 
 interface TooltipProps {
   active?: boolean;
-  payload?: Array<{
+  payload?: {
     payload: ChartPoint;
-  }>;
+  }[];
 }
 
 // Define styles as objects to avoid complex union types
@@ -159,7 +159,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
 
   // Custom tooltip for scatter plot
   const CustomTooltip = ({ active, payload }: TooltipProps) => {
-    if (active && payload && payload.length) {
+    if (active && payload?.length) {
       const data = payload[0].payload;
       return (
         <div
@@ -183,7 +183,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
             {yAxisFeature}: {data?.y}
           </p>
           {!data?.isCentroid && (
-            <p>Distance to centroid: {data?.distanceToCentroid?.toFixed(3) || 'N/A'}</p>
+            <p>Distance to centroid: {data?.distanceToCentroid?.toFixed(3) ?? 'N/A'}</p>
           )}
           {data?.isCentroid && (
             <p>

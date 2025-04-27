@@ -325,8 +325,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
     const rect = container.getBoundingClientRect();
 
     // Calculate visible area based on scroll position
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
+    const { scrollLeft, scrollTop } = container;
 
     const visibleLeft = Math.max(0, Math.floor(scrollLeft / cellWidth));
     const visibleTop = Math.max(0, Math.floor(scrollTop / cellHeight));
@@ -496,7 +495,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
         title={title}
         subtitle={subtitle}
         className={`heatmap-chart ${className}`}
-        errorMessage={errorMessage || 'No data available'}
+        errorMessage={errorMessage ?? 'No data available'}
       >
         <div className="heat-map-no-data">No data available</div>
       </BaseChart>

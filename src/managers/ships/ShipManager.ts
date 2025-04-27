@@ -4,12 +4,12 @@
  */
 import { CreateShipOptions, ShipFactory, shipFactory } from '../../factories/ships/ShipFactory';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { ShipCargo } from '../../types/ships/CommonShipTypes';
-import { FactionShipClass } from '../../types/ships/FactionShipTypes';
-import { PlayerShipClass } from '../../types/ships/PlayerShipTypes';
-import { Ship, ShipCategory, ShipStatus } from '../../types/ships/ShipTypes';
+import { Ship, ShipCategory, ShipStatus, ShipSummary, Tier } from '../../types/ships/ShipTypes';
+import { ShipCargo } from '../../types/ships/CommonShipTypes'; // Import ShipCargo
+import { FactionShipClass } from '../../types/ships/FactionShipTypes'; // Import FactionShipClass
+import { PlayerShipClass } from '../../types/ships/PlayerShipTypes'; // Import PlayerShipClass
 import { ResourceManager } from '../game/ResourceManager';
 import { getResourceManager } from '../ManagerRegistry';
 import { ModuleManager, moduleManager } from '../module/ModuleManager';
@@ -53,11 +53,26 @@ export class StandardShipHangarManager extends ShipHangarManager {
   }
 
   /**
-   * Get all ships in the hangar
-   * @returns An array of all ships
+   * Get summarized data for all ships in the hangar
+   * @returns An array of ShipSummary objects
    */
-  public getAllShips(): Ship[] {
-    return Array.from(this.ships.values());
+  public getAllShips(): ShipSummary[] {
+    return Array.from(this.ships.values()).map((ship) => ({
+      id: ship.id,
+      name: ship.name,
+      category: ship.category,
+      status: ship.status,
+      tier: ship.tier, // Add missing tier
+    }));
+  }
+
+  /**
+   * Get the full details of a ship by ID
+   * @param shipId The ID of the ship to get
+   * @returns The full Ship object, or undefined if not found
+   */
+  public getShipDetails(shipId: string): Ship | undefined {
+    return this.ships.get(shipId);
   }
 
   /**
@@ -66,7 +81,8 @@ export class StandardShipHangarManager extends ShipHangarManager {
    * @returns The ship, or undefined if not found
    */
   public getShip(shipId: string): Ship | undefined {
-    return this.ships.get(shipId);
+    // Deprecate this or align with getShipDetails? For now, keep it as an alias.
+    return this.getShipDetails(shipId);
   }
 
   /**
@@ -76,13 +92,13 @@ export class StandardShipHangarManager extends ShipHangarManager {
    */
   public addShip(ship: Ship): boolean {
     if (this.ships.size >= this.capacity) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Hangar ${this.hangarId} is full. Cannot add ship ${ship.id}`
       );
       return false;
     }
     if (this.ships.has(ship.id)) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${ship.id} already in hangar ${this.hangarId}.`
       );
       return false; // Or handle as update?
@@ -100,7 +116,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
   public removeShip(shipId: string): boolean {
     const ship = this.ships.get(shipId);
     if (!ship) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found in hangar ${this.hangarId} for removal.`
       );
       return false;
@@ -135,22 +151,18 @@ export class StandardShipHangarManager extends ShipHangarManager {
   /**
    * Deploy a ship (Simplified - sets status to ENGAGING)
    * @param shipId The ID of the ship to deploy
-   * @param destination The destination to deploy to (optional for this simplified version)
    * @returns True if the ship was deployed, false if not found or not in a deployable state
    */
-  public deployShip(shipId: string, destination?: string): boolean {
+  public deployShip(shipId: string): boolean {
     const ship = this.ships.get(shipId);
     // Use optional chaining for safer status access
     if (!ship || ![ShipStatus.IDLE, ShipStatus.READY].includes(ship.status)) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cannot be deployed from status ${ship?.status}`
       );
       return false;
     }
 
-    if (destination) {
-      ship.destination = destination;
-    }
     this.changeShipStatus(shipId, ShipStatus.ENGAGING);
     return true;
   }
@@ -166,7 +178,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     const ship = this.getShip(shipId);
     // Use optional chaining for safer status access
     if (!ship || ship.status !== ShipStatus.READY) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cannot be launched from status ${ship?.status}`
       );
       return;
@@ -181,18 +193,14 @@ export class StandardShipHangarManager extends ShipHangarManager {
   /**
    * Mark a ship as arrived at its destination
    * @param shipId The ID of the ship that arrived
-   * @param location The location where the ship arrived
-   * @param arrivalTime The arrival time (timestamp)
    * @returns True if the ship was marked as arrived, false if not found
    */
-  public shipArrived(shipId: string, location: string, arrivalTime: number): boolean {
+  public shipArrived(shipId: string): boolean {
     const ship = this.ships.get(shipId);
     if (!ship) {
       return false;
     }
 
-    ship.location = location;
-    ship.destination = undefined;
     this.changeShipStatus(shipId, ShipStatus.IDLE);
     // TODO: Emit event if ShipHangarManager requires it
     return true;
@@ -208,7 +216,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     const ship = this.ships.get(shipId);
     // Add explicit check for ship.stats
     if (!ship?.stats) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found or has no stats for damageShip.`
       );
       return false;
@@ -243,7 +251,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     const ship = this.ships.get(shipId);
     // Check stats and maxHealth exist
     if (!ship?.stats?.maxHealth) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found or missing stats/maxHealth for repairShip.`
       );
       return false;
@@ -280,9 +288,9 @@ export class StandardShipHangarManager extends ShipHangarManager {
    */
   public loadCargo(shipId: string, resourceType: ResourceType, amount: number): boolean {
     const ship = this.ships.get(shipId);
-    // Check ship exists before accessing cargo/stats
+
     if (!ship) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found for loadCargo.`
       );
       return false;
@@ -290,15 +298,20 @@ export class StandardShipHangarManager extends ShipHangarManager {
 
     // Initialize cargo if necessary and possible
     if (!ship.cargo) {
-      const defaultCapacity = ship.stats?.cargoCapacity ?? 0;
+      let defaultCapacity = 0;
+      // Safely check if cargoCapacity exists on stats and is a number
+      if (ship.stats && 'cargoCapacity' in ship.stats && typeof ship.stats.cargoCapacity === 'number') {
+        defaultCapacity = ship.stats.cargoCapacity;
+      }
+
       if (defaultCapacity > 0) {
         ship.cargo = { capacity: defaultCapacity, resources: new Map() };
         errorLoggingService.logInfo(
           `[StandardShipHangarManager] Initialized cargo for ship ${shipId}.`
         );
       } else {
-        errorLoggingService.logwarn(
-          `[StandardShipHangarManager] Ship ${shipId} has no cargo capacity defined.`
+        errorLoggingService.logWarn(
+          `[StandardShipHangarManager] Ship ${shipId} has no defined cargo capacity or stats. Cannot initialize cargo.`
         );
         return false;
       }
@@ -306,14 +319,14 @@ export class StandardShipHangarManager extends ShipHangarManager {
 
     // Ensure resources is a Map
     if (!(ship.cargo.resources instanceof Map)) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cargo.resources is not a Map. Re-initializing.`
       );
       ship.cargo.resources = new Map<ResourceType, number>();
     }
     // Ensure capacity is a number
     if (typeof ship.cargo.capacity !== 'number') {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cargo.capacity is not a number. Using 0.`
       );
       ship.cargo.capacity = 0;
@@ -328,7 +341,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     }
 
     if (currentUsage + amount > ship.cargo.capacity) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Not enough cargo capacity on ship ${shipId} for ${amount} ${resourceType}. Available: ${ship.cargo.capacity - currentUsage}`
       );
       return false;
@@ -351,7 +364,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     const ship = this.ships.get(shipId);
     // Use optional chaining for safer access
     if (!ship?.cargo?.resources) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found or has no cargo resources for unloadCargo.`
       );
       return false;
@@ -359,7 +372,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
 
     const currentAmount = ship.cargo.resources.get(resourceType) ?? 0;
     if (currentAmount < amount) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Not enough ${resourceType} (${currentAmount}) on ship ${shipId} to unload ${amount}.`
       );
       return false;
@@ -378,11 +391,11 @@ export class StandardShipHangarManager extends ShipHangarManager {
   /**
    * Make a ship type available (using ShipCategory)
    * @param shipCategory The category of ship to make available
-   * @param requirements The requirements to build this ship type
+   * @param _requirements The requirements to build this ship type
    */
   public makeShipTypeAvailable(
     shipCategory: ShipCategory,
-    requirements: Record<string, unknown>
+    _requirements: Record<string, unknown>
   ): void {
     // TODO: Add event emission once base class supports it
     errorLoggingService.logInfo(
@@ -399,8 +412,8 @@ export class StandardShipHangarManager extends ShipHangarManager {
    * @returns The created Ship object if successful, otherwise undefined.
    */
   public buildShip(
-    shipClass: PlayerShipClass | FactionShipClass,
-    options: CreateShipOptions = {}
+    shipClass: PlayerShipClass | FactionShipClass, // Use imported types
+    options?: CreateShipOptions
   ): Ship | undefined {
     try {
       // Add default position if not provided, remove hangarId
@@ -453,7 +466,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     const ship = this.getShip(shipId);
 
     if (!ship) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} not found for checkCargo.`
       );
       return undefined;
@@ -477,12 +490,12 @@ export class StandardShipHangarManager extends ShipHangarManager {
     if (!ship.cargo || typeof ship.cargo !== 'object') {
       // Use the derived defaultCapacity
       if (defaultCapacity > 0) {
-        errorLoggingService.logwarn(
+        errorLoggingService.logWarn(
           `[StandardShipHangarManager] Ship ${shipId} cargo was invalid or undefined, initializing.`
         );
         ship.cargo = { capacity: defaultCapacity, resources: new Map() };
       } else {
-        errorLoggingService.logwarn(
+        errorLoggingService.logWarn(
           `[StandardShipHangarManager] Ship ${shipId} has no cargo capacity, cannot initialize cargo.`
         );
         return undefined; // No capacity, no cargo object
@@ -491,7 +504,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
 
     // Ensure resources is a Map
     if (!(ship.cargo.resources instanceof Map)) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cargo.resources is not a Map. Re-initializing empty map.`
       );
       ship.cargo.resources = new Map<ResourceType, number>();
@@ -499,13 +512,13 @@ export class StandardShipHangarManager extends ShipHangarManager {
 
     // Ensure capacity is a number and consistent with stats if possible
     if (typeof ship.cargo.capacity !== 'number' || isNaN(ship.cargo.capacity)) {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cargo.capacity is not a valid number. Setting to derived default: ${defaultCapacity}.`
       );
       ship.cargo.capacity = defaultCapacity;
     } else if (ship.cargo.capacity !== defaultCapacity && defaultCapacity > 0) {
       // Optional: Log inconsistency or update if needed
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[StandardShipHangarManager] Ship ${shipId} cargo.capacity (${ship.cargo.capacity}) inconsistent with stats-derived capacity (${defaultCapacity}). Keeping existing cargo capacity.`
       );
       // Or force update: ship.cargo.capacity = defaultCapacity;
@@ -514,7 +527,7 @@ export class StandardShipHangarManager extends ShipHangarManager {
     // Ensure integrity of resource amounts
     for (const [key, value] of ship.cargo.resources.entries()) {
       if (typeof value !== 'number' || isNaN(value) || value < 0) {
-        errorLoggingService.logwarn(
+        errorLoggingService.logWarn(
           `[StandardShipHangarManager] Ship ${shipId} cargo has invalid amount for resource ${key}. Setting to 0.`
         );
         ship.cargo.resources.set(key, 0);
@@ -576,6 +589,14 @@ export class StandardShipHangarManager extends ShipHangarManager {
     }
     return totalValue;
   }
+
+  /**
+   * Get the full details of all ships in the hangar
+   * @returns An array of Ship objects
+   */
+  public getAllShipDetails(): Ship[] {
+    return Array.from(this.ships.values());
+  }
 }
 
 // Define a local Event Map for this manager
@@ -613,7 +634,7 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
     this.resourceManager = getResourceManager();
     this.moduleManager = moduleManager;
     this.shipFactory = shipFactory;
-    errorLoggingService.logInfo('[ShipManager] Initialized');
+    errorLoggingService.logInfo('[ShipManager] Initialized'); // Update global call
   }
 
   public static getInstance(): ShipManager {
@@ -630,11 +651,11 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
    */
   public registerShip(ship: Ship): void {
     if (this.ships.has(ship.id)) {
-      errorLoggingService.logwarn(`[ShipManager] Ship already registered: ${ship.id}`);
+      errorLoggingService.logWarn(`[ShipManager] Ship already registered: ${ship.id}`); // Update global call, fix typo
       return;
     }
     this.ships.set(ship.id, ship);
-    errorLoggingService.logInfo(`[ShipManager] Ship registered: ${ship.id} (${ship.name})`);
+    errorLoggingService.logInfo(`[ShipManager] Ship registered: ${ship.id} (${ship.name})`); // Update global call
     // Potentially emit a global SHIP_REGISTERED event if needed
   }
 
@@ -645,7 +666,7 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
     const ship = this.ships.get(shipId);
     if (!ship) {
       // Reduced log severity as this might be a common check
-      // errorLoggingService.logwarn(`[ShipManager] Ship with ID ${shipId} not found.`);
+      // errorLoggingService.logWarn(`[ShipManager] Ship with ID ${shipId} not found.`);
       return undefined;
     }
     return ship;
@@ -658,7 +679,7 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
   public updateShipStatus(shipId: string, status: ShipStatus): void {
     const ship = this.getShipById(shipId);
     if (!ship) {
-      errorLoggingService.logwarn(`[ShipManager] Cannot update status: Ship not found ${shipId}`);
+      errorLoggingService.logWarn(`[ShipManager] Cannot update status: Ship not found ${shipId}`); // Update global call, fix typo
       return;
     }
     const oldStatus = ship.status;
@@ -670,7 +691,7 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
       // errorLoggingService.logInfo(`[ShipManager] Ship ${shipId} status updated: ${oldStatus} -> ${status}`);
     } else {
       // Log only if debugging status updates
-      // errorLoggingService.logwarn(`[ShipManager] Ship ${shipId} already has status ${status}. No update performed.`);
+      // errorLoggingService.logWarn(`[ShipManager] Ship ${shipId} already has status ${status}. No update performed.`);
     }
   }
 
@@ -681,17 +702,15 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
   public assignShip(shipId: string, assignment: string): void {
     const ship = this.getShipById(shipId);
     if (ship) {
-      const oldAssignmentValue = ship.assignedTo;
-      ship.assignedTo = assignment;
-
-      // Explicitly type the payload object and cast oldAssignmentValue
-      const payload: ShipManagerEventPayloads['SHIP_ASSIGNMENT_UPDATED'] = {
+      // const previousAssignment = ship.assignedTo; // Remove assignedTo usage
+      ship.status = ShipStatus.ASSIGNED; // Set status when assigning
+      const payload = {
         shipId,
-        oldAssignment: oldAssignmentValue,
+        // previousAssignment, // Include if needed
         newAssignment: assignment,
       };
       this.emit('SHIP_ASSIGNMENT_UPDATED', payload);
-      errorLoggingService.logInfo(`[ShipManager] Ship ${shipId} assigned to: ${assignment}`);
+      errorLoggingService.logInfo(`[ShipManager] Ship ${shipId} assigned to: ${assignment}`); // Update global call
     } else {
       errorLoggingService.logError(
         new Error(`Cannot assign ship: Ship not found ${shipId}`),
@@ -714,17 +733,15 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
   public unassignShip(shipId: string): void {
     const ship = this.getShipById(shipId);
     if (ship) {
-      const oldAssignmentValue = ship.assignedTo;
-      ship.assignedTo = undefined;
-
-      // Explicitly type the payload object and cast oldAssignmentValue
-      const payload: ShipManagerEventPayloads['SHIP_ASSIGNMENT_UPDATED'] = {
+      // const previousAssignment = ship.assignedTo; // Remove assignedTo usage
+      ship.status = ShipStatus.IDLE; // Revert to IDLE when unassigning
+      const payload = {
         shipId,
-        oldAssignment: oldAssignmentValue,
+        // previousAssignment, // Include if needed
         newAssignment: undefined,
       };
       this.emit('SHIP_ASSIGNMENT_UPDATED', payload);
-      errorLoggingService.logInfo(`[ShipManager] Ship ${shipId} unassigned.`);
+      errorLoggingService.logInfo(`[ShipManager] Ship ${shipId} unassigned.`); // Update global call
     } else {
       errorLoggingService.logError(
         new Error(`Cannot unassign ship: Ship not found ${shipId}`),
@@ -774,12 +791,12 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
       this.ships.delete(shipId);
       const payload = { shipId };
       this.emit('SHIP_REMOVED', payload); // Use defined event key
-      errorLoggingService.logInfo(`[ShipManager] Ship removed: ${shipId}`);
+      errorLoggingService.logInfo(`[ShipManager] Ship removed: ${shipId}`); // Update global call
       // TODO: Consider cleanup tasks like removing from fleet assignments map if used
       this.removeShipFromFleet(shipId); // Remove from fleet assignments if managing globally
       return true;
     } else {
-      errorLoggingService.logwarn(`[ShipManager] Attempted to remove non-existent ship: ${shipId}`);
+      errorLoggingService.logWarn(`[ShipManager] Attempted to remove non-existent ship: ${shipId}`); // Update global call, fix typo
       return false;
     }
   }
@@ -792,7 +809,7 @@ export class ShipManager extends TypedEventEmitter<ShipManagerEventPayloads> {
   public assignShipToFleet(shipId: string, fleetId: string): boolean {
     const ship = this.getShipById(shipId);
     if (!ship) {
-      errorLoggingService.logwarn(`Ship ${shipId} not found for fleet assignment.`);
+      errorLoggingService.logWarn(`Ship ${shipId} not found for fleet assignment.`);
       return false;
     }
 

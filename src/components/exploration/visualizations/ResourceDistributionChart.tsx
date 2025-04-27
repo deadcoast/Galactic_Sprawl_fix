@@ -191,8 +191,8 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       const zoom = d3
         .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 4])
-        .on('zoom', event => {
-          container.attr('transform', event?.transform);
+        .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+          container.attr('transform', event.transform.toString()); // Use toString() for safety
         });
 
       svg.call(zoom);
@@ -243,7 +243,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       .attr('r', d => d.radius)
       .attr('fill', d => d.color)
       .attr('fill-opacity', 0.7)
-      .attr('stroke', d => d3.color(d.color)?.darker().toString() || '#000')
+      .attr('stroke', d => d3.color(d.color)?.darker().toString() ?? '#000')
       .attr('stroke-width', 1.5);
 
     // Add labels if enabled
@@ -268,7 +268,8 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
         .text(d => `${d.amount}`);
     }
 
-    // (...args: unknown[]) => unknown called on each tick of the simulation
+    // Update positions on each tick
+    // Called on each tick of the simulation
     function ticked(): void {
       node.attr('transform', (d: ResourceNode): string => {
         // Use safe accessors instead of direct property access

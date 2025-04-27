@@ -116,7 +116,6 @@ export const HeatMap = React.memo(function HeatMap({
 }: HeatMapProps) {
   // Process data into a 2D grid format for the heatmap
   const { processedData, xValues, yValues, dataMinValue, dataMaxValue } = useMemo(() => {
-    console.warn('Processing heat map data'); // For debugging
     if (!data || data?.length === 0) {
       return {
         processedData: [],
@@ -144,7 +143,7 @@ export const HeatMap = React.memo(function HeatMap({
 
       // Get x and y coordinates from the data point
       if (typeof item[xKey] === 'number') {
-        x = item[xKey] as number;
+        x = item[xKey];
       } else if (xKey.includes('.')) {
         const parts = xKey.split('.');
         let current: unknown = item;
@@ -166,7 +165,7 @@ export const HeatMap = React.memo(function HeatMap({
       }
 
       if (typeof item[yKey] === 'number') {
-        y = item[yKey] as number;
+        y = item[yKey];
       } else if (yKey.includes('.')) {
         const parts = yKey.split('.');
         let current: unknown = item;
@@ -190,7 +189,7 @@ export const HeatMap = React.memo(function HeatMap({
       // Get the value to visualize
       let value: number | undefined;
       if (typeof item[valueKey] === 'number') {
-        value = item[valueKey] as number;
+        value = item[valueKey];
       } else if (valueKey.includes('.')) {
         const parts = valueKey.split('.');
         let current: unknown = item;
@@ -257,15 +256,9 @@ export const HeatMap = React.memo(function HeatMap({
   }, [data, xKey, yKey, valueKey]);
 
   // Calculate effective min and max values
-  const effectiveMinValue = useMemo(
-    () => (minValue !== undefined ? minValue : dataMinValue),
-    [minValue, dataMinValue]
-  );
+  const effectiveMinValue = useMemo(() => minValue ?? dataMinValue, [minValue, dataMinValue]);
 
-  const effectiveMaxValue = useMemo(
-    () => (maxValue !== undefined ? maxValue : dataMaxValue),
-    [maxValue, dataMaxValue]
-  );
+  const effectiveMaxValue = useMemo(() => maxValue ?? dataMaxValue, [maxValue, dataMaxValue]);
 
   const valueRange = useMemo(
     () => effectiveMaxValue - effectiveMinValue,
@@ -366,8 +359,8 @@ export const HeatMap = React.memo(function HeatMap({
             data-tooltip-id="heat-map-tooltip"
             data-tooltip-content={
               cellTooltip
-                ? `${xLabels?.[cell.xIndex] || cell.originalX}, ${
-                    yLabels?.[cell.yIndex] || cell.originalY
+                ? `${xLabels?.[cell.xIndex] ?? cell.originalX}, ${
+                    yLabels?.[cell.yIndex] ?? cell.originalY
                   }: ${valueFormatter(cell.value)}`
                 : undefined
             }

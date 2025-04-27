@@ -563,7 +563,7 @@ export const objectCacheConfig: InterpolationCacheConfig = {
  * Cache that spans across multiple animations
  */
 class GlobalInterpolationCache {
-  private caches: Map<string, InterpolationCache<unknown>> = new Map();
+  private caches: Map<string, InterpolationCache<unknown>> = new Map<string, InterpolationCache<unknown>>();
 
   /**
    * Get or create a cache for a specific animation ID
@@ -721,6 +721,20 @@ export function enhanceAnimationWithMemoization(
   globalInterpolationCache.getCache(animationId, config);
 
   // Animation is now ready to use memoized interpolators via createMemoizedInterpolators
+}
+
+/**
+ * Cleanup memoization resources when an animation is removed
+ */
+export function cleanupMemoizationForAnimation(animationId: string): void {
+  globalInterpolationCache.clearCache(animationId);
+}
+
+/**
+ * Get global memoization statistics
+ */
+export function getMemoizationStats(): CacheStats {
+  return globalInterpolationCache.getAggregateStats();
 }
 
 /**
@@ -897,18 +911,4 @@ export function optimizeD3Transitions<
     // Return original selection without optimization
     return selection;
   }
-}
-
-/**
- * Cleanup memoization resources when an animation is removed
- */
-export function cleanupMemoizationForAnimation(animationId: string): void {
-  globalInterpolationCache.clearCache(animationId);
-}
-
-/**
- * Get global memoization statistics
- */
-export function getMemoizationStats(): CacheStats {
-  return globalInterpolationCache.getAggregateStats();
 }

@@ -6,7 +6,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 import CanvasChartFactory, { ChartType } from './CanvasChartFactory';
@@ -102,7 +102,6 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   visibilityThreshold = 0.1,
   qualityLevels = [0.25, 0.5, 1.0],
   useDoubleBuffering = true,
-  formatXAxisDate,
   enableRenderCaching = true,
   maxCacheSizeMB = 50,
   className = '',
@@ -125,9 +124,8 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   // Selected quality level based on visibility and data size
   const [_qualityLevel, setQualityLevel] = useState(1.0);
 
-  // Render state
-  const [_isRendering, _setIsRendering] = useState(false);
-  const [renderError, _setRenderError] = useState<string | null>(null);
+  // Render error state
+  const [renderError] = useState<string | null>(null);
 
   // Data processing state
   const [processedData, setProcessedData] = useState<ChartDataRecord[] | null>(null);
@@ -150,9 +148,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     key: instanceIdRef.current,
     enableLogging: showPerformanceStats,
     initialDataSizeEstimate: data ? data?.length * 100 : 1000, // Rough estimate
-    autoCleanupLevel: memoryOptions?.autoCleanupLevel || 'medium',
-    memoryThreshold: memoryOptions?.memoryThreshold || maxCacheSizeMB * 1024 * 1024,
-    cacheExpirationTime: memoryOptions?.cacheExpirationTime || 60000, // 1 minute default
+    autoCleanupLevel: memoryOptions?.autoCleanupLevel ?? 'medium',
+    memoryThreshold: memoryOptions?.memoryThreshold ?? maxCacheSizeMB * 1024 * 1024,
+    cacheExpirationTime: memoryOptions?.cacheExpirationTime ?? 60000, // 1 minute default
     ...memoryOptions,
   });
 
@@ -226,7 +224,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
         return inputData as ChartDataRecord[];
       }
 
-      // Calculate how munknown points to keep
+      // Calculate how many points to keep
       const targetPoints = Math.max(2, Math.floor(inputData.length * quality));
 
       // If we have fewer points than target, use all
@@ -403,8 +401,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
       // Log if double buffering is requested (as actual implementation isn't present)
       if (useDoubleBuffering) {
-        console.log(`[${instanceIdRef.current}] Double buffering enabled (placeholder).`);
-        // In a real implementation, might create/manage a secondary buffer here.
+        // Removed console.log statement
       }
 
       return newBuffer;
@@ -467,13 +464,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
       });
     }
 
-    // Log if formatXAxisDate is provided (as it's not passed down)
-    if (formatXAxisDate) {
-      console.log(
-        `[${instanceIdRef.current}] formatXAxisDate function provided but not used by CanvasChartFactory.`
-      );
-    }
-
+    // Removed console.log statement
     // Update performance metrics
     setPerformanceMetrics(prev => ({
       ...prev,
@@ -494,7 +485,6 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     _qualityLevel,
     data?.length,
     enableRenderCaching,
-    formatXAxisDate,
   ]);
 
   // Cleanup on unmount

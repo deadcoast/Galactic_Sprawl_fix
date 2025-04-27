@@ -30,6 +30,12 @@ import { HeatMap } from './HeatMap';
 import { ScatterPlot } from './ScatterPlot';
 import { createTooltipComponent } from './TooltipAdapter';
 
+// Type guard to check if a value is a valid ResourceType enum member
+const isResourceType = (value: unknown): value is ResourceType => {
+  // Check if the value exists in the enum's values (assuming string enum)
+  return Object.values(ResourceType).includes(value as ResourceType); // Assertion needed for .includes check with unknown
+};
+
 /**
  * Type definitions for internal use in ResourceMappingVisualization
  */
@@ -47,13 +53,13 @@ interface ResourceHeatMapCell extends ChartDataRecord {
   x: number;
   y: number;
   value: number;
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     quality?: number;
     accessibility?: number;
     estimatedValue?: number;
-  }>;
+  }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;
@@ -109,18 +115,17 @@ const resourceTypeColors: Record<ResourceType, string> = {
 
 // Define a function to get color for a resource type
 const getResourceColor = (resourceType: ResourceType | ResourceTypeString): string => {
-  // Handle both string and enum resource types
-  if (Object.values(ResourceType).includes(resourceType as ResourceType)) {
-    return resourceTypeColors[resourceType] || '#999999';
-  } else if (
-    typeof resourceType === 'string' &&
-    !Object.values(ResourceType).includes(resourceType as ResourceType)
-  ) {
-    // Convert string to enum and get color
-    const enumType = ResourceTypeConverter.stringToEnum(resourceType);
-    return enumType ? resourceTypeColors[enumType] || '#999999' : '#999999';
+  // Use type guard first
+  if (isResourceType(resourceType)) {
+    return resourceTypeColors[resourceType] ?? '#999999'; // Use ?? for default
   }
-  return '#999999'; // Restore default color return
+  // If it's a string (and not a direct enum value per the guard), try converting
+  if (typeof resourceType === 'string') {
+    const enumType = ResourceTypeConverter.stringToEnum(resourceType);
+    return enumType ? (resourceTypeColors[enumType] ?? '#999999') : '#999999';
+  }
+  // Default fallback
+  return '#999999';
 };
 
 /**
@@ -149,27 +154,31 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       if (selectedResourceType === 'all') {
         value = cell.totalValue;
       } else {
-        // Fix the type mismatch by using a more generic approach
+        // Find the specific resource data within the cell
         const resourceData = cell.resources.find(r => {
-          // Convert both to string for comparison to avoid type mismatches
-          const resourceTypeStr = Object.values(ResourceType).includes(r.type as ResourceType)
-            ? ResourceTypeConverter.enumToString(r.type)
-            : String(r.type);
+          let resourceTypeStr: string;
+          // Check if r.type is a valid ResourceType enum value using the type guard
+          if (isResourceType(r.type)) {
+             // Provide fallback in case enumToString returns undefined
+             resourceTypeStr = ResourceTypeConverter.enumToString(r.type) ?? String(r.type);
+          } else {
+             resourceTypeStr = String(r.type); // Treat as plain string otherwise
+          }
 
-          const selectedTypeStr = Object.values(ResourceType).includes(
-            selectedResourceType as ResourceType
-          )
-            ? ResourceTypeConverter.enumToString(selectedResourceType as ResourceType)
-            : String(selectedResourceType);
+          let selectedTypeStr: string;
+          // Check if selectedResourceType is a valid ResourceType enum value using the type guard
+          if (isResourceType(selectedResourceType)) {
+             // Provide fallback in case enumToString returns undefined
+             selectedTypeStr = ResourceTypeConverter.enumToString(selectedResourceType) ?? String(selectedResourceType);
+          } else {
+             selectedTypeStr = String(selectedResourceType); // Treat as plain string otherwise ('all' or potentially invalid)
+          }
 
+          // Now compare the potentially converted strings
           return resourceTypeStr === selectedTypeStr;
         });
-
-        if (resourceData) {
-          value =
-            (resourceData[data?.valueMetric as keyof typeof resourceData] as number) ||
-            resourceData.amount;
-        }
+        // Get the amount if found (restoring previous logic)
+        value = resourceData ? resourceData.amount : 0;
       }
 
       return {
@@ -212,12 +221,12 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
   // Color function for scatter plot points
   const getPointColor = (point: ResourceChartPoint): string => {
-    return getResourceColor(point.type as ResourceType | ResourceTypeString);
+    return getResourceColor(point.type);
   };
 
   // Color function for heat map cells in overlay mode
   const getHeatMapCellColor = (cell: ResourceHeatMapCell): string => {
-    return getResourceColor(cell.dominantType as ResourceType | ResourceTypeString);
+    return getResourceColor(cell.dominantType);
   };
 
   // Tooltip for heatmap cells
@@ -453,7 +462,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
               value={
                 typeof selectedResourceType === 'string'
                   ? selectedResourceType
-                  : ResourceTypeConverter.enumToString(selectedResourceType as ResourceType)
+                  : ResourceTypeConverter.enumToString(selectedResourceType)
               }
               onChange={handleResourceTypeChange}
               displayEmpty

@@ -15,7 +15,7 @@
  */
 
 import * as d3 from 'd3';
-import { BaseType, Local, Selection, Transition, ValueFn } from 'd3';
+import { BaseType, Local, ValueFn } from 'd3';
 import { animationFrameManager, AnimationPriority } from './D3AnimationFrameManager';
 
 /**
@@ -493,11 +493,8 @@ export function batchWrite<T>(
   return batchUpdateManager.write(callback, options);
 }
 
-// Define a more permissive type for D3 transition methods when using unknown/dynamic types
-type D3GenericFunction = (...args: unknown[]) => unknown;
-
 /**
- * Type for D3 selection method override
+ * Type for D3 attribute/style method override
  */
 type D3SelectionMethodOverride<
   GElement extends Element,
@@ -515,8 +512,8 @@ type D3SelectionMethodOverride<
 type D3PropertyMethodOverride<GElement extends Element, Datum, PElement extends Element, PDatum> = (
   this: d3.Selection<GElement, Datum, PElement, PDatum>,
   name: string | d3.Local<unknown>,
-  value?: ValueFn<GElement, Datum, unknown> | unknown | null
-) => unknown | d3.Selection<GElement, Datum, PElement, PDatum>;
+  value?: unknown
+) => unknown;
 
 /**
  * Creates optimized D3 selection methods that use batched updates
@@ -531,7 +528,7 @@ export function createBatchedSelection<
   options: BatchOperationOptions = {}
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
   // Clone the selection to avoid modifying the original
-  const batchedSelection = selection.clone() as d3.Selection<GElement, Datum, PElement, PDatum>;
+  const batchedSelection = selection.clone();
 
   // Store original methods
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -654,16 +651,16 @@ export function createBatchedSelection<
   // Override property to use batched writes
   (
     batchedSelection as unknown as {
-      property: <T>(
+      property: (
         this: d3.Selection<GElement, Datum, PElement, PDatum>,
-        name: string | d3.Local<T>,
-        value?: ValueFn<GElement, Datum, T | null> | T | null
+        name: string | d3.Local<unknown>,
+        value?: unknown
       ) => unknown;
     }
-  ).property = function <T>(
+  ).property = function (
     this: d3.Selection<GElement, Datum, PElement, PDatum>,
-    name: string | d3.Local<T>,
-    value?: ValueFn<GElement, Datum, T | null> | T | null
+    name: string | d3.Local<unknown>,
+    value?: unknown
   ): unknown {
     if (arguments.length === 1) {
       if (typeof name === 'string') {
@@ -691,8 +688,8 @@ export function createBatchedSelection<
             ) => typeof this
           ).call(
             this,
-            name as d3.Local<T>, // Keep explicit cast here
-            valToPass as ValueFn<GElement, Datum, T | null> | T | null // Keep explicit cast here
+            name, // Removed 'as d3.Local<T>' assertion
+            valToPass
           );
         }
       },

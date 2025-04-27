@@ -11,6 +11,7 @@
 import { Vector3D } from '../common/VectorTypes';
 import { ResourceType } from '../resources/ResourceTypes';
 import { BasePoint } from '../visualization/CommonTypes';
+import { Position } from '../core/GameTypes';
 
 // =========================================
 // Base Types
@@ -164,7 +165,7 @@ export interface ClassificationDetails {
   artifactOrigin?: string;
   artifactAge?: number;
   anomalyType?: string;
-  anomalyIntensity?: number;
+  anomalyIntensity?: 'low' | 'medium' | 'high';
   derelictType?: string;
   derelictCondition?: number;
   phenomenonType?: string;
@@ -602,6 +603,25 @@ export interface TradeRoute {
   distance: number;
   travelTime: number; // in seconds
   factionControl?: FactionControl;
+}
+
+// =========================================
+// Exploration Task Type
+// =========================================
+
+/**
+ * Defines an exploration task assigned to a ship.
+ */
+export interface ExplorationTask {
+  id: string;
+  type: 'explore' | 'scan' | 'investigate'; // Example task types
+  target: { id: string; position: Position }; // Use Position from GameTypes
+  priority: number;
+  assignedAt: number;
+  specialization: 'mapping' | 'anomaly' | 'resource';
+  status: 'queued' | 'in-progress' | 'completed' | 'failed';
+  assignedShipId: string;
+  progress?: number; // Optional progress tracking
 }
 
 // =========================================

@@ -4,11 +4,9 @@ import { CombatAutomationEffect } from '../../effects/component_effects/CombatAu
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
-import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { GameEvent, GameEventType, Position } from '../../types/core/GameTypes';
-import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { FactionId } from '../../types/ships/FactionShipTypes';
+import { Position } from '../../types/core/GameTypes';
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -279,7 +277,7 @@ export function BattleEnvironment({
     };
 
     // Log the fleet AI result for debugging
-    console.warn('Advanced fleet AI result:', customFleetAIResult);
+    // console.warn('Advanced fleet AI result:', customFleetAIResult);
 
     // Update active hazards
     activeHazardsRef.current = hazards;
@@ -420,7 +418,7 @@ export function BattleEnvironment({
     worker.onmessage = (e: MessageEvent) => {
       // Validate message structure
       if (!isCombatWorkerMessage(e.data)) {
-        console.error('Received invalid message from combat worker:', e.data);
+        // console.error('Received invalid message from combat worker:', e.data);
         return;
       }
 
@@ -445,8 +443,8 @@ export function BattleEnvironment({
           pos !== null &&
           'x' in pos &&
           'y' in pos &&
-          typeof pos.x === 'number' &&
-          typeof pos.y === 'number'
+          typeof pos.x === 'number' && // Check type explicitly
+          typeof pos.y === 'number' // Check type explicitly
         ) {
           return pos;
         }
@@ -711,61 +709,61 @@ export function BattleEnvironment({
       // Use the existing fleetAIResult from useFleetAI hook
       // This is just for demonstration - we're not actually modifying the fleetAIResult
       // since it comes from a hook and we can't directly modify it
-      console.warn('Fleet AI visualization updated with', {
-        formationLines: {
-          points,
-          style: 'solid' as const,
-          color: '#00ff00',
-          opacity: 0.5,
-        },
-        rangeCircles,
-      });
+      // console.warn('Fleet AI visualization updated with', {
+      //   formationLines: {
+      //     points,
+      //     style: 'solid' as const,
+      //     color: '#00ff00',
+      //     opacity: 0.5,
+      //   },
+      //   rangeCircles,
+      // });
     }
   }, [units]);
 
   // Add a log event helper to use GameEvent and GameEventType
-  const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {
-    const event: GameEvent = {
-      type: eventType,
-      timestamp: Date.now(),
-      data,
-    };
+  // const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {
+  //   const event: GameEvent = {
+  //     type: eventType,
+  //     timestamp: Date.now(),
+  //     data,
+  //   };
 
-    // Use the useGameState hook indirectly by referencing it in comments
-    // This is a workaround since hooks can only be used in component functions
-    // In a real implementation, this would use the useGameState hook to update state
-    console.warn('Combat event logged, would use useGameState to update:', event);
+  //   // Use the useGameState hook indirectly by referencing it in comments
+  //   // This is a workaround since hooks can only be used in component functions
+  //   // In a real implementation, this would use the useGameState hook to update state
+  //   // console.warn('Combat event logged, would use useGameState to update:', event);
 
-    return event;
-  };
+  //   return event;
+  // };
 
   // Add a utility function to convert GameEventType to EventType for the BaseEvent
-  const mapGameEventTypeToEventType = (gameEventType: GameEventType): EventType => {
-    // Map game event types to system event types
-    switch (gameEventType) {
-      case 'combat':
-        return EventType.COMBAT_UPDATED;
-      case 'exploration':
-        return EventType.EXPLORATION_SCAN_COMPLETED;
-      case 'trade':
-        return EventType.RESOURCE_TRANSFERRED;
-      case 'diplomacy':
-        return EventType.SYSTEM_ALERT;
-      default:
-        return EventType.SYSTEM_ALERT;
-    }
-  };
+  // const mapGameEventTypeToEventType = (gameEventType: GameEventType): EventType => {
+  //   // Map game event types to system event types
+  //   switch (gameEventType) {
+  //     case 'combat':
+  //       return EventType.COMBAT_UPDATED;
+  //     case 'exploration':
+  //       return EventType.EXPLORATION_SCAN_COMPLETED;
+  //     case 'trade':
+  //       return EventType.RESOURCE_TRANSFERRED;
+  //     case 'diplomacy':
+  //       return EventType.SYSTEM_ALERT;
+  //     default:
+  //       return EventType.SYSTEM_ALERT;
+  //   }
+  // };
 
   // Add a utility function to use BaseEvent
-  const convertToBaseEvent = (gameEvent: GameEvent): BaseEvent => {
-    return {
-      type: mapGameEventTypeToEventType(gameEvent.type),
-      timestamp: gameEvent.timestamp,
-      data: gameEvent.data as Record<string, unknown> | undefined,
-      moduleId: 'combat-system',
-      moduleType: 'COMBAT_MODULE' as ModuleType,
-    };
-  };
+  // const convertToBaseEvent = (gameEvent: GameEvent): BaseEvent => {
+  //   return {
+  //     type: mapGameEventTypeToEventType(gameEvent.type),
+  //     timestamp: gameEvent.timestamp,
+  //     data: gameEvent.data as Record<string, unknown> | undefined,
+  //     moduleId: 'combat-system',
+  //     moduleType: 'COMBAT_MODULE' as ModuleType,
+  //   };
+  // };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -1026,15 +1024,15 @@ const CombatControls = () => {
   };
 
   const handleSkipBack = () => {
-    console.warn('Combat simulation skipped back');
+    // console.warn('Combat simulation skipped back');
   };
 
   const handleSkipForcombatd = () => {
-    console.warn('Combat simulation skipped forcombatd');
+    // console.warn('Combat simulation skipped forcombatd');
   };
 
   const handleClose = () => {
-    console.warn('Combat simulation closed');
+    // console.warn('Combat simulation closed');
   };
 
   return (

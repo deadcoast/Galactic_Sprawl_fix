@@ -6,7 +6,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 
@@ -197,8 +197,8 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
   // Use provided domains or fall back to calculated ones
   const domains = {
-    x: xDomain || calculatedDomains.x,
-    y: yDomain || calculatedDomains.y,
+    x: xDomain ?? calculatedDomains.x,
+    y: yDomain ?? calculatedDomains.y,
     size: calculatedDomains.size,
     color: calculatedDomains.color,
   };
@@ -219,12 +219,17 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     }
 
     try {
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl');
       if (gl) {
         glRef.current = gl as WebGLRenderingContext;
         setCanUseWebGL(true);
       } else {
-        console.warn('WebGL not supported, falling back to Canvas 2D rendering');
+        errorLoggingService.logError(
+          new Error('WebGL not supported, falling back to Canvas 2D rendering'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH,
+          { componentName: 'CanvasScatterPlot', action: 'useEffect (webgl init)' }
+        );
         setCanUseWebGL(false);
       }
     } catch (e) {
@@ -375,6 +380,12 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     // Create program
     const program = gl.createProgram();
     if (!program) {
+      errorLoggingService.logError(
+        new Error('Failed to create WebGL program'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'CanvasScatterPlot', action: 'initWebGL', operation: 'createProgram' }
+      );
       return false;
     }
 
@@ -668,7 +679,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     });
 
     // Get shader locations
-    const program = gl.getParameter(gl.CURRENT_PROGRAM);
+    const program = gl.getParameter(gl.CURRENT_PROGRAM) as WebGLProgram;
     const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
     const sizeAttributeLocation = gl.getAttribLocation(program, 'a_size');
     const colorAttributeLocation = gl.getAttribLocation(program, 'a_color');
@@ -700,7 +711,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     gl.uniformMatrix3fv(matrixLocation, false, matrix);
 
     // Draw points
-    gl.dracombatrays(gl.POINTS, 0, points.length / 2);
+    gl.drawArrays(gl.POINTS, 0, points.length / 2);
 
     // Clean up
     gl.deleteBuffer(positionBuffer);
@@ -850,7 +861,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
         }}
       >
         <Typography variant="body1" color="text.secondary">
-          {errorMessage || 'No data available'}
+          {errorMessage ?? 'No data available'}
         </Typography>
       </div>
     );
@@ -867,7 +878,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
       }}
     >
       {/* Chart title and subtitle */}
-      {(title || subtitle) && (
+      {(title ?? subtitle) && (
         <div className="mb-2 text-center">
           {title && <Typography variant="h6">{title}</Typography>}
           {subtitle && (
