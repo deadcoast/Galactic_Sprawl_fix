@@ -165,7 +165,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     this.shipManager = shipManager;
 
     // Listen to ship status changes using the correct event type and method
-    this.shipManager.on(EventType.STATUS_CHANGED, this.handleShipStatusChange);
+    this.shipManager.on(EventType.STATUS_CHANGED, this.handleShipStatusChange as (data: { shipId: string; status: ShipStatus; ship: ReconShip; }) => void);
   }
 
   /**
@@ -195,7 +195,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   /**
    * Initializes the ExplorationManager.
    */
-  public async onInitialize(): Promise<void> {
+  public onInitialize(): void {
     // Initialization logic, e.g., loading data, setting up initial state
     this.publishEvent(
       this.createEvent(EventType.MODULE_ACTIVATED, {
@@ -216,9 +216,9 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   /**
    * Cleans up resources when the manager is disposed.
    */
-  public async onDispose(): Promise<void> {
+  public onDispose(): void {
     // Cleanup logic, e.g., unsubscribing from events, saving state
-    this.shipManager.off(EventType.STATUS_CHANGED, this.handleShipStatusChange);
+    this.shipManager.off(EventType.STATUS_CHANGED, this.handleShipStatusChange as (data: (payload: { shipId: string; status: ShipStatus; ship: ReconShip; }) => void) => void);
     this.publishEvent(
       this.createEvent(EventType.MODULE_DEACTIVATED, {
         status: 'inactive',

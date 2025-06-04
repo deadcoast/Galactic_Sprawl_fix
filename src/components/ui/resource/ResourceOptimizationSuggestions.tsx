@@ -57,12 +57,25 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
   focusedResource,
   onImplementSuggestion,
 }) => {
-  // Register component with system
-  const componentId = useComponentRegistration({
-    type: ResourceType.RESEARCH,
-    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED'],
-    updatePriority: 'low',
-  });
+  // Generate stable instance ID for this component
+  const componentInstanceId = React.useMemo(
+    () => `ResourceOptimizationSuggestions-${Date.now().toString(36)}`,
+    []
+  );
+
+  // Register component using new hook signature
+  useComponentRegistration(
+    componentInstanceId,
+    'ResourceOptimizationSuggestions',
+    undefined,
+    {
+      eventSubscriptions: [
+        EventType.RESOURCE_UPDATED,
+        EventType.RESOURCE_FLOW_UPDATED,
+      ],
+      updatePriority: 'low',
+    }
+  );
 
   const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -79,26 +92,26 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
   // Component lifecycle tracking for performance monitoring
   useComponentLifecycle({
     onMount: () => {
-      console.warn(`ResourceOptimizationSuggestions (${componentId}) mounted`);
+      console.warn(`ResourceOptimizationSuggestions (${componentInstanceId}) mounted`);
     },
     onUnmount: () => {
-      console.warn(`ResourceOptimizationSuggestions (${componentId}) unmounted`);
+      console.warn(`ResourceOptimizationSuggestions (${componentInstanceId}) unmounted`);
     },
     eventSubscriptions: [
       {
         eventType: EventType.RESOURCE_UPDATED,
         handler: event => {
-          console.warn(`Component ${componentId} received resource update:`, event);
+          console.warn(`Component ${componentInstanceId} received resource update:`, event);
           if (event?.data?.resourceType) {
-            refreshSuggestions();
+            void refreshSuggestions();
           }
         },
       },
       {
         eventType: EventType.RESOURCE_FLOW_UPDATED,
         handler: event => {
-          console.warn(`Component ${componentId} received flow update:`, event);
-          refreshSuggestions();
+          console.warn(`Component ${componentInstanceId} received flow update:`, event);
+          void refreshSuggestions();
         },
       },
     ],
@@ -199,7 +212,7 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
 
   // Load suggestions on mount and when dependencies change
   useEffect(() => {
-    refreshSuggestions();
+    void refreshSuggestions();
   }, [focusedResource, resourceRates, thresholdState, maxSuggestions, showAllSuggestions]);
 
   // Render the suggestions
@@ -217,7 +230,7 @@ export const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSugge
           )}
           <button
             className="refresh-button"
-            onClick={() => refreshSuggestions()}
+            onClick={() => void refreshSuggestions()}
             disabled={loading}
           >
             <RefreshCw className={loading ? 'spinning' : ''} size={16} />

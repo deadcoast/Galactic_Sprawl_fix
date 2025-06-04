@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base event interface that all events should extend
@@ -271,7 +271,7 @@ export class EventSystem {
             }
 
             // Call handler
-            subscription.handler(event);
+            void subscription.handler(event);
           } catch (error) {
             if (options?.errorMode === 'throw') {
               throw error;

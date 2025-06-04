@@ -45,7 +45,7 @@ export interface NetworkErrorFallbackProps {
 /**
  * Helper function to determine if an error is likely a network error
  */
-export function isNetworkError(error: Error | unknown): boolean {
+export function isNetworkError(error: Error | string | undefined): boolean {
   if (!error) {
     return false;
   }
@@ -116,7 +116,7 @@ export function NetworkErrorFallback({
   metadata = {},
 }: NetworkErrorFallbackProps) {
   // Generate appropriate message
-  const errorMessage = message || getDefaultMessage(operationType, statusCode);
+  const errorMessage = message ?? getDefaultMessage(operationType, statusCode);
 
   // Determine icon based on the error type
   const getIcon = () => {
@@ -182,7 +182,7 @@ export function InlineNetworkError({
     <div className="inline-network-error">
       <div className="inline-network-error__content">
         <WifiOff size={14} className="inline-network-error__icon" />
-        <span className="inline-network-error__message">{message || 'Network error'}</span>
+        <span className="inline-network-error__message">{message ?? 'Network error'}</span>
 
         {onRetry && (
           <button

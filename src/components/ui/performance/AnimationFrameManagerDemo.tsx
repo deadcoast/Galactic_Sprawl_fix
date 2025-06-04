@@ -1,15 +1,29 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  animationFrameManager,
-  AnimationPriority,
-  registerD3Timer,
-} from '../../../utils/performance/D3AnimationFrameManager';
+import
+  {
+    animationFrameManager,
+    AnimationPriority,
+    AnimationStatus,
+    AnimationType,
+    AnimationVisibility,
+    registerD3Timer,
+  } from '../../../utils/performance/D3AnimationFrameManager';
 
 interface AnimationFrameManagerDemoProps {
   width?: number;
   height?: number;
+}
+
+interface AnimationListItem {
+  id: string;
+  name: string;
+  status: AnimationStatus;
+  priority: AnimationPriority;
+  visibility: AnimationVisibility;
+  type: AnimationType;
+  elapsedTime?: number;
 }
 
 /**
@@ -45,17 +59,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
     syncGroups: 0,
     averageFrameTime: 0,
   });
-  const [registeredAnimations, setRegisteredAnimations] = useState<
-    Array<{
-      id: string;
-      name: string;
-      status: string;
-      priority: AnimationPriority;
-      visibility: string;
-      type: string;
-      elapsedTime: number;
-    }>
-  >([]);
+  const [registeredAnimations, setRegisteredAnimations] = useState<AnimationListItem[]>([]);
   const [selectedAnimation, setSelectedAnimation] = useState<string | null>(null);
 
   // Animation groups state
@@ -72,7 +76,12 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setManagerStatus(animationFrameManager.getStatus());
-      setRegisteredAnimations(animationFrameManager.getAnimations());
+      setRegisteredAnimations(
+        animationFrameManager.getAnimations().map(anim => ({
+          ...anim,
+          elapsedTime: undefined,
+        }))
+      );
     }, 1000);
 
     return () => clearInterval(interval);
@@ -85,8 +94,8 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
     // Clear unknownnown existing content
     d3.select(svgRef.current).selectAll('*').remove();
 
-    // Set up container
     const svg = d3.select(svgRef.current);
+
     const circleGroup = svg.append('g').attr('class', 'circle-animations');
     const pathGroup = svg.append('g').attr('class', 'path-animations');
     const backgroundGroup = svg
@@ -422,7 +431,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
                             <div className="detail-item">
                               <span className="detail-label">Elapsed:</span>
                               <span className="detail-value">
-                                {(anim.elapsedTime / 1000).toFixed(1)}s
+                                {anim.elapsedTime !== undefined ? (anim.elapsedTime / 1000).toFixed(1) + 's' : 'N/A'}
                               </span>
                             </div>
 

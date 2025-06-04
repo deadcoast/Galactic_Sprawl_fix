@@ -2,6 +2,7 @@ import { AlertTriangle } from 'lucide-react';
 import * as PIXI from 'pixi.js';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
+import { errorLoggingService, ErrorType } from 'src/services/logging/ErrorLoggingService';
 import { ThrusterEffect } from '../../../effects/component_effects/ThrusterEffect';
 import { useAnimation } from '../../../hooks/game/useAnimation';
 import { useAssets } from '../../../hooks/game/useAssets';
@@ -89,7 +90,7 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
     containerRef.current.appendChild(app.view as unknown as Node);
     appRef.current = app;
 
-    const loadSprites = async () => {
+    const loadSprites = () => {
       try {
         // Create textures from the frames
         texturesRef.current = Array.from({ length: 16 }, (_, i) => {
@@ -114,7 +115,10 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
 
         app.stage.addChild(container);
       } catch (error) {
-        console.error('Error loading Harbringer Galleon sprites:', error);
+        errorLoggingService.logError(
+          'Error loading Harbringer Galleon sprites:',
+          error as ErrorType
+        );
       }
     };
 

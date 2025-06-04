@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../services/logging/ErrorLoggingService';
 import { DataGenerator, realTimeDataService, StreamConfig } from '../services/RealTimeDataService';
 import { useService } from './services/useService';
 
@@ -119,7 +120,7 @@ export function useRealTimeData<T>({
               action: 'cleanupEffect',
               bufferId,
             }
-          ).slice(________);
+          );
         });
       }
     };

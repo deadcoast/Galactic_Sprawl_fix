@@ -6,11 +6,12 @@
  */
 
 import { useEffect, useRef } from 'react';
-import {
-  SessionPerformanceTracker,
-  TelemetryOptions,
-  UserInteractionData,
-} from '../../services/telemetry/SessionPerformanceTracker';
+import
+  {
+    SessionPerformanceTracker,
+    TelemetryOptions,
+    UserInteractionData,
+  } from '../../services/telemetry/SessionPerformanceTracker';
 
 // Create a singleton instance of the tracker to be shared across the application
 let globalTracker: SessionPerformanceTracker | null = null;
@@ -83,7 +84,7 @@ export default function useSessionPerformance(componentId: string) {
   const withPerformanceTracking = <T extends (...args: unknown[]) => unknown>(
     handler: T,
     interactionType: 'click' | 'hover' | 'scroll' | 'keypress' | 'custom' = 'click'
-  ): ((...args: Parameters<T>) => ReturnType<T>) => {
+  ): ((...args: Parameters<T>) => ReturnType<T> | unknown ) => {
     return (...args: Parameters<T>) => {
       const startTime = performance.now();
 
@@ -92,41 +93,39 @@ export default function useSessionPerformance(componentId: string) {
 
         // For promise-returning handlers, track completion when promise resolves
         if (result instanceof Promise) {
-          result
-            .then(() => {
-              if (trackerRef.current) {
-                trackerRef.current.trackUserInteraction({
-                  interactionType,
-                  targetComponent: componentId,
-                  timestamp: Date.now(),
-                  responseTime: performance.now() - startTime,
-                  successful: true,
-                });
-              }
-            })
-            .catch(() => {
-              if (trackerRef.current) {
-                trackerRef.current.trackUserInteraction({
-                  interactionType,
-                  targetComponent: componentId,
-                  timestamp: Date.now(),
-                  responseTime: performance.now() - startTime,
-                  successful: false,
-                });
-              }
-            });
-        } else {
-          // For synchronous handlers, track completion immediately
-          if (trackerRef.current) {
-            trackerRef.current.trackUserInteraction({
-              interactionType,
-              targetComponent: componentId,
-              timestamp: Date.now(),
-              responseTime: performance.now() - startTime,
-              successful: true,
-            });
-          }
-        }
+                  result
+                    .then(() => {
+                      if (trackerRef.current) {
+                        trackerRef.current.trackUserInteraction({
+                          interactionType,
+                          targetComponent: componentId,
+                          timestamp: Date.now(),
+                          responseTime: performance.now() - startTime,
+                          successful: true,
+                        });
+                      }
+                    })
+                    .catch(() => {
+                      if (trackerRef.current) {
+                        trackerRef.current.trackUserInteraction({
+                          interactionType,
+                          targetComponent: componentId,
+                          timestamp: Date.now(),
+                          responseTime: performance.now() - startTime,
+                          successful: false,
+                        });
+                      }
+                    });
+                }
+        else if (trackerRef.current) {
+                    trackerRef.current.trackUserInteraction({
+                      interactionType,
+                      targetComponent: componentId,
+                      timestamp: Date.now(),
+                      responseTime: performance.now() - startTime,
+                      successful: true,
+                    });
+                  }
 
         return result;
       } catch (error) {

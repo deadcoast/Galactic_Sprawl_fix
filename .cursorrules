@@ -1,8 +1,8 @@
-# .windsurfrules
+# .cursorrules
 
 This file contains all essential codebase patterns, structures, interfaces, and relationships.
 Refer to this file first when seeking context for code generation, correction, or analysis.
-BEGIN EVERY TASK BY CONSULTING .windsurfrules BEFORE IMPLEMENTING ANY SOLUTION.
+BEGIN EVERY TASK BY CONSULTING .cursorrules BEFORE IMPLEMENTING ANY SOLUTION.
 
 ## Correction and Code Implementation Guidelines
 
@@ -20,7 +20,7 @@ BEGIN EVERY TASK BY CONSULTING .windsurfrules BEFORE IMPLEMENTING ANY SOLUTION.
 
 ### REQUIRED STEPS
 
-1. Search .windsurfrules for relevant system patterns using #hashtag identifiers
+1. Search .cursorrules for relevant system patterns using #hashtag identifiers
 2. Document in Scratchpad which patterns were found and will be applied
 3. Only after documentation review, proceed with implementation
 4. Verify implementation against documented patterns before submission
@@ -29,31 +29,31 @@ BEGIN EVERY TASK BY CONSULTING .windsurfrules BEFORE IMPLEMENTING ANY SOLUTION.
 
 ### Context Source
 
-`.windsurfrules` is the primary source of truth for code patterns, structures, interfaces, and relationships. Always refer to this file first when seeking context for code generation, correction, or analysis.
+`.cursorrules` is the primary source of truth for code patterns, structures, interfaces, and relationships. Always refer to this file first when seeking context for code generation, correction, or analysis.
 
 ### Context Retrieval Process
 
-- When analyzing or generating code, first search `.windsurfrules` for relevant system sections using `(#hashtag)` identifiers
+- When analyzing or generating code, first search `.cursorrules` for relevant system sections using `(#hashtag)` identifiers
 - Look for code patterns, interfaces, and type structures in the identified sections
 - Verify implementation approaches against established patterns
 - If context is insufficient, ask the user for clarification
 
 ### Architecture Alignment
 
-- Ensure all implementations follow patterns in `.windsurfcontext`
+- Ensure all implementations follow patterns in `.CURSOR_CONTEXT`
 - Maintain consistency with existing type structures and interfaces
 - Follow established naming conventions and implementation patterns
 - If context is missing, ask the user before implementing new patterns
 
 ### Incremental Implementation
 
-- Generate code in manageable steps aligned with patterns in `.windsurfcontext`
+- Generate code in manageable steps aligned with patterns in `.CURSOR_CONTEXT`
 - Review implementations for consistency with documented patterns
 - Identify and resolve gaps between implementation and documentation
 
 ### Context Maintenance
 
-- When discovering new patterns or implementations, suggest updates to `.windsurfcontext`
+- When discovering new patterns or implementations, suggest updates to `.CURSOR_CONTEXT`
 - Format new context entries according to the established structure
 - Ensure new entries include concrete code examples, not explanations
 

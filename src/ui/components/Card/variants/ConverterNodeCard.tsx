@@ -1,9 +1,10 @@
 import React, { forwardRef, MouseEventHandler, useMemo } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../../services/logging/ErrorLoggingService';
 import type { ConverterFlowNode } from '../../../../types/resources/ResourceConversionTypes'; // Import the specific type
 import { Text } from '../../typography/Text'; // Assuming path
 import { Card, CardProps } from '../Card';
@@ -67,12 +68,12 @@ export const ConverterNodeCard = forwardRef<HTMLDivElement, ConverterNodeCardPro
     } else if (React.isValidElement(potentialTitle)) {
       cardTitle = potentialTitle;
     } else {
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[ConverterNodeCard] Unexpected type for title prop: ${String('[potentialTitle]')}. Defaulting to ID.`,
         {
           component: 'ConverterNodeCard',
           converterId: converter.id,
-          warningType: ErrorType.UI,
+          warningType: ErrorType.UI_WARNING,
           severity: ErrorSeverity.LOW,
         }
       );

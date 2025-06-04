@@ -18,6 +18,13 @@ const statusColors: Record<ShipStatus, string> = {
   [ShipStatus.UPGRADING]: 'secondary.light',
   [ShipStatus.DESTROYED]: 'error.dark',
   [ShipStatus.ASSIGNED]: 'primary.main',
+  [ShipStatus.MAINTENANCE]: 'secondary.main',
+  [ShipStatus.INVESTIGATING]: 'info.main',
+  [ShipStatus.PATROLLING]: 'info.main',
+  [ShipStatus.RETREATING]: 'warning.dark',
+  [ShipStatus.COMBAT]: 'warning.main',
+  [ShipStatus.ACTIVE]: 'success.light',
+  [ShipStatus.INACTIVE]: 'grey.600',
 };
 
 // Define the simplified data structure for ShipCard

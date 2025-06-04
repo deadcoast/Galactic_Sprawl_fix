@@ -147,6 +147,14 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
     this.metrics.debug_logged = (this.metrics.debug_logged ?? 0) + 1;
   }
 
+  /**
+   * Indicates whether the service has finished initialization and is ready.
+   * This aligns with BaseService contract expected by ServiceProvider.
+   */
+  public isReady(): boolean {
+    return true; // Considered ready once instantiated
+  }
+
   protected getVersion(): string {
     return '1.0.0';
   }
@@ -166,3 +174,4 @@ export const errorLoggingService = ErrorLoggingServiceImpl.getInstance();
 // Export enums directly, use 'export type' for type aliases
 export { ErrorSeverity, ErrorType };
 export type { ErrorDetails, IErrorLog };
+

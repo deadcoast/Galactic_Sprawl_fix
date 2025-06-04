@@ -48,6 +48,8 @@ export interface PlayerShipStats extends CommonShipStats {
   // Add optional carrier-specific stats here
   maxFighters?: number;
   repairRate?: number;
+  /** Optional stealth rating (0-100) */
+  stealth?: number;
 }
 
 // Player Ship Ability
@@ -79,6 +81,8 @@ export interface PlayerShip /* extends CommonShip */ {
   fighters?: Fighter[]; // Add optional fighters list
   dockingBays?: DockingBay[]; // Add optional dockingBays list
   alerts?: string[]; // ADD optional alerts here
+  /** Currently assigned task identifier */
+  currentTask?: string;
 }
 
 // Player Ship Config

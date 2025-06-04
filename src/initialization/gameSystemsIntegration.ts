@@ -1,10 +1,11 @@
+import { eventSystem } from '../lib/events/UnifiedEventSystem';
 import { moduleEventBus } from '../lib/modules/ModuleEvents';
 import { CombatManager } from '../managers/ManagerRegistry';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { isTechTreeNodeUnlockedEvent, TechTreeManager } from '../managers/game/techTreeManager';
 import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
-import { MiningShipManagerImpl } from '../managers/mining/MiningShipManager';
+import { MiningShipManager } from '../managers/mining/MiningShipManager';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
 import { ResourceExchangeManager } from '../managers/resource/ResourceExchangeManager';
 import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
@@ -12,11 +13,10 @@ import { ResourceIntegration } from '../managers/resource/ResourceIntegration';
 import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
 import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
 import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService
+  } from '../services/logging/ErrorLoggingService';
 import { EventType } from '../types/events/EventTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
@@ -115,7 +115,7 @@ export function integrateWithGameSystems(): () => void {
   const techSystemComm = getSystemCommunication('tech-system');
 
   // Initialize cleanup functions array
-  const cleanupFunctions: Array<() => void> = [];
+  const cleanupFunctions: (() => void)[] = [];
 
   // ===== Resource System Integration =====
 
@@ -199,7 +199,7 @@ export function integrateWithGameSystems(): () => void {
   // ===== Mining System Integration =====
 
   // Get mining system instance using type-safe access pattern
-  const miningManager = getService<MiningShipManagerImpl>('miningManager');
+  const miningManager = getService<MiningShipManager>('miningManager');
 
   if (miningManager && thresholdManager && flowManager) {
     // Create mining resource integration
@@ -374,7 +374,7 @@ export function integrateWithGameSystems(): () => void {
         });
 
         // Handle different tech categories
-        switch (payload.node.category) {
+        switch (payload.node?.category) {
           case 'mining':
           case 'miningFleet':
             // Notify mining systems of the new tech
@@ -400,7 +400,7 @@ export function integrateWithGameSystems(): () => void {
 
           default:
             // Unknown category
-            console.log('Unknown tech category unlocked:', payload.node.category);
+            console.log('Unknown tech category unlocked:', payload.node?.category);
         }
       } catch (error) {
         console.error(
@@ -503,7 +503,7 @@ function getCombatEventPriority(type: string): number {
   }
 }
 
-function setupCrossManagerCommunication() {
+export function setupCrossManagerCommunication() {
   // Example: Technology unlocks affecting mining efficiency
   eventSystem.subscribe(EventType.TECH_NODE_UNLOCKED, (payload: unknown) => {
     // Tech Tree Updates
@@ -529,14 +529,14 @@ function setupCrossManagerCommunication() {
       });
 
       // Trigger downstream effects based on tech category
-      switch (payload.node.category) {
+      switch (payload.node?.category) {
         case 'mining':
         case 'miningFleet':
           errorLoggingService.logInfo(`Mining tech unlocked: ${payload.nodeId}`, {
             system: 'gameSystemsIntegration',
             event: EventType.TECH_NODE_UNLOCKED,
             nodeId: payload.nodeId,
-            category: payload.node.category,
+            category: payload.node?.category,
           });
           // Example: Unlock new mining modules or improve efficiency
           break;
@@ -568,11 +568,11 @@ function setupCrossManagerCommunication() {
           // Example: Trigger unique game events or unlock powerful abilities
           break;
         default:
-          errorLoggingService.logwarn(`Unknown tech category unlocked: ${payload.node.category}`, {
+          errorLoggingService.logWarn(`Unknown tech category unlocked: ${payload.node?.category}`, {
             system: 'gameSystemsIntegration',
             event: EventType.TECH_NODE_UNLOCKED,
             nodeId: payload.nodeId,
-            category: payload.node.category,
+            category: payload.node?.category,
           });
       }
     }

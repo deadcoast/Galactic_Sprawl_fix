@@ -204,7 +204,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       // Handle custom renderers passed via props
       const CustomRenderer = combinedRenderers[analysisType];
       if (CustomRenderer) {
-        errorLoggingService.logwarn(
+        errorLoggingService.logWarn(
           `Rendering analysis type "${analysisType}" with provided custom renderer.`
         );
         // Cast Renderer to ComponentType<any> for JSX compatibility

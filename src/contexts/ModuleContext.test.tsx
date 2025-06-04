@@ -1176,7 +1176,7 @@ describe('ModuleContext', () => {
   it('handles event validation correctly', async () => {
     // Mock console.error to detect validation errors
     const originalConsoleError = console.error;
-    const mockConsoleError = jest.fn();
+    const mockConsoleError = jest.fn() as unknown as jest.MockedFunction<typeof console.error>;
     console.error = mockConsoleError;
 
     try {

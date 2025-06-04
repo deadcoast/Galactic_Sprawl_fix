@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Component lifecycle phases
@@ -138,7 +139,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         // Call onError handler if provided
         if (options?.onError) {
           try {
-            options?.onError(err, phase, props);
+            void options?.onError(err, phase, props);
           } catch (handlerError) {
             errorLoggingService.logError(
               handlerError instanceof Error
@@ -202,7 +203,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
       isMountedRef.current = true;
 
       // Execute mount lifecycle
-      safeExecute(options?.onMount, LifecyclePhase.MOUNT, props);
+      void safeExecute(options?.onMount, LifecyclePhase.MOUNT, props);
 
       // Set phase to idle after mount
       setPhase(LifecyclePhase.IDLE);
@@ -213,7 +214,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         setPhase(LifecyclePhase.UNMOUNT);
 
         // Execute unmount lifecycle
-        safeExecute(options?.onUnmount, LifecyclePhase.UNMOUNT, props);
+        void safeExecute(options?.onUnmount, LifecyclePhase.UNMOUNT, props);
       };
     }, []);
 
@@ -236,7 +237,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         setPhase(LifecyclePhase.UPDATE);
 
         // Execute update lifecycle
-        safeExecute(
+        void safeExecute(
           options?.onUpdate as (prevProps: TProps, nextProps: TProps) => void | Promise<void>,
           LifecyclePhase.UPDATE,
           prevPropsRef.current,

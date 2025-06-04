@@ -1,11 +1,12 @@
 import * as PIXI from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { assetManager } from '../../managers/game/assetManager';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 
 interface UseAssetsResult {
   isLoading: boolean;
@@ -36,7 +37,7 @@ export function useAssets(bundleNames?: string[]): UseAssetsResult {
       } catch (error) {
         errorLoggingService.logError(
           error instanceof Error ? error : new Error('Error loading assets'),
-          ErrorType.RESOURCE,
+          ErrorType.EXTERNAL_SERVICE,
           ErrorSeverity.HIGH,
           { componentName: 'useAssets', action: 'loadAssets', bundleNames: bundleNames?.join(',') }
         );
@@ -45,7 +46,7 @@ export function useAssets(bundleNames?: string[]): UseAssetsResult {
     };
 
     if (!assetManager.isLoaded()) {
-      loadAssets();
+      void loadAssets();
     } else {
       setIsLoading(false);
       setProgress(1);

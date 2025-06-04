@@ -1,24 +1,26 @@
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material';
+import
+  {
+    Alert,
+    Box,
+    Button,
+    CircularProgress,
+    FormControl,
+    Grid,
+    InputLabel,
+    MenuItem,
+    Select,
+    SxProps,
+    Typography,
+  } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ShipCard, ShipCardData } from './ShipCard';
-import SelectedShipDetails, { SelectedShipDetailsData } from './SelectedShipDetails';
-import { mapShipToSelectedShipData, mapShipToShipCardData } from './hangarUtils';
 import { getResourceManager } from '../../../../managers/ManagerRegistry';
 import { OfficerManager } from '../../../../managers/module/OfficerManager';
 import { StandardShipHangarManager } from '../../../../managers/ships/ShipManager';
 import { PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
 import { Ship } from '../../../../types/ships/ShipTypes';
+import SelectedShipDetails, { SelectedShipDetailsData } from './SelectedShipDetails';
+import { ShipCard, ShipCardData } from './ShipCard';
+import { mapShipToSelectedShipData, mapShipToShipCardData } from './hangarUtils';
 
 interface ShipHangarProps {
   hangarId: string;
@@ -103,7 +105,7 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 
   }
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2 } as SxProps}>
       <Typography variant="h5" gutterBottom>
         Ship Hangar ({hangarId})
       </Typography>
@@ -120,7 +122,7 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 
             label="Ship Class"
             onChange={e => setSelectedBuildClass(e.target.value as PlayerShipClass)}
           >
-            {Object.values(PlayerShipClass).map(shipClass => (
+            {(Object.values(PlayerShipClass) as string[]).map(shipClass => (
               <MenuItem key={shipClass} value={shipClass}>
                 {shipClass}
               </MenuItem>

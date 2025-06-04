@@ -12,6 +12,7 @@ import {
   ErrorType,
 } from '../../../services/logging/ErrorLoggingService';
 import { UIEventType } from '../../../types/ui/EventTypes';
+import { createPortal } from 'react-dom';
 
 export interface ModalProps {
   /**
@@ -159,7 +160,7 @@ export function Modal({
       // Emit modal opened event
       try {
         const event = new CustomEvent(UIEventType.MODAL_OPENED, {
-          detail: { modalId: title || 'modal' },
+          detail: { modalId: title ?? 'modal' },
         });
         document.dispatchEvent(event);
       } catch (error) {
@@ -193,7 +194,7 @@ export function Modal({
           // Emit modal closed event
           try {
             const event = new CustomEvent(UIEventType.MODAL_CLOSED, {
-              detail: { modalId: title || 'modal' },
+              detail: { modalId: title ?? 'modal' },
             });
             document.dispatchEvent(event);
           } catch (error) {
@@ -272,7 +273,7 @@ export function Modal({
       className={overlayClass}
       onClick={handleOverlayClick}
       style={{
-        zIndex: zIndex || 1400,
+        zIndex: zIndex ?? 1400,
         transition: `opacity ${animationDuration}ms ease`,
         display: 'flex',
         alignItems: centered ? 'center' : 'flex-start',
@@ -311,7 +312,7 @@ export function Modal({
         data-testid="modal-content"
       >
         {/* Modal Header */}
-        {(title || showCloseButton) && (
+        {(title ?? showCloseButton) && (
           <div
             className="modal-header"
             style={{
@@ -393,7 +394,7 @@ export function Modal({
         )}
       </div>
     </div>,
-    document.getElementById('modal-portal') || document.body
+    document.getElementById('modal-portal') ?? document.body
   );
 }
 

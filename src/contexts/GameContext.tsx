@@ -557,27 +557,27 @@ export const GameProvider: React.FC<GameProviderProps> = ({
 
       // Subscribe to individual event types - this approach works with the test mocks
       const unsubStarted = gameEvents.subscribe(
-        startedEventType as unknown,
+        startedEventType as unknown as EventType,
         createSafeHandler(event => handleGameStarted(event, dispatch))
       );
 
       const unsubPaused = gameEvents.subscribe(
-        pausedEventType as unknown,
+        pausedEventType as unknown as EventType,
         createSafeHandler(event => handleGamePaused(event, dispatch))
       );
 
       const unsubResumed = gameEvents.subscribe(
-        resumedEventType as unknown,
+        resumedEventType as unknown as EventType,
         createSafeHandler(event => handleGameResumed(event, dispatch))
       );
 
       const unsubStopped = gameEvents.subscribe(
-        stoppedEventType as unknown,
+        stoppedEventType as unknown as EventType,
         createSafeHandler(event => handleGameStopped(event, dispatch))
       );
 
       const unsubTimeUpdated = gameEvents.subscribe(
-        timeUpdatedEventType as unknown,
+        timeUpdatedEventType as unknown as EventType,
         createSafeHandler(event => handleTimeUpdated(event, dispatch))
       );
 
@@ -656,7 +656,7 @@ export const useGameActions = () => {
      * with discriminated union types. We know the context has a manager property but
      * TypeScript cannot infer this properly from the union type.
      */
-    return (context as unknown).manager || gameManager;
+    return (context as unknown as { manager: GameManager }).manager || gameManager;
   }, [context]);
 
   return {

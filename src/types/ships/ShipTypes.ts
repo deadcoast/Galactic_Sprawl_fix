@@ -1,36 +1,21 @@
 import { Position, Tier, Velocity } from '../core/GameTypes';
 import { WeaponMount } from '../weapons/WeaponTypes';
-import
-  {
-    CommonShipCapabilities, // Re-add import
+import {
+    CommonShipCapabilities,
     CommonShipStats,
     ShipCargo,
+    ShipCategory,
     ShipStatus,
-  } from './CommonShipTypes';
+} from './CommonShipTypes';
 import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
 import { PlayerShipClass } from './PlayerShipTypes';
 
-export { ShipStatus };
+export { ShipCategory, ShipStatus };
 // Alias used by UI components expecting UnifiedShipStatus
 export type UnifiedShipStatus = ShipStatus;
 // Provide runtime alias for enum to satisfy value usage
 export const UnifiedShipStatus = ShipStatus;
 export type { FactionId, Position, ShipCargo, Tier }; // Export types only
-
-/**
- * Consolidated Ship Category Enum
- */
-export enum ShipCategory {
-  combat = 'combat',
-  RECON = 'recon',
-  MINING = 'mining',
-  TRANSPORT = 'transport',
-  SCOUT = 'scout',
-  FIGHTER = 'fighter',
-  CRUISER = 'cruiser',
-  BATTLESHIP = 'battleship',
-  CARRIER = 'carrier',
-}
 
 /**
  * Consolidated Experience object
@@ -56,6 +41,7 @@ export interface Ship {
   velocity?: Velocity;
   faction: FactionId;
   tier: Tier;
+  level?: number;
   experience: ShipExperience;
   fuel: number;
   maxFuel: number;
@@ -130,13 +116,6 @@ export interface ReconCapabilities extends Partial<CommonShipCapabilities> {
   weapons?: number;       // Optional weapons override/detail
   // Inherits canScan, canJump, etc. from CommonShipCapabilities via extends Partial<...>
 }
-
-// --- Define Specific Ship Type Aliases ---
-
-/**
- * Represents a ship specifically identified as a Recon ship.
- */
-export type ReconShip = Ship & { details: ReconShipDetails };
 
 /**
  * Represents a summarized view of a ship, suitable for lists.
@@ -229,3 +208,55 @@ export interface CombatStatsDetails {
   evasion: number;
   // Add other combat stats as needed
 }
+
+// -----------------------------------------------------------------------------
+// Legacy compatibility aliases (to support older modules like ShipFactory)
+// -----------------------------------------------------------------------------
+
+/**
+ * BaseShip is now an alias to the core Ship interface.
+ * Maintained for backward-compatibility with factory modules.
+ */
+export type BaseShip = Ship;
+
+/**
+ * CombatShip alias with narrowed details.
+ */
+export type CombatShip = Ship & {
+  class: PlayerShipClass | FactionShipClass;
+  details: CombatShipDetails;
+  [key: string]: unknown;
+};
+
+/**
+ * MiningShip alias with narrowed details.
+ */
+export type MiningShip = Ship & {
+  class: PlayerShipClass | FactionShipClass;
+  details: MiningShipDetails;
+  [key: string]: unknown;
+};
+
+/**
+ * DetailedShipStats extends CommonShipStats with combat-specific fields that
+ * legacy code expects for combat ships.
+ */
+export interface DetailedShipStats extends CommonShipStats {
+  armor: number;
+  accuracy: number;
+  evasion: number;
+  criticalChance: number;
+  criticalDamage: number;
+  armorPenetration: number;
+  shieldPenetration: number;
+}
+
+/**
+ * ReconShip alias with narrowed details.
+ */
+export type ReconShip = Ship & {
+  class: PlayerShipClass | FactionShipClass;
+  details: ReconShipDetails;
+  [key: string]: unknown;
+};
+// -----------------------------------------------------------------------------

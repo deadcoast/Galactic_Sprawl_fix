@@ -6,11 +6,11 @@
  */
 
 import {
-  FlowConnection,
-  FlowNode,
-  ResourceState,
-  ResourceTransfer,
-  ResourceType,
+    FlowConnection,
+    FlowNode,
+    ResourceState,
+    ResourceTransfer,
+    ResourceType,
 } from '../../types/resources/ResourceTypes';
 
 // Input message types that can be sent to the worker
@@ -66,14 +66,18 @@ export class ResourceFlowWorkerUtil {
       reject: (reason: unknown) => void;
       startTime: number;
     }
-  > = new Map();
+  > = new Map<string, {
+    resolve: (value: unknown) => void;
+    reject: (reason: unknown) => void;
+    startTime: number;
+  }>();
   private isSupported: boolean;
-  private pendingTasks: Array<{
+  private pendingTasks: {
     type: WorkerMessageType;
     data: unknown;
     resolve: (value: unknown) => void;
     reject: (reason: unknown) => void;
-  }> = [];
+  }[] = [];
 
   /**
    * Create a new ResourceFlowWorkerUtil instance
@@ -158,32 +162,51 @@ export class ResourceFlowWorkerUtil {
    * Send a task to the worker and return a promise for the result
    */
   private sendToWorker(type: WorkerMessageType, data: unknown): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      // If worker isn't supported or failed to initialize, reject
-      if (!this.isSupported) {
-        reject(new Error('Web Workers are not supported in this environment'));
-        return;
-      }
+    const MAX_RETRIES = 3;
+    const INITIAL_DELAY_MS = 250;
 
-      // If worker isn't ready yet, queue the task
-      if (!this.worker) {
-        this.pendingTasks.push({ type, data, resolve, reject });
-        return;
-      }
+    const attemptSend = (attempt: number): Promise<unknown> => {
+      return new Promise((resolve, reject) => {
+        // If worker isn't supported or failed to initialize, reject
+        if (!this.isSupported) {
+          reject(new Error('Web Workers are not supported in this environment'));
+          return;
+        }
 
-      // Create a unique task ID
-      const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        // If worker isn't ready yet, queue the task
+        if (!this.worker) {
+          this.pendingTasks.push({ type, data, resolve, reject });
+          return;
+        }
 
-      // Store task details for tracking
-      this.tasks.set(taskId, {
-        resolve,
-        reject,
-        startTime: Date.now(),
+        // Create a unique task ID
+        const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Store task details for tracking
+        this.tasks.set(taskId, {
+          resolve,
+          reject,
+          startTime: Date.now(),
+        });
+
+        // Send message to worker
+        this.worker.postMessage({ type, data, taskId } as WorkerInput);
       });
+    };
 
-      // Send message to worker
-      this.worker.postMessage({ type, data, taskId } as WorkerInput);
-    });
+    const executeWithRetry = (attempt: number): Promise<unknown> => {
+      return attemptSend(attempt).catch(err => {
+        if (attempt < MAX_RETRIES) {
+          const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
+          return new Promise(resolve => setTimeout(resolve, delay)).then(() =>
+            executeWithRetry(attempt + 1)
+          );
+        }
+        throw err;
+      });
+    };
+
+    return executeWithRetry(0);
   }
 
   /**
@@ -216,7 +239,7 @@ export class ResourceFlowWorkerUtil {
     connections: FlowConnection[],
     batchSize: number
   ): Promise<{
-    batchResults: Array<{ nodeId: string; connectionCount: number; processed: boolean }>;
+    batchResults: { nodeId: string; connectionCount: number; processed: boolean }[];
     totalProcessed: number;
   }> {
     try {
@@ -227,7 +250,7 @@ export class ResourceFlowWorkerUtil {
       });
 
       return result as {
-        batchResults: Array<{ nodeId: string; connectionCount: number; processed: boolean }>;
+        batchResults: { nodeId: string; connectionCount: number; processed: boolean }[];
         totalProcessed: number;
       };
     } catch (error) {
@@ -325,15 +348,17 @@ export class ResourceFlowWorkerUtil {
    * Terminate the worker
    */
   public terminate(): void {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-    }
-
-    // Reject unknown pending tasks
+    // Reject any pending or in-flight tasks so callers receive an immediate error.
     for (const [taskId, task] of this.tasks.entries()) {
       task.reject(new Error('Worker terminated'));
       this.tasks.delete(taskId);
+    }
+
+    // Gracefully shut down the underlying Web Worker, if it exists.
+    if (this.worker) {
+      this.worker.removeEventListener('message', this.handleWorkerMessage);
+      this.worker.terminate();
+      this.worker = null;
     }
   }
 }

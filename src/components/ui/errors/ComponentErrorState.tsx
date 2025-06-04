@@ -10,12 +10,12 @@
 import { AlertCircle, AlertTriangle, FileX, RefreshCw } from 'lucide-react';
 import * as React from 'react';
 import { forwardRef, useCallback } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../services/logging/ErrorLoggingService';
 
 /**
  * Base props for all error state components

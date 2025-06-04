@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../services/logging/ErrorLoggingService';
 import { webglService } from '../services/WebGLService';
 import { useService } from './services/useService';
 
@@ -57,7 +58,6 @@ export function useGPUCompute({
       setError(err instanceof Error ? err : new Error(String(err)));
     }
 
-    // Cleanup
     return () => {
       if (!service) {
         return;
@@ -97,7 +97,7 @@ export function useGPUCompute({
     };
   }, [service, computeShader, inputData, outputSize]);
 
-  const compute = useCallback(async (): Promise<Float32Array> => {
+  const compute = useCallback((): Promise<Float32Array> => {
     if (!service) {
       throw new Error('WebGL service not available');
     }
@@ -133,10 +133,10 @@ export function useGPUCompute({
       const output = new Float32Array(outputSize);
       service.readStorageBuffer(outputBufferRef.current, output);
 
-      return output;
+      return Promise.resolve(output);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      setError(error).slice(________);
+      setError(error);
       throw error;
     } finally {
       setIsComputing(false);

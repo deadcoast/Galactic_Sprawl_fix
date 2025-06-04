@@ -6,11 +6,12 @@
 
 import { Box, Database, RefreshCw } from 'lucide-react';
 import React from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { ComponentErrorState } from './ComponentErrorState';
 
@@ -51,7 +52,7 @@ export function ResourceLoadingError({
 }: ResourceLoadingErrorProps) {
   // Generate appropriate message based on resource type
   const errorMessage =
-    message ||
+    message ??
     (resourceType
       ? `Failed to load ${resourceType.toLowerCase()} resources`
       : 'Failed to load resources');
@@ -61,7 +62,7 @@ export function ResourceLoadingError({
     if (error) {
       const errorObj = typeof error === 'string' ? new Error(error) : error;
 
-      errorLoggingService.logError(errorObj, ErrorType.RESOURCE, ErrorSeverity.MEDIUM, {
+      errorLoggingService.logError(errorObj, ErrorType.DATA_FETCH, ErrorSeverity.MEDIUM, {
         component: 'ResourceLoadingError',
         resourceType,
         ...metadata,
@@ -76,7 +77,7 @@ export function ResourceLoadingError({
       level="medium"
       onRetry={onRetry}
       componentName="ResourceLoading"
-      errorType={ErrorType.RESOURCE}
+      errorType={ErrorType.DATA_FETCH}
       logError={false} // Already logged in useEffect
       compact={compact}
       className={`resource-loading-error ${className}`}
@@ -99,7 +100,7 @@ export function InlineResourceLoadingError({
 }: Pick<ResourceLoadingErrorProps, 'resourceType' | 'onRetry' | 'message'>) {
   // Generate appropriate message based on resource type
   const errorMessage =
-    message ||
+    message ??
     (resourceType ? `Failed to load ${resourceType.toLowerCase()}` : 'Resource unavailable');
 
   return (

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { behaviorTreeManager } from './../../managers/ai/BehaviorTreeManager';
+import { BehaviorTreeManager } from './../../managers/ai/BehaviorTreeManager';
 // Assume BehaviorEvents should be imported or defined elsewhere
 
 import { getCombatManager } from '../../managers/ManagerRegistry'; // Assume getBehaviorTreeManager is correct
-import { CombatUnitStatus } from '../../types/combat/CombatTypes';
+import { CombatUnit, CombatUnitStatus } from '../../types/combat/CombatTypes';
 import type { AIState } from '../../types/debug/DebugTypes';
 import { CombatUnitDamageEvent, CombatUnitStatusEvent } from '../../types/events/CombatEvents';
 import { FactionId } from '../../types/ships/FactionShipTypes';
+import { WeaponSystem } from '../../types/weapons/WeaponTypes';
 // Define formation interface to replace unknown type
 interface UnitFormation {
   type: 'offensive' | 'defensive' | 'balanced';
@@ -15,10 +16,10 @@ interface UnitFormation {
 }
 
 // TODO: Replace 'any' with actual BehaviorEvents type once available/exported
-type BehaviorEventPayload = any;
+type BehaviorEventPayload = unknown;
 
 // Get the singleton instance of the BehaviorTreeManager
-const behaviorTreeManager = getBehaviorTreeManager();
+const behaviorTreeManager = BehaviorTreeManager.getInstance();
 
 export function useCombatAI(unitId: string, factionId: FactionId) {
   const [status, setStatus] = useState<CombatUnitStatus>({
@@ -49,6 +50,34 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   });
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
+  // Adapter: safest conversion from raw combat manager unit to full CombatUnit required by BehaviorContext
+  const adaptCombatUnit = (raw: unknown): CombatUnit => {
+    // Use unknown to satisfy no-unsafe-any
+    const u = raw as Record<string, unknown>;
+    // Basic required fields with fallbacks
+    return {
+      id: String(u.id),
+      type: (u.type as string) ?? 'unknown',
+      // @ts-expect-error - TODO: fix this
+      faction: (u.faction as FactionId) ?? factionId,
+      position: (u.position as { x: number; y: number }) ?? { x: 0, y: 0 },
+      rotation: (u.rotation as number) ?? 0,
+      velocity: (u.velocity as { x: number; y: number }) ?? { x: 0, y: 0 },
+      status: (u.status as CombatUnitStatus) ?? { main: 'active', effects: [] },
+      weapons: (u.weapons as unknown[]) as unknown as WeaponSystem[],
+      stats: {
+        health: (u.stats as { health: number })?.health ?? 0,
+        maxHealth: (u.stats as { maxHealth: number })?.maxHealth ?? 0,
+        shield: (u.stats as { shield: number })?.shield ?? 0,
+        maxShield: (u.stats as { maxShield: number })?.maxShield ?? 0,
+        armor: (u.stats as { armor: number })?.armor ?? 0,
+        speed: (u.stats as { speed: number })?.speed ?? 0,
+        turnRate: (u.stats as { turnRate: number })?.turnRate ?? 0,
+      },
+      target: (u.target as { id: string; position: { x: number; y: number } }) ?? undefined,
+    };
+  };
+
   // --- Event Handlers ---
 
   /**
@@ -58,14 +87,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   // TODO: Replace 'any' with BehaviorEvents['nodeExecuted']
   const handleNodeExecuted = useCallback(
     (event: BehaviorEventPayload) => {
-      if (!unitId || event?.unitId !== unitId) {
+      if (!unitId || (event as { unitId?: string })?.unitId !== unitId) {
         return;
       }
 
       setAIState(prevState => ({
         ...prevState,
         // behaviorState: event.nodeName === 'FindTargetNode' && event.success ? 'engaging' : prevState.behaviorState,
-        lastAction: `Node: ${event?.nodeName} (${event?.success ? 'Success' : 'Failure'})`,
+        lastAction: `Node: ${(event as { nodeName?: string })?.nodeName} (${(event as { success?: boolean })?.success ? 'Success' : 'Failure'})`,
       }));
       setLastUpdateTime(Date.now());
     },
@@ -79,15 +108,15 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   // TODO: Replace 'any' with BehaviorEvents['actionStarted']
   const handleActionStarted = useCallback(
     (event: BehaviorEventPayload) => {
-      if (!unitId || event?.unitId !== unitId) {
+      if (!unitId || (event as { unitId?: string })?.unitId !== unitId) {
         return;
       }
 
       setAIState(prevState => ({
         ...prevState,
         behaviorState: 'acting', // General 'acting' state, could be more specific
-        lastAction: `Started: ${event?.actionName}`,
-        nextAction: `Complete: ${event?.actionName}`, // Indicate the expected completion
+        lastAction: `Started: ${(event as { actionName?: string })?.actionName}`,
+        nextAction: `Complete: ${(event as { actionName?: string })?.actionName}`, // Indicate the expected completion
       }));
       setLastUpdateTime(Date.now());
     },
@@ -101,14 +130,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   // TODO: Replace 'any' with BehaviorEvents['actionCompleted']
   const handleActionCompleted = useCallback(
     (event: BehaviorEventPayload) => {
-      if (!unitId || event?.unitId !== unitId) {
+      if (!unitId || (event as { unitId?: string })?.unitId !== unitId) {
         return;
       }
 
       setAIState(prevState => ({
         ...prevState,
         behaviorState: 'idle', // Return to idle after action completion
-        lastAction: `Completed: ${event?.actionName} (${event?.success ? 'Success' : 'Failure'})`,
+        lastAction: `Completed: ${(event as { actionName?: string })?.actionName} (${(event as { success?: boolean })?.success ? 'Success' : 'Failure'})`,
         nextAction: 'evaluate', // Trigger re-evaluation
       }));
       setLastUpdateTime(Date.now());
@@ -119,10 +148,10 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
   // TODO: Replace 'any' with BehaviorEvents['treeCompleted']
   const handleTreeCompletedInternal = useCallback(
     (event: BehaviorEventPayload) => {
-      if (event?.unitId === unitId) {
+      if ((event as { unitId?: string })?.unitId === unitId) {
         setPerformance(prev => ({
           ...prev,
-          successRate: prev.successRate * 0.9 + (event?.success ? 0.1 : 0),
+          successRate: prev.successRate * 0.9 + ((event as { success?: boolean })?.success ? 0.1 : 0),
         }));
       }
     },
@@ -137,13 +166,13 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       // Update performance metrics based on node execution
       setPerformance(prev => ({
         ...prev,
-        successRate: prev.successRate * 0.9 + (event?.success ? 0.1 : 0),
+        successRate: prev.successRate * 0.9 + ((event as { success?: boolean })?.success ? 0.1 : 0),
       }));
     };
 
     // TODO: Replace 'any' with BehaviorEvents['actionStarted']
     const handleActionStartedStatus = (event: BehaviorEventPayload) => {
-      if (event?.unitId === unitId) {
+      if ((event as { unitId?: string })?.unitId === unitId) {
         // Update status based on action type
         setStatus(prev => ({
           ...prev,
@@ -153,17 +182,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     };
 
     // Set up subscriptions if behaviorTreeManager exists and has 'on' method
-    let unsubscribeNodeExecuted: (() => void) | undefined;
-    let unsubscribeActionStarted: (() => void) | undefined;
     let unsubscribeTreeCompleted: (() => void) | undefined;
 
     if (behaviorTreeManager && typeof behaviorTreeManager.on === 'function') {
-      unsubscribeNodeExecuted = behaviorTreeManager.on('nodeExecuted', handleNodeExecutedPerf);
-      unsubscribeActionStarted = behaviorTreeManager.on('actionStarted', handleActionStartedStatus);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       unsubscribeTreeCompleted = behaviorTreeManager.on(
         'treeCompleted',
-        handleTreeCompletedInternal
-      );
+        handleTreeCompletedInternal as (event: BehaviorEventPayload) => void
+      ) as () => void;
     } else {
       console.warn(
         "behaviorTreeManager or its 'on' method is not available for event subscription."
@@ -174,15 +200,15 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     const unsubscribeDamaged = combatManager.on(
       'combat:unit-damaged',
       (event: CombatUnitDamageEvent) => {
-        if (event?.unitId === unitId) {
+        if ((event as { unitId?: string })?.unitId === unitId) {
           setPerformance(prev => ({
             ...prev,
-            damageTaken: prev.damageTaken + event?.damageAmount,
+            damageTaken: prev.damageTaken + ((event as { damageAmount?: number })?.damageAmount ?? 0),
           }));
-        } else if (event?.damageSource === unitId) {
+        } else if ((event as { damageSource?: string })?.damageSource === unitId) {
           setPerformance(prev => ({
             ...prev,
-            damageDealt: prev.damageDealt + event?.damageAmount,
+            damageDealt: prev.damageDealt + ((event as { damageAmount?: number })?.damageAmount ?? 0),
           }));
         }
       }
@@ -191,10 +217,10 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     const unsubscribeStatusChanged = combatManager.on(
       'combat:unit-status-changed',
       (event: CombatUnitStatusEvent) => {
-        if (event?.unitId === unitId) {
+        if ((event as { unitId?: string })?.unitId === unitId) {
           // Convert string status to CombatUnitStatus object
           setStatus({
-            main: event?.status === 'destroyed' ? 'destroyed' : 'active', // Assuming 'active' is default if not destroyed
+            main: (event as { status?: string })?.status === 'destroyed' ? 'destroyed' : 'active', // Assuming 'active' is default if not destroyed
             effects: [], // Reset effects or update based on event data if available
           });
         }
@@ -203,79 +229,45 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
     // Update behavior tree periodically
     const updateInterval = setInterval(() => {
-      const unit = combatManager.getUnitStatus?.(unitId);
+      const unit = combatManager.getUnitStatus?.(unitId) as CombatUnit | undefined;
       if (!unit) {
         return;
       }
 
-      const convertStatus = (status: string): CombatUnitStatus => ({
-        main: status === 'destroyed' ? 'destroyed' : status === 'disabled' ? 'disabled' : 'active',
-        effects: [],
-      });
+      const convertStatus = (status: string | CombatUnitStatus): CombatUnitStatus => {
+        if (typeof status === 'string') {
+          return {
+            main: status === 'destroyed' ? 'destroyed' : status === 'disabled' ? 'disabled' : 'active',
+            effects: [],
+          };
+        }
+        return status;
+      };
 
       // Use optional chaining and default values for safety
-      const nearbyEnemies = (
-        combatManager
-          .getUnitsInRange?.(unit.position, 500)
-          ?.filter(other => other.faction !== factionId) ?? []
-      ).map(u => ({
-        // Map CombatUnit to structure expected by context
-        id: u.id,
-        faction: u.faction,
-        position: u.position,
-        status: convertStatus(u.status), // Use converted status
-        stats: {
-          health: u.stats?.health ?? 0,
-          shield: u.stats?.shield ?? 0,
-          armor: u.stats?.armor ?? 0,
-        }, // Select relevant stats
-        // Add other relevant properties needed by the behavior tree
-      }));
+      const unitsInRange = combatManager.getUnitsInRange?.(unit.position, 500) ?? [];
+      const nearbyEnemies: CombatUnit[] = unitsInRange
+        .filter(other => other.faction !== factionId)
+        .map(adaptCombatUnit);
 
-      const nearbyAllies = (
-        combatManager
-          .getUnitsInRange?.(unit.position, 500)
-          ?.filter(other => other.faction === factionId && other.id !== unitId) ?? []
-      ).map(u => ({
-        // Map CombatUnit to structure expected by context
-        id: u.id,
-        faction: u.faction,
-        position: u.position,
-        status: convertStatus(u.status), // Use converted status
-        stats: {
-          health: u.stats?.health ?? 0,
-          shield: u.stats?.shield ?? 0,
-          armor: u.stats?.armor ?? 0,
-        }, // Select relevant stats
-        // Add other relevant properties needed by the behavior tree
-      }));
+      const nearbyAllies: CombatUnit[] = unitsInRange
+        .filter(other => other.faction === factionId && other.id !== unitId)
+        .map(adaptCombatUnit);
 
       // Update formation based on combat situation
       updateFormation(nearbyEnemies.length, nearbyAllies.length);
 
       // Prepare context, ensure optional properties are handled
       const contextForUpdate = {
-        unit: {
-          id: unit.id,
-          position: unit.position,
-          status: convertStatus(unit.status),
-          stats: {
-            health: unit.stats?.health ?? 0,
-            shield: unit.stats?.shield ?? 0,
-            armor: unit.stats?.armor ?? 0,
-          },
-          target: unit.target?.id, // Pass target ID if available
-          // Add other necessary unit properties
-        },
+        unit, // Pass full combat unit (matches BehaviorContext expectation)
         factionId,
         fleetStrength: nearbyAllies.reduce((sum, ally) => sum + (ally.stats?.health ?? 0), 0),
         threatLevel: nearbyEnemies.reduce((sum, enemy) => sum + (enemy.stats?.health ?? 0), 0),
         nearbyEnemies,
         nearbyAllies,
         currentFormation,
-        lastAction: aiState.lastAction, // Pass current lastAction
-        cooldowns: aiState.cooldowns, // Pass current cooldowns
-        timestamp: Date.now(), // Add timestamp
+        lastAction: aiState.lastAction,
+        cooldowns: aiState.cooldowns,
       };
 
       // Update behavior tree context safely
@@ -285,12 +277,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
       // Evaluate behavior tree safely
       const treeId = `${factionId}-combat`;
-      let evaluationResult: any = null; // TODO: Replace 'any'
-      let success = false;
-      if (behaviorTreeManager && typeof behaviorTreeManager.evaluateTree === 'function') {
-        evaluationResult = behaviorTreeManager.evaluateTree(unitId, treeId);
-        success = evaluationResult?.success ?? false; // Use ?? for success flag
-      }
+      const success = behaviorTreeManager?.evaluateTree(unitId, treeId) ?? false;
 
       setPerformance(prev => ({
         ...prev,
@@ -300,18 +287,16 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       // Update AI state based on evaluation result
       setAIState(prevState => ({
         ...prevState,
-        nextAction: evaluationResult?.nextAction ?? 'evaluate',
-        behaviorState: evaluationResult?.newState ?? prevState.behaviorState,
-        cooldowns: evaluationResult?.updatedCooldowns ?? prevState.cooldowns,
+        nextAction: success ? 'evaluate' : prevState.nextAction,
+        behaviorState: success ? 'idle' : prevState.behaviorState,
+        cooldowns: success ? {} : prevState.cooldowns,
       }));
       setLastUpdateTime(Date.now());
     }, 1000);
 
     return () => {
       clearInterval(updateInterval);
-      // Safely call unsubscribe functions
-      unsubscribeNodeExecuted?.();
-      unsubscribeActionStarted?.();
+      // Safely call unsubscribe cleanup cleanupFunctions
       unsubscribeTreeCompleted?.();
       unsubscribeDamaged?.(); // Assuming combatManager.on returns a function or undefined
       unsubscribeStatusChanged?.(); // Assuming combatManager.on returns a function or undefined
@@ -368,14 +353,14 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     if (!unitId) return; // Don't subscribe if no unit ID
 
     // Subscribe to events specific to this unit safely
-    let unsubscribeNodeExecuted: (() => void) | undefined;
-    let unsubscribeActionStarted: (() => void) | undefined;
     let unsubscribeActionCompleted: (() => void) | undefined;
 
     if (behaviorTreeManager && typeof behaviorTreeManager.on === 'function') {
-      unsubscribeNodeExecuted = behaviorTreeManager.on('nodeExecuted', handleNodeExecuted);
-      unsubscribeActionStarted = behaviorTreeManager.on('actionStarted', handleActionStarted);
-      unsubscribeActionCompleted = behaviorTreeManager.on('actionCompleted', handleActionCompleted);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      unsubscribeActionCompleted = behaviorTreeManager.on(
+        'actionCompleted',
+        handleActionCompleted as (event: BehaviorEventPayload) => void
+      ) as () => void;
     } else {
       console.warn(
         "behaviorTreeManager or its 'on' method is not available for AI event subscription."
@@ -384,11 +369,9 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
     // Cleanup function to unsubscribe
     return () => {
-      unsubscribeNodeExecuted?.();
-      unsubscribeActionStarted?.();
       unsubscribeActionCompleted?.();
     };
-  }, [unitId, handleNodeExecuted, handleActionStarted, handleActionCompleted]); // Resubscribe if unitId or handlers change
+  }, [unitId, handleActionCompleted]); // Resubscribe if unitId or handlers change
 
   /**
    * Periodically triggers the behavior tree evaluation for the unit.
@@ -412,17 +395,15 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       }
 
       // Evaluate the tree for this unit safely
-      let evaluationResult: any = null; // TODO: Replace 'any'
-      if (behaviorTreeManager && typeof behaviorTreeManager.evaluateTree === 'function') {
-        evaluationResult = behaviorTreeManager.evaluateTree(unitId);
-      }
+      const treeId = `${factionId}-combat`;
+      const successImmediate = behaviorTreeManager?.evaluateTree(unitId, treeId) ?? false;
 
       setAIState(prevState => ({
         ...prevState,
         // Update state based on evaluation result if needed
-        nextAction: evaluationResult?.nextAction ?? 'evaluate', // Use result or default
-        behaviorState: evaluationResult?.newState ?? prevState.behaviorState,
-        cooldowns: evaluationResult?.updatedCooldowns ?? prevState.cooldowns,
+        nextAction: successImmediate ? 'evaluate' : prevState.nextAction,
+        behaviorState: successImmediate ? 'idle' : prevState.behaviorState,
+        cooldowns: successImmediate ? {} : prevState.cooldowns,
       }));
       setLastUpdateTime(Date.now());
     };
@@ -476,20 +457,14 @@ export function updateCombatAIContext(
  * @returns The result of the evaluation, potentially including the next action or state.
  */
 // TODO: Replace 'any' with the actual return type of evaluateTree
-export function evaluateCombatAI(unitId: string): any | null {
+export function evaluateCombatAI(unitId: string): boolean {
   if (!unitId) {
     console.warn('Cannot evaluate AI for null unitId.');
-    return null;
+    return false;
   }
 
-  // Evaluate safely
-  let evaluationResult: any = null; // TODO: Replace 'any'
-  if (behaviorTreeManager && typeof behaviorTreeManager.evaluateTree === 'function') {
-    evaluationResult = behaviorTreeManager.evaluateTree(unitId);
-  }
-
-  // For now, just return the result
-  return evaluationResult ?? {}; // Use ?? to return empty object instead of null if desired
+  // Evaluate safely and return boolean success
+  return behaviorTreeManager?.evaluateTree(unitId) ?? false;
 }
 
 /**

@@ -233,7 +233,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
             <div
               className="h-full rounded-full bg-amber-500 transition-all duration-500"
               style={{
-                width: `${((fleetAI.formation.transitionSpeed || 1) / 2) * 100}%`,
+                width: `${((fleetAI.formation.transitionSpeed ?? 1) / 2) * 100}%`,
               }}
             />
           </div>

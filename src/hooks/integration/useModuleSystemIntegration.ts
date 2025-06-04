@@ -6,11 +6,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { ModuleStatus } from '../../types/modules/ModuleTypes';
@@ -34,7 +35,7 @@ export function useModule(moduleId: string) {
 
         // Get module data
         const moduleData = moduleManager.getModule(moduleId);
-        setModule(moduleData || null);
+        setModule(moduleData ?? null);
         setError(null);
       } catch (e) {
         const error = e instanceof Error ? e : new Error(String(e));
@@ -142,7 +143,7 @@ export function useModule(moduleId: string) {
     activateModule,
     deactivateModule,
     upgradeModule,
-    status: module?.status || ModuleStatus.INACTIVE,
+    status: module?.status ?? ModuleStatus.INACTIVE,
   };
 }
 
@@ -182,7 +183,7 @@ export function useModules(moduleType?: ModuleType) {
         // Log error
         errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
           component: 'useModules',
-          moduleType: moduleType || 'all',
+          moduleType: moduleType ?? 'all',
         });
       } finally {
         setLoading(false);
@@ -221,7 +222,7 @@ export function useModules(moduleType?: ModuleType) {
     (moduleConfig: { name: string; type: ModuleType; position?: { x: number; y: number } }) => {
       try {
         // Provide default position if not provided
-        const position = moduleConfig.position || { x: 0, y: 0 };
+        const position = moduleConfig.position ?? { x: 0, y: 0 };
         return moduleManager.createModule(moduleConfig.type, position);
       } catch (e) {
         const error = e instanceof Error ? e : new Error(String(e));
@@ -257,7 +258,7 @@ export function useModules(moduleType?: ModuleType) {
         moduleEventBus.emit({
           type: EventType.MODULE_REMOVED,
           moduleId,
-          moduleType: modules.find(m => m.id === moduleId)?.type || ('unknown' as ModuleType),
+          moduleType: modules.find(m => m.id === moduleId)?.type ?? ('unknown' as ModuleType),
           timestamp: Date.now(),
           data: { moduleId },
         });

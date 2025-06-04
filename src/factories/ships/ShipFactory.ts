@@ -9,30 +9,32 @@ import { ResourceType } from '../../types/resources/ResourceTypes';
 import { CommonShipAbility, CommonShipStats } from '../../types/ships/CommonShipTypes';
 import { FactionId, FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import { PlayerShipClass } from '../../types/ships/PlayerShipTypes';
-import {
-  BaseShip,
-  CombatShip,
-  DetailedShipStats,
-  isBlueprintWeaponData,
-  isEmptyWeaponMount,
-  isWeaponMountWithWeapon,
-  MiningShip,
-  ReconShip,
-  Ship,
-  ShipCategory,
-  ShipStatus,
-  WeaponDataSource,
-} from '../../types/ships/ShipTypes';
-import {
-  WeaponCategory,
-  WeaponConfig,
-  WeaponInstance,
-  WeaponMount,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponState,
-  WeaponStats,
-} from '../../types/weapons/WeaponTypes';
+import
+  {
+    BaseShip,
+    CombatShip,
+    DetailedShipStats,
+    isBlueprintWeaponData,
+    isEmptyWeaponMount,
+    isWeaponMountWithWeapon,
+    MiningShip,
+    ReconShip,
+    Ship,
+    ShipCategory,
+    ShipStatus,
+    WeaponDataSource,
+  } from '../../types/ships/ShipTypes';
+import
+  {
+    WeaponCategory,
+    WeaponConfig,
+    WeaponInstance,
+    WeaponMount,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponState,
+    WeaponStats,
+  } from '../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../utils/weapons/weaponEffectUtils';
 
 // Export the interface
@@ -50,7 +52,9 @@ export interface CreateShipOptions {
 export class ShipFactory {
   private static instance: ShipFactory;
 
-  private constructor() {}
+  private constructor() {
+    console.log('ShipFactory constructor');
+  }
 
   public static getInstance(): ShipFactory {
     if (!ShipFactory.instance) {
@@ -71,44 +75,47 @@ export class ShipFactory {
     }
 
     const commonStats = this.buildCommonStats(blueprint, factionStats);
-    const effectiveName = options.name || blueprint?.name || factionStats?.name || 'Unknown Ship';
+    const effectiveName = options.name ?? blueprint?.name ?? factionStats?.name ?? 'Unknown Ship';
     const effectiveCategory =
       (blueprint?.category as ShipCategory) ?? factionStats?.category ?? ShipCategory.FIGHTER;
     const effectiveTier = blueprint?.tier ?? factionStats?.tier ?? 1;
-    const effectiveAbilities = blueprint?.abilities ?? factionStats?.abilities ?? [];
+    const abilityList: Partial<CommonShipAbility>[] =
+      (blueprint?.abilities ?? factionStats?.abilities ?? []) as Partial<CommonShipAbility>[];
+
+    const formattedAbilities: CommonShipAbility[] = abilityList.map(ability => ({
+      id: uuidv4(),
+      name: ability.name ?? 'Unknown Ability',
+      description: ability.description ?? '',
+      cooldown: ability.cooldown ?? 0,
+      duration: ability.duration ?? 0,
+      active: false,
+      effect: {
+        id: uuidv4(),
+        name: ability.name ?? 'Unknown Ability',
+        description: ability.description ?? '',
+        type: 'buff',
+        magnitude: 1,
+        duration: ability.duration ?? 0,
+        active: false,
+        cooldown: ability.cooldown ?? 0,
+      },
+    }));
 
     const baseShip: BaseShip = {
-      id: options.id || uuidv4(),
+      id: options.id ?? uuidv4(),
       name: effectiveName,
       category: effectiveCategory,
-      status: options.status || ShipStatus.IDLE,
-      position: options.position,
+      status: options.status ?? ShipStatus.IDLE,
+      position: options.position ?? { x: 0, y: 0 },
       rotation: options.rotation ?? 0,
       velocity: options.velocity ?? { dx: 0, dy: 0 },
       faction: options.factionId ?? factionStats?.faction,
       tier: effectiveTier,
       level: options.level,
+      experience: { level: options.level ?? 1 },
+      cargo: { capacity: 0, resources: new Map<ResourceType, number>() },
+      details: null,
       stats: commonStats,
-      abilities: effectiveAbilities.map(
-        (ability): CommonShipAbility => ({
-          id: uuidv4(),
-          name: ability.name,
-          description: ability.description,
-          cooldown: ability.cooldown,
-          duration: ability.duration,
-          active: false,
-          effect: {
-            id: uuidv4(),
-            name: ability.name,
-            description: ability.description,
-            type: 'buff',
-            magnitude: 1,
-            duration: ability.duration,
-            active: false,
-            cooldown: ability.cooldown,
-          },
-        })
-      ),
       fuel: commonStats.maxEnergy,
       maxFuel: commonStats.maxEnergy,
       crew: 0,
@@ -136,8 +143,8 @@ export class ShipFactory {
         ship = { ...baseShip, category: ShipCategory.TRANSPORT };
         break;
       default:
-        console.warn(`Unknown ship category: ${baseShip.category}. Creating base ship.`);
-        ship = baseShip as Ship;
+        console.warn(`Unknown ship category: ${baseShip.category as string}. Creating base ship.`);
+        ship = baseShip;
     }
 
     moduleEventBus.emit({
@@ -191,6 +198,28 @@ export class ShipFactory {
       cargoCapacity = base.cargo;
     }
 
+    const abilityList: Partial<CommonShipAbility>[] =
+      (blueprint?.abilities ?? factionStats?.abilities ?? []) as Partial<CommonShipAbility>[];
+
+    const formattedAbilities: CommonShipAbility[] = abilityList.map(ability => ({
+      id: uuidv4(),
+      name: ability.name ?? 'Unknown Ability',
+      description: ability.description ?? '',
+      cooldown: ability.cooldown ?? 0,
+      duration: ability.duration ?? 0,
+      active: false,
+      effect: {
+        id: uuidv4(),
+        name: ability.name ?? 'Unknown Ability',
+        description: ability.description ?? '',
+        type: 'buff',
+        magnitude: 1,
+        duration: ability.duration ?? 0,
+        active: false,
+        cooldown: ability.cooldown ?? 0,
+      },
+    }));
+
     const finalStats: CommonShipStats = {
       health: base?.hull ?? factionStats?.health ?? 100,
       maxHealth: base?.hull ?? factionStats?.maxHealth ?? 100,
@@ -200,7 +229,7 @@ export class ShipFactory {
       maxEnergy: base?.energy ?? factionStats?.maxEnergy ?? 100,
       speed: base?.speed ?? factionStats?.speed ?? 100,
       turnRate: factionStats?.turnRate ?? 2,
-      cargo: cargoCapacity ?? 0,
+      cargo: { capacity: cargoCapacity ?? 0, resources: new Map<ResourceType, number>() },
       defense: {
         armor: factionStats?.defense?.armor ?? Math.floor((base?.hull ?? 100) * 0.3),
         shield: factionStats?.defense?.shield ?? base?.shield ?? 50,
@@ -214,7 +243,7 @@ export class ShipFactory {
         acceleration: factionStats?.mobility?.acceleration ?? (base?.speed ?? 100) * 0.5,
       },
       weapons: weapons,
-      abilities: factionStats?.abilities ?? [],
+      abilities: formattedAbilities,
     };
 
     return finalStats;
@@ -253,6 +282,7 @@ export class ShipFactory {
       specialAbility: factionStats?.specialAbility,
       techBonuses: factionStats?.techBonuses,
       combatStats: factionStats?.combatStats,
+      details: { category: baseShip.category as ShipCategory.combat | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER },
     };
     return combatShip;
   }
@@ -273,6 +303,7 @@ export class ShipFactory {
       currentLoad: 0,
       targetNode: undefined,
       efficiency: blueprint?.baseStats.miningRate ?? factionStats?.miningRate ?? 1.0,
+      details: { category: ShipCategory.MINING },
     };
     return miningShip;
   }
@@ -320,6 +351,7 @@ export class ShipFactory {
       formationId: factionStats?.formationId,
       formationRole: factionStats?.formationRole,
       coordinationBonus: factionStats?.coordinationBonus,
+      details: { category: baseShip.category as ShipCategory.RECON | ShipCategory.SCOUT },
     };
     return reconShip;
   }
@@ -410,24 +442,23 @@ export class ShipFactory {
       cooldown = 1;
     }
 
-    // Define the valid damage types directly as a union type
-    type ValidDamageType = 'physical' | ResourceType.ENERGY | 'explosive';
+    // Valid damage types accepted from input
+    type ValidDamageInput = 'physical' | 'explosive' | 'ENERGY' | ResourceType.ENERGY;
 
-    // Define a type guard using the inline union type
-    function isDamageType(value: unknown): value is ValidDamageType {
-      return (
-        typeof value === 'string' &&
-        (value === 'physical' || value === 'explosive' || value === ResourceType.ENERGY)
-      );
-    }
+    const isDamageInput = (value: unknown): value is ValidDamageInput =>
+      typeof value === 'string' && (value === 'physical' || value === 'explosive' || value === 'ENERGY');
 
-    const weaponId = configId || name.toLowerCase().replace(/\s+/g, '-');
-    const damageTypeInput = extraProps.damageType;
+    const weaponId = configId ?? name.toLowerCase().replace(/\s+/g, '-');
+    const damageTypeInputRaw = extraProps.damageType;
+    const damageTypeInput = typeof damageTypeInputRaw === 'string' ? damageTypeInputRaw : undefined;
 
-    // Validate and assign damageType using the ValidDamageType union
-    let validDamageType: ValidDamageType = 'physical'; // Default to physical
-    if (isDamageType(damageTypeInput)) {
-      validDamageType = damageTypeInput;
+    // Determine final, type-safe damage type
+    let validDamageType: ResourceType.ENERGY | 'physical' | 'explosive' = 'physical';
+
+    if (damageTypeInput && isDamageInput(damageTypeInput)) {
+      validDamageType = damageTypeInput === 'ENERGY' ? ResourceType.ENERGY : damageTypeInput;
+    } else if (damageTypeInput === ResourceType.ENERGY) {
+      validDamageType = ResourceType.ENERGY;
     } else if (damageTypeInput) {
       console.warn(
         `Invalid damageType '${damageTypeInput}' provided for weapon ${name}. Defaulting to 'physical'.`

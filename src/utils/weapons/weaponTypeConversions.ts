@@ -29,6 +29,8 @@ export function convertWeaponCategoryToSystemType(category: WeaponCategory): Wea
     railGun: 'railGun',
     mgss: 'mgss',
     rockets: 'rockets',
+    energyLaser: 'railGun',
+    missileLauncher: 'rockets',
   };
   return categoryMap[category];
 }

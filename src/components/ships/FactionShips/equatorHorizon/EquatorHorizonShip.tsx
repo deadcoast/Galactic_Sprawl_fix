@@ -1,20 +1,57 @@
 import { Shield, Target } from 'lucide-react';
 import { ReactNode, useCallback } from 'react';
-import { CombatEffectType } from '../../../../effects/types_effects/EffectTypes';
-import { createEffect, isDamageEffect } from '../../../../effects/util_effects/effectUtils';
-import { useShipEffects } from '../../../../hooks/ships/useShipEffects';
-import { ResourceType } from '../../../../types/resources/ResourceTypes';
-import {
-  EquatorHorizonShipClass,
-  FactionShipStats,
-} from '../../../../types/ships/FactionShipTypes';
-import { FactionBehaviorConfig, FactionId } from '../../../../types/ships/FactionTypes';
-import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { createDamageEffect } from '../../../../utils/weapons/weaponEffectUtils';
-import { AbilityButton } from '../../../ui/buttons/AbilityButton';
-import { StatusEffect } from '../../../ui/status/StatusEffect';
-import { FactionShipBase } from '../../common/FactionShipBase';
+import
+  {
+    CombatEffectType
+  } from '../../../../effects/types_effects/EffectTypes';
+import
+  {
+    createEffect,
+    isDamageEffect,
+  } from '../../../../effects/util_effects/effectUtils';
+import
+  {
+    useShipEffects
+  } from '../../../../hooks/ships/useShipEffects';
+import
+  {
+    ResourceType
+  } from '../../../../types/resources/ResourceTypes';
+import
+  {
+    EquatorHorizonShipClass,
+    FactionShipStats
+  } from '../../../../types/ships/FactionShipTypes';
+import
+  {
+    FactionBehaviorConfig,
+    FactionId
+  } from '../../../../types/ships/FactionTypes';
+import
+  {
+    UnifiedShipStatus
+  } from '../../../../types/ships/ShipTypes';
+import
+  {
+    WeaponMount
+  } from '../../../../types/weapons/WeaponTypes';
+import
+  {
+    createDamageEffect
+  } from '../../../../utils/weapons/weaponEffectUtils';
+import
+  {
+    AbilityButton,
+  } from '../../../ui/buttons/AbilityButton';
+import
+  {
+    StatusEffect,
+  } from '../../../ui/status/StatusEffect';
+import
+  {
+    FactionShipBase,
+  } from '../../common/FactionShipBase';
+import { errorLoggingService } from 'src/services/logging/ErrorLoggingService';
 
 interface EquatorHorizonShipProps {
   id: string;
@@ -72,7 +109,7 @@ export function EquatorHorizonShip({
         // Apply weapon effects
         weapon.state.effects.forEach(effect => {
           if (isDamageEffect(effect)) {
-            console.warn(
+            errorLoggingService.logWarn(
               `[EquatorHorizonShip] Firing weapon ${weaponId} with strength ${effect.strength}`
             );
           }
@@ -200,6 +237,7 @@ export function EquatorHorizonShip({
             id: 'overcharge-ability',
             name: 'Overcharge',
             description: 'Increases weapon damage and accuracy',
+            tier: 1 as const,
             cooldown: 15,
             duration: 10,
             active: hasEffect('overcharge'),
@@ -218,6 +256,7 @@ export function EquatorHorizonShip({
             id: 'reinforced-shields-ability',
             name: 'Reinforced Shields',
             description: 'Boosts shield strength and regeneration',
+            tier: 1 as const,
             cooldown: 20,
             duration: 15,
             active: hasEffect('reinforced-shields'),
@@ -232,8 +271,7 @@ export function EquatorHorizonShip({
               cooldown: 0,
             },
           },
-        ],
-        displayStats: undefined,
+        ],  
         class: type,
         faction: 'equator-horizon' as FactionId,
         status: status,

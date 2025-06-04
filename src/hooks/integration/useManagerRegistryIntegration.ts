@@ -7,9 +7,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { ManagerStatus } from '../../lib/managers/BaseManager';
 import { ServiceRegistry } from '../../lib/registry/ServiceRegistry';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
 } from '../../services/logging/ErrorLoggingService';
 
 // Define a compatible BaseManager interface that aligns with what ServiceRegistry expects
@@ -114,11 +114,23 @@ export function useManager<T>(managerGetter: () => T, dependencies: unknown[] = 
           initialized = managerInstance.isInitialized();
         } else if (hasGetStatus(managerInstance)) {
           // Check if it has IBaseManager's getStatus
-          const status = managerInstance.getStatus();
-          initialized = status ===  ManagerStatus.READY || status === 'ready';
+          const status = managerInstance.getStatus() as ManagerStatus;
+          initialized = status === ManagerStatus.READY;
         } else {
           // Assume initialized if we got this far
           initialized = true;
+        }
+
+        // Log initialization info via structured logger
+        if (initialized) {
+          const nameInfo = hasGetName(managerInstance) ? managerInstance.getName() : 'unknown';
+          errorLoggingService.logInfo(`Manager initialized: ${nameInfo}`, {
+            component: 'useManager',
+          });
+        } else if (hasGetName(managerInstance)) {
+          errorLoggingService.logInfo(`Manager name: ${managerInstance.getName()}`, {
+            component: 'useManager',
+          });
         }
 
         setManager(managerInstance);
@@ -150,7 +162,7 @@ export function useManager<T>(managerGetter: () => T, dependencies: unknown[] = 
       }
     };
 
-    getManager();
+    void getManager();
 
     // Cleanup - dispose manager if needed
     return () => {
@@ -292,7 +304,7 @@ export function useManagerRegistration() {
         setError(error);
 
         // Try to get a name for the manager for logging purposes
-        let managerDisplayName = name || 'unknown';
+        let managerDisplayName = name ?? 'unknown';
         if (!name) {
           if (hasGetName(manager)) {
             managerDisplayName = manager.getName();

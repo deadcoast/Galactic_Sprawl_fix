@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GlobalRoutine } from '../../managers/automation/GlobalAutomationManager';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { getAutomationManager, getGlobalAutomationManager } from '../../managers/ManagerRegistry'; // Import registry accessors
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 
 // Define SystemId type to match what's expected
 type SystemId = string;
@@ -41,7 +42,9 @@ export const useAutomation = () => {
 
     // Subscribe to automation events (if event system is integrated)
     // const unsubscribe = subscribeToEvents();
-    const unsubscribe = () => {}; // Placeholder
+    const unsubscribe = () => {
+      // TODO: Placeholder
+    };
 
     return () => {
       unsubscribe();
@@ -75,12 +78,16 @@ export const useAutomation = () => {
   // Subscribe to automation events
   const subscribeToEvents = () => {
     if (!globalAutomationManager) {
-      return () => {};
+      return () => {
+        // TODO: Placeholder
+      };
     }
 
     // Placeholder: This should use the event bus provided by the manager or a global one
     // e.g., globalAutomationManager.eventBus.subscribe('routineUpdated', updateRoutines);
-    return () => {};
+    return () => {
+      // TODO: Placeholder
+    };
   };
 
   // Memoized actions to interact with the managers

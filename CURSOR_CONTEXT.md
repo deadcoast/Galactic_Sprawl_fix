@@ -16218,7 +16218,7 @@ function ResearchPredictionComponent() {
 }
 ```
 
-### Usage Example
+### Predictive Analysis Usage Example
 
 The data processing system provides a clean API for data transformations:
 

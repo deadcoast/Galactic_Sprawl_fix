@@ -225,12 +225,12 @@ export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
 ): React.ComponentType<P> {
-  const displayName = Component.displayName || Component.name || 'Component';
+  const displayName = Component.displayName ?? Component.name ?? 'Component';
 
   const WrappedComponent = (props: P): JSX.Element => (
     <ErrorBoundary
       {...errorBoundaryProps}
-      componentName={errorBoundaryProps.componentName || displayName}
+      componentName={errorBoundaryProps.componentName ?? displayName}
     >
       <Component {...props} />
     </ErrorBoundary>

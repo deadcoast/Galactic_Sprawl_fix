@@ -5,11 +5,12 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 
 /**
@@ -70,7 +71,7 @@ export function useMultiEventSubscription(
       return;
     }
 
-    const unsubscribes: Array<() => void> = [];
+    const unsubscribes: (() => void)[] = [];
 
     try {
       // Subscribe to each event type
@@ -111,7 +112,9 @@ export function useMultiEventSubscription(
       unsubscribes.forEach(unsubscribe => unsubscribe());
 
       // Return empty cleanup function
-      return () => {};
+      return () => {
+        // Empty cleanup function
+      };
     }
   }, [JSON.stringify(eventTypes), ...deps]);
 }
@@ -135,7 +138,7 @@ export function useEventMonitor(
   // Set up event subscription
   useEffect(() => {
     // Determine which event types to subscribe to
-    const typesToMonitor = eventTypes || Object.values(EventType);
+    const typesToMonitor = eventTypes ?? Object.values(EventType);
 
     // Subscribe to events
     return moduleEventBus.subscribeToMunknown(typesToMonitor, (event: BaseEvent) => {

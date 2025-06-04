@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { useComponentProfiler } from './useComponentProfiler';
 import { ComponentRegistration, componentRegistryService } from '../../services/ComponentRegistryService';
-import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
+import { useComponentProfiler } from './useComponentProfiler';
 
 type UpdatePriority = ComponentRegistration['updatePriority'];
 type ErrorDetails = Record<string, unknown>;
@@ -87,7 +87,7 @@ export function useComponentRegistration(
   // Validate initial props
   if (initialProps !== undefined && !isValidProps(initialProps)) {
     const error = new Error('Invalid initialProps provided to useComponentRegistration');
-    errorLoggingService.logError(error, 'VALIDATION_ERROR', 'HIGH', {
+    errorLoggingService.logError(error, ErrorType.VALIDATION, ErrorSeverity.CRITICAL, {
       componentId: id,
       componentType: type
     });
@@ -122,14 +122,14 @@ export function useComponentRegistration(
         } catch (error) {
           if (error instanceof Error) {
             const details: ErrorDetails = { componentId: id, action: 'unregister' };
-            errorLoggingService.logError(error, 'SERVICE_ERROR', 'MEDIUM', details);
+            errorLoggingService.logError(error, ErrorType.INITIALIZATION, ErrorSeverity.MEDIUM, details);
           }
         }
       };
     } catch (error) {
       if (error instanceof Error) {
         const details: ErrorDetails = { componentId: id, action: 'register' };
-        errorLoggingService.logError(error, 'SERVICE_ERROR', 'HIGH', details);
+        errorLoggingService.logError(error, ErrorType.INITIALIZATION, ErrorSeverity.CRITICAL, details);
       }
       throw error;
     }
@@ -144,7 +144,7 @@ export function useComponentRegistration(
   const updateProps = (newProps: Record<string, unknown>) => {
     if (!isValidProps(newProps)) {
       const error = new Error('Invalid props provided to updateProps');
-      errorLoggingService.logError(error, 'VALIDATION_ERROR', 'MEDIUM', {
+      errorLoggingService.logError(error, ErrorType.VALIDATION, ErrorSeverity.CRITICAL, {
         componentId: id,
         componentType: type
       });

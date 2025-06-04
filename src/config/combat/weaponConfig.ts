@@ -1,10 +1,11 @@
 import { AreaEffect, DamageEffect } from '../../effects/types_effects/WeaponEffects';
-import {
-  WeaponCategory,
-  BaseWeaponStats as WeaponStats,
-  WeaponType,
-  WeaponVariant,
-} from '../../types/weapons/WeaponTypes';
+import
+  {
+    WeaponCategory,
+    BaseWeaponStats as WeaponStats,
+    WeaponType,
+    WeaponVariant,
+  } from '../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Base stats for each weapon category
@@ -462,6 +463,60 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     special: {
       shieldDamageBonus: 0.8,
       disableChance: 0.3,
+    },
+  },
+  energyLaser: {
+    damage: 100,
+    rateOfFire: 1,
+    range: 1000,
+    accuracy: 0.95,
+    energyCost: 50,
+    cooldown: 2.0,
+    effects: [
+      {
+        id: 'energy-laser-effect',
+        type: 'damage',
+        name: 'Energy Laser',
+        description: 'Continuous high-energy beam damage',
+        magnitude: 100,
+        duration: 2,
+        active: true,
+        cooldown: 2.0,
+        damage: 100,
+        damageType: ResourceType.ENERGY,
+        penetration: 0.7,
+        strength: 100,
+      } as DamageEffect,
+    ],
+    special: {
+      armorPenetration: 0.7,
+    },
+  },
+  missileLauncher: {
+    damage: 100,
+    rateOfFire: 1,
+    range: 1000,
+    accuracy: 0.95,
+    energyCost: 50,
+    cooldown: 2.0,
+    effects: [
+      {
+        id: 'missile-launcher-effect',
+        type: 'damage',
+        name: 'Missile Launcher',
+        description: 'Missile damage',
+        magnitude: 100,
+        duration: 0,
+        active: true,
+        cooldown: 2.0,
+        damage: 100,
+        damageType: ResourceType.ENERGY,
+        penetration: 0.7,
+        strength: 100,
+      } as DamageEffect,
+    ],
+    special: {
+      armorPenetration: 0.7,
     },
   },
 };

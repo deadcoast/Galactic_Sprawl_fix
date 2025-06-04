@@ -213,23 +213,35 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
   // Convert cycle rate to per-minute rate for easier understanding
   const ratePerMinute = rate * (60000 / cycleTime);
 
-  // Register with component registry
-  useComponentRegistration({
-    type: ResourceType.RESEARCH,
-    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
-    updatePriority: 'medium',
-  });
+  // Generate instance ID
+  const componentInstanceId = React.useMemo(
+    () => `ResourceThresholdVisualization-${resourceType}-${Date.now().toString(36)}`,
+    [resourceType]
+  );
+
+  useComponentRegistration(
+    componentInstanceId,
+    'ResourceThresholdVisualization',
+    { resourceType },
+    {
+      eventSubscriptions: [
+        EventType.RESOURCE_UPDATED,
+        EventType.RESOURCE_THRESHOLD_CHANGED,
+      ],
+      updatePriority: 'medium',
+    }
+  );
 
   // Use component lifecycle hook for event handling
   useComponentLifecycle({
     onMount: () => {
       console.warn(
-        `ResourceThresholdVisualization mounted for ${formatResourceType(resourceType)}`
+        `ResourceThresholdVisualization (${componentInstanceId}) mounted for ${formatResourceType(resourceType)}`
       );
     },
     onUnmount: () => {
       console.warn(
-        `ResourceThresholdVisualization unmounted for ${formatResourceType(resourceType)}`
+        `ResourceThresholdVisualization (${componentInstanceId}) unmounted for ${formatResourceType(resourceType)}`
       );
     },
     eventSubscriptions: [

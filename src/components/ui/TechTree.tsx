@@ -1042,7 +1042,7 @@ export default function TechTree() {
           </div>
           <ResearchProgressIndicator
             progress={researchProgress[activeResearch] ?? 0}
-            totalTime={10} // 10 seconds for research
+            remainingTime={10} // 10 seconds for research
             isActive={true}
           />
         </div>

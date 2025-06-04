@@ -167,7 +167,7 @@ export function LostNovaShip({
     status,
     // Convert string tactics to FactionBehaviorType if needed
     tactics: typeof tactics === 'string' ? createFactionBehavior(tactics) : tactics,
-    category: 'recon',
+    category: 'combat',
     health,
     maxHealth,
     shield,
@@ -184,6 +184,7 @@ export function LostNovaShip({
         cooldown: 25,
         duration: 10,
         active: hasEffect('void-shroud'),
+        tier: 1 as const,
         effect: {
           id: 'void-shroud',
           name: 'Void Shroud Effect',
@@ -202,6 +203,7 @@ export function LostNovaShip({
         cooldown: 30,
         duration: 8,
         active: hasEffect('entropy-cascade'),
+        tier: 1 as const,
         effect: {
           id: 'entropy-cascade',
           name: 'Entropy Cascade Effect',

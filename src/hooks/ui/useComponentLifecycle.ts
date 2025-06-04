@@ -24,7 +24,7 @@ export interface ComponentLifecycleOptions {
   /**
    * Array of event subscriptions
    */
-  eventSubscriptions?: Array<{
+  eventSubscriptions?: {
     /**
      * Type of the event to subscribe to
      */
@@ -34,7 +34,7 @@ export interface ComponentLifecycleOptions {
      * Handler function for the event
      */
     handler: (event: ModuleEvent) => void;
-  }>;
+  }[];
 }
 
 /**
@@ -79,7 +79,7 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
     isMounted.current = true;
 
     // Call onMount callback if provided
-    if (if (options?.onMount) {
+    if (options?.onMount) {
           try {
             options?.onMount();
           } catch (error) {
@@ -90,12 +90,10 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
               { componentName: 'useComponentLifecycle', action: 'onMount' }
             );
           }
-        }) ___
-    else if (________) ___
+        }
 
     // Set up event subscriptions
-    const unsubscribers: Array<() => void> = [];
-
+    const unsubscribers: (() => void)[] = [];
     if (options?.eventSubscriptions) {
       options?.eventSubscriptions.forEach(subscription => {
         // Subscribe to the event
@@ -243,7 +241,7 @@ export function useDynamicComponentLifecycle(
     }
 
     // Set up event subscriptions
-    const unsubscribers: Array<() => void> = [];
+    const unsubscribers: (() => void)[] = [];
 
     if (options?.eventSubscriptions) {
       options?.eventSubscriptions.forEach(subscription => {

@@ -154,16 +154,16 @@ export function FactionShip({
             onClick={onSpecialAbility}
             disabled={ship.status === ShipStatus.DISABLED}
             className={`w-full rounded-lg p-3 ${
-              ship.abilities.some(ability => ability === 'special')
+              ship.abilities.some(ability => ability.name === 'Special')
                 ? `bg-${color}-500/20 border border-${color}-500/30`
                 : 'bg-gray-700/50 hover:bg-gray-600/50'
             }`}
           >
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-sm font-medium text-white">{ship.abilities[0]}</span>
-              <span className="text-xs text-gray-400">{ship.abilities[0]}</span>
+              <span className="text-sm font-medium text-white">{ship.abilities[0].name}</span>
+              <span className="text-xs text-gray-400">{ship.abilities[0].description}</span>
             </div>
-            <p className="text-xs text-gray-400">{ship.abilities[0]}</p>
+            <p className="text-xs text-gray-400">{ship.abilities[0].description}</p>
           </button>
         )}
       </div>

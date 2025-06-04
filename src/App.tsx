@@ -4,13 +4,14 @@ import { SystemIntegration } from './components/core/SystemIntegration';
 import { ThresholdIntegration } from './components/core/ThresholdIntegration';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
-import {
-  createUpdateResourcesAction,
-  GameAction,
-  GameActionType,
-  GameProvider,
-  useGameDispatch,
-} from './contexts/GameContext';
+import
+  {
+    createUpdateResourcesAction,
+    GameAction,
+    GameActionType,
+    GameProvider,
+    useGameDispatch,
+  } from './contexts/GameContext';
 import { ModuleActionType, useModuleDispatch } from './contexts/ModuleContext';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
@@ -26,21 +27,23 @@ import { ResourceType } from './types/resources/ResourceTypes';
 
 // Import the GlobalErrorBoundary component
 // Import error services
-import {
-  Box,
-  CircularProgress,
-  CssBaseline,
-  GlobalStyles,
-  ThemeProvider,
-  Typography,
-} from '@mui/material';
+import
+  {
+    Box,
+    CircularProgress,
+    CssBaseline,
+    GlobalStyles,
+    SxProps,
+    ThemeProvider,
+    Typography,
+  } from '@mui/material';
 import { Suspense } from 'react';
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ShipHangar } from './components/buildings/modules/hangar/ShipHangar';
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
 // Removed unused import: import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
-import { ServiceProvider as SystemIntegrationProvider } from './components/providers/ServiceProvider';
 import { ThresholdIntegration as ThresholdIntegrationProvider } from './components/core/ThresholdIntegration';
+import { ServiceProvider as SystemIntegrationProvider } from './components/providers/ServiceProvider';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { getResourceManager } from './managers/ManagerRegistry';
 import { initializeResourceIntegration } from './managers/resource/ResourceIntegration';
@@ -50,11 +53,11 @@ import PerformanceAnalysisDashboard from './pages/PerformanceAnalysisDashboard';
 // import ExplorationMap from './pages/ExplorationMap'; // TEMP: File not found
 // import FleetManagement from './pages/FleetManagement'; // TEMP: File not found
 // import ResearchTree from './pages/ResearchTree'; // TEMP: File not found
-import { errorLoggingService, ErrorSeverity, ErrorType } from './services/logging/ErrorLoggingService';
 import { eventPropagationService } from './services/EventPropagationService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from './services/logging/ErrorLoggingService';
 import { recoveryService } from './services/RecoveryService';
-import { darkTheme } from './ui/theme/darkTheme';
 import { BaseEvent } from './types/events/EventTypes';
+import { darkTheme } from './ui/theme/darkTheme';
 
 // Lazy load components that aren't needed on initial render
 const GameLayout = lazy(() =>
@@ -254,7 +257,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             // Cast to unknown to resolve type mismatch for debug assignment
             (
               window as Window & typeof globalThis & { shipHangarManager: ShipHangarManager }
-            ).shipHangarManager = shipHangarManager as unknown; // Reverted to unknown cast
+            ).shipHangarManager = shipHangarManager as unknown as ShipHangarManager; // Reverted to unknown cast
           }
 
           // Initialize event propagation service
@@ -304,7 +307,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           });
 
           // Initialize the service
-          eventPropagationService.initialize();
+          void eventPropagationService.initialize();
 
           // Set initialization flag
           console.warn('Game initialization complete!');
@@ -340,7 +343,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    initializeGame();
+    void  initializeGame();
   }, [dispatch, isInitialized, moduleDispatch]);
 
   if (!isInitialized) {
@@ -477,7 +480,7 @@ function App() {
   if (!isInitialized) {
     return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' } as SxProps}
       >
         <CircularProgress />
         <Typography ml={2}>Initializing Galactic Sprawl...</Typography>

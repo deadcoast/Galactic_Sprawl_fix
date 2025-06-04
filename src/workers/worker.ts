@@ -1,88 +1,169 @@
 import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
-import { errorLoggingService } from '../services/logging/ErrorLoggingService';
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
 
-interface WorkerMessage {
-  type: string;
-  payload: unknown;
-  context?: Record<string, unknown>; // Add optional context for more details
-}
-
-// Define interface for resource flow payload
-interface ResourceFlowPayload {
-  // Define expected properties, e.g.:
-  nodes: { id: string; type: string /* FlowNodeType enum? */ /* other node props */ }[];
-  connections: { source: string; target: string; resourceTypes: ResourceType[] /* ... */ }[];
-  // Add other necessary fields based on ResourceFlowManager.calculateFlow needs
-}
-
-// Define a type guard for WorkerMessage
-const isWorkerMessage = (data: unknown): data is WorkerMessage => {
-  return typeof data === 'object' && data !== null && 'type' in data && 'payload' in data;
-};
-
-// Removed isResourceFlowPayload as optimizeFlows doesn't seem to take payload
-
-// Access the manager instance via getInstance()
+// Access the manager instance via getInstance() – kept outside of the main processor so
+// there is only ever one ResourceFlowManager per worker thread.
 const resourceFlowManager = ResourceFlowManager.getInstance();
 
-// Make processMessage async again
-const processMessage = async (message: WorkerMessage): Promise<void> => {
+// Redesigned worker implementation to align with WorkerService protocol.
+// Accepts messages that include a `taskId`, `type`, and `data` field and responds
+// with `{ taskId, type: 'result' | 'progress' | 'error', data: unknown }`.
+
+// --------------------------------------------------------------------------------
+// Message & type guards
+
+interface WorkerTaskMessage {
+  taskId: string;
+  type: string;
+  data?: unknown; // Alias for the payload that the task operates on
+  payload?: unknown; // Retained for backward-compatibility
+  context?: Record<string, unknown>;
+}
+
+// Determine if the incoming data matches the WorkerTaskMessage structure
+const isWorkerTaskMessage = (data: unknown): data is WorkerTaskMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    'taskId' in data &&
+    (/* Accept both `data` and legacy `payload` fields */ 'data' in data || 'payload' in data)
+  );
+};
+
+// --------------------------------------------------------------------------------
+// Internal helpers
+
+// Store cancelled taskIds so long-running handlers can bail out early if needed
+const cancelledTasks = new Set<string>();
+
+const sendProgress = (taskId: string, progress: number): void => {
+  // Clamp progress to 0-100 range
+  const pct = Math.max(0, Math.min(100, progress));
+  postMessage({ taskId, type: 'progress', data: pct });
+};
+
+const sendResult = (taskId: string, result: unknown): void => {
+  postMessage({ taskId, type: 'result', data: result });
+};
+
+const sendError = (taskId: string, error: Error | string): void => {
+  const errObj = typeof error === 'string' ? new Error(error) : error;
+  postMessage({ taskId, type: 'error', data: errObj.message });
+};
+
+// --------------------------------------------------------------------------------
+// Main task processor – kept async so heavy work can be awaited.
+
+const processTask = async (message: WorkerTaskMessage): Promise<void> => {
+  const { taskId, type } = message;
+
+  // If the task has been marked as cancelled before it even started, bail out.
+  if (cancelledTasks.has(taskId)) {
+    sendError(taskId, 'Task cancelled');
+    return;
+  }
+
   try {
-    switch (message.type) {
+    switch (type) {
+      // Example of a heavy task delegated to ResourceFlowManager
       case 'OPTIMIZE_RESOURCE_FLOW': {
-        console.log('Worker starting OPTIMIZE_RESOURCE_FLOW...');
+        sendProgress(taskId, 5);
         const optimizationResult = await resourceFlowManager.optimizeFlows();
-        console.log('Worker finished OPTIMIZE_RESOURCE_FLOW.');
-        postMessage({ type: 'RESOURCE_FLOW_OPTIMIZED', success: true, result: optimizationResult });
+        // Task may have been cancelled while awaiting the result
+        if (cancelledTasks.has(taskId)) {
+          sendError(taskId, 'Task cancelled');
+          break;
+        }
+        sendProgress(taskId, 100);
+        sendResult(taskId, optimizationResult);
         break;
       }
+
+      // Placeholder for additional generic tasks – extend as needed.
       case 'ANOTHER_TASK': {
-        // Handle another task type
-        console.log('Processing ANOTHER_TASK:', message.payload);
-        postMessage({ type: 'ANOTHER_TASK_COMPLETE', success: true });
+        // Demonstration of how to periodically emit progress updates.
+        for (let i = 1; i <= 5; i++) {
+          if (cancelledTasks.has(taskId)) {
+            sendError(taskId, 'Task cancelled');
+            return;
+          }
+          // Simulate work
+          await new Promise(res => setTimeout(res, 100));
+          sendProgress(taskId, (i / 5) * 100);
+        }
+        sendResult(taskId, { success: true });
         break;
       }
+
+      // Handle task cancellation requests
+      case 'CANCEL_TASK': {
+        const targetId = (message.data as { taskId?: string })?.taskId;
+        if (typeof targetId === 'string') {
+          cancelledTasks.add(targetId);
+        }
+        // Acknowledge receipt – no further action required here because
+        // the running task checks the `cancelledTasks` set periodically.
+        sendResult(taskId, { cancelled: true });
+        break;
+      }
+
       default: {
-        console.warn(`Unknown message type received in worker: ${message.type}`);
-        postMessage({
-          type: 'UNKNOWN_MESSAGE_TYPE',
-          success: false,
-          error: `Unknown type: ${message.type}`,
-        });
+        const warning = `Unknown task type received in worker: ${type}`;
+        console.warn(warning);
+        sendError(taskId, warning);
         break;
       }
     }
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));
-    console.error('Error processing message in worker:', error);
+    // Send to structured logger
+    errorLoggingService.logError(error, ErrorType.WORKER, ErrorSeverity.HIGH, {
+      message: 'Error processing task in worker',
+    });
 
     const logContext = {
       workerMessageType: message.type,
-      payloadType: typeof message.payload,
       ...(message.context ?? {}),
     };
-    errorLoggingService.logError(error, 'WORKER_ERROR', 'HIGH', logContext);
+    errorLoggingService.logError(error, ErrorType.WORKER, ErrorSeverity.HIGH, logContext);
 
-    postMessage({ type: 'WORKER_ERROR', success: false, error: error.message });
+    sendError(taskId, error);
   }
 };
 
-// self.onmessage remains the same, calling the now async processMessage
+// --------------------------------------------------------------------------------
+// Wire up the message handler
+
 self.onmessage = (event: MessageEvent) => {
-  if (isWorkerMessage(event.data)) {
-    // Explicitly ignore the promise using void
-    void processMessage(event.data);
+  const incoming = event.data;
+
+  if (isWorkerTaskMessage(incoming)) {
+    // Fire-and-forget the async processing – the promise is intentionally not awaited here.
+    void processTask(incoming);
+  } else if (
+    // Legacy handler – accept the old shape `{ type, payload }` without taskId
+    typeof incoming === 'object' &&
+    incoming !== null &&
+    'type' in incoming &&
+    'payload' in incoming
+  ) {
+    // Coerce into new structure with a synthetic taskId so downstream logic works.
+    const syntheticMessage: WorkerTaskMessage = {
+      taskId: `legacy-${Date.now()}`,
+      type: incoming.type as string,
+      data: incoming.payload,
+    };
+    void processTask(syntheticMessage);
   } else {
-    console.error('Received invalid message structure in worker:', event.data);
+    console.warn('Received invalid message structure in worker:', incoming);
     errorLoggingService.logError(
       new Error('Invalid message structure received'),
-      'WORKER_SETUP',
-      'MEDIUM',
-      { receivedData: JSON.stringify(event.data).substring(0, 200) }
+      ErrorType.WORKER,
+      ErrorSeverity.MEDIUM,
+      { receivedData: JSON.stringify(incoming).substring(0, 200) }
     );
-    postMessage({ type: 'INVALID_MESSAGE', success: false, error: 'Invalid message structure' });
   }
 };
 
-console.log('Worker initialized');
+console.log('Generic worker initialized and ready to receive tasks');

@@ -3,12 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { ParticleSystemManager } from '../../../managers/effects/ParticleSystemManager';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';
+import { errorLoggingService } from '../../../services/logging/ErrorLoggingService';
 import { Position } from '../../../types/core/Position';
+import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 export interface DataPoint {
@@ -62,21 +59,25 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
   const particleSystemRef = useRef<ParticleSystemManager | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Generate stable instance ID for registration
+  const componentInstanceId = React.useMemo(
+    () => `DataTransitionParticleSystem-${Date.now().toString(36)}`,
+    []
+  );
+
   // Register with component registry
-  useComponentRegistration({
-    type: DataTransitionParticleSystem,
-    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
-    updatePriority: 'high',
-    component: DataTransitionParticleSystem,
-    props: {
-      width,
-      height,
-      quality,
-      className,
-      sourceData,
-      targetData,
-    },
-  });
+  useComponentRegistration(
+    componentInstanceId,
+    'DataTransitionParticleSystem',
+    {
+      eventSubscriptions: [
+        EventType.RESOURCE_UPDATED,
+        EventType.RESOURCE_FLOW_UPDATED,
+        EventType.RESOURCE_THRESHOLD_CHANGED,
+      ],
+      updatePriority: 'high',
+    }
+  );
 
   // Initialize particle system
   useEffect(() => {
@@ -97,10 +98,10 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
   // Handle component lifecycle
   useComponentLifecycle({
     onMount: () => {
-      errorLoggingService.error('DataTransitionParticleSystem mounted');
+      errorLoggingService.logError(new Error('DataTransitionParticleSystem mounted'));
     },
     onUnmount: () => {
-      errorLoggingService.error('DataTransitionParticleSystem unmounted');
+      errorLoggingService.logError(new Error('DataTransitionParticleSystem unmounted'));
     },
   });
 

@@ -2,11 +2,12 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {
@@ -78,7 +79,7 @@ export interface ResourceDatasetProps<T extends ResourceDataItem> {
   /**
    * Fields to search in when filtering by searchTerm
    */
-  searchFields?: Array<keyof T>;
+  searchFields?: (keyof T)[];
 
   /**
    * Function to sort items
@@ -141,7 +142,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   rowHeight = 60,
   filterItem,
   searchTerm = '',
-  searchFields = ['name', 'id', 'type'] as Array<keyof T>,
+  searchFields = ['name', 'id', 'type'] as (keyof T)[],
   sortItems,
   onItemClick,
   loadingRenderer,
@@ -348,7 +349,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
         style={{ height, width }}
         ref={containerRef}
       >
-        {(emptyRenderer || defaultEmptyRenderer)()}
+        {emptyRenderer ? emptyRenderer() : defaultEmptyRenderer()}
       </div>
     );
   }
@@ -374,7 +375,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
     if (!isItemLoaded(index)) {
       return (
         <div style={style} className="p-4">
-          {(loadingRenderer || defaultLoadingRenderer)()}
+          {loadingRenderer ? loadingRenderer() : defaultLoadingRenderer()}
         </div>
       );
     }
@@ -386,7 +387,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
 
   return (
     <div className={className}>
-      {headerRenderer && headerRenderer()}
+      {headerRenderer?.()}
 
       <div
         ref={containerRef}
@@ -422,7 +423,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
       </div>
 
       {showStats && renderStats()}
-      {footerRenderer && footerRenderer()}
+      {footerRenderer?.()}
     </div>
   );
 }

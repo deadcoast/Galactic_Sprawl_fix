@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   errorLoggingService,
-  ErrorSeverity,
   ErrorType,
 } from '../services/logging/ErrorLoggingService';
 import { CanvasRenderer } from './renderers/CanvasRenderer';
@@ -235,12 +234,12 @@ export const Chart: React.FC<ChartProps> = ({
     // Auto-select based on data size and optimization settings
     if (
       mergedOptions.memoryOptimized ||
-      totalDataPoints > (mergedOptions.optimizationThreshold || 1000)
+      totalDataPoints > (mergedOptions.optimizationThreshold ?? 1000)
     ) {
       // Check if WebGL is available
       try {
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const gl = canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl');
         if (gl) {
           return 'webgl';
         }

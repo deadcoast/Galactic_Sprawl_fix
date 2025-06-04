@@ -7,17 +7,18 @@
  */
 
 import { GlobalAutomationManager } from './automation/GlobalAutomationManager';
-import { CombatManager } from './combat/CombatManager';
+import { CombatManager } from './combat/combatManager';
 import { CombatMechanicsSystem, CombatMechanicsSystemImpl } from './combat/CombatMechanicsSystem';
 import { ObjectDetectionSystem, ObjectDetectionSystemImpl } from './combat/ObjectDetectionSystem';
 import {
-  ThreatAssessmentManager,
-  ThreatAssessmentManagerImpl,
+    ThreatAssessmentManager,
+    ThreatAssessmentManagerImpl,
 } from './combat/ThreatAssessmentManager';
 import { effectLifecycleManager, EffectLifecycleManager } from './effects/EffectLifecycleManager';
 import { FactionBehaviorManager } from './factions/FactionBehaviorManager';
 import { AsteroidFieldManager } from './game/AsteroidFieldManager';
 import { AutomationManager } from './game/AutomationManager';
+import { GameManager, gameManager as gameManagerSingleton } from './game/gameManager';
 import { ResourceManager } from './game/ResourceManager';
 import { TechTreeManager } from './game/techTreeManager';
 import { MiningShipManager } from './mining/MiningShipManager';
@@ -38,6 +39,7 @@ let asteroidFieldManagerInstance: AsteroidFieldManager | null = null;
 let resourceFlowManagerInstance: ResourceFlowManager | null = null;
 let resourceConversionManagerInstance: ResourceConversionManager | null = null;
 let miningShipManagerInstance: MiningShipManager | null = null;
+let gameManagerInstance: GameManager | null = null;
 
 /**
  * Get the singleton instance of CombatManager
@@ -47,7 +49,7 @@ export function getCombatManager(): CombatManager {
   if (!combatManagerInstance) {
     combatManagerInstance = new CombatManager();
   }
-  return combatManagerInstance!;
+  return combatManagerInstance;
 }
 
 /**
@@ -71,7 +73,7 @@ export function getThreatAssessmentManager(): ThreatAssessmentManager {
     threatAssessmentManagerInstance = new ThreatAssessmentManagerImpl();
   }
   // Add non-null assertion
-  return threatAssessmentManagerInstance!;
+  return threatAssessmentManagerInstance;
 }
 
 /**
@@ -106,7 +108,7 @@ export function getResourceManager(): ResourceManager {
   if (!resourceManagerInstance) {
     resourceManagerInstance = ResourceManager.getInstance();
   }
-  return resourceManagerInstance!;
+  return resourceManagerInstance;
 }
 
 /**
@@ -129,7 +131,7 @@ export function getGlobalAutomationManager(): GlobalAutomationManager {
     // Use getInstance() directly
     globalAutomationManagerInstance = GlobalAutomationManager.getInstance();
   }
-  return globalAutomationManagerInstance!;
+  return globalAutomationManagerInstance;
 }
 
 /**
@@ -177,7 +179,7 @@ export function getMiningShipManager(): MiningShipManager {
     // Use getInstance() directly
     miningShipManagerInstance = MiningShipManager.getInstance();
   }
-  return miningShipManagerInstance!;
+  return miningShipManagerInstance;
 }
 
 /**
@@ -201,6 +203,18 @@ export function getEffectLifecycleManager(): EffectLifecycleManager {
 }
 
 /**
+ * Get the singleton instance of GameManager
+ * @returns The GameManager instance
+ */
+export function getGameManager(): GameManager {
+  if (!gameManagerInstance) {
+    // Use the already created singleton from gameManager.ts
+    gameManagerInstance = gameManagerSingleton;
+  }
+  return gameManagerInstance;
+}
+
+/**
  * Reset all manager instances - primarily used for testing
  */
 export function resetManagers(): void {
@@ -216,6 +230,7 @@ export function resetManagers(): void {
   asteroidFieldManagerInstance = null;
   resourceFlowManagerInstance = null;
   resourceConversionManagerInstance = null;
+  gameManagerInstance = null;
   // Reset mining ship manager instance
   miningShipManagerInstance = null;
   // Resetting the imported instance isn't straightforcombatd from here.
@@ -223,18 +238,19 @@ export function resetManagers(): void {
 }
 
 // Export manager classes for type usage
-export { CombatManager, ResourceManager };
+export { CombatManager, GameManager, ResourceManager };
 export type {
-  AsteroidFieldManager,
-  AutomationManager,
-  CombatMechanicsSystem,
-  EffectLifecycleManager,
-  FactionBehaviorManager,
-  GlobalAutomationManager,
-  MiningShipManager,
-  ObjectDetectionSystem,
-  ResourceConversionManager,
-  ResourceFlowManager,
-  TechTreeManager,
-  ThreatAssessmentManager,
+    AsteroidFieldManager,
+    AutomationManager,
+    CombatMechanicsSystem,
+    EffectLifecycleManager,
+    FactionBehaviorManager,
+    GlobalAutomationManager,
+    MiningShipManager,
+    ObjectDetectionSystem,
+    ResourceConversionManager,
+    ResourceFlowManager,
+    TechTreeManager,
+    ThreatAssessmentManager
 };
+

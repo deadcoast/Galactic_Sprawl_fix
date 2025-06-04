@@ -1,9 +1,9 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../services/logging/ErrorLoggingService';
 import { ErrorFallback } from './ErrorFallback';
 
 /**
@@ -68,7 +68,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (!this.props?.suppressErrorLogging) {
       errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
         componentStack: errorInfo.componentStack,
-        context: this.props?.context || 'ErrorBoundary',
+        context: this.props?.context ?? 'ErrorBoundary',
         ...this.props?.metadata,
       });
     }

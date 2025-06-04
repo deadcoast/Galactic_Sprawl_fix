@@ -20,6 +20,7 @@ export enum ErrorType {
   DATABASE = 'database',
   FILE_SYSTEM = 'file_system',
   EXTERNAL_SERVICE = 'external_service',
+  DATA_FETCH = 'data_fetch',
   RUNTIME = 'runtime',
   EVENT_HANDLING = 'event_handling',
   // Add more specific types as needed

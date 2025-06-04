@@ -8,11 +8,12 @@
 import { isEqual } from 'lodash';
 import { performance } from 'perf_hooks'; // Use perf_hooks for higher resolution timing if needed
 import * as React from 'react';
-import {
-  ComponentProfilingOptions,
-  ComponentProfilingResult,
-  ComponentRenderMetrics,
-} from '../../types/ui/UITypes';
+import
+  {
+    ComponentProfilingOptions,
+    ComponentProfilingResult,
+    ComponentRenderMetrics,
+  } from '../../types/ui/UITypes';
 import { createComponentProfiler } from './componentProfiler';
 
 export interface LayoutMetrics {
@@ -34,11 +35,11 @@ export interface LayoutMetrics {
   /**
    * Layout shifts with timestamps and impact scores
    */
-  layoutShiftHistory: Array<{
+  layoutShiftHistory: {
     timestamp: number;
     score: number;
     sourceElement?: string;
-  }>;
+  }[];
 }
 
 export interface InteractionMetrics {
@@ -50,11 +51,11 @@ export interface InteractionMetrics {
   /**
    * Interaction to next paint measurements
    */
-  interactionToNextPaint: Array<{
+  interactionToNextPaint: {
     timestamp: number;
     duration: number;
     eventType: string;
-  }>;
+  }[];
 
   /**
    * Average time from interaction to next paint
@@ -259,7 +260,7 @@ export function createEnhancedComponentProfiler(
   const baseProfiler = createComponentProfiler(componentName, {
     ...DEFAULT_ENHANCED_PROFILING_OPTIONS,
     ...options,
-    trackPropChanges: options.trackRenderCauses || options.trackPropChanges,
+    trackPropChanges: options.trackRenderCauses ?? options.trackPropChanges,
   });
 
   // Merge options with defaults
@@ -326,12 +327,12 @@ export function createEnhancedComponentProfiler(
             // Cast entry to LayoutShiftEntry
             const layoutShift = entry as unknown as {
               value: number;
-              sources?: Array<{ node?: Node }>;
+              sources?: { node?: Node }[];
             };
 
             recordLayoutShift(
               layoutShift.value,
-              layoutShift.sources && layoutShift.sources[0]?.node
+              layoutShift.sources?.[0]?.node
                 ? getElementDescription(layoutShift.sources[0].node)
                 : undefined
             );
@@ -447,7 +448,7 @@ export function createEnhancedComponentProfiler(
     });
 
     // Trim history if needed
-    if (layoutMetrics.layoutShiftHistory.length > (profilingOptions.maxRenderHistory || 100)) {
+    if (layoutMetrics.layoutShiftHistory.length > (profilingOptions.maxRenderHistory ?? 100)) {
       layoutMetrics.layoutShiftHistory.shift();
     }
 
@@ -477,7 +478,7 @@ export function createEnhancedComponentProfiler(
 
     // Trim history if needed
     if (
-      interactionMetrics.interactionToNextPaint.length > (profilingOptions.maxRenderHistory || 100)
+      interactionMetrics.interactionToNextPaint.length > (profilingOptions.maxRenderHistory ?? 100)
     ) {
       interactionMetrics.interactionToNextPaint.shift();
     }
@@ -492,14 +493,14 @@ export function createEnhancedComponentProfiler(
       totalTime / interactionMetrics.interactionToNextPaint.length;
 
     // Check if slow
-    if (duration > (profilingOptions.slowInteractionThreshold || 100)) {
+    if (duration > (profilingOptions.slowInteractionThreshold ?? 100)) {
       interactionMetrics.slowInteractions++;
 
       // Log if enabled
       if (profilingOptions.logToConsole) {
         console.warn(
           `Slow ${eventType} interaction detected in ${componentName}: ${duration.toFixed(2)}ms ` +
-            `(threshold: ${profilingOptions.slowInteractionThreshold || 100}ms)`
+            `(threshold: ${profilingOptions.slowInteractionThreshold ?? 100}ms)`
         );
       }
     }
@@ -527,10 +528,10 @@ export function createEnhancedComponentProfiler(
     const latestRender = enhancedRenderHistory[enhancedRenderHistory.length - 1];
 
     // Update cause
-    latestRender.causedByStateChange = cause.stateChange || latestRender.causedByStateChange;
-    latestRender.causedByContextChange = cause.contextChange || latestRender.causedByContextChange;
-    latestRender.causedByParentRender = cause.parentRender || latestRender.causedByParentRender;
-    latestRender.causedByEffect = cause.effect || latestRender.causedByEffect;
+    latestRender.causedByStateChange = cause.stateChange ?? latestRender.causedByStateChange;
+    latestRender.causedByContextChange = cause.contextChange ?? latestRender.causedByContextChange;
+    latestRender.causedByParentRender = cause.parentRender ?? latestRender.causedByParentRender;
+    latestRender.causedByEffect = cause.effect ?? latestRender.causedByEffect;
   }
 
   /**
@@ -637,7 +638,7 @@ export function createEnhancedComponentProfiler(
     nextProps: Props
   ): Result => {
     // Call original profile render first
-    const result = originalProfileRender(renderFn, prevProps, nextProps);
+    const result = originalProfileRender(renderFn, prevProps, nextProps) as unknown as Result;
 
     // Add enhanced render info
     if (
@@ -665,7 +666,7 @@ export function createEnhancedComponentProfiler(
       enhancedRenderHistory.push(enhancedRender);
 
       // Trim history if needed
-      if (enhancedRenderHistory.length > (profilingOptions.maxRenderHistory || 100)) {
+      if (enhancedRenderHistory.length > (profilingOptions.maxRenderHistory ?? 100)) {
         enhancedRenderHistory.shift();
       }
     }
@@ -840,7 +841,7 @@ export function withEnhancedProfiling<Props extends object>(
   Component: React.ComponentType<Props>,
   options: Partial<EnhancedComponentProfilingOptions> = {}
 ): React.FC<Props> & { profiler: EnhancedComponentProfilingResult } {
-  const componentName = Component.displayName || Component.name || 'Component';
+  const componentName = Component.displayName ?? Component.name ?? 'Component';
   const profiler = createEnhancedComponentProfiler(componentName, options);
 
   const WithProfiling: React.FC<Props> & { profiler: EnhancedComponentProfilingResult } =

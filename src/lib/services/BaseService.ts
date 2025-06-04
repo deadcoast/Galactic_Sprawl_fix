@@ -1,7 +1,5 @@
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    ErrorType
 } from '../../services/logging/ErrorLoggingService';
 import { Singleton } from '../patterns/Singleton';
 
@@ -11,7 +9,7 @@ import { Singleton } from '../patterns/Singleton';
 export interface ServiceMetadata {
   name: string;
   version: string;
-  status: 'initializing' | 'ready' | 'error' | 'disposed';
+  status: 'initializing' | 'ready' | 'active' | 'error' | 'disposed';
   lastError?: {
     type: ErrorType;
     message: string;

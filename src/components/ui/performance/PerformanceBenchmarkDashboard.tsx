@@ -111,7 +111,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
   }, [benchmarkResults]);
 
   // Run the selected benchmark
-  const runBenchmark = async () => {
+  const runBenchmark = async (): Promise<void> => {
     setIsRunning(true);
     setCurrentProgress(0);
 
@@ -311,7 +311,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           </div>
 
           <div className="actions">
-            <button onClick={runBenchmark} disabled={isRunning} className="primary-button">
+            <button onClick={() => void runBenchmark()} disabled={isRunning} className="primary-button">
               {isRunning ? 'Running...' : 'Run Benchmark'}
             </button>
 
@@ -359,10 +359,10 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
                       <tr key={`${result?.name}-${index}`}>
                         <td>{result?.name}</td>
                         <td>{result?.executionTimeMs.toFixed(2)}</td>
-                        <td>{resourceResult.nodeCount || 'N/A'}</td>
-                        <td>{resourceResult.connectionCount || 'N/A'}</td>
-                        <td>{result?.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
-                        <td>{result?.timestamp?.toLocaleString() || 'N/A'}</td>
+                        <td>{resourceResult.nodeCount ?? 'N/A'}</td>
+                        <td>{resourceResult.connectionCount ?? 'N/A'}</td>
+                        <td>{result?.memoryUsageMB?.toFixed(2) ?? 'N/A'}</td>
+                        <td>{result?.timestamp?.toLocaleString() ?? 'N/A'}</td>
                       </tr>
                     );
                   })}

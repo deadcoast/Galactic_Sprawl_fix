@@ -576,10 +576,10 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                       <div className="time-column">{stats.p95ExecutionTimeMs.toFixed(2)}</div>
                       <div className="time-column">{stats.meanExecutionTimeMs.toFixed(2)}</div>
                       <div className="memory-column">
-                        {stats.p95MemoryUsageMB?.toFixed(2) || 'N/A'}
+                        {stats.p95MemoryUsageMB?.toFixed(2) ?? 'N/A'}
                       </div>
                       <div className="ops-column">
-                        {stats.meanOperationsPerSecond?.toFixed(2) || 'N/A'}
+                        {stats.meanOperationsPerSecond?.toFixed(2) ?? 'N/A'}
                       </div>
                     </div>
                   ))}
@@ -613,8 +613,8 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
                       </span>
                     </div>
                     <div className="time-column">{budget.maxExecutionTimeMs}</div>
-                    <div className="memory-column">{budget.maxMemoryUsageMB || 'N/A'}</div>
-                    <div className="ops-column">{budget.minOperationsPerSecond || 'N/A'}</div>
+                    <div className="memory-column">{budget.maxMemoryUsageMB ?? 'N/A'}</div>
+                    <div className="ops-column">{budget.minOperationsPerSecond ?? 'N/A'}</div>
                   </div>
                 ))}
               </div>

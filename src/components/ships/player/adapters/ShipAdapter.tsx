@@ -81,7 +81,6 @@ const mapShipStatus = (
         case UnifiedShipStatus.ENGAGING:
         case UnifiedShipStatus.ATTACKING:
           return 'engaging';
-        case UnifiedShipStatus.RETREATING:
         case UnifiedShipStatus.RETURNING:
         case UnifiedShipStatus.WITHDRAWING:
           return 'retreating';
@@ -104,7 +103,6 @@ const mapShipStatus = (
         case UnifiedShipStatus.ENGAGING:
         case UnifiedShipStatus.ATTACKING:
           return 'engaging';
-        case UnifiedShipStatus.PATROLLING:
         case UnifiedShipStatus.READY:
           return 'patrolling';
         case UnifiedShipStatus.RETREATING:

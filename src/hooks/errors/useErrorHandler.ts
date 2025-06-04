@@ -5,11 +5,12 @@
  */
 
 import { useCallback, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 
 export interface ErrorHandlerConfig {
   /** Component name for error reporting */
@@ -199,7 +200,7 @@ export function useResourceErrorHandler(
 ) {
   return useErrorHandler({
     componentName,
-    errorType: ErrorType.RESOURCE,
+    errorType: ErrorType.EXTERNAL_SERVICE,
     errorSeverity: ErrorSeverity.MEDIUM,
     metadata: {
       source: 'resource',

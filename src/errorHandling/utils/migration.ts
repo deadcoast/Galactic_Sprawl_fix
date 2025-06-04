@@ -1,9 +1,8 @@
 import React, { ComponentType } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 import { ErrorBoundary, ErrorBoundaryProps } from '../ErrorBoundary';
 import { withErrorBoundary } from './errorBoundaryHOC';
 
@@ -111,7 +110,7 @@ export const IntegrationErrorHandlerAdapter: React.FC<
     fallback: fallback,
     onError: onError,
     metadata: {
-      type: ErrorType.INTEGRATION,
+      type: ErrorType.EXTERNAL_SERVICE,
       componentName,
     },
     children,
@@ -162,7 +161,7 @@ export function migrateComponentWithErrorBoundary<P extends object>(
         ...baseOptions,
         context: `Integration:${componentName}`,
         metadata: {
-          type: ErrorType.INTEGRATION,
+          type: ErrorType.EXTERNAL_SERVICE,
           ...baseOptions.metadata,
         },
       });

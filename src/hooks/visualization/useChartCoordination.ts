@@ -1,12 +1,13 @@
 import { useCallback, useEffect } from 'react';
-import {
-  BrushState,
-  ChartCoordinationManager,
-  ChartState,
-  ColorScale,
-  HighlightState,
-  ViewportState,
-} from '../../lib/visualization/ChartCoordinationManager';
+import
+  {
+    BrushState,
+    ChartCoordinationManager,
+    ChartState,
+    ColorScale,
+    HighlightState,
+    ViewportState,
+  } from '../../lib/visualization/ChartCoordinationManager';
 
 interface UseChartCoordinationProps {
   chartId: string;
@@ -30,11 +31,11 @@ export function useChartCoordination({
   onHighlightChange,
   onColorScaleChange,
 }: UseChartCoordinationProps) {
-  const manager = ChartCoordinationManager.getInstance();
+  const manager = new ChartCoordinationManager();
 
   // Register chart with manager
   useEffect(() => {
-    manager.registerChart(chartId, initialState);
+    manager.registerChart(chartId, initialState as ChartState);
 
     // Add to group if specified
     if (groupId) {
@@ -51,13 +52,13 @@ export function useChartCoordination({
 
   // Subscribe to events
   useEffect(() => {
-    const subscriptions: Array<() => void> = [];
+    const subscriptions: (() => void)[] = [];
 
     if (onViewportChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'viewport-change', event => {
-          if (event?.state.viewport) {
-            onViewportChange(event?.state.viewport);
+        manager.subscribe(chartId, 'viewport-change', (event: unknown) => {
+          if (event && typeof event === 'object' && 'state' in event && 'viewport' in event.state && onViewportChange) {
+            onViewportChange(event.state.viewport as ViewportState);
           }
         })
       );
@@ -65,9 +66,9 @@ export function useChartCoordination({
 
     if (onBrushChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'brush-change', event => {
-          if (event?.state.brush) {
-            onBrushChange(event?.state.brush);
+        manager.subscribe(chartId, 'brush-change', (event: unknown) => {
+          if (event && typeof event === 'object' && 'state' in event && 'brush' in event.state && onBrushChange) {
+            onBrushChange(event.state.brush as BrushState);
           }
         })
       );
@@ -75,9 +76,9 @@ export function useChartCoordination({
 
     if (onHighlightChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'highlight-change', event => {
-          if (event?.state.highlight) {
-            onHighlightChange(event?.state.highlight);
+        manager.subscribe(chartId, 'highlight-change', (event: unknown) => {
+          if (event && typeof event === 'object' && 'state' in event && 'highlight' in event.state && onHighlightChange) {
+            onHighlightChange(event.state.highlight as HighlightState);
           }
         })
       );
@@ -85,44 +86,44 @@ export function useChartCoordination({
 
     if (onColorScaleChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'color-scale-change', event => {
-          if (event?.state.colorScales) {
-            onColorScaleChange(event?.state.colorScales);
+        manager.subscribe(chartId, 'color-scale-change', (event: unknown) => {
+          if (event && typeof event === 'object' && 'state' in event && 'colorScales' in event.state && onColorScaleChange) {
+            onColorScaleChange(event.state.colorScales as Record<string, ColorScale>);
           }
         })
       );
     }
 
     return () => {
-      subscriptions.forEach(unsubscribe => unsubscribe());
+      subscriptions.forEach((unsubscribe: () => void) => unsubscribe());
     };
   }, [chartId, onViewportChange, onBrushChange, onHighlightChange, onColorScaleChange]);
 
   // Update handlers
   const updateViewport = useCallback(
     (viewport: ViewportState) => {
-      manager.updateChartState(chartId, { viewport });
+      manager.updateChartState(chartId, { viewport } as ChartState);
     },
     [chartId]
   );
 
   const updateBrush = useCallback(
     (brush: BrushState) => {
-      manager.updateChartState(chartId, { brush });
+      manager.updateChartState(chartId, { brush } as ChartState);
     },
     [chartId]
   );
 
   const updateHighlight = useCallback(
     (highlight: HighlightState) => {
-      manager.updateChartState(chartId, { highlight });
+      manager.updateChartState(chartId, { highlight } as ChartState);
     },
     [chartId]
   );
 
   const updateColorScale = useCallback(
     (colorScales: Record<string, ColorScale>) => {
-      manager.updateChartState(chartId, { colorScales });
+      manager.updateChartState(chartId, { colorScales } as ChartState);
     },
     [chartId]
   );
@@ -132,7 +133,7 @@ export function useChartCoordination({
     updateBrush,
     updateHighlight,
     updateColorScale,
-    getChartState: () => manager.getChartState(chartId),
-    getLinkedCharts: (groupId: string) => manager.getLinkedCharts(groupId),
+    getChartState: () => manager.getChartState(chartId) as ChartState,
+    getLinkedCharts: (groupId: string) => manager.getLinkedCharts(groupId) as string[],
   };
 }

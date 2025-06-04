@@ -2,10 +2,10 @@ import { Position, Tier } from '../core/GameTypes';
 import { ResourceType } from '../resources/ResourceTypes';
 import { CombatWeaponStats, WeaponInstance } from '../weapons/WeaponTypes';
 import {
-  CommonShipAbility,
-  CommonShipDisplayStats,
-  CommonShipStats,
-  ShipType,
+    CommonShipAbility,
+    CommonShipDisplayStats,
+    CommonShipStats,
+    ShipType,
 } from './CommonShipTypes';
 import { ShipStatus } from './ShipTypes';
 
@@ -91,6 +91,17 @@ export interface FactionState {
   relationships: Record<FactionId, number>;
   activeShips: ShipType[];
   currentBehavior: AIBehavior;
+
+  /**
+   * Optional aggregate statistics for the faction. Populated by behavior hooks/managers.
+   * Currently only totalShips is used for simple power calculations, but the
+   * object is intentionally extensible for future metrics (e.g., fleetStrength,
+   * resourceIncome, controlledSystems).
+   */
+  stats?: {
+    totalShips?: number;
+    [key: string]: unknown;
+  };
 }
 
 // Faction-specific configurations
@@ -184,12 +195,52 @@ export type FactionShipClass = SpaceRatsShipClass | LostNovaShipClass | EquatorH
 export interface FactionShipStats extends CommonShipStats {
   tier: Tier;
   faction: FactionId;
+
+  // Optional extended stats used by legacy factories
+  accuracy?: number;
+  criticalChance?: number;
+  criticalDamage?: number;
+  armorPenetration?: number;
+  shieldPenetration?: number;
+  miningRate?: number;
+  category?: import('./ShipTypes').ShipCategory;
+  name?: string;
+  capabilities?: Record<string, unknown> & {
+    canSalvage?: boolean;
+    canMine?: boolean;
+    canJump?: boolean;
+    scanning?: number;
+    stealth?: number;
+    combat?: number;
+    stealthActive?: boolean;
+    speed?: number;
+    range?: number;
+  };
+  tactics?: Record<string, unknown>;
+  formation?: Record<string, unknown>;
+  specialAbility?: Record<string, unknown>;
+  techBonuses?: Record<string, unknown>;
+  combatStats?: Record<string, unknown>;
+  stealth?: Record<string, unknown>;
+  sensors?: Record<string, unknown>;
+  formationId?: string;
+  formationRole?: string;
+  coordinationBonus?: number;
+}
+
+// Ability effect definition used by faction ships
+export interface AbilityEffect {
+  type: 'stealth' | 'shield' | 'speed' | 'damage' | (string & {});
+  magnitude: number;
+  radius?: number;
+  duration?: number;
 }
 
 // Faction Ship Ability
 export interface FactionShipAbility extends CommonShipAbility {
   factionRequirement?: FactionId;
   tier: Tier;
+  // inherits effect from CommonShipAbility - no additional field
 }
 
 // Faction Ship Display Stats (for UI)
@@ -211,7 +262,7 @@ export interface FactionShip /* extends CommonShip */ {
   rotation: number;
   tactics: FactionBehaviorConfig;
   stats: CommonShipStats;
-  abilities: string[];
+  abilities: FactionShipAbility[];
 }
 
 // Faction Ship Config
@@ -242,7 +293,7 @@ export interface ShipStatsWithWeapons extends Omit<CommonShipStats, 'weapons'> {
     secondary?: WeaponInstance[];
     stats: CombatWeaponStats;
   };
-  abilities: FactionShipAbility[];
+  // inherits abilities from CommonShipStats
 }
 
 /**

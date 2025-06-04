@@ -1,17 +1,19 @@
+import
+  {
+    Box,
+    Button,
+    Divider,
+    Paper,
+    Typography,
+  } from '@mui/material';
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Divider,
-} from '@mui/material';
-import {
-  ShipCategory,
-  ShipStatus,
-} from '../../../../types/ships/ShipTypes';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { formatResourceAmount as formatNumber } from '../../../../types/resources/ResourceTypeUtils';
+import
+  {
+    ShipCategory,
+    ShipStatus,
+  } from '../../../../types/ships/ShipTypes';
 
 // --- Define the simplified data interface ---
 export interface SelectedShipDetailsData {
@@ -71,15 +73,20 @@ interface ShipSpecificDetailsRendererProps {
 
 const ShipSpecificDetailsRenderer: React.FC<ShipSpecificDetailsRendererProps> = ({ ship }) => {
   // Use direct category checks instead of type guards
-  const combatCategories: ShipCategory[] = [
-    ShipCategory.combat,
-    ShipCategory.FIGHTER,
-    ShipCategory.CRUISER,
-    ShipCategory.BATTLESHIP,
-    ShipCategory.CARRIER,
-  ];
+  const isCombatCategory = (cat: ShipCategory): boolean => {
+    switch (cat) {
+      case ShipCategory.combat:
+      case ShipCategory.FIGHTER:
+      case ShipCategory.CRUISER:
+      case ShipCategory.BATTLESHIP:
+      case ShipCategory.CARRIER:
+        return true;
+      default:
+        return false;
+    }
+  };
 
-  if (combatCategories.includes(ship.category)) {
+  if (isCombatCategory(ship.category)) {
     return <CombatShipDetails />;
   } else if (ship.category === ShipCategory.MINING) {
     return <MiningShipDetails />;
@@ -99,10 +106,41 @@ interface SelectedShipDetailsProps {
 
 // --- Main Component ---
 const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { // Use ship prop
-  // Calculate cargo used locally
-  const totalCargoUsed = ship
-    ? Array.from(ship.cargo.resources.values()).reduce((sum, amount) => sum + amount, 0)
-    : 0;
+  // Helper keeps TS union complexity low when calculating cargo usage
+  const computeCargoUsed = (cargoMap: Map<ResourceType, number>): number => {
+    let total = 0;
+    cargoMap.forEach(value => {
+      total += value;
+    });
+    return total;
+  };
+
+  // Early bailout if ship is null – avoids union-complex expressions later
+  if (!ship) {
+    return (
+      <Box sx={{ mt: 3, p: 2, border: '1px solid grey' }}>
+        <Typography variant="body1">Select a ship to view details.</Typography>
+      </Box>
+    );
+  }
+
+  // Calculate cargo used only after ship is non-null
+  const totalCargoUsed = computeCargoUsed(ship.cargo.resources);
+
+  // Predicate helper – keeps union evaluation simple for TypeScript
+  const isActionCategory = (category: ShipCategory): boolean => {
+    switch (category) {
+      case ShipCategory.combat:
+      case ShipCategory.FIGHTER:
+      case ShipCategory.CRUISER:
+      case ShipCategory.BATTLESHIP:
+      case ShipCategory.CARRIER:
+      case ShipCategory.MINING:
+        return true;
+      default:
+        return false;
+    }
+  };
 
   // Define the common actions JSX
   const commonActions = (
@@ -141,15 +179,6 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
   );
 
   // --- Rendering Logic ---
-  // Handle case where no ship is selected or found
-  if (!ship) {
-    return (
-      <Box sx={{ mt: 3, p: 2, border: '1px solid grey' }}>
-        <Typography variant="body1">Select a ship to view details.</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Paper elevation={2} sx={{ p: 2, mt: 2 }}>
       {/* Common Header Details */}
@@ -169,16 +198,11 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
       <ShipSpecificDetailsRenderer ship={ship} />
 
       {/* Conditionally render common actions after specific details */}
-      {(ship.category === ShipCategory.combat ||
-        ship.category === ShipCategory.FIGHTER ||
-        ship.category === ShipCategory.CRUISER ||
-        ship.category === ShipCategory.BATTLESHIP ||
-        ship.category === ShipCategory.CARRIER ||
-        ship.category === ShipCategory.MINING) && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            {commonActions}
-          </>
+      {isActionCategory(ship.category) && (
+        <>
+          <Divider sx={{ my: 2 }} />
+          {commonActions}
+        </>
       )}
     </Paper>
   );

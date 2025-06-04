@@ -181,6 +181,7 @@ export function SpaceRatShip({
         id: 'scavenge-ability',
         name: 'Scavenge',
         description: 'Increases resource gain from destroyed ships',
+        tier: 1 as const,
         cooldown: 60,
         duration: 300, // Long duration passive-like
         active: hasEffect('scavenge'),
@@ -200,6 +201,7 @@ export function SpaceRatShip({
         id: 'scombatm-tactics-ability',
         name: 'Scombatm Tactics',
         description: 'Increases speed and evasion when near allies',
+        tier: 1 as const,
         cooldown: 45,
         duration: 15,
         active: hasEffect('scombatm-tactics'),

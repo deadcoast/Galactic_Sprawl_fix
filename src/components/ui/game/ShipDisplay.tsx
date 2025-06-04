@@ -3,41 +3,41 @@
  *
  * ShipDisplay component for showing ship information and status
  */
-import {
-  AlertTriangle,
-  Anchor,
-  Atom,
-  Box,
-  CircleDashed,
-  Cloud,
-  Diamond,
-  Droplet,
-  Eye,
-  Flame,
-  Hammer,
-  Hexagon,
-  Leaf,
-  Microscope,
-  MountainSnow,
-  Navigation,
-  Radiation,
-  Rocket,
-  Shield,
-  Sparkles,
-  Star,
-  Users,
-  Wheat,
-  Wind,
-  Zap,
-} from 'lucide-react';
+import
+  {
+    AlertTriangle,
+    Anchor,
+    Atom,
+    Box,
+    CircleDashed,
+    Cloud,
+    Diamond,
+    Droplet,
+    Eye,
+    Flame,
+    Hammer,
+    Hexagon,
+    Leaf,
+    Microscope,
+    MountainSnow,
+    Navigation,
+    Radiation,
+    Rocket,
+    Shield,
+    Sparkles,
+    Star,
+    Users,
+    Wheat,
+    Wind,
+    Zap,
+  } from 'lucide-react';
 import * as React from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService
+  } from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { Ship } from '../../../types/ships/Ship';
+import { PlayerShip } from '../../../types/ships/PlayerShipTypes';
 
 // Ship status types with visual indicators
 const SHIP_STATUS_INDICATORS: Record<
@@ -109,7 +109,7 @@ interface ShipDisplayProps {
   /**
    * Ship data to display
    */
-  ship: Ship;
+  ship: PlayerShip;
 
   /**
    * Whether to show detailed information
@@ -144,13 +144,13 @@ export function ShipDisplay({
   onSelect,
   className = '',
 }: ShipDisplayProps) {
-  const statusInfo = SHIP_STATUS_INDICATORS[ship.status] || {
+  const statusInfo = SHIP_STATUS_INDICATORS[ship.status] ?? {
     icon: <AlertTriangle className="h-4 w-4" />,
     color: '#9e9e9e',
     label: 'Unknown',
   };
 
-  const typeIcon = SHIP_TYPE_ICONS[ship.type] || <Rocket className="h-5 w-5" />;
+  const typeIcon = SHIP_TYPE_ICONS[ship.class] ?? <Rocket className="h-5 w-5" />;
 
   const handleClick = () => {
     if (onSelect) {
@@ -190,35 +190,41 @@ export function ShipDisplay({
             <div className="ship-display__capability flex items-center">
               <Rocket className="mr-1 h-4 w-4 text-gray-500" />
               <span className="text-gray-700">Speed:</span>
-              <span className="ml-1 font-medium">{ship.capabilities.speed}</span>
+              <span className="ml-1 font-medium">{ship.stats.speed}</span>
             </div>
             <div className="ship-display__capability flex items-center">
               <Navigation className="mr-1 h-4 w-4 text-gray-500" />
               <span className="text-gray-700">Range:</span>
-              <span className="ml-1 font-medium">{ship.capabilities.range}</span>
+              <span className="ml-1 font-medium">
+                {ship.stats.weapons[0]?.currentWeapon?.config.baseStats.range ?? 'N/A'}
+              </span>
             </div>
 
-            {ship.capabilities.cargo !== undefined && (
+            {ship.stats.cargo !== undefined && (
               <div className="ship-display__capability flex items-center">
                 <Box className="mr-1 h-4 w-4 text-gray-500" />
                 <span className="text-gray-700">Cargo:</span>
-                <span className="ml-1 font-medium">{ship.capabilities.cargo}</span>
+                <span className="ml-1 font-medium">
+                  {typeof ship.stats.cargo === 'object' && ship.stats.cargo !== null
+                    ? ship.stats.cargo.capacity
+                    : ship.stats.cargo ?? 'N/A'}
+                </span>
               </div>
             )}
 
-            {ship.capabilities.weapons !== undefined && (
+            {ship.stats.weapons !== undefined && (
               <div className="ship-display__capability flex items-center">
                 <Shield className="mr-1 h-4 w-4 text-gray-500" />
                 <span className="text-gray-700">Weapons:</span>
-                <span className="ml-1 font-medium">{ship.capabilities.weapons}</span>
+                <span className="ml-1 font-medium">{ship.stats.weapons.length}</span>
               </div>
             )}
 
-            {ship.capabilities.stealth !== undefined && (
+            {ship.stats.stealth !== undefined && (
               <div className="ship-display__capability flex items-center">
                 <Eye className="mr-1 h-4 w-4 text-gray-500" />
                 <span className="text-gray-700">Stealth:</span>
-                <span className="ml-1 font-medium">{ship.capabilities.stealth}</span>
+                <span className="ml-1 font-medium">{ship.stats.stealth}</span>
               </div>
             )}
           </div>
@@ -235,7 +241,7 @@ export function ShipDisplay({
             <div className="h-2 flex-grow overflow-hidden rounded-full bg-gray-200">
               <div
                 className="h-full rounded-full bg-blue-500"
-                style={{ width: `${Math.min(ship.experience * 10, 100)}%` }}
+                style={{ width: `${Math.min(ship.stats.experience * 10, 100)}%` }}
               ></div>
             </div>
           </div>
@@ -272,20 +278,20 @@ export function ShipDisplay({
             Details
           </button>
 
-          {ship.stealthActive !== undefined && (
+          {ship.stats.stealth !== undefined && (
             <button
-              className={`ship-display__control-btn rounded px-3 py-1 text-sm ${ship.stealthActive ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+              className={`ship-display__control-btn rounded px-3 py-1 text-sm ${ship.stats.stealth ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'}`}
               onClick={e => {
                 e.stopPropagation();
                 errorLoggingService.logInfo('Toggle stealth clicked', {
                   component: 'ShipDisplay',
                   action: 'toggleStealth',
                   shipId: ship.id,
-                  newState: !ship.stealthActive,
+                  newState: ship.stats.stealth,
                 });
               }}
             >
-              {ship.stealthActive ? 'Stealth On' : 'Stealth Off'}
+              Toggle Stealth
             </button>
           )}
         </div>

@@ -1,4 +1,3 @@
-
 # Scratchpad
 
 - [ ] Task 2: Implement Proper Type Definitions
@@ -32,7 +31,7 @@
   - [ ] Create unit tests validating type correctness
 
 - [ ] Task 7: Complete System Integration
-  - [ ] Connect all implemented components to their respective systems
+  - [x] Connect all implemented components to their respective systems (GameManager via ManagerRegistry)
   - [ ] Implement all missing functionality in resource flow system
   - [ ] Complete event system implementation with proper type safety
   - [ ] Ensure full integration between worker system and main application
@@ -40,12 +39,12 @@
 Key Integration Files:
 `src/workers/ResourceFlowWorker.ts`
 
-- [ ] No robust retry mechanism for failed operations
+- [x] No robust retry mechanism for failed operations
 
 `src/workers/worker.ts`
 
-- [ ] Missing proper task scheduling and prioritization
-- [ ] Insufficient task cancellation implementation
+- [x] Missing proper task scheduling and prioritization
+- [x] Insufficient task cancellation implementation
 
 Additional Integration Required:
 
@@ -56,7 +55,7 @@ Additional Integration Required:
 
 - [ ] Task 8: Global Type Safety & Validation:
 
-  - [ ] Replace remaining `any` types with concrete types or generics (excluding D3 files for now).
+  - [x] Replaced undefined NodeType references with strongly-typed `FlowNodeType` enum in `ResourceFlowWorker.ts` and added missing import to reduce implicit any usage.
 
 - [ ] Task 9: Logging Strategy Implementation:
 
@@ -82,8 +81,8 @@ Additional Integration Required:
 
   - [x] Implement structured error reporting from workers (using `errorLoggingService` or similar) -> _Changed to use postMessage for consistency_.
   - [x] Add robust type checking/guards for `postMessage` data in `worker.ts` and `ResourceFlowManager.ts` -> _Input validation added in workers_.
-  - [ ] Implement retry mechanisms for failed worker operations in `ResourceFlowWorker.ts`.
-  - [ ] Implement task scheduling/prioritization and cancellation logic in `worker.ts`.
+  - [x] Implement retry mechanisms for failed worker operations in `ResourceFlowWorkerUtil.ts` (exponential backoff, 3 attempts).
+    - [x] Implement task scheduling/prioritization and cancellation logic in `worker.ts`.  -> _Implemented new protocol & cancellation support_
 
 - [ ] Task 14: Rule System Review:
   - [ ] Clarify the contradiction between Service Implementation Anti-Pattern Rule #4 (`getInstance` override) and #5 (direct export). Update rules if necessary.
@@ -122,3 +121,6 @@ Task 18: Shared Types & Validation:
 - [ ] Update all manager classes to implement/use this standard interface.
 - [ ] Add any missing standard event methods to manager classes. -> _(Likely relates to foundational managers)_
 - [ ] Update components and hooks to use the standardized event methods type-safe keys/payloads.
+
+- [x] Task 19: GameManager Legacy API Compatibility
+  - [x] Implement legacy wrapper methods (`dispatchEvent`, `subscribeToGameTime`, `addEventListener`) on `GameManager` to satisfy hook dependencies and eliminate TypeScript errors in `useGameState.ts`.

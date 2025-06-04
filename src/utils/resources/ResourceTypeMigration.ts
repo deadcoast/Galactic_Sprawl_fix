@@ -9,12 +9,13 @@
 // Remove unused import, resolving the linter error
 // import { ResourceType as StringResourceType } from '../../types/resources/LegacyResourceTypes'; // Assuming legacy types are here
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import {
-  ensureEnumResourceType,
-  ensureStringResourceType,
-  isValidStringType,
-  toEnumResourceType,
-} from './ResourceTypeConverter'; // Import needed converters
+import
+  {
+    ensureEnumResourceType,
+    ensureStringResourceType,
+    isValidStringType,
+    toEnumResourceType,
+  } from './ResourceTypeConverter'; // Import needed converters
 
 // Keep migration-specific functions like getMigrationMapping, findEnumResourceType, generateMigrationGuide
 // Keep data transformation helpers if deemed necessary for migration specifically
@@ -35,11 +36,15 @@ export function getMigrationMapping(): Record<string, ResourceType> {
 
     // Add additional common variations - following the pattern for handling variations
     if (lowerCaseKey === ResourceType.DARK_MATTER.toLowerCase()) {
-      mapping['darkmatter'] = ResourceType.DARK_MATTER;
+      mapping.darkmatter = ResourceType.DARK_MATTER;
       mapping['dark-matter'] = ResourceType.DARK_MATTER;
+      mapping.dark_matter = ResourceType.DARK_MATTER;
+      mapping.darkmatter = ResourceType.DARK_MATTER;
     } else if (lowerCaseKey === ResourceType.EXOTIC_MATTER.toLowerCase()) {
-      mapping['exoticmatter'] = ResourceType.EXOTIC_MATTER;
+      mapping.exoticmatter = ResourceType.EXOTIC_MATTER;
+      mapping.exotic_matter = ResourceType.EXOTIC_MATTER;
       mapping['exotic-matter'] = ResourceType.EXOTIC_MATTER;
+      mapping.exoticmatter = ResourceType.EXOTIC_MATTER;
     }
   });
 
@@ -242,7 +247,7 @@ export function createResourceTypeCompatibilityLayer<T extends (...args: unknown
       if (index >= args.length) continue;
 
       if (convertToEnum) {
-        necombatgs[index] = ensureEnumResourceType(args[index]); // Use imported converter
+        necombatgs[index] = ensureEnumResourceType(args[index] as string); // Use imported converter
       } else {
         necombatgs[index] = ensureStringResourceType(args[index]); // Use imported converter
       }
@@ -277,17 +282,17 @@ export function migrateObjectKeys<T>(obj: Record<string, T>): Record<ResourceTyp
  */
 export function migrateArrayResourceTypes<T extends Record<string, unknown>>(
   arr: T[],
-  propertyName: string = 'type'
+  propertyName = 'type'
 ): T[] {
   return arr.map(item => {
     if (
       propertyName in item &&
       typeof item[propertyName] === 'string' &&
-      isValidStringType(item[propertyName] as string) // Use imported guard
+      isValidStringType(item[propertyName])
     ) {
       return {
         ...item,
-        [propertyName]: toEnumResourceType(item[propertyName] as string), // Use imported converter
+        [propertyName]: toEnumResourceType(item[propertyName]),
       };
     }
     return item;

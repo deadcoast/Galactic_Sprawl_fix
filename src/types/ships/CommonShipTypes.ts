@@ -8,10 +8,22 @@ export interface ShipType {
   type: ResourceType;
 }
 
-// Ship Categories
-export type ShipCategory = 'combat' | 'mining' | 'recon' | 'transport' | 'support' | 'utility';
+// Ship Categories – unified enum used across UI & logic
+export enum ShipCategory {
+  combat = 'combat',
+  MINING = 'mining',
+  RECON = 'recon',
+  TRANSPORT = 'transport',
+  SUPPORT = 'support',
+  UTILITY = 'utility',
+  SCOUT = 'scout',
+  FIGHTER = 'fighter',
+  CRUISER = 'cruiser',
+  BATTLESHIP = 'battleship',
+  CARRIER = 'carrier',
+}
 
-// Re-export weapon type for backcompatibility
+// Re-export weapon type for back-compatibility
 export type WeaponType = WeaponTypeBase;
 
 // Ship Status - Changed from type alias to enum
@@ -21,16 +33,21 @@ export enum ShipStatus {
   MINING = 'mining',
   SCANNING = 'scanning',
   ENGAGING = 'engaging',
+  PATROLLING = 'patrolling',
   REPAIRING = 'repairing',
   UPGRADING = 'upgrading',
   DAMAGED = 'damaged',
   DESTROYED = 'destroyed',
   READY = 'ready',
   ASSIGNED = 'assigned', // Added for task assignment status
+  RETREATING = 'retreating',
   RETURNING = 'returning', // Added based on usage
   ATTACKING = 'attacking', // Added based on usage
   WITHDRAWING = 'withdrawing', // Added based on usage
   DISABLED = 'disabled', // Added based on usage
+  COMBAT = 'combat', // Added for combat engagements
+  ACTIVE = 'active', // Added for active status checks
+  INACTIVE = 'inactive', // Added for inactive status checks
   MAINTENANCE = 'maintenance', // Added for faction base mapping
   INVESTIGATING = 'investigating', // Added for faction base mapping
 }
@@ -128,7 +145,7 @@ export interface CommonShip {
     resourceEfficiency?: number;
     combatEffectiveness?: number;
   };
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 // Common Ship Capabilities
@@ -137,46 +154,72 @@ export interface CommonShipCapabilities {
   canScan: boolean;
   canMine: boolean;
   canJump: boolean;
+  scanning?: number;
+  stealth?: number;
+  combat?: number;
+  stealthActive?: boolean;
+  speed?: number;
+  range?: number;
+  cargo?: number;
+  weapons?: number;
 }
 
 // Common utility functions
 export function getShipCategory(type: string): ShipCategory {
-  if (type.toLowerCase().includes('combat') || type.toLowerCase().includes('combat')) {
-    return 'combat';
+  const lower = type.toLowerCase();
+  if (lower.includes('combat')) {
+    return ShipCategory.combat;
   }
-  if (type.toLowerCase().includes('recon') || type.toLowerCase().includes('scout')) {
-    return 'recon';
+  if (lower.includes('recon') || lower.includes('scout')) {
+    return ShipCategory.RECON;
   }
-  return 'mining';
+  if (lower.includes('transport')) {
+    return ShipCategory.TRANSPORT;
+  }
+  return ShipCategory.MINING;
 }
 
 export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabilities {
   switch (category) {
-    case 'combat':
+    case ShipCategory.combat:
       return {
         canSalvage: false,
         canScan: false,
         canMine: false,
         canJump: true,
       };
-    case 'recon':
+    case ShipCategory.RECON:
       return {
         canSalvage: true,
         canScan: true,
         canMine: false,
         canJump: true,
       };
-    case 'mining':
+    case ShipCategory.MINING:
       return {
         canSalvage: true,
         canScan: false,
         canMine: true,
         canJump: false,
       };
-    // Add cases for transport, support, utility if specific defaults are needed
+    case ShipCategory.TRANSPORT:
+    case ShipCategory.SUPPORT:
+    case ShipCategory.UTILITY:
+    case ShipCategory.SCOUT:
+      return {
+        canSalvage: true,
+        canScan: false,
+        canMine: false,
+        canJump: true,
+      };
     default:
-      // Ensure exhaustive check or throw error for unhandled categories
-      throw new Error(`Unhandled ship category: ${category}`);
+      // Exhaustiveness safeguard – return minimal capabilities
+      return {
+        canSalvage: false,
+        canScan: false,
+        canMine: false,
+        canJump: false,
+      };
   }
 }
 

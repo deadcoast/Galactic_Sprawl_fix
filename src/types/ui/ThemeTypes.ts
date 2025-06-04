@@ -335,7 +335,7 @@ import { defaultTheme } from '../../ui/theme/defaultTheme';
 // Update deepMergePalette signature and logic
 function deepMergePalette(base: Theme['colors'], overrides: Partial<Theme['colors']>): Theme['colors'] {
   // Clone the base object to avoid modifying it directly
-  const merged = JSON.parse(JSON.stringify(base)); 
+  const merged = JSON.parse(JSON.stringify(base)) as Theme['colors']; 
 
   for (const key in overrides) {
     if (Object.prototype.hasOwnProperty.call(overrides, key)) {
@@ -348,7 +348,7 @@ function deepMergePalette(base: Theme['colors'], overrides: Partial<Theme['color
 
       if (isPlainObject(overrideValue) && isPlainObject(baseValue)) {
         // Recursively merge nested objects
-        merged[key] = deepMergePalette(baseValue, overrideValue);
+        merged[key] = deepMergePalette(baseValue, overrideValue as Record<string, unknown>);
       } else if (overrideValue !== undefined) {
         // Override primitive values or replace non-plain objects/arrays
         merged[key] = overrideValue;
@@ -411,7 +411,7 @@ export function createTheme(config: Partial<Theme> = {}): Theme {
 // Update generateThemeCSSVariables signature
 export function generateThemeCSSVariables(theme: Theme): Record<string, string> {
   const variables: Record<string, string> = {};
-  const colors = theme.colors;
+  const colors = theme.colors as Record<string, string | PaletteColor>;
 
   // Palette colors
   Object.keys(colors).forEach(key => {
@@ -422,7 +422,7 @@ export function generateThemeCSSVariables(theme: Theme): Record<string, string> 
       variables[`--color-${key}`] = value;
     } else if (typeof value === 'object' && value !== null && 'main' in value) {
       // Handle PaletteColor objects
-      const paletteColor = value as PaletteColor;
+      const paletteColor = value;
       Object.keys(paletteColor).forEach(shadeKey => {
         const colorValue = paletteColor[shadeKey];
         // Add check for undefined before assignment (Fix Line 444)

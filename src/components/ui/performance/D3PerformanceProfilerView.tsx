@@ -84,7 +84,7 @@ const D3PerformanceProfilerView: React.FC = () => {
   }, []);
 
   // Run profiling based on selected method
-  const runProfiling = async () => {
+  const runProfiling = () => {
     setIsProfileRunning(true);
     setProfileData(null);
 

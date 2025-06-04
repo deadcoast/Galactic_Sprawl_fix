@@ -116,7 +116,7 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
             <div className="rounded-lg bg-gray-700 px-4 py-2">
               <span className="text-sm text-gray-300">Population:</span>
               <span className="ml-2 font-medium">
-                {state.resources.population.toLocaleString()}
+                {state.resources.POPULATION.toLocaleString()}
               </span>
             </div>
             <div className="rounded-lg bg-gray-700 px-4 py-2">
