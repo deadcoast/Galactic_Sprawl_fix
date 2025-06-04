@@ -9,7 +9,7 @@ import {
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { EventType } from '../../types/events/EventTypes'; // Import EventType from types
-import { CommonShipStats, ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes'; // Correct import for CommonShipStatus
+import { CommonShipStats, ShipStatus as CommonShipStatus, ShipType } from '../../types/ships/CommonShipTypes'; // Correct import for CommonShipStatus
 import {
   FactionBehaviorConfig,
   FactionBehaviorType,
@@ -316,7 +316,7 @@ function hasStatus(unit: CombatUnit | FactionCombatUnit, statusToCheck: string):
 function isFactionCombatUnitArray(
   units: CombatUnit[] | FactionCombatUnit[] | FactionShip[]
 ): units is FactionCombatUnit[] {
-  return units.length > 0 && isFactionCombatUnit(units[0]);
+  return units.length > 0 && isFactionCombatUnit(units[0] as FactionCombatUnit);
 }
 
 // Helper function to check if array is FactionShip[]
@@ -324,7 +324,11 @@ function isFactionShipArray(
   units: CombatUnit[] | FactionCombatUnit[] | FactionShip[]
 ): units is FactionShip[] {
   // Add a more robust check if possible, e.g., check for a property unique to FactionShip
-  return units.length > 0 && !isFactionCombatUnit(units[0]) && 'category' in units[0];
+  return (
+    units.length > 0 &&
+    !isFactionCombatUnit(units[0] as FactionCombatUnit) &&
+    'category' in units[0]
+  );
 }
 
 // Helper function to convert CombatUnit to FactionCombatUnit
@@ -342,7 +346,7 @@ function convertUnitsToFaction(
      * 4. Support the ship upgrade system
      * 5. Generate appropriate visual effects based on ship class
      */
-    const _baseStats = getShipBehaviorStats(unit.type as unknown as ShipClass);
+    const _baseStats = getShipBehaviorStats(unit.type as unknown as ShipType);
 
     // Use _baseStats to calculate initial stats with faction modifiers
     const healthModifier =
@@ -468,7 +472,7 @@ function calculateFleetStrength(units: CombatUnit[] | FactionCombatUnit[] | Fact
     } else {
       // Assume CombatUnit
       // Need a way to estimate CombatUnit strength, perhaps using getShipBehaviorStats
-      const stats = getShipBehaviorStats(unit.type as ShipClass);
+      const stats = getShipBehaviorStats(unit.type as ShipType);
       unitStrength = stats.health + stats.shield; // Basic estimation
       const weaponDamage = (unit.weapons ?? []).reduce((sum, weapon) => sum + weapon.damage, 0);
       unitStrength += weaponDamage;
@@ -480,11 +484,11 @@ function calculateFleetStrength(units: CombatUnit[] | FactionCombatUnit[] | Fact
 }
 
 // Add FACTION_SHIPS constant
-const FACTION_SHIPS: Record<FactionId, ShipClass[]> = {
-  player: ['spitflare', 'starSchooner', 'orionFrigate'] as ShipClass[],
-  enemy: ['harbringerGalleon', 'midwayCarrier', 'motherEarthRevenge'] as ShipClass[],
-  neutral: ['starSchooner', 'orionFrigate'] as ShipClass[],
-  ally: ['spitflare', 'orionFrigate'] as ShipClass[],
+const FACTION_SHIPS: Record<FactionId, ShipType[]> = {
+  player: ['spitflare', 'starSchooner', 'orionFrigate'] as unknown as ShipType[],
+  enemy: ['harbringerGalleon', 'midwayCarrier', 'motherEarthRevenge'] as unknown as ShipType[],
+  neutral: ['starSchooner', 'orionFrigate'] as unknown as ShipType[],
+  ally: ['spitflare', 'orionFrigate'] as unknown as ShipType[],
   'space-rats': [
     'rat-king',
     'asteroid-marauder',
@@ -496,7 +500,7 @@ const FACTION_SHIPS: Record<FactionId, ShipClass[]> = {
     'plasma-fang',
     'vermin-vanguard',
     'black-void-buccaneer',
-  ] as ShipClass[],
+  ] as unknown as ShipType[],
   'lost-nova': [
     'eclipse-scythe',
     'nulls-revenge',
@@ -508,7 +512,7 @@ const FACTION_SHIPS: Record<FactionId, ShipClass[]> = {
     'nebular-persistence',
     'oblivions-wake',
     'forbidden-vanguard',
-  ] as ShipClass[],
+  ] as unknown as ShipType[],
   'equator-horizon': [
     'celestial-arbiter',
     'ethereal-galleon',
@@ -520,7 +524,7 @@ const FACTION_SHIPS: Record<FactionId, ShipClass[]> = {
     'balancekeepers-wrath',
     'ecliptic-watcher',
     'harmonys-vanguard',
-  ] as ShipClass[],
+  ] as unknown as ShipType[],
 };
 
 // Define faction behavior events

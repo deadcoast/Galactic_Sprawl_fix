@@ -7,8 +7,12 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../../../components/ui/errors/ErrorBoundary';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
-import { renderWithProviders, screen } from '../../utils/test-utils';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/logging/ErrorLoggingService';import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
 vi.mock('../../../services/ErrorLoggingService', () => ({
@@ -29,9 +33,6 @@ vi.mock('../../../services/ErrorLoggingService', () => ({
     getErrors: vi.fn(),
   },
 }));
-
-// Get the mocked service
-import { errorLoggingService } from '../../../services/ErrorLoggingService';
 
 // Component that throws an error
 const BuggyComponent = ({ shouldThrow = true }) => {

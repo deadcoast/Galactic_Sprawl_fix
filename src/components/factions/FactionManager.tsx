@@ -148,7 +148,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
       <div className="flex-1 p-6">
         {selectedFaction ? (
           <FactionAI
-            faction={selectedFaction as FactionId}
+            faction={selectedFaction}
             behavior={{
               id: selectedFaction,
               type: 'aggressive',
@@ -164,7 +164,9 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
               (factionBehaviors[selectedFaction]?.stats?.totalShips ?? 0) / 100
             )}
             threatLevel={0.5}
-            onUpdateBehavior={() => {}}
+            onUpdateBehavior={() => {
+              // TODO: Implement update behavior
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-400">
@@ -206,7 +208,9 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
               available: true,
             },
           ]}
-          onAction={() => {}}
+          onAction={() => {
+            // TODO: Implement action
+          }}
           onClose={() => setShowDiplomacy(false)}
         />
       )}

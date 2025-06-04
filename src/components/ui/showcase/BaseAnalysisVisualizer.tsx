@@ -3,7 +3,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 // Corrected import paths and added Prop imports
 import { HeatMap, HeatMapProps } from '../../exploration/visualizations/HeatMap';
 import {

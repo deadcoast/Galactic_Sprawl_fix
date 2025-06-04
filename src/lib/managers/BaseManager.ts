@@ -1,4 +1,8 @@
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { EventType, BaseEvent as LegacyBaseEvent } from '../../types/events/EventTypes';
 import { EventBus } from '../events/EventBus';
 import { BaseEvent, eventSystem } from '../events/UnifiedEventSystem';

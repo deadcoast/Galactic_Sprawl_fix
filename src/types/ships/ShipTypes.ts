@@ -1,16 +1,21 @@
 import { Position, Tier, Velocity } from '../core/GameTypes';
 import { WeaponMount } from '../weapons/WeaponTypes';
-import {
-  CommonShipCapabilities, // Re-add import
-  CommonShipStats,
-  ShipCargo,
-  ShipStatus,
-} from './CommonShipTypes';
+import
+  {
+    CommonShipCapabilities, // Re-add import
+    CommonShipStats,
+    ShipCargo,
+    ShipStatus,
+  } from './CommonShipTypes';
 import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
 import { PlayerShipClass } from './PlayerShipTypes';
 
 export { ShipStatus };
-export type { Tier, FactionId, ShipCargo, Position }; // Export types only
+// Alias used by UI components expecting UnifiedShipStatus
+export type UnifiedShipStatus = ShipStatus;
+// Provide runtime alias for enum to satisfy value usage
+export const UnifiedShipStatus = ShipStatus;
+export type { FactionId, Position, ShipCargo, Tier }; // Export types only
 
 /**
  * Consolidated Ship Category Enum

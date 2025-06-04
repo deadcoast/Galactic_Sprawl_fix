@@ -9,7 +9,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import LongSessionMemoryVisualizer from '../../components/performance/LongSessionMemoryVisualizer';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import {
   LongSessionMemoryResult,
   LongSessionMemoryTestSuite,

@@ -7,7 +7,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { EventType } from '../../../types/events/EventTypes';
 
 export interface EventLogProps {

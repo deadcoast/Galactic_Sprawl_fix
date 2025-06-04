@@ -3,8 +3,13 @@ import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
+import
+  {
   ShipHangarManager as IShipHangarManager,
   ShipBuildQueueItem,
   ShipBuildRequirements,

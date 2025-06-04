@@ -4,7 +4,11 @@ import { ResourceSystem } from '../../resource/ResourceSystem';
 import { FlowConnection, FlowNode } from '../../resource/subsystems/ResourceFlowSubsystem';
 import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
 import { ResourceThreshold } from '../../resource/subsystems/ResourceThresholdSubsystem';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { ResourceState, ResourceTransfer } from '../../types/resources/ResourceTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 

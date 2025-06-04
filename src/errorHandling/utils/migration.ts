@@ -1,5 +1,9 @@
 import React, { ComponentType } from 'react';
-import { ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { ErrorBoundary, ErrorBoundaryProps } from '../ErrorBoundary';
 import { withErrorBoundary } from './errorBoundaryHOC';
 

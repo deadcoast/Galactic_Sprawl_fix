@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { CanvasRenderer } from './renderers/CanvasRenderer';
 import { SVGRenderer } from './renderers/SVGRenderer';
 import { WebGLRenderer } from './renderers/WebGLRenderer';

@@ -9,7 +9,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { BaseComponentProps, TextComponentProps } from '../../../types/ui/ComponentTypes';
 
 /**

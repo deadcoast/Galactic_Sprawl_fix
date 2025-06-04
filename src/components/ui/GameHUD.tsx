@@ -15,7 +15,11 @@ import { GameActionType, useGameDispatch, useGameState } from '../../contexts/Ga
 import { ModuleActionType, useModuleDispatch, useModules } from '../../contexts/ModuleContext';
 import { useVPRSystem } from '../../hooks/ui/useVPRSystem';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { Module, ModuleStatus } from '../../types/modules/ModuleTypes';

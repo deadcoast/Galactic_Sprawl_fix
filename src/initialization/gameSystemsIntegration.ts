@@ -12,7 +12,11 @@ import { ResourceIntegration } from '../managers/resource/ResourceIntegration';
 import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
 import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
 import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
-import { errorLoggingService } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { EventType } from '../types/events/EventTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';

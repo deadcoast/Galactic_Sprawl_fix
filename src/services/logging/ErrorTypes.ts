@@ -21,6 +21,7 @@ export enum ErrorType {
   FILE_SYSTEM = 'file_system',
   EXTERNAL_SERVICE = 'external_service',
   RUNTIME = 'runtime',
+  EVENT_HANDLING = 'event_handling',
   // Add more specific types as needed
 }
 
@@ -57,4 +58,4 @@ export interface IErrorLog {
 }
 
 // Ensures this file is treated as a module by TypeScript
-export {};
+export { };

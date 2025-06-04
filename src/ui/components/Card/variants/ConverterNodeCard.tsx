@@ -3,7 +3,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../../services/ErrorLoggingService'; // Import logging service
+} from '../../../../services/logging/ErrorLoggingService';
 import type { ConverterFlowNode } from '../../../../types/resources/ResourceConversionTypes'; // Import the specific type
 import { Text } from '../../typography/Text'; // Assuming path
 import { Card, CardProps } from '../Card';

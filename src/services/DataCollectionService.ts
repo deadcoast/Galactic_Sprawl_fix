@@ -20,7 +20,12 @@ import {
 } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes';
-import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 /**
  * Map of ExplorationEvents to EventType enums

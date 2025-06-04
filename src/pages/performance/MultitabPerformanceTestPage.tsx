@@ -13,7 +13,11 @@ import {
   MultitabPerformanceLauncher,
 } from '../../components/performance/MultitabPerformanceLauncher';
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;

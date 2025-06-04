@@ -1,5 +1,10 @@
 import { WorkerMessageType } from '../workers/DataProcessingWorker';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 /**
  * Service for interfacing with the DataProcessingWorker

@@ -1,27 +1,34 @@
-import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  Paper,
-  Tab,
-  Tabs,
-  Typography,
-} from '@mui/material';
+import
+  {
+    Button,
+    CircularProgress,
+    Divider,
+    Grid,
+    Paper,
+    Tab,
+    Tabs,
+    Typography,
+  } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { Component, ErrorInfo, useCallback, useEffect } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
-import {
-  AnalysisConfig,
-  AnalysisResult,
-  DataPoint,
-  Dataset,
-} from '../../types/exploration/DataAnalysisTypes';
+import
+  {
+    AnalysisConfig,
+    AnalysisResult,
+    DataPoint,
+    Dataset,
+  } from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
 import DataPointVirtualList from './DataPointVirtualList';
@@ -58,7 +65,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
         <Typography variant="h6" color="error">
           Analysis Failed
         </Typography>
-        <Typography variant="body1">{result?.error || 'Unknown error occurred'}</Typography>
+        <Typography variant="body1">{result?.error ?? 'Unknown error occurred'}</Typography>
       </div>
     );
   }
@@ -197,7 +204,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
 
       datasetDetails.dataPoints.forEach(dp => {
         if (dp.type in typeCounts) {
-          typeCounts[dp.type as keyof typeof typeCounts]++;
+          typeCounts[dp.type]++;
         }
       });
 
@@ -324,7 +331,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         </div>
         <button
           className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-          onClick={handleRefreshDataset}
+          onClick={() => void handleRefreshDataset()}
           disabled={isLoading}
         >
           {isLoading ? 'Refreshing...' : 'Refresh'}
@@ -372,7 +379,7 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
       fallbackComponent={({ error }) => (
         <div className="rounded border border-red-200 bg-red-50 p-3">
           <h3 className="text-sm font-medium text-red-700">Error loading dataset info</h3>
-          <p className="text-xs text-red-600">{error?.message || 'An unexpected error occurred'}</p>
+          <p className="text-xs text-red-600">{error?.message ?? 'An unexpected error occurred'}</p>
         </div>
       )}
       onError={(error: Error, info: ErrorInfo) => {
@@ -417,7 +424,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   const [activeTab, setActiveTab] = React.useState<number>(0);
   const [filteredData, setFilteredData] = React.useState<DataPoint[]>([]);
   const [filters, setFilters] = React.useState<
-    Array<{
+    {
       field: string;
       operator:
         | 'equals'
@@ -428,7 +435,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         | 'notContains'
         | 'between';
       value: string | number | boolean | string[] | [number, number];
-    }>
+    }[]
   >([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [lastRefresh, setLastRefresh] = React.useState<number>(Date.now());
@@ -454,7 +461,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Get latest results for the selected config
   const currentResults = selectedConfig
     ? getAnalysisResultsByConfigId(selectedConfig.id).sort(
-        (a: AnalysisResult, b: AnalysisResult) => (b.startTime ?? 0) - (a.startTime ?? 0)
+        (a, b) => (b.startTime ?? 0) - (a.startTime ?? 0)
       )
     : [];
 
@@ -578,7 +585,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Handle filter changes with standardized events
   const handleFilterChange = useCallback(
     (
-      newFilters: Array<{
+      newFilters: {
         field: string;
         operator:
           | 'equals'
@@ -589,7 +596,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
           | 'notContains'
           | 'between';
         value: string | number | boolean | string[] | [number, number];
-      }>
+      }[]
     ) => {
       setFilters(newFilters);
       if (selectedDataset) {
@@ -759,7 +766,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 <Typography variant="h6">{selectedConfig.name}</Typography>
                 <Typography variant="body2">{selectedConfig.description}</Typography>
                 <div className="mt-2">
-                  <Button variant="contained" onClick={handleRunAnalysis} disabled={isLoading}>
+                  <Button variant="contained" onClick={() => void handleRunAnalysis()} disabled={isLoading}>
                     {isLoading ? <CircularProgress size={24} /> : 'Run Analysis'}
                   </Button>
                 </div>

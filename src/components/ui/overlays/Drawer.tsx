@@ -11,7 +11,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { UIEventType } from '../../../types/ui/EventTypes';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';

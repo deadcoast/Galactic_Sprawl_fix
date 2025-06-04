@@ -1,7 +1,11 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import * as React from 'react';
 import { Component, ErrorInfo } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 interface Props {
   children: React.ReactNode;

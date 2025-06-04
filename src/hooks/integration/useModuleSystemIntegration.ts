@@ -6,7 +6,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { ModuleStatus } from '../../types/modules/ModuleTypes';

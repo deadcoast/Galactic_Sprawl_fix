@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GlobalRoutine } from '../../managers/automation/GlobalAutomationManager';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { getAutomationManager, getGlobalAutomationManager } from '../../managers/ManagerRegistry'; // Import registry accessors
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService'; // Import logging service
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 // Define SystemId type to match what's expected
 type SystemId = string;

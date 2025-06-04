@@ -6,7 +6,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ManagerStatus } from '../../lib/managers/BaseManager';
 import { ServiceRegistry } from '../../lib/registry/ServiceRegistry';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 // Define a compatible BaseManager interface that aligns with what ServiceRegistry expects
 // We need this to avoid type conflicts between different BaseManager definitions in the codebase

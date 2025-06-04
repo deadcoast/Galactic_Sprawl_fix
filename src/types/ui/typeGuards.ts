@@ -246,8 +246,6 @@ export function isValidTheme(value: unknown): value is Theme {
   if (!value || typeof value !== 'object') {
     return false;
   }
-    return false;
-  }
 
   const theme = value as Partial<Theme>;
 

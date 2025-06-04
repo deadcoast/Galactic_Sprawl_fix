@@ -1,5 +1,9 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { ErrorFallback } from './ErrorFallback';
 
 /**

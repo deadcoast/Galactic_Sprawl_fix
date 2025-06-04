@@ -1,7 +1,11 @@
 // import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents'; // Remove legacy bus
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem'; // Keep BaseEvent
 import { AbstractBaseManager } from '../../lib/managers/BaseManager'; // Add Base Manager
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService'; // Add Error Logging
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes'; // Add Standard EventType Enum
 import { ResourceType } from '../../types/resources/ResourceTypes';

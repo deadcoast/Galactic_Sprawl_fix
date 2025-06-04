@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 /**
  * Options for data fetching hook

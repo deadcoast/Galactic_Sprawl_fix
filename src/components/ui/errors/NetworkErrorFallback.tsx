@@ -7,10 +7,10 @@
 import { Globe, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import React from 'react';
 import {
+  errorLoggingService,
   ErrorSeverity,
   ErrorType,
-  errorLoggingService,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ComponentErrorState } from './ComponentErrorState';
 
 export interface NetworkErrorFallbackProps {

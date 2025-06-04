@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base event interface that all events should extend

@@ -4,7 +4,11 @@ import { ServiceRegistry } from '../../lib/services/ServiceRegistry';
 import { anomalyDetectionService } from '../../services/AnomalyDetectionService';
 import { apiService } from '../../services/APIService';
 import { componentRegistryService } from '../../services/ComponentRegistryService';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { eventPropagationService } from '../../services/EventPropagationService';
 import { realTimeDataService } from '../../services/RealTimeDataService';
 import { recoveryService } from '../../services/RecoveryService';

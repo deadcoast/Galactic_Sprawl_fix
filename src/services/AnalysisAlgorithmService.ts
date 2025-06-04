@@ -61,7 +61,7 @@ interface DistributionBin {
 interface ResourceCell {
   x: number;
   y: number;
-  resources: Array<{ type: ResourceType; amount: number }>;
+  resources: { type: ResourceType; amount: number }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;
@@ -73,24 +73,27 @@ interface ResourceCell {
  */
 export class AnalysisAlgorithmService {
   // Cache for storing computed results to improve performance
-  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map();
+  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map<
+    string,
+    { result: AnalysisResult; expiresAt: number }
+  >();
 
   // Cache expiration time (10 minutes)
   private cacheExpirationMs = 10 * 60 * 1000;
 
   // Property access cache for faster property extraction
-  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map();
+  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map<string, PropertyExtractor>();
 
   // Default sample size for large datasets
   private defaultSampleSize = 1000;
 
   // Memoization for common statistical operations
-  private memoizedMeans: Map<string, number> = new Map();
+  private memoizedMeans: Map<string, number> = new Map<string, number>();
 
   // WebWorker pool for parallel processing
   private workerPool: Worker[] = [];
   private isWorkerSupported = typeof Worker !== 'undefined';
-  private maxWorkers = navigator.hardcombateConcurrency || 4;
+  private maxWorkers = navigator.hardwareConcurrency ?? 4;
 
   constructor() {
     // Initialize WebWorker pool if supported
@@ -239,8 +242,7 @@ export class AnalysisAlgorithmService {
       if (
         effectiveOptions.sampleData &&
         dataset.dataPoints.length > effectiveOptions.sampleSize &&
-        result &&
-        result.data
+        result?.data
       ) {
         result.data.samplingInfo = {
           originalSize: dataset.dataPoints.length,
@@ -289,14 +291,14 @@ export class AnalysisAlgorithmService {
 
       // Set up message handler
       const handleMessage = (event: MessageEvent) => {
-        if (event?.data?.messageId === messageId) {
+        if (event?.data?.messageId === messageId && event?.data?.result) {
           // Clean up message handler
           worker.removeEventListener('message', handleMessage);
 
           if (event?.data?.error) {
-            reject(new Error(event?.data?.error));
+            reject(new Error(event?.data?.error as string));
           } else {
-            resolve(event?.data?.result);
+            resolve(event?.data?.result as AnalysisResult);
           }
         }
       };

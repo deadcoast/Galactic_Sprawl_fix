@@ -1,7 +1,11 @@
 import * as PIXI from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { assetManager } from '../../managers/game/assetManager';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 interface UseAssetsResult {
   isLoading: boolean;

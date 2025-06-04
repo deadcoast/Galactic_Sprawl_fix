@@ -8,7 +8,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 interface RegionPerformanceData {
   region: string;

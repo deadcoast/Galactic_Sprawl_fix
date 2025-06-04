@@ -31,7 +31,11 @@ import {
   Zap,
 } from 'lucide-react';
 import * as React from 'react';
-import { errorLoggingService } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { Ship } from '../../../types/ships/Ship';
 

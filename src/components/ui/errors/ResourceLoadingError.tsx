@@ -7,10 +7,10 @@
 import { Box, Database, RefreshCw } from 'lucide-react';
 import React from 'react';
 import {
+  errorLoggingService,
   ErrorSeverity,
   ErrorType,
-  errorLoggingService,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { ComponentErrorState } from './ComponentErrorState';
 

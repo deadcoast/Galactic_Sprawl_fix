@@ -1,7 +1,8 @@
 import { AlertTriangle, Shield, Sword } from 'lucide-react';
+import { ShipStatus } from 'src/types/ships/CommonShipTypes';
 import { SHIP_STATS } from '../../../config/ships/shipStats';
 import type { FactionShipProps, ShipStatsWithWeapons } from '../../../types/ships/FactionShipTypes';
-import { FactionBehaviorConfig } from '../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig } from '../../../types/ships/FactionShipTypes';
 
 type FactionColorKey = 'spaceRats' | 'lostNova' | 'equatorHorizon';
 
@@ -52,13 +53,19 @@ export function FactionShip({
         </div>
         <div
           className={`rounded-full px-3 py-1 text-sm ${
-            ship.status === 'engaging'
+            ship.status === ShipStatus.ENGAGING
               ? 'bg-red-900/50 text-red-400'
-              : ship.status === 'patrolling'
-                ? 'bg-green-900/50 text-green-400'
-                : ship.status === 'retreating'
-                  ? 'bg-yellow-900/50 text-yellow-400'
-                  : 'bg-gray-700 text-gray-400'
+              : ship.status === ShipStatus.IDLE
+              ? 'bg-green-900/50 text-green-400'
+              : ship.status === ShipStatus.MOVING
+              ? 'bg-yellow-900/50 text-yellow-400'
+              : ship.status === ShipStatus.RETURNING
+              ? 'bg-blue-900/50 text-blue-400'
+              : ship.status === ShipStatus.WITHDRAWING
+              ? 'bg-red-900/50 text-red-400'
+              : ship.status === ShipStatus.DISABLED
+              ? 'bg-gray-700 text-gray-400'
+              : 'bg-gray-700 text-gray-400'
           }`}
         >
           {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
@@ -142,21 +149,21 @@ export function FactionShip({
           </div>
         </div>
 
-        {ship.specialAbility && (
+        {ship.abilities.length > 0 && (
           <button
             onClick={onSpecialAbility}
-            disabled={ship.status === 'disabled'}
+            disabled={ship.status === ShipStatus.DISABLED}
             className={`w-full rounded-lg p-3 ${
-              ship.specialAbility.active
+              ship.abilities.some(ability => ability === 'special')
                 ? `bg-${color}-500/20 border border-${color}-500/30`
                 : 'bg-gray-700/50 hover:bg-gray-600/50'
             }`}
           >
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-sm font-medium text-white">{ship.specialAbility.name}</span>
-              <span className="text-xs text-gray-400">{ship.specialAbility.cooldown}s</span>
+              <span className="text-sm font-medium text-white">{ship.abilities[0]}</span>
+              <span className="text-xs text-gray-400">{ship.abilities[0]}</span>
             </div>
-            <p className="text-xs text-gray-400">{ship.specialAbility.description}</p>
+            <p className="text-xs text-gray-400">{ship.abilities[0]}</p>
           </button>
         )}
       </div>
@@ -165,9 +172,9 @@ export function FactionShip({
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={onEngage}
-          disabled={ship.status === 'disabled'}
+          disabled={ship.status === ShipStatus.DISABLED}
           className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
-            ship.status === 'disabled'
+            ship.status === ShipStatus.DISABLED
               ? 'cursor-not-allowed bg-gray-700 text-gray-500'
               : `bg-${color}-500/20 hover:bg-${color}-500/30 text-${color}-200`
           }`}
@@ -177,9 +184,9 @@ export function FactionShip({
         </button>
         <button
           onClick={onRetreat}
-          disabled={ship.status === 'disabled'}
+          disabled={ship.status === ShipStatus.DISABLED}
           className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
-            ship.status === 'disabled' ? 'cursor-not-allowed opacity-50' : ''
+            ship.status === ShipStatus.DISABLED ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
           <Shield className="h-4 w-4" />
@@ -188,7 +195,7 @@ export function FactionShip({
       </div>
 
       {/* Status warnings */}
-      {ship.status === 'disabled' && (
+      {ship.status === ShipStatus.DISABLED && (
         <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <span className="text-sm text-red-200">Ship systems critically damaged</span>

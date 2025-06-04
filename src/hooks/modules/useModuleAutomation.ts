@@ -2,7 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { getResourceManager } from '../../managers/ManagerRegistry';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 

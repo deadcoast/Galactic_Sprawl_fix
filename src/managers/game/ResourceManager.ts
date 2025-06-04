@@ -8,7 +8,11 @@ import {
   TRANSFER_CONFIG,
 } from '../../config/resource/ResourceConfig';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { EventHandler } from '../../types/events/EventEmitterInterface';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import {

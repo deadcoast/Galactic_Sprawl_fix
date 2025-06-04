@@ -6,7 +6,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {

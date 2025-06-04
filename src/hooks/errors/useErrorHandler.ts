@@ -5,7 +5,11 @@
  */
 
 import { useCallback, useState } from 'react';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 export interface ErrorHandlerConfig {
   /** Component name for error reporting */

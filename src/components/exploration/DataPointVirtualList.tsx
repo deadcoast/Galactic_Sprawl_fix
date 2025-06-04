@@ -1,13 +1,14 @@
-import {
-  Chip,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Paper,
-  Tooltip,
-  Typography,
-  styled,
-} from '@mui/material';
+import
+  {
+    Chip,
+    CircularProgress,
+    Divider,
+    IconButton,
+    Paper,
+    Tooltip,
+    Typography,
+    styled,
+  } from '@mui/material';
 import { Info, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -89,7 +90,7 @@ const PropertyRow = styled('div')(({ theme }) => ({
 
 // Create styled Paper components for selected and unselected states
 const DataPointPaper = styled(Paper, {
-  shouldForcombatdProp: prop => prop !== 'isSelected',
+  shouldForwardProp: (prop: PropertyKey) => prop !== 'isSelected',
 })<{ isSelected?: boolean }>(({ theme, isSelected }) => ({
   padding: theme.spacing(1.5),
   margin: theme.spacing(0.5),
@@ -148,9 +149,14 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (Array.isArray(value)) return value.join(', ');
+    if (Array.isArray(value))
+      return value
+        .map(el => (typeof el === 'object' ? JSON.stringify(el) : String(el)))
+        .join(', ');
     if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
+    // At this point value is primitive (string | number | bigint | symbol)
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    return typeof value === 'symbol' ? value.toString() : String(value);
   };
 
   // Render each row in the virtualized list

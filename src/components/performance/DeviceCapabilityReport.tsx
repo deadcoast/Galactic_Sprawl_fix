@@ -7,9 +7,13 @@
  */
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { useEffect, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 interface DeviceCapabilityData {
   category: string;
@@ -707,7 +711,7 @@ const DeviceCapabilityReport: React.FC = () => {
       }
     };
 
-    loadData();
+    void loadData();
   }, []);
 
   // Handle segment selection
@@ -766,7 +770,7 @@ const DeviceCapabilityReport: React.FC = () => {
   // Helper to get active data based on segment
   const getActiveData = (): DeviceCapabilityData[] => {
     if (!deviceData) return [];
-    return deviceData[activeSegment as keyof DeviceSegmentationData] as DeviceCapabilityData[];
+    return deviceData[activeSegment as keyof DeviceSegmentationData];
   };
 
   if (isLoading) {

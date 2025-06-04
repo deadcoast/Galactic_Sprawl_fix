@@ -9,11 +9,12 @@
 
 import * as React from 'react';
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  errorLoggingService,
   ErrorSeverity,
   ErrorType,
-  errorLoggingService,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { ErrorFallback, FallbackProps } from './ErrorFallback';
 
 /**

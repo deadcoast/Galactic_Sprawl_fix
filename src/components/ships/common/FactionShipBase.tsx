@@ -32,11 +32,10 @@ function mapShipStatus(
     case UnifiedShipStatus.ENGAGING:
     case UnifiedShipStatus.ATTACKING:
       return 'engaging';
-    case UnifiedShipStatus.PATROLLING:
+    case UnifiedShipStatus.MOVING:
     case UnifiedShipStatus.IDLE:
     case UnifiedShipStatus.READY:
       return 'patrolling';
-    case UnifiedShipStatus.RETREATING:
     case UnifiedShipStatus.RETURNING:
     case UnifiedShipStatus.WITHDRAWING:
       return 'retreating';
@@ -166,7 +165,7 @@ function FactionShipContent({
               disabled={state.status === 'disabled'}
               className={`w-full rounded-lg px-3 py-2 text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-700 text-white`}`}
             >
-              Fire {weapon.currentWeapon?.config.name || weapon.position} Mount
+              Fire {weapon.currentWeapon?.config.name ?? weapon.position} Mount
             </button>
           ))}
         </div>

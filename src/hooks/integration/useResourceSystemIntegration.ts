@@ -10,7 +10,11 @@ import {
   getResourceFlowManager,
   getResourceManager,
 } from '../../managers/ManagerRegistry';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { EventType, isResourceUpdateEventData } from '../../types/events/EventTypes';
 import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 // import { useAppDispatch } from '../store/hooks'; // Removed - store not configured

@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { ModuleEvent, moduleEventBus } from '../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 
 /**

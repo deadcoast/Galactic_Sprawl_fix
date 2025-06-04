@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
 import { ResourceType } from './../types/resources/ResourceTypes';
 

@@ -31,6 +31,8 @@ export enum ShipStatus {
   ATTACKING = 'attacking', // Added based on usage
   WITHDRAWING = 'withdrawing', // Added based on usage
   DISABLED = 'disabled', // Added based on usage
+  MAINTENANCE = 'maintenance', // Added for faction base mapping
+  INVESTIGATING = 'investigating', // Added for faction base mapping
 }
 
 // Common Ship Stats Interface

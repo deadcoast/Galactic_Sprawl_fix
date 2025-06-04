@@ -22,7 +22,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 
 // Sample flow data for testing
 const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData => {
