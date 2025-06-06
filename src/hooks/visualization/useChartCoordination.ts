@@ -31,7 +31,7 @@ export function useChartCoordination({
   onHighlightChange,
   onColorScaleChange,
 }: UseChartCoordinationProps) {
-  const manager = new ChartCoordinationManager();
+  const manager = ChartCoordinationManager.getInstance();
 
   // Register chart with manager
   useEffect(() => {
@@ -56,40 +56,32 @@ export function useChartCoordination({
 
     if (onViewportChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'viewport-change', (event: unknown) => {
-          if (event && typeof event === 'object' && 'state' in event && 'viewport' in event.state && onViewportChange) {
-            onViewportChange(event.state.viewport as ViewportState);
-          }
+        manager.subscribe(chartId, 'viewport-change', (event) => {
+          onViewportChange?.(event.state.viewport as ViewportState);
         })
       );
     }
 
     if (onBrushChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'brush-change', (event: unknown) => {
-          if (event && typeof event === 'object' && 'state' in event && 'brush' in event.state && onBrushChange) {
-            onBrushChange(event.state.brush as BrushState);
-          }
+        manager.subscribe(chartId, 'brush-change', (event) => {
+          onBrushChange?.(event.state.brush as BrushState);
         })
       );
     }
 
     if (onHighlightChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'highlight-change', (event: unknown) => {
-          if (event && typeof event === 'object' && 'state' in event && 'highlight' in event.state && onHighlightChange) {
-            onHighlightChange(event.state.highlight as HighlightState);
-          }
+        manager.subscribe(chartId, 'highlight-change', (event) => {
+          onHighlightChange?.(event.state.highlight as HighlightState);
         })
       );
     }
 
     if (onColorScaleChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'color-scale-change', (event: unknown) => {
-          if (event && typeof event === 'object' && 'state' in event && 'colorScales' in event.state && onColorScaleChange) {
-            onColorScaleChange(event.state.colorScales as Record<string, ColorScale>);
-          }
+        manager.subscribe(chartId, 'color-scale-change', (event) => {
+          onColorScaleChange?.(event.state.colorScales as Record<string, ColorScale>);
         })
       );
     }
@@ -133,7 +125,7 @@ export function useChartCoordination({
     updateBrush,
     updateHighlight,
     updateColorScale,
-    getChartState: () => manager.getChartState(chartId) as ChartState,
-    getLinkedCharts: (groupId: string) => manager.getLinkedCharts(groupId) as string[],
+    getChartState: () => manager.getChartState(chartId)!,
+    getLinkedCharts: (groupId: string) => manager.getLinkedCharts(groupId),
   };
 }

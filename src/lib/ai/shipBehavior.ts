@@ -80,12 +80,12 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         // Check if ship can salvage
         const category = getShipCategory(ship.type);
         const capabilities = getDefaultCapabilities(category);
-        const { canSalvage, canJump, canScan, canMine } = capabilities;
+        const { canSalvage } = capabilities;
 
         // combat ships can salvage if they have the cutting laser
         const techTreeManager = getTechTreeManager();
         if (
-          category === 'combat' &&
+          category === ShipCategory.combat &&
           techTreeManager?.isUnlocked('cutting_laser') &&
           canSalvage
         ) {
@@ -204,9 +204,16 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
   execute(ship: CommonShip, dt: number): unknown /* State */ {
     const techTreeManager = getTechTreeManager();
-    const hasAdvancedMining = techTreeManager.isUnlocked('advanced_mining_lasers');
+    const hasAdvancedMining = techTreeManager.isUnlocked( 'advanced_mining_lasers' );
+
+    if (hasAdvancedMining) {
+      // TODO: Implement advanced mining logic
+    } else {
+      // TODO: Implement basic mining logic
+    }
 
     // ... rest of the execution logic ...
+    return ship;
   }
 }
 

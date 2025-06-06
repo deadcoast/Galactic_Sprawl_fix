@@ -23,6 +23,9 @@ export enum ErrorType {
   DATA_FETCH = 'data_fetch',
   RUNTIME = 'runtime',
   EVENT_HANDLING = 'event_handling',
+  USER_INTERFACE = 'ui',
+  UI = 'ui', // Alias for USER_INTERFACE, kept for backward compatibility
+  UI_WARNING = 'ui_warning',
   // Add more specific types as needed
 }
 

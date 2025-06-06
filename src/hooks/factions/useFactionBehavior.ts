@@ -1853,8 +1853,9 @@ function getShipBehaviorStats(shipClass: ShipType): CommonShipStats {
   const configStats = CONFIG_SHIP_STATS[mappedClass]; // Use mapped class for lookup
 
   if (!configStats) {
+    const originalClassLabel = typeof shipClass === 'string' ? shipClass : JSON.stringify(shipClass);
     console.warn(
-      `No config stats found for mapped ship class: ${mappedClass} (original: ${String(shipClass)}). Using defaults.`
+      `No config stats found for mapped ship class: ${mappedClass} (original: ${originalClassLabel}). Using defaults.`
     );
     return {
       health: DEFAULT_SHIP_STATS.health,

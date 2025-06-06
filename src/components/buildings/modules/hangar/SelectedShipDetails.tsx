@@ -6,7 +6,7 @@ import
     Paper,
     Typography,
   } from '@mui/material';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { formatResourceAmount as formatNumber } from '../../../../types/resources/ResourceTypeUtils';
 import
@@ -35,40 +35,44 @@ export interface SelectedShipDetailsData {
 // --- Internal Components for Specific Ship Types ---
 
 type CombatShipDetailsProps = Record<string, never>;
-const CombatShipDetails: React.FC<CombatShipDetailsProps> = () => (
-  <Box>
-    <Typography variant="body2">Combat Specific Stats...</Typography>
-    {/* Display combat-specific details */}
-  </Box>
-);
+const CombatShipDetails = (): ReactElement => {
+  return React.createElement(
+    Box,
+    null,
+    React.createElement(Typography, { variant: 'body2' }, 'Combat Specific Stats...')
+  );
+};
 
 type MiningShipDetailsProps = Record<string, never>;
-const MiningShipDetails: React.FC<MiningShipDetailsProps> = () => (
-  <Box>
-    <Typography variant="body2">Mining Specific Stats...</Typography>
-    {/* Display mining-specific details */}
-  </Box>
-);
+const MiningShipDetails = (): ReactElement => {
+  return React.createElement(
+    Box,
+    null,
+    React.createElement(Typography, { variant: 'body2' }, 'Mining Specific Stats...')
+  );
+};
 
 type ReconShipDetailsProps = Record<string, never>;
-const ReconShipDetails: React.FC<ReconShipDetailsProps> = () => (
-  <Box>
-    <Typography variant="body2">Recon Specific Stats...</Typography>
-    {/* Display recon-specific details */}
-  </Box>
-);
+const ReconShipDetails = (): ReactElement => {
+  return React.createElement(
+    Box,
+    null,
+    React.createElement(Typography, { variant: 'body2' }, 'Recon Specific Stats...')
+  );
+};
 
 type TransportShipDetailsProps = Record<string, never>;
-const TransportShipDetails: React.FC<TransportShipDetailsProps> = () => (
-  <Box>
-    <Typography variant="body2">Transport Specific Stats...</Typography>
-    {/* Add actions if needed */}
-  </Box>
-);
+const TransportShipDetails = (): ReactElement => {
+  return React.createElement(
+    Box,
+    null,
+    React.createElement(Typography, { variant: 'body2' }, 'Transport Specific Stats...')
+  );
+};
 
 // --- New Renderer Component ---
 interface ShipSpecificDetailsRendererProps {
-  ship: SelectedShipDetailsData; // Use the simplified type
+  ship: SelectedShipDetailsData | null;
 }
 
 const ShipSpecificDetailsRenderer: React.FC<ShipSpecificDetailsRendererProps> = ({ ship }) => {
@@ -85,6 +89,10 @@ const ShipSpecificDetailsRenderer: React.FC<ShipSpecificDetailsRendererProps> = 
         return false;
     }
   };
+
+  if (ship?.category === undefined) {
+    return null;
+  }
 
   if (isCombatCategory(ship.category)) {
     return <CombatShipDetails />;
@@ -117,11 +125,12 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
 
   // Early bailout if ship is null – avoids union-complex expressions later
   if (!ship) {
-    return (
-      <Box sx={{ mt: 3, p: 2, border: '1px solid grey' }}>
-        <Typography variant="body1">Select a ship to view details.</Typography>
-      </Box>
+    const placeholder: JSX.Element = React.createElement(
+      Box,
+      { sx: { mt: 3, p: 2, border: '1px solid grey' } },
+      React.createElement(Typography, { variant: 'body1' }, 'Select a ship to view details.')
     );
+    return placeholder;
   }
 
   // Calculate cargo used only after ship is non-null
@@ -142,45 +151,38 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
     }
   };
 
-  // Define the common actions JSX
-  const commonActions = (
-    <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        size="small"
-        disabled={!ship || !(ship.status === ShipStatus.IDLE || ship.status === ShipStatus.READY)}
-        // onClick={() => handleLaunchShip(ship.id)} // TODO: Pass handler
-      >
-        Launch
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        size="small"
-        sx={{ mr: 1 }}
-        disabled={!ship || ship.status !== ShipStatus.DAMAGED || (ship.stats.health ?? 0) >= (ship.stats.maxHealth ?? 100)}
-        // onClick={() => handleRepairShip(ship.id)} // TODO: Pass handler
-      >
-        Repair (Cost TBD)
-      </Button>
-      <Button
-        variant="outlined"
-        color="error"
-        size="small"
-        disabled={!ship}
-        // onClick={() => handleScrapShip(ship.id)} // TODO: Pass handler
-      >
-        Scrap (Confirm TBD)
-      </Button>
-      {/* Add Assign Officer Button if logic exists */}
-      {/* <Button size="small">Assign Officer</Button> */}
-    </Box>
-  );
+  // Helper to generate common actions without triggering complex union evaluation
+  const buildCommonActions = (shipData: SelectedShipDetailsData): ReactElement => {
+    const launchDisabled = !(shipData.status === ShipStatus.IDLE || shipData.status === ShipStatus.READY);
+    const repairDisabled = shipData.status !== ShipStatus.DAMAGED || (shipData.stats.health ?? 0) >= (shipData.stats.maxHealth ?? 100);
+    return React.createElement(
+      Box,
+      { sx: { display: 'flex', justifyContent: 'flex-start', gap: 1 } },
+      [
+        React.createElement(
+          Button,
+          { key: 'launch', variant: 'contained', color: 'primary', size: 'small', disabled: launchDisabled },
+          'Launch'
+        ),
+        React.createElement(
+          Button,
+          { key: 'repair', variant: 'outlined', color: 'secondary', size: 'small', sx: { mr: 1 }, disabled: repairDisabled },
+          'Repair (Cost TBD)'
+        ),
+        React.createElement(
+          Button,
+          { key: 'scrap', variant: 'outlined', color: 'error', size: 'small', disabled: false },
+          'Scrap (Confirm TBD)'
+        ),
+      ]
+    );
+  };
+
+  const commonActions: ReactElement = buildCommonActions(ship);
 
   // --- Rendering Logic ---
   return (
-    <Paper elevation={2} sx={{ p: 2, mt: 2 }}>
+    (<Paper elevation={2} sx={{ p: 2, mt: 2 }}>
       {/* Common Header Details */}
       <Typography variant="h6">Selected: {ship.name}</Typography>
       <Typography variant="body1">Status: {ship.status}</Typography>
@@ -198,13 +200,16 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
       <ShipSpecificDetailsRenderer ship={ship} />
 
       {/* Conditionally render common actions after specific details */}
-      {isActionCategory(ship.category) && (
+      {(() => {
+        const cat = ship.category; // isolate to narrow union evaluation
+        return isActionCategory(cat);
+      })() && (
         <>
           <Divider sx={{ my: 2 }} />
           {commonActions}
         </>
       )}
-    </Paper>
+    </Paper>) as JSX.Element
   );
 };
 

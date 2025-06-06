@@ -20,7 +20,7 @@ BEGIN EVERY TASK BY CONSULTING .cursorrules BEFORE IMPLEMENTING ANY SOLUTION.
 
 ### REQUIRED STEPS
 
-1. Search .cursorrules for relevant system patterns using #hashtag identifiers
+1. Search .CURSOR_CONTEXT.md for relevant system patterns using #hashtag identifiers
 2. Document in Scratchpad which patterns were found and will be applied
 3. Only after documentation review, proceed with implementation
 4. Verify implementation against documented patterns before submission
@@ -59,7 +59,7 @@ BEGIN EVERY TASK BY CONSULTING .cursorrules BEFORE IMPLEMENTING ANY SOLUTION.
 
 ## `Scratchpad` Tasklist Usage
 
-Maintain a `Tasklist` in `.windsurfscratchpad.md` section below in this format:
+Maintain a `Tasklist` in `.CURSOR_SCRATCHPAD.md` section below in this format:
 
 - [ ] Task
   - [ ] Subtask

@@ -84,8 +84,8 @@ export default function useSessionPerformance(componentId: string) {
   const withPerformanceTracking = <T extends (...args: unknown[]) => unknown>(
     handler: T,
     interactionType: 'click' | 'hover' | 'scroll' | 'keypress' | 'custom' = 'click'
-  ): ((...args: Parameters<T>) => ReturnType<T> | unknown ) => {
-    return (...args: Parameters<T>) => {
+  ): ((...args: Parameters<T>) => ReturnType<T>) => {
+    const wrappedHandler = (...args: Parameters<T>): ReturnType<T> => {
       const startTime = performance.now();
 
       try {
@@ -93,41 +93,41 @@ export default function useSessionPerformance(componentId: string) {
 
         // For promise-returning handlers, track completion when promise resolves
         if (result instanceof Promise) {
-                  result
-                    .then(() => {
-                      if (trackerRef.current) {
-                        trackerRef.current.trackUserInteraction({
-                          interactionType,
-                          targetComponent: componentId,
-                          timestamp: Date.now(),
-                          responseTime: performance.now() - startTime,
-                          successful: true,
-                        });
-                      }
-                    })
-                    .catch(() => {
-                      if (trackerRef.current) {
-                        trackerRef.current.trackUserInteraction({
-                          interactionType,
-                          targetComponent: componentId,
-                          timestamp: Date.now(),
-                          responseTime: performance.now() - startTime,
-                          successful: false,
-                        });
-                      }
-                    });
-                }
-        else if (trackerRef.current) {
-                    trackerRef.current.trackUserInteraction({
-                      interactionType,
-                      targetComponent: componentId,
-                      timestamp: Date.now(),
-                      responseTime: performance.now() - startTime,
-                      successful: true,
-                    });
-                  }
+          result
+            .then(() => {
+              if (trackerRef.current) {
+                trackerRef.current.trackUserInteraction({
+                  interactionType,
+                  targetComponent: componentId,
+                  timestamp: Date.now(),
+                  responseTime: performance.now() - startTime,
+                  successful: true,
+                });
+              }
+            })
+            .catch(() => {
+              if (trackerRef.current) {
+                trackerRef.current.trackUserInteraction({
+                  interactionType,
+                  targetComponent: componentId,
+                  timestamp: Date.now(),
+                  responseTime: performance.now() - startTime,
+                  successful: false,
+                });
+              }
+            });
+        } else if (trackerRef.current) {
+          trackerRef.current.trackUserInteraction({
+            interactionType,
+            targetComponent: componentId,
+            timestamp: Date.now(),
+            responseTime: performance.now() - startTime,
+            successful: true,
+          });
+        }
 
-        return result;
+        // Type assertion: result is ReturnType<T>
+        return result as ReturnType<T>;
       } catch (error) {
         // Track failed interactions
         if (trackerRef.current) {
@@ -142,6 +142,7 @@ export default function useSessionPerformance(componentId: string) {
         throw error;
       }
     };
+    return wrappedHandler;
   };
 
   return {

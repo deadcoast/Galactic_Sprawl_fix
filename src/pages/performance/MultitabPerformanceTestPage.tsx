@@ -15,8 +15,6 @@ import {
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
 import {
   errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
 } from '../../services/logging/ErrorLoggingService';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
@@ -48,7 +46,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
     try {
       localStorage.setItem('multitab_performance_results', JSON.stringify(newResults));
     } catch (e) {
-      errorLoggingService.logwarn('Failed to store test results in localStorage:', { error: e });
+      errorLoggingService.logWarn('Failed to store test results in localStorage:', { error: e });
     }
   };
 
@@ -65,7 +63,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
   const handleLaunch = (config: MultitabLaunchConfig) => {
     setIsRunning(true);
     // Implementation would go here to actually launch the test
-    errorLoggingService.logwarn('Launching test', { config });
+    errorLoggingService.logWarn('Launching test', { config });
 
     // Simulate a test running for a few seconds
     setTimeout(() => {
@@ -78,10 +76,10 @@ const MultitabPerformanceTestPage: React.FC = () => {
     try {
       const savedResults = localStorage.getItem('multitab_performance_results');
       if (savedResults) {
-        setResults(JSON.parse(savedResults));
+        setResults(JSON.parse(savedResults) as ResultSet);
       }
     } catch (e) {
-      errorLoggingService.logwarn('Failed to load previous test results:', { error: e });
+      errorLoggingService.logWarn('Failed to load previous test results:', { error: e });
     }
   }, []);
 

@@ -285,6 +285,7 @@ export class ResourceStateClass {
     this._max = data?.max ?? metadata?.defaultMax;
     this._min = data?.min ?? 0;
     this._production = data?.production ?? 0;
+    this._consumption = data?.consumption ?? 0;
   }
 
   get current(): number {
@@ -374,7 +375,7 @@ export class ResourceStateClass {
  */
 export interface ResourceState {
   current: number;
-  capacity: number;
+  capacity?: number;
   max: number;
   min: number;
   production: number;
@@ -595,13 +596,13 @@ export interface ResourcePool {
 
 // Export types from ResourceConversionTypes.ts
 export type {
-  ChainExecutionStatus,
-  ConversionChain,
-  ConverterFlowNode,
-  ConverterNodeConfig,
-  ConverterStatus,
-  ExtendedResourceConversionRecipe,
-  ResourceConversionProcess,
+    ChainExecutionStatus,
+    ConversionChain,
+    ConverterFlowNode,
+    ConverterNodeConfig,
+    ConverterStatus,
+    ExtendedResourceConversionRecipe,
+    ResourceConversionProcess
 } from './ResourceConversionTypes';
 
 /**

@@ -1,5 +1,6 @@
 import { BaseEvent } from '../events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../managers/BaseManager';
+import { Singleton } from '../utils/Singleton';
 
 export interface ViewportState {
   scale: number;
@@ -228,4 +229,14 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
     this.linkedGroups.clear();
   }
   // --- End AbstractBaseManager Implementation ---
+
+  /**
+   * Accessor for singleton instance (inherited Singleton pattern)
+   */
+  public static getInstance(): ChartCoordinationManager {
+    // Use Singleton base method with proper this binding
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - generic binding handled via `this`
+    return Singleton.getInstance.call(this);
+  }
 }

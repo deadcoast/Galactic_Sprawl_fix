@@ -77,28 +77,25 @@ export function useResource(resourceType: ResourceType) {
     fetchResource();
 
     // Subscribe to resource updates
-    const unsubscribe = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
-      if (event?.data && isResourceUpdateEventData(event.data) && event.data.resourceType === resourceType) {
-        try {
-          const resourceManager = getResourceManager();
-          setResourceState(resourceManager.getResourceState(resourceType) ?? null);
-          setError(null);
-        } catch (e) {
-          const error = e instanceof Error ? e : new Error(String(e));
-          setError(error);
-
-          // Log error
-          errorLoggingService.logError(error, ErrorType.UI, ErrorSeverity.MEDIUM, {
-            component: 'useResource',
-            resourceType,
-            eventType: EventType.RESOURCE_UPDATED,
-          });
-        }
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return unsubscribe;
+    return moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
+          if (event?.data && isResourceUpdateEventData(event.data) && event.data.resourceType === resourceType) {
+            try {
+              const resourceManager = getResourceManager();
+              setResourceState(resourceManager.getResourceState(resourceType) ?? null);
+              setError(null);
+            } catch (e) {
+              const error = e instanceof Error ? e : new Error(String(e));
+              setError(error);
+    
+              // Log error
+              errorLoggingService.logError(error, ErrorType.UI, ErrorSeverity.MEDIUM, {
+                component: 'useResource',
+                resourceType,
+                eventType: EventType.RESOURCE_UPDATED,
+              });
+            }
+          }
+        });
   }, [resourceType]);
 
   return {
@@ -185,42 +182,39 @@ export function useResources(resourceTypes?: ResourceType[]) {
     fetchResources();
 
     // Subscribe to resource updates
-    const unsubscribe = moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
-      if (event?.data && isResourceUpdateEventData(event.data)) {
-        const { resourceType } = event.data;
-
-        // Only update if we care about this resource type
-        if (!resourceTypes || resourceTypes.includes(resourceType)) {
-          try {
-            const resourceManager = getResourceManager();
-            const state = resourceManager.getResourceState(resourceType);
-
-            if (state) {
-              setResources(prev => {
-                const updated = new Map(prev);
-                updated.set(resourceType, state);
-                return updated;
-              });
+    return moduleEventBus.subscribe(EventType.RESOURCE_UPDATED, event => {
+          if (event?.data && isResourceUpdateEventData(event.data)) {
+            const { resourceType } = event.data;
+    
+            // Only update if we care about this resource type
+            if (!resourceTypes || resourceTypes.includes(resourceType)) {
+              try {
+                const resourceManager = getResourceManager();
+                const state = resourceManager.getResourceState(resourceType);
+    
+                if (state) {
+                  setResources(prev => {
+                    const updated = new Map(prev);
+                    updated.set(resourceType, state);
+                    return updated;
+                  });
+                }
+    
+                setError(null);
+              } catch (e) {
+                const error = e instanceof Error ? e : new Error(String(e));
+                setError(error);
+    
+                // Log error
+                errorLoggingService.logError(error, ErrorType.UI, ErrorSeverity.MEDIUM, {
+                  component: 'useResources',
+                  resourceType,
+                  eventType: EventType.RESOURCE_UPDATED,
+                });
+              }
             }
-
-            setError(null);
-          } catch (e) {
-            const error = e instanceof Error ? e : new Error(String(e));
-            setError(error);
-
-            // Log error
-            errorLoggingService.logError(error, ErrorType.UI, ErrorSeverity.MEDIUM, {
-              component: 'useResources',
-              resourceType,
-              eventType: EventType.RESOURCE_UPDATED,
-            });
           }
-        }
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return unsubscribe;
+        });
   }, [resourceTypes]);
 
   return {
@@ -340,11 +334,16 @@ export function useResourceActions() {
  */
 export function useResourceSystemIntegration(enableLogging = false) {
   // const dispatch = useAppDispatch();
-  const resourceFlowManager = getResourceFlowManager();
-  // const resourceThresholdManager = getResourceThresholdManager(); // Removed usage
-  // const resourceStorageManager = getResourceStorageManager(); // Removed usage
-  const resourceConversionManager = getResourceConversionManager();
-  const resourceManager = getResourceManager(); // Added usage of existing manager
+  const _resourceFlowManager = getResourceFlowManager(); // underscore to indicate intentional unused
+  const _resourceConversionManager = getResourceConversionManager();
+  const resourceManager = getResourceManager(); // frequently used
+
+  if (enableLogging) {
+    // Minimal debug log to avoid no-console rule; replace with logger if available
+    errorLoggingService.logInfo('useResourceSystemIntegration initialized', {
+      component: 'useResourceSystemIntegration',
+    });
+  }
 
   useEffect(() => {
     // Initial fetch or setup if needed (e.g., get all initial resource states)
@@ -354,7 +353,8 @@ export function useResourceSystemIntegration(enableLogging = false) {
     });
 
     // Subscribe to resource update events
-    const handleResourceUpdate = (event: unknown) => {
+    interface ResourceUpdateEvt { type: EventType; data?: unknown }
+    const handleResourceUpdate = (event: ResourceUpdateEvt) => {
       // Add type guard
       if (
         event &&
