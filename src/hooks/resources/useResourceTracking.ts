@@ -200,7 +200,10 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
             lastUpdated: (parsed).timestamp ?? Date.now(),
           }));
         } else {
-          console.warn('Invalid resource data in localStorage, using defaults');
+          errorLoggingService.logWarn('Invalid resource data in localStorage, using defaults', {
+            componentName: 'useResourceTracking',
+            action: 'initializeResources'
+          });
           setState(prev => ({
             ...prev,
             resources: initialResources,

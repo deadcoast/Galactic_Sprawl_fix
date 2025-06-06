@@ -225,6 +225,33 @@ export type BaseShip = Ship;
 export type CombatShip = Ship & {
   class: PlayerShipClass | FactionShipClass;
   details: CombatShipDetails;
+  /**
+   * Percent-based technology bonuses applied to this ship.
+   * A value of 1 represents 100 % (no bonus), 1.2 = +20 %.
+   */
+  techBonuses?: {
+    weaponEfficiency?: number;
+    shieldRegeneration?: number;
+    energyEfficiency?: number;
+  };
+  /**
+   * Runtime combat statistics accumulated during engagements.
+   */
+  combatStats?: {
+    damageDealt: number;
+    damageReceived: number;
+    killCount: number;
+    assistCount: number;
+  };
+  /**
+   * Current formation metadata if the ship is part of one.
+   */
+  formation?: {
+    type: 'offensive' | 'defensive' | 'balanced';
+    spacing: number;
+    facing: number;
+    position?: number;
+  };
   [key: string]: unknown;
 };
 

@@ -278,13 +278,35 @@ export class ShipFactory {
       stats: detailedStats,
       experience: baseShip.experience,
       tactics: factionStats?.tactics,
-      formation: factionStats?.formation,
+      formation: this.isValidFormation(factionStats?.formation) ? (factionStats.formation as Required<NonNullable<CombatShip['formation']>>) : undefined,
       specialAbility: factionStats?.specialAbility,
       techBonuses: factionStats?.techBonuses,
-      combatStats: factionStats?.combatStats,
+      combatStats: this.isValidCombatStats(factionStats?.combatStats) ? (factionStats.combatStats as Required<NonNullable<CombatShip['combatStats']>>) : undefined,
       details: { category: baseShip.category as ShipCategory.combat | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER },
     };
     return combatShip;
+  }
+
+  private isValidFormation(value: unknown): value is Required<NonNullable<CombatShip['formation']>> {
+    if (!value || typeof value !== 'object') return false;
+    const obj = value as Record<string, unknown>;
+    return (
+      typeof obj.type === 'string' &&
+      (obj.type === 'offensive' || obj.type === 'defensive' || obj.type === 'balanced') &&
+      typeof obj.spacing === 'number' &&
+      typeof obj.facing === 'number'
+    );
+  }
+
+  private isValidCombatStats(value: unknown): value is Required<NonNullable<CombatShip['combatStats']>> {
+    if (!value || typeof value !== 'object') return false;
+    const obj = value as Record<string, unknown>;
+    return (
+      typeof obj.damageDealt === 'number' &&
+      typeof obj.damageReceived === 'number' &&
+      typeof obj.killCount === 'number' &&
+      typeof obj.assistCount === 'number'
+    );
   }
 
   private createMiningShip(

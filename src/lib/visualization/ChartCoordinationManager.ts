@@ -1,6 +1,6 @@
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { BaseEvent } from '../events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../managers/BaseManager';
-import { Singleton } from '../utils/Singleton';
 
 export interface ViewportState {
   scale: number;
@@ -63,7 +63,7 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
   private charts: Map<string, ChartState>;
   private linkedGroups: Map<string, Set<string>>;
 
-  protected constructor() {
+  public constructor() {
     super('ChartCoordinationManager');
     this.charts = new Map();
     this.linkedGroups = new Map();
@@ -100,7 +100,7 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
    * Link charts together for synchronized interactions
    */
   public linkCharts(chartIds: string[], groupId: string): void {
-    const group = this.linkedGroups.get(groupId) || new Set();
+    const group = this.linkedGroups.get(groupId) ?? new Set<string>();
     chartIds.forEach(id => group.add(id));
     this.linkedGroups.set(groupId, group);
   }
@@ -154,12 +154,11 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
     eventType: ChartEventType,
     callback: (event: ChartEvent) => void
   ): () => void {
-    const unsubscribe = super.subscribe<ChartEvent>(eventType, event => {
-      if (event.chartId === chartId) {
-        callback(event);
-      }
-    });
-    return unsubscribe;
+    return super.subscribe<ChartEvent>(eventType, event => {
+          if (event.chartId === chartId) {
+            callback(event);
+          }
+        });
   }
 
   /**
@@ -216,27 +215,26 @@ export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
   }
 
   // --- AbstractBaseManager Implementation ---
-  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
-    console.warn('ChartCoordinationManager initialized');
+  protected onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    errorLoggingService.logInfo('ChartCoordinationManager initialized', {
+      module: 'ChartCoordinationManager',
+      componentName: 'ChartCoordinationManager'
+    });
+    return Promise.resolve();
   }
 
   protected onUpdate(_deltaTime: number): void {
     // Update logic, if any
   }
 
-  protected async onDispose(): Promise<void> {
+  protected onDispose(): Promise<void> {
     this.charts.clear();
     this.linkedGroups.clear();
+    return Promise.resolve();
   }
   // --- End AbstractBaseManager Implementation ---
-
-  /**
-   * Accessor for singleton instance (inherited Singleton pattern)
-   */
-  public static getInstance(): ChartCoordinationManager {
-    // Use Singleton base method with proper this binding
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - generic binding handled via `this`
-    return Singleton.getInstance.call(this);
-  }
 }
+
+// Export a singleton instance using inherited Singleton#getInstance
+// Cast to specific class to satisfy typing
+export const chartCoordinationManager = ChartCoordinationManager.getInstance();

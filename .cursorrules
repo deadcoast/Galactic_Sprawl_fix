@@ -1,65 +1,40 @@
 # .cursorrules
 
-This file contains all essential codebase patterns, structures, interfaces, and relationships.
-Refer to this file first when seeking context for code generation, correction, or analysis.
-BEGIN EVERY TASK BY CONSULTING .cursorrules BEFORE IMPLEMENTING ANY SOLUTION.
+BEGIN EVERY TASK BY THE STANDARDS SET FORTH IN THIS FILE.
 
-## Correction and Code Implementation Guidelines
+## PROHIBITED ACTIONS
+- Implementing solutions based solely on existing code examples
+- Skipping documentation review even when similar patterns exist elsewhere
+- Assuming pattern consistency without verification
+- Adding wrapper functions around existing methods
+- Altering existing functionality
+- Creating your own implementations of existing methods
+- Making assumptions about the code - always verify first
+- Creating actual instances of real classes, instead use the existing methods directly
+- Creating new files when asked to correct a file
 
-### DO NOT
-
-- Implement solutions based solely on existing code examples
-- Skip documentation review even when similar patterns exist elsewhere
-- Assume pattern consistency without verification
-- Add wrapper functions around existing methods
-- Alter existing functionality
-- Create your own implementations of existing methods
-- Make assumptions about the code - always verify first
-- Create actual instances of real classes and use their existing methods directly
-- Avoid creating new files when asked to correct a file
-
-### REQUIRED STEPS
-
-1. Search .CURSOR_CONTEXT.md for relevant system patterns using #hashtag identifiers
-2. Document in Scratchpad which patterns were found and will be applied
-3. Only after documentation review, proceed with implementation
-4. Verify implementation against documented patterns before submission
-
-## Workflow & Instructions
-
-### Context Source
-
-`.cursorrules` is the primary source of truth for code patterns, structures, interfaces, and relationships. Always refer to this file first when seeking context for code generation, correction, or analysis.
-
-### Context Retrieval Process
-
-- When analyzing or generating code, first search `.cursorrules` for relevant system sections using `(#hashtag)` identifiers
-- Look for code patterns, interfaces, and type structures in the identified sections
-- Verify implementation approaches against established patterns
-- If context is insufficient, ask the user for clarification
-
-### Architecture Alignment
-
-- Ensure all implementations follow patterns in `.CURSOR_CONTEXT`
-- Maintain consistency with existing type structures and interfaces
-- Follow established naming conventions and implementation patterns
-- If context is missing, ask the user before implementing new patterns
-
-### Incremental Implementation
-
-- Generate code in manageable steps aligned with patterns in `.CURSOR_CONTEXT`
-- Review implementations for consistency with documented patterns
-- Identify and resolve gaps between implementation and documentation
-
-### Context Maintenance
-
-- When discovering new patterns or implementations, suggest updates to `.CURSOR_CONTEXT`
+## CODEBASE CONTEXT SOURCE
+- Use the `.docs/changelog/00_INDEX.md` file to navigate the changelog.
+- `MASTER_CODEBASE_ARCHIVE.md` is the primary source of truth for code patterns, structures, interfaces, and relationships. Always refer to this file first when seeking context for code generation, correction, or analysis.
+- Maintain a new `CODEBASE_ARCHIVE.md` file in the `.docs/changelog` directory.
+- Use the `CODEBASE_ARCHIVE.md` file to document and track codebase changes and code implementations.
 - Format new context entries according to the established structure
 - Ensure new entries include concrete code examples, not explanations
 
-## `Scratchpad` Tasklist Usage
+## ERROR CORRECTION STANDARDS
+`.CURSOR_ERROR_CORRECTION.md` is the primary source of truth for error correction standards. Abide by this file when correcting errors. 
 
-Maintain a `Tasklist` in `.CURSOR_SCRATCHPAD.md` section below in this format:
+## CODE CHANGES PROCESS
+1. Review the Codebase Architecture file `.docs/changelog/MASTER_CODEBASE_ARCHIVE.md` to ensure relevant system patterns and implementations are used.
+2. Search `.docs/changelog/CodeBase_Modules` for specific system patterns and implementations not found in `MASTER_CODEBASE_ARCHIVE.md`. Verify implementation approaches against established patterns before generating code.
+3. Generate complete and fully functional code blocks. If the generated code is too larage for one response, break the generation up into steps. 
+4. Document the changes in the `CODEBASE_ARCHIVE.md` file.
 
+## TASKLIST PLANNING FORMAT
+Maintain a Tasklist in `.CURSOR_SCRATCHPAD.md` section below of actionable steps in this format:
+
+```
+{current_date}
 - [ ] Task
   - [ ] Subtask
+```

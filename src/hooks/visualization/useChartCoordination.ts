@@ -1,13 +1,12 @@
 import { useCallback, useEffect } from 'react';
-import
-  {
+import {
     BrushState,
-    ChartCoordinationManager,
     ChartState,
     ColorScale,
     HighlightState,
     ViewportState,
-  } from '../../lib/visualization/ChartCoordinationManager';
+    chartCoordinationManager,
+} from '../../lib/visualization/ChartCoordinationManager';
 
 interface UseChartCoordinationProps {
   chartId: string;
@@ -31,7 +30,7 @@ export function useChartCoordination({
   onHighlightChange,
   onColorScaleChange,
 }: UseChartCoordinationProps) {
-  const manager = ChartCoordinationManager.getInstance();
+  const manager = chartCoordinationManager;
 
   // Register chart with manager
   useEffect(() => {
@@ -56,32 +55,40 @@ export function useChartCoordination({
 
     if (onViewportChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'viewport-change', (event) => {
-          onViewportChange?.(event.state.viewport as ViewportState);
+        manager.subscribeToChartEvents(chartId, 'viewport-change', event => {
+          if (event.state.viewport) {
+            onViewportChange(event.state.viewport);
+          }
         })
       );
     }
 
     if (onBrushChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'brush-change', (event) => {
-          onBrushChange?.(event.state.brush as BrushState);
+        manager.subscribeToChartEvents(chartId, 'brush-change', event => {
+          if (event.state.brush) {
+            onBrushChange(event.state.brush);
+          }
         })
       );
     }
 
     if (onHighlightChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'highlight-change', (event) => {
-          onHighlightChange?.(event.state.highlight as HighlightState);
+        manager.subscribeToChartEvents(chartId, 'highlight-change', event => {
+          if (event.state.highlight) {
+            onHighlightChange(event.state.highlight);
+          }
         })
       );
     }
 
     if (onColorScaleChange) {
       subscriptions.push(
-        manager.subscribe(chartId, 'color-scale-change', (event) => {
-          onColorScaleChange?.(event.state.colorScales as Record<string, ColorScale>);
+        manager.subscribeToChartEvents(chartId, 'color-scale-change', event => {
+          if (event.state.colorScales) {
+            onColorScaleChange(event.state.colorScales);
+          }
         })
       );
     }
