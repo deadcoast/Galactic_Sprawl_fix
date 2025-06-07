@@ -334,7 +334,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         });
 
         // Get JS heap size if available
-        let jsHeapSize = undefined;
+        let jsHeapSize: number | undefined = undefined;
         const windowWithPerformance = window as WindowWithPerformance;
         if (
           windowWithPerformance.performance.memory &&

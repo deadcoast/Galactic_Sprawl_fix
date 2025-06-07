@@ -2,12 +2,11 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import
-  {
+import {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
-  } from '../../../services/logging/ErrorLoggingService';
+    ErrorType
+} from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {
@@ -371,7 +370,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   const itemCount = hasMoreItems ? processedItems.length + 1 : processedItems.length;
 
   // Render row with underlying renderer
-  const renderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const renderRow = React.memo(({ index, style }: { index: number; style: React.CSSProperties }): JSX.Element | null => {
     if (!isItemLoaded(index)) {
       return (
         <div style={style} className="p-4">
@@ -380,10 +379,13 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
       );
     }
 
-    return rowRenderer
+    const renderedRow = rowRenderer
       ? rowRenderer({ item: processedItems[index], index, style })
       : defaultRowRenderer({ index, style });
-  };
+
+    // Ensure we always return JSX.Element or null
+    return renderedRow as JSX.Element | null;
+  });
 
   return (
     <div className={className}>

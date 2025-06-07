@@ -110,10 +110,10 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
         // Create initial sprite
         const sprite = new PIXI.Sprite(texturesRef.current[0]);
         sprite.anchor.set(0.5);
-        container.addChild(sprite);
+        container.addChild(sprite as PIXI.DisplayObject);
         spriteRef.current = sprite;
 
-        app.stage.addChild(container);
+        app.stage.addChild(container as PIXI.DisplayObject);
       } catch (error) {
         errorLoggingService.logError(
           'Error loading Harbringer Galleon sprites:',

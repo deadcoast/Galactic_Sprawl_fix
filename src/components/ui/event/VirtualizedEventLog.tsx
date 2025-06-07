@@ -4,9 +4,9 @@ import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../../services/logging/ErrorLoggingService';
 import { EventType } from '../../../types/events/EventTypes';
 
@@ -279,7 +279,7 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
   };
 
   // Row virtualization component
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const Row = React.memo(({ index, style }: { index: number; style: React.CSSProperties }): JSX.Element | null => {
     const event = displayedEvents[index];
     if (!event) {
       return null;
@@ -289,10 +289,13 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
     const isExpanded = expandedEventIds.has(eventId);
     const onClick = () => handleEventClick(eventId);
 
-    return rowRenderer
+    const renderedRow = rowRenderer
       ? rowRenderer({ event, index, style, onClick, isExpanded })
       : defaultRowRenderer({ event, index, style, onClick, isExpanded });
-  };
+
+    // Ensure we always return JSX.Element or null
+    return renderedRow as JSX.Element | null;
+  });
 
   // If no events, show empty state
   if (displayedEvents.length === 0) {
