@@ -3,13 +3,17 @@
  *
  * A component that provides detailed segmentation of performance metrics
  * based on device capabilities. Shows performance patterns across different
- * device types, capabilities, and hardware configurations.
+ * device types, capabilities, and hardcombate configurations.
  */
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { useEffect, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 interface DeviceCapabilityData {
   category: string;
@@ -707,7 +711,7 @@ const DeviceCapabilityReport: React.FC = () => {
       }
     };
 
-    loadData();
+    void loadData();
   }, []);
 
   // Handle segment selection
@@ -766,7 +770,7 @@ const DeviceCapabilityReport: React.FC = () => {
   // Helper to get active data based on segment
   const getActiveData = (): DeviceCapabilityData[] => {
     if (!deviceData) return [];
-    return deviceData[activeSegment as keyof DeviceSegmentationData] as DeviceCapabilityData[];
+    return deviceData[activeSegment as keyof DeviceSegmentationData];
   };
 
   if (isLoading) {
@@ -782,7 +786,7 @@ const DeviceCapabilityReport: React.FC = () => {
       <div className="mb-6">
         <h1 className="mb-4 text-2xl font-bold">Device Capability Segmentation</h1>
         <p className="mb-6 text-gray-600">
-          Analyze application performance across different device capabilities and hardware
+          Analyze application performance across different device capabilities and hardcombate
           configurations. Identify optimization opportunities for specific device segments.
         </p>
 

@@ -59,7 +59,7 @@ export type WeaponVariant =
   | 'slugMGSS'
   // Rocket variants
   | 'emprRockets'
-  | 'swarmRockets'
+  | 'scombatmRockets'
   | 'bigBangRockets';
 
 /**
@@ -87,7 +87,7 @@ export type WeaponUpgradeType =
   | 'engine'
   | 'slug'
   | 'empr'
-  | 'swarm'
+  | 'scombatm'
   | 'bigBang';
 
 // Core Interfaces
@@ -281,7 +281,7 @@ export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
   engine: 'indigo',
   slug: 'fuchsia',
   empr: 'rose',
-  swarm: 'rose',
+  scombatm: 'rose',
   bigBang: 'rose',
 } as const;
 

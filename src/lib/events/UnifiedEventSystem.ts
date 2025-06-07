@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base event interface that all events should extend
@@ -267,7 +271,7 @@ export class EventSystem {
             }
 
             // Call handler
-            subscription.handler(event);
+            void subscription.handler(event);
           } catch (error) {
             if (options?.errorMode === 'throw') {
               throw error;
@@ -406,15 +410,13 @@ export class EventSystem {
       const [lastEvent, setLastEvent] = useState<T | null>(null);
 
       useEffect(() => {
-        const unsubscribe = this.subscribe<T>(
-          eventType,
-          event => {
-            setLastEvent(event);
-          },
-          options
-        );
-
-        return unsubscribe;
+        return this.subscribe<T>(
+                  eventType,
+                  event => {
+                    setLastEvent(event);
+                  },
+                  options
+                );
       }, [eventType, JSON.stringify(options)]);
 
       return lastEvent;

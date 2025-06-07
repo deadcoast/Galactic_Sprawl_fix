@@ -1,7 +1,12 @@
 import { Singleton } from '../lib/patterns/Singleton';
 import { BaseService, ServiceMetadata } from '../lib/services/BaseService';
 import { ChartAxes, ChartLegend, ChartOptions, ChartTooltip } from '../visualization/Chart';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 // Add error types
 export enum WebGLErrorType {

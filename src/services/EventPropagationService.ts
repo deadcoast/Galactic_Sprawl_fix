@@ -1,6 +1,10 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { componentRegistryService } from './ComponentRegistryService';
-import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+} from './logging/ErrorLoggingService';
 
 export interface EventSubscription {
   eventType: string;
@@ -13,8 +17,8 @@ export interface EventSubscription {
  * Service for managing event propagation and subscription throughout the application
  */
 class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationServiceImpl> {
-  private subscriptions: Map<string, EventSubscription[]> = new Map();
-  private eventQueue: Array<{ type: string; data: unknown }> = [];
+  private subscriptions = new Map<string, EventSubscription[]>();
+  private eventQueue: { type: string; data: unknown }[] = [];
   private isProcessing = false;
   private customErrorHandler?: (error: Error, context?: Record<string, unknown>) => void;
 
@@ -221,7 +225,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
       return;
     }
 
-    // Forward to error logging service
+    // Forcombatd to error logging service
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       service: 'EventPropagationService',
       ...context,

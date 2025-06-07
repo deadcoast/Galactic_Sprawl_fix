@@ -457,7 +457,7 @@ export class AdvancedWeaponEffectManager
       radius,
       falloff: 0.5,
       delayTime,
-      hasWarningIndicator: true,
+      haswarningIndicator: true,
       warningFrequency: 1 + config.targetTier,
       falloffRange: radius * 0.8,
       active: true,

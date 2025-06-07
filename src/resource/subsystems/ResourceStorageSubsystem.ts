@@ -1,5 +1,9 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import {
   ResourceType,
   ResourceTypeString,

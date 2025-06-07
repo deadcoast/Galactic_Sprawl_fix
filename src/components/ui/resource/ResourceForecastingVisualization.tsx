@@ -1,19 +1,21 @@
-import {
-  CategoryScale,
-  Chart as ChartJS,
-  ChartOptions,
-  Legend,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-} from 'chart.js';
+import
+  {
+    CategoryScale,
+    Chart as ChartJS,
+    ChartOptions,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+  } from 'chart.js';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
+import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
 import './ResourceForecastingVisualization.css';
 
@@ -67,12 +69,26 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
   // Calculate rate per minute for easier forecasting
   const ratePerMinute = rate * (60 / cycleTime);
 
-  // Register component
-  const componentId = useComponentRegistration({
-    type: resourceType,
-    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED', 'RESOURCE_FLOW_UPDATED'],
-    updatePriority: 'low', // Forecasting is less critical than actual resource displays
-  });
+  // Generate a stable ID for this component instance
+  const componentInstanceId = useMemo(
+    () => `ResourceForecastingVisualization-${resourceType}-${Date.now().toString(36)}`,
+    [resourceType]
+  );
+
+  // Register component using new hook signature
+  useComponentRegistration(
+    componentInstanceId,
+    'ResourceForecastingVisualization',
+    { resourceType },
+    {
+      eventSubscriptions: [
+        EventType.RESOURCE_UPDATED,
+        EventType.RESOURCE_THRESHOLD_CHANGED,
+        EventType.RESOURCE_FLOW_UPDATED,
+      ],
+      updatePriority: 'low', // Forecasting is less critical than actual resource displays
+    }
+  );
 
   // Initialize with current state
   const [forecast, setForecast] = useState<ForecastPoint[]>([]);
@@ -80,10 +96,10 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
   // Component lifecycle tracking for performance monitoring
   useComponentLifecycle({
     onMount: () => {
-      console.warn(`ResourceForecastingVisualization mounted with ID: ${componentId}`);
+      console.warn(`ResourceForecastingVisualization (${componentInstanceId}) mounted`);
     },
     onUnmount: () => {
-      console.warn('ResourceForecastingVisualization unmounted');
+      console.warn(`ResourceForecastingVisualization (${componentInstanceId}) unmounted`);
     },
   });
 
@@ -133,7 +149,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
     }
 
     const events = [];
-    const resourceThresholds = thresholds || {
+    const resourceThresholds = thresholds ?? {
       critical: 0.1,
       low: 0.25,
       target: 0.5,
@@ -271,8 +287,8 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
       tooltip: {
         callbacks: {
           label: function (context: { dataset: { label?: string }; parsed: { y?: number } }) {
-            const label = context.dataset.label || '';
-            const value = context.parsed.y || 0;
+            const label = context.dataset.label ?? '';
+            const value = context.parsed.y ?? 0;
             const percentage = ((value / maxValue) * 100).toFixed(1);
             return `${label}: ${value.toFixed(1)} (${percentage}%)`;
           },

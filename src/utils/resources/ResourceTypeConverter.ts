@@ -34,7 +34,7 @@ export function resourceTypeToString(resourceType: ResourceType | string): strin
 
   // It's an enum, convert to string
   const stringType = ResourceTypeConverter.enumToString(resourceType);
-  return stringType !== undefined ? stringType : String(resourceType);
+  return stringType ?? String(resourceType);
 }
 
 /**
@@ -250,7 +250,7 @@ export class ResourceTypeConverter {
     }
 
     // Try to convert string to enum
-    const enumType = this.stringToEnum(resourceType as string);
+    const enumType = this.stringToEnum(resourceType);
     if (enumType !== undefined) {
       return enumType;
     }
@@ -301,7 +301,7 @@ export class ResourceTypeConverter {
    */
   public static migrateArrayResourceTypes<T extends Record<string, unknown>>(
     arr: T[],
-    propertyName: string = 'type'
+    propertyName = 'type'
   ): T[] {
     return arr.map(item => {
       const result = { ...item };
@@ -328,6 +328,8 @@ export const ensureEnumResourceType =
   ResourceTypeConverter.ensureEnumResourceType.bind(ResourceTypeConverter);
 export const ensureStringResourceType =
   ResourceTypeConverter.ensureStringResourceType.bind(ResourceTypeConverter);
+export const isValidStringType =
+  ResourceTypeConverter.isValidStringType.bind(ResourceTypeConverter);
 export const migrateObjectKeys =
   ResourceTypeConverter.convertRecordKeysToEnum.bind(ResourceTypeConverter);
 export const migrateArrayResourceTypes =

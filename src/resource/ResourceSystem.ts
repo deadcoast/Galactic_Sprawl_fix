@@ -1,6 +1,10 @@
 import { eventSystem } from '../lib/events/UnifiedEventSystem';
 import { Singleton } from '../lib/patterns/Singleton';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceState, ResourceTransfer } from '../types/resources/ResourceTypes';

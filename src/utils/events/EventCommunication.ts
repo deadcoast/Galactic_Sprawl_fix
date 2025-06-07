@@ -116,7 +116,7 @@ export class EventCommunication {
    * Process an incoming message
    */
   private processIncomingMessage(message: SystemMessage): void {
-    // Forward to the message subject
+    // Forcombatd to the message subject
     this.messageSubject.next(message);
 
     // Get handlers for this message type
@@ -195,7 +195,7 @@ export class EventCommunication {
    * Process an acknowledgment
    */
   private processAcknowledgment(ack: MessageAcknowledgment): void {
-    // Forward to the ack subject
+    // Forcombatd to the ack subject
     this.ackSubject.next(ack);
 
     // Resolve pending promise if exists

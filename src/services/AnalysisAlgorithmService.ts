@@ -61,7 +61,7 @@ interface DistributionBin {
 interface ResourceCell {
   x: number;
   y: number;
-  resources: Array<{ type: ResourceType; amount: number }>;
+  resources: { type: ResourceType; amount: number }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;
@@ -73,24 +73,27 @@ interface ResourceCell {
  */
 export class AnalysisAlgorithmService {
   // Cache for storing computed results to improve performance
-  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map();
+  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map<
+    string,
+    { result: AnalysisResult; expiresAt: number }
+  >();
 
   // Cache expiration time (10 minutes)
   private cacheExpirationMs = 10 * 60 * 1000;
 
   // Property access cache for faster property extraction
-  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map();
+  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map<string, PropertyExtractor>();
 
   // Default sample size for large datasets
   private defaultSampleSize = 1000;
 
   // Memoization for common statistical operations
-  private memoizedMeans: Map<string, number> = new Map();
+  private memoizedMeans: Map<string, number> = new Map<string, number>();
 
   // WebWorker pool for parallel processing
   private workerPool: Worker[] = [];
   private isWorkerSupported = typeof Worker !== 'undefined';
-  private maxWorkers = navigator.hardwareConcurrency || 4;
+  private maxWorkers = navigator.hardwareConcurrency ?? 4;
 
   constructor() {
     // Initialize WebWorker pool if supported
@@ -239,8 +242,7 @@ export class AnalysisAlgorithmService {
       if (
         effectiveOptions.sampleData &&
         dataset.dataPoints.length > effectiveOptions.sampleSize &&
-        result &&
-        result.data
+        result?.data
       ) {
         result.data.samplingInfo = {
           originalSize: dataset.dataPoints.length,
@@ -289,14 +291,14 @@ export class AnalysisAlgorithmService {
 
       // Set up message handler
       const handleMessage = (event: MessageEvent) => {
-        if (event?.data?.messageId === messageId) {
+        if (event?.data?.messageId === messageId && event?.data?.result) {
           // Clean up message handler
           worker.removeEventListener('message', handleMessage);
 
           if (event?.data?.error) {
-            reject(new Error(event?.data?.error));
+            reject(new Error(event?.data?.error as string));
           } else {
-            resolve(event?.data?.result);
+            resolve(event?.data?.result as AnalysisResult);
           }
         }
       };
@@ -2736,7 +2738,7 @@ export class AnalysisAlgorithmService {
           const x = normalizedTrainFeatures[idx];
           const y = normalizedTrainTargets[idx];
 
-          // Forward pass
+          // Forcombatd pass
           // Hidden layer with ReLU activation
           const hidden = Array(hiddenSize).fill(0);
           for (let i = 0; i < hiddenSize; i++) {
@@ -2759,7 +2761,7 @@ export class AnalysisAlgorithmService {
           const error = output - y;
           batchLoss += error * error;
 
-          // Backward pass
+          // Backcombatd pass
           // Output layer gradient
           const gradOutput = 2 * error;
 
@@ -2803,7 +2805,7 @@ export class AnalysisAlgorithmService {
         (value, i) => (value - featureMeans[i]) / featureStdDevs[i]
       );
 
-      // Forward pass through the network
+      // Forcombatd pass through the network
       const hidden = Array(hiddenSize).fill(0);
       for (let i = 0; i < hiddenSize; i++) {
         for (let j = 0; j < numFeatures; j++) {
@@ -3029,9 +3031,9 @@ export class AnalysisAlgorithmService {
       const lastPrediction = forecast[forecast.length - 1].predicted;
       const trend =
         lastPrediction > firstPrediction
-          ? 'upward'
+          ? 'upcombatd'
           : lastPrediction < firstPrediction
-            ? 'downward'
+            ? 'downcombatd'
             : 'stable';
 
       insights.push(

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
-import { EventType } from '../../../types/events/EventTypes';
+import { EventType, isThresholdTriggeredEventData } from '../../../types/events/EventTypes';
 import { ResourceType, ResourceTypeInfo } from '../../../types/resources/ResourceTypes';
-import ResourceFlowDiagram from '../../exploration/visualizations/charts/ResourceFlowDiagram';
+import ResourceFlowDiagram from '../../exploration/visualizations/ResourceFlowDiagram';
 import ChainManagementInterface from './ChainManagementInterface';
 import ConverterDashboard from './ConverterDashboard';
 import ResourceForecastingVisualization from './ResourceForecastingVisualization';
@@ -90,20 +90,30 @@ const ResourceManagementDashboardBase: React.FC = () => {
   );
   const [selectedResource, setSelectedResource] = useState<ResourceType | undefined>(undefined);
 
-  // Register with component registry
-  useComponentRegistration({
-    type: ResourceType.MINERALS,
-    eventSubscriptions: componentEventSubscriptions,
-    updatePriority: 'high',
-  });
+  // Generate stable instance ID
+  const componentInstanceId = useMemo(
+    () => `ResourceManagementDashboard-${Date.now().toString(36)}`,
+    []
+  );
+
+  // Register with component registry using new hook signature
+  useComponentRegistration(
+    componentInstanceId,
+    'ResourceManagementDashboard',
+    undefined,
+    {
+      eventSubscriptions: componentEventSubscriptions,
+      updatePriority: 'high',
+    }
+  );
 
   // Handle lifecycle and event subscriptions
   useComponentLifecycle({
     onMount: () => {
-      console.warn('ResourceManagementDashboard mounted');
+      console.warn(`ResourceManagementDashboard (${componentInstanceId}) mounted`);
     },
     onUnmount: () => {
-      console.warn('ResourceManagementDashboard unmounted');
+      console.warn(`ResourceManagementDashboard (${componentInstanceId}) unmounted`);
     },
     eventSubscriptions: [
       {
@@ -118,9 +128,11 @@ const ResourceManagementDashboardBase: React.FC = () => {
         // Cast to EventType for compatibility
         eventType: EventType.RESOURCE_THRESHOLD_TRIGGERED,
         handler: event => {
-          if (event?.data?.resourceId) {
+          // Validate event data structure before accessing properties
+          if (isThresholdTriggeredEventData(event?.data)) {
+            const { resourceId } = event.data;
             // Show alert or notification
-            console.warn(`Threshold triggered for ${event?.data?.resourceId}`);
+            console.warn(`Threshold triggered for ${resourceId}`);
           }
         },
       },
@@ -402,7 +414,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
             interactive={true}
             showLabels={true}
             showLegend={true}
-            focusedResourceType={selectedResource || undefined}
+            focusedResourceType={selectedResource ?? undefined}
           />
         </div>
       </div>
@@ -595,7 +607,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
             }) => {
               // Handle suggestion implementation
               // This could trigger a resource reallocation, optimization routine, etc.
-              console.warn(`Implementing suggestion: ${suggestion.id}`);
+              console.warn(`Implementing suggestion: ${suggestion.id.toString()}`);
 
               // Add to notification system
               thresholdDispatch({

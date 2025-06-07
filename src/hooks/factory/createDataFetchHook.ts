@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Options for data fetching hook
@@ -63,7 +67,9 @@ export function createDataFetchHook<T, P extends unknown[] = []>(
 
     // Memoized fetch function
     const fetch = useCallback(async () => {
-      if (!enabled) return;
+      if (!enabled) {
+        return;
+      }
 
       try {
         if (defaultOptions.resetOnFetch) {
@@ -97,7 +103,7 @@ export function createDataFetchHook<T, P extends unknown[] = []>(
           const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000);
 
           setTimeout(() => {
-            fetch();
+            void fetch();
           }, backoffTime);
         }
       } finally {
@@ -120,14 +126,14 @@ export function createDataFetchHook<T, P extends unknown[] = []>(
       let intervalId: NodeJS.Timeout | null = null;
 
       if (defaultOptions.fetchOnMount !== false && enabled) {
-        fetch();
+        void fetch();
       }
 
       // Set up refetch interval if specified
       if (defaultOptions.refetchInterval && enabled) {
         intervalId = setInterval(() => {
           if (mounted) {
-            fetch();
+            void fetch();
           }
         }, defaultOptions.refetchInterval);
       }

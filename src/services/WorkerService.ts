@@ -10,8 +10,10 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
-
+import {
+    errorLoggingService,
+    ErrorType
+} from './logging/ErrorLoggingService';
 export interface WorkerTask<T = unknown> {
   id: string;
   type: string;
@@ -189,7 +191,23 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     const task = this.activeTasks.get(taskId);
     if (!task) return;
 
+    // Attempt to locate the worker currently executing this task
+    const workerEntry = Array.from(this.workerPool.entries()).find(([, t]) => t?.id === taskId);
+    const worker = workerEntry?.[0];
+
+    // Send cancellation request to the worker so long-running operations can attempt to abort.
+    if (worker) {
+      worker.postMessage({
+        taskId: crypto.randomUUID(), // new message id for the cancel request itself
+        type: 'CANCEL_TASK',
+        data: { taskId },
+      });
+    }
+
+    // Also abort the local cancel token for any side-effects in the main thread.
     task.cancelToken?.abort();
+
+    // Mark the task as failed locally with a cancellation error.
     this.failTask(taskId, new Error('Task cancelled'));
   }
 

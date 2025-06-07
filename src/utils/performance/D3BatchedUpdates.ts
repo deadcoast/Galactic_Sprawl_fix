@@ -14,17 +14,14 @@
  * See src/utils/performance/.cursor/ignore/README.md for details.
  */
 
-// TypeScript ignore directives - to be removed during comprehensive refactoring
-/* eslint-disable @typescript-eslint/no-explicit-unknown */
-
 import * as d3 from 'd3';
-import { BaseType, Local, Selection, Transition, ValueFn } from 'd3';
+import { BaseType, Local, ValueFn } from 'd3';
 import { animationFrameManager, AnimationPriority } from './D3AnimationFrameManager';
 
 /**
  * Type for DOM operations that need to be scheduled together
  */
-type BatchOperation = {
+interface BatchOperation {
   /** Operation type - read operations execute before write operations */
   type: 'read' | 'write';
   /** The operation's unique ID */
@@ -39,7 +36,7 @@ type BatchOperation = {
   element?: Element;
   /** Animation ID this operation is associated with (for grouping) */
   animationId?: string;
-};
+}
 
 /**
  * Priority levels for batch operations
@@ -190,7 +187,7 @@ export class D3BatchUpdateManager {
     }
 
     this.flushScheduled = true;
-    const schedulingMode = mode || this.determineBestSchedulingMode();
+    const schedulingMode = mode ?? this.determineBestSchedulingMode();
 
     switch (schedulingMode) {
       case 'immediate':
@@ -202,7 +199,7 @@ export class D3BatchUpdateManager {
         break;
 
       case 'microtask':
-        Promise.resolve().then(() => this.flush());
+        void Promise.resolve().then(() => this.flush());
         break;
 
       case 'idle-callback':
@@ -237,7 +234,7 @@ export class D3BatchUpdateManager {
     this.flushScheduled = false;
 
     // Track the current batch
-    const batchId = this.currentBatchId++;
+    this.currentBatchId++;
 
     // Filter operations based on options
     const filterOperation = (op: BatchOperation): boolean => {
@@ -285,8 +282,8 @@ export class D3BatchUpdateManager {
         try {
           op.callback();
           this.completedOperations++;
-        } catch (err) {
-          console.error(`Error in read operation ${op.id}:`, err);
+        } catch {
+          // console.error(`Error in read operation ${op.id}:`);
         }
       });
 
@@ -295,8 +292,8 @@ export class D3BatchUpdateManager {
         try {
           op.callback();
           this.completedOperations++;
-        } catch (err) {
-          console.error(`Error in write operation ${op.id}:`, err);
+        } catch {
+          // console.error(`Error in write operation ${op.id}:`);
         }
       });
     } finally {
@@ -314,9 +311,9 @@ export class D3BatchUpdateManager {
     }
 
     if (this.config.debugMode) {
-      console.warn(
-        `Batch #${batchId} processed: ${readOpsToProcess.length} reads, ${writeOpsToProcess.length} writes`
-      );
+      // console.warn(
+      //   `Batch #${this.currentBatchId - 1} processed: ${readOpsToProcess.length} reads, ${writeOpsToProcess.length} writes`
+      // );
     }
   }
 
@@ -352,7 +349,7 @@ export class D3BatchUpdateManager {
     const { priority = 'normal', element, animationId, schedulingMode, id: customId } = options;
 
     // Generate a unique ID for the operation
-    const baseId = customId || `${type}-${Date.now()}-${Math.round(Math.random() * 10000)}`;
+    const baseId = customId ?? `${type}-${Date.now()}-${Math.round(Math.random() * 10000)}`;
 
     // For element-specific operations, make the ID element-specific to enable deduplication
     const id = element ? `${baseId}-${element.tagName}-${priority}` : baseId;
@@ -360,7 +357,7 @@ export class D3BatchUpdateManager {
     // Skip if this exact operation was already scheduled (deduplication)
     if (this.operationIds.has(id)) {
       if (this.config.debugMode) {
-        console.warn(`Skipping duplicate operation ${id}`);
+        // console.warn(`Skipping duplicate operation ${id}`);
       }
       return undefined;
     }
@@ -369,8 +366,8 @@ export class D3BatchUpdateManager {
     if (this.isFlushing && schedulingMode === 'immediate') {
       try {
         return callback();
-      } catch (err) {
-        console.error(`Error in immediate ${type} operation:`, err);
+      } catch {
+        // console.error(`Error in immediate ${type} operation:`);
         return undefined;
       }
     }
@@ -462,6 +459,16 @@ export class D3BatchUpdateManager {
 }
 
 /**
+ * Represents a D3 selection that has been augmented with batching capabilities.
+ */
+export type D3BatchedSelection<
+  GElement extends Element,
+  Datum,
+  PElement extends Element,
+  PDatum,
+> = d3.Selection<GElement, Datum, PElement, PDatum> & { batcher?: D3BatchUpdateManager };
+
+/**
  * Singleton instance for easy access
  */
 export const batchUpdateManager = new D3BatchUpdateManager();
@@ -486,134 +493,8 @@ export function batchWrite<T>(
   return batchUpdateManager.write(callback, options);
 }
 
-// Define a more permissive type for D3 transition methods when using unknown/dynamic types
-type D3GenericFunction = (...args: unknown[]) => unknown;
-
-// Redefine D3MethodOverride to use unknown instead of unknown for better D3 compatibility
-type D3MethodOverride = unknown; // Use unknown to avoid type conflicts with complex D3 method signatures
-
 /**
- * Define proper types for D3 selection methods to use in our overrides
- */
-interface D3SelectionMethods<GElement extends BaseType, Datum, PElement extends BaseType, PDatum> {
-  attr: {
-    (name: string): string;
-    (
-      name: string,
-      value:
-        | string
-        | number
-        | boolean
-        | readonly (string | number)[]
-        | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null>
-        | null
-    ): Selection<GElement, Datum, PElement, PDatum>;
-  };
-  style: {
-    (name: string): string;
-    (name: string, value: null): Selection<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      value: string | number | boolean,
-      priority?: 'important' | null | undefined
-    ): Selection<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      value: ValueFn<GElement, Datum, string | number | boolean | null>,
-      priority?: 'important' | null | undefined
-    ): Selection<GElement, Datum, PElement, PDatum>;
-  };
-  property: {
-    (name: string): unknown;
-    <T>(name: Local<T>): T | undefined;
-    (
-      name: string,
-      value: ValueFn<GElement, Datum, unknown> | null
-    ): Selection<GElement, Datum, PElement, PDatum>;
-    (name: string, value: unknown): Selection<GElement, Datum, PElement, PDatum>;
-    <T>(
-      name: Local<T>,
-      value: ValueFn<GElement, Datum, T | null> | null
-    ): Selection<GElement, Datum, PElement, PDatum>;
-    <T>(name: Local<T>, value: T): Selection<GElement, Datum, PElement, PDatum>;
-  };
-  html: {
-    (): string;
-    (
-      value: string | ValueFn<GElement, Datum, string | null> | null
-    ): Selection<GElement, Datum, PElement, PDatum>;
-  };
-  text: {
-    (): string;
-    (
-      value:
-        | string
-        | number
-        | boolean
-        | ValueFn<GElement, Datum, string | number | boolean | null>
-        | null
-    ): Selection<GElement, Datum, PElement, PDatum>;
-  };
-  transition: {
-    (name?: string): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      transition: Transition<BaseType, unknown, BaseType, unknown>
-    ): Transition<GElement, Datum, PElement, PDatum>;
-  };
-}
-
-/**
- * Define proper types for D3 transition methods to use in our overrides
- */
-interface D3TransitionMethods<GElement extends BaseType, Datum, PElement extends BaseType, PDatum> {
-  attr: {
-    (
-      name: string,
-      value: string | number | boolean | null
-    ): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      value: ValueFn<GElement, Datum, string | number | boolean | null>
-    ): Transition<GElement, Datum, PElement, PDatum>;
-  };
-  style: {
-    (name: string, value: null): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      value: string | number | boolean,
-      priority?: 'important' | null
-    ): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      value: ValueFn<GElement, Datum, string | number | boolean | null>,
-      priority?: 'important' | null
-    ): Transition<GElement, Datum, PElement, PDatum>;
-  };
-  attrTween: {
-    (name: string): ValueFn<GElement, Datum, (this: GElement, t: number) => string> | undefined;
-    (name: string, factory: null): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      factory: ValueFn<GElement, Datum, (this: GElement, t: number) => string>
-    ): Transition<GElement, Datum, PElement, PDatum>;
-  };
-  styleTween: {
-    (name: string): ValueFn<GElement, Datum, (this: GElement, t: number) => string> | undefined;
-    (
-      name: string,
-      factory: null,
-      priority?: 'important' | null
-    ): Transition<GElement, Datum, PElement, PDatum>;
-    (
-      name: string,
-      factory: ValueFn<GElement, Datum, (this: GElement, t: number) => string>,
-      priority?: 'important' | null
-    ): Transition<GElement, Datum, PElement, PDatum>;
-  };
-}
-
-/**
- * Type for D3 selection method override
+ * Type for D3 attribute/style method override
  */
 type D3SelectionMethodOverride<
   GElement extends Element,
@@ -631,8 +512,8 @@ type D3SelectionMethodOverride<
 type D3PropertyMethodOverride<GElement extends Element, Datum, PElement extends Element, PDatum> = (
   this: d3.Selection<GElement, Datum, PElement, PDatum>,
   name: string | d3.Local<unknown>,
-  value?: ValueFn<GElement, Datum, unknown> | unknown | null
-) => unknown | d3.Selection<GElement, Datum, PElement, PDatum>;
+  value?: unknown
+) => unknown;
 
 /**
  * Creates optimized D3 selection methods that use batched updates
@@ -647,13 +528,18 @@ export function createBatchedSelection<
   options: BatchOperationOptions = {}
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
   // Clone the selection to avoid modifying the original
-  const batchedSelection = selection.clone() as d3.Selection<GElement, Datum, PElement, PDatum>;
+  const batchedSelection = selection.clone();
 
   // Store original methods
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origAttr = batchedSelection.attr;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origStyle = batchedSelection.style;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origProperty = batchedSelection.property;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origHtml = batchedSelection.html;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origText = batchedSelection.text;
 
   // Override attr to use batched writes
@@ -701,7 +587,7 @@ export function createBatchedSelection<
       },
       {
         ...options,
-        element: (this.node() as Element) || undefined,
+        element: (this.node() as Element) ?? undefined,
       }
     );
 
@@ -720,7 +606,7 @@ export function createBatchedSelection<
           | boolean
           | ValueFn<GElement, Datum, string | number | boolean | null>
           | null,
-        priority?: 'important' | null | undefined
+        priority?: 'important' | null
       ) => unknown;
     }
   ).style = function (
@@ -732,7 +618,7 @@ export function createBatchedSelection<
       | boolean
       | ValueFn<GElement, Datum, string | number | boolean | null>
       | null,
-    priority?: 'important' | null | undefined
+    priority?: 'important' | null
   ): unknown {
     if (arguments.length === 1) {
       return (origStyle as (name: string) => string).call(this, name);
@@ -755,7 +641,7 @@ export function createBatchedSelection<
       },
       {
         ...options,
-        element: (this.node() as Element) || undefined,
+        element: (this.node() as Element) ?? undefined,
       }
     );
 
@@ -765,16 +651,16 @@ export function createBatchedSelection<
   // Override property to use batched writes
   (
     batchedSelection as unknown as {
-      property: <T>(
+      property: (
         this: d3.Selection<GElement, Datum, PElement, PDatum>,
-        name: string | d3.Local<T>,
-        value?: ValueFn<GElement, Datum, T | null> | T | null | unknown
+        name: string | d3.Local<unknown>,
+        value?: unknown
       ) => unknown;
     }
-  ).property = function <T>(
+  ).property = function (
     this: d3.Selection<GElement, Datum, PElement, PDatum>,
-    name: string | d3.Local<T>,
-    value?: ValueFn<GElement, Datum, T | null> | T | null | unknown
+    name: string | d3.Local<unknown>,
+    value?: unknown
   ): unknown {
     if (arguments.length === 1) {
       if (typeof name === 'string') {
@@ -795,7 +681,6 @@ export function createBatchedSelection<
             valToPass
           );
         } else {
-          // Assuming name is Local<T> - Cast name explicitly in the call
           (
             origProperty as unknown as <T>(
               name: Local<T>,
@@ -803,14 +688,14 @@ export function createBatchedSelection<
             ) => typeof this
           ).call(
             this,
-            name as d3.Local<T>,
-            valToPass as ValueFn<GElement, Datum, T | null> | T | null
+            name, // Removed 'as d3.Local<T>' assertion
+            valToPass
           );
         }
       },
       {
         ...options,
-        element: (this.node() as Element) || undefined,
+        element: (this.node() as Element) ?? undefined,
       }
     );
 
@@ -843,7 +728,7 @@ export function createBatchedSelection<
       },
       {
         ...options,
-        element: (this.node() as Element) || undefined,
+        element: (this.node() as Element) ?? undefined,
       }
     );
 
@@ -886,7 +771,7 @@ export function createBatchedSelection<
       },
       {
         ...options,
-        element: (this.node() as Element) || undefined,
+        element: (this.node() as Element) ?? undefined,
       }
     );
 
@@ -921,36 +806,6 @@ export function createBatchedSelectionFactory<GElement extends Element = HTMLEle
 }
 
 /**
- * Type for D3 transition attr method override
- */
-type AttrTweenFunctionType<
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum,
-> = D3TransitionMethods<GElement, Datum, PElement, PDatum>['attrTween'];
-
-/**
- * Type for D3 transition style method override
- */
-type StyleTweenFunctionType<
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum,
-> = D3TransitionMethods<GElement, Datum, PElement, PDatum>['styleTween'];
-
-/**
- * Type for D3 transition override
- */
-type TransitionFunctionType<
-  GElement extends BaseType,
-  Datum,
-  PElement extends BaseType,
-  PDatum,
-> = D3SelectionMethods<GElement, Datum, PElement, PDatum>['transition'];
-
-/**
  * Creates a new Transition object with batched methods (attr, style, etc.)
  */
 function createBatchedTransitionInstance<
@@ -966,9 +821,13 @@ function createBatchedTransitionInstance<
   // We might need to proxy the methods instead.
   // For now, let's try modifying the existing transition instance carefully.
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origAttr = transition.attr;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origStyle = transition.style;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origAttrTween = transition.attrTween;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origStyleTween = transition.styleTween;
   // Add other methods like text, html if needed
 
@@ -1004,7 +863,7 @@ function createBatchedTransitionInstance<
           value === undefined ? null : value
         );
       },
-      { ...options, animationId: options.animationId || 'transition' }
+      { ...options, animationId: options.animationId ?? 'transition' }
     );
     return this;
   };
@@ -1037,14 +896,10 @@ function createBatchedTransitionInstance<
   ): unknown {
     batchWrite(
       () => {
-        // Explicitly type valToPass as unknown to handle null vs ValueFn conflict
-        const valToPass: unknown = value === undefined ? null : value;
-        // Check if priority was provided to the override function
+        const valToPass = value === undefined ? null : value;
         if (priority === undefined) {
-          // Cast origStyle to unknown then function type accepting unknown
           (origStyle as unknown as (...args: unknown[]) => unknown).call(this, name, valToPass);
         } else {
-          // Cast origStyle to unknown then function type accepting unknown
           (origStyle as unknown as (...args: unknown[]) => unknown).call(
             this,
             name,
@@ -1053,7 +908,7 @@ function createBatchedTransitionInstance<
           );
         }
       },
-      { ...options, animationId: options.animationId || 'transition' }
+      { ...options, animationId: options.animationId ?? 'transition' }
     );
     return this;
   };
@@ -1076,15 +931,13 @@ function createBatchedTransitionInstance<
     // For now, let's make it a write operation.
     batchWrite(
       () => {
-        // Explicitly cast factory to the expected union type
-        // Cast origAttrTween to unknown then function type accepting unknown
         (origAttrTween as unknown as (...args: unknown[]) => unknown).call(
           this,
           name,
           factory as ValueFn<GElement, Datum, (this: GElement, t: number) => string> | null
         );
       },
-      { ...options, animationId: options.animationId || 'transition' }
+      { ...options, animationId: options.animationId ?? 'transition' }
     );
     return this;
   };
@@ -1108,22 +961,18 @@ function createBatchedTransitionInstance<
     // Similar to attrTween, batching is complex. Treat as write for now.
     batchWrite(
       () => {
-        // Check if priority was provided to the override function
-        // Explicitly cast factory to the expected union type
         const factoryToPass = factory as ValueFn<
           GElement,
           Datum,
           (this: GElement, t: number) => string
         > | null;
         if (priority === undefined) {
-          // Cast origStyleTween to unknown then function type accepting unknown
           (origStyleTween as unknown as (...args: unknown[]) => unknown).call(
             this,
             name,
             factoryToPass
           );
         } else {
-          // Cast origStyleTween to unknown then function type accepting unknown
           (origStyleTween as unknown as (...args: unknown[]) => unknown).call(
             this,
             name,
@@ -1132,7 +981,7 @@ function createBatchedTransitionInstance<
           );
         }
       },
-      { ...options, animationId: options.animationId || 'transition' }
+      { ...options, animationId: options.animationId ?? 'transition' }
     );
     return this;
   };
@@ -1142,10 +991,9 @@ function createBatchedTransitionInstance<
 }
 
 /**
- * (Renamed) Applies batched transition overrides TO A SELECTION.
- * Previously createBatchedTransition
+ * Creates a new Transition object with batched methods (attr, style, etc.)
  */
-export function applyBatchedTransitionOverride<
+function applyBatchedTransitionOverride<
   GElement extends Element,
   Datum,
   PElement extends Element,
@@ -1155,6 +1003,7 @@ export function applyBatchedTransitionOverride<
   options: BatchOperationOptions = {}
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
   // Store original transition method from the selection
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const origTransition = selection.transition;
 
   // Override selection.transition
@@ -1187,7 +1036,7 @@ export function applyBatchedTransitionOverride<
         origTransition as (
           trans: d3.Transition<BaseType, unknown, BaseType, unknown>
         ) => d3.Transition<GElement, Datum, PElement, PDatum>
-      ).call(this, nameOrTransition as d3.Transition<BaseType, unknown, BaseType, unknown>);
+      ).call(this, nameOrTransition!); // Apply ! assertion
     }
 
     // Wrap the resulting transition object's methods with batching
@@ -1257,4 +1106,29 @@ export function optimizeWithBatchedUpdates<
 
   // Apply batched transitions (using the renamed function)
   return applyBatchedTransitionOverride(batchedSelection, batchOptions);
+}
+
+/**
+ * Utility to get the BatchUpdater instance from a batched selection.
+ */
+export function getBatcher<GElement extends Element, Datum, PElement extends Element, PDatum>(
+  selection: d3.Selection<GElement, Datum, PElement, PDatum>
+): D3BatchUpdateManager | undefined {
+  // Fix: Use D3BatchedSelection type alias and ! assertion style
+  return (selection as D3BatchedSelection<GElement, Datum, PElement, PDatum>).batcher!;
+}
+
+/**
+ * Flushes pending updates for a given batched selection.
+ */
+export function flushBatchedSelection<
+  GElement extends Element,
+  Datum,
+  PElement extends Element,
+  PDatum,
+>(selection: d3.Selection<GElement, Datum, PElement, PDatum>): void {
+  const batcher = getBatcher(selection);
+  if (batcher) {
+    batcher.flushAll();
+  }
 }

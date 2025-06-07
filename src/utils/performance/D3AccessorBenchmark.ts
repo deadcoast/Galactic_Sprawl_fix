@@ -69,7 +69,7 @@ export interface BenchmarkComparison {
  * @returns Benchmark result
  */
 export function runBenchmark(testCase: BenchmarkTestCase): BenchmarkResult {
-  const iterations = testCase.iterations || 1000;
+  const iterations = testCase.iterations ?? 1000;
   const executionTimes: number[] = [];
 
   // Run test iterations
@@ -134,12 +134,12 @@ export function compareBenchmarks(
  */
 export function formatBenchmarkResult(result: BenchmarkResult): string {
   return `
-Benchmark: ${result?.name}
-Description: ${result?.description}
-Iterations: ${result?.iterations}
-Average Time: ${result?.averageTimeMs.toFixed(6)} ms
-Median Time: ${result?.medianTimeMs.toFixed(6)} ms
-Total Time: ${result?.totalTimeMs.toFixed(2)} ms
+Benchmark: ${result.name}
+Description: ${result.description}
+Iterations: ${result.iterations}
+Average Time: ${result.averageTimeMs.toFixed(6)} ms
+Median Time: ${result.medianTimeMs.toFixed(6)} ms
+Total Time: ${result.totalTimeMs.toFixed(2)} ms
   `.trim();
 }
 
@@ -190,10 +190,7 @@ function generateTestNodes(count: number): SimulationNodeDatum[] {
  * @param iterations Number of iterations to run
  * @returns Benchmark comparison
  */
-export function benchmarkAccessors(
-  nodeCount: number = 1000,
-  iterations: number = 10000
-): BenchmarkComparison {
+export function benchmarkAccessors(nodeCount = 1000, iterations = 10000): BenchmarkComparison {
   const nodes = generateTestNodes(nodeCount);
   // Reset transform results array for this benchmark
   benchmarkTransformResults = [];
@@ -205,9 +202,7 @@ export function benchmarkAccessors(
     iterations,
     testFn: () => {
       // Simulate typical D3 simulation tick function with direct access
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        // Direct property access
+      for (const node of nodes) {
         const x = node.x ?? 0;
         const y = node.y ?? 0;
         // Do something with coordinates (simulate transform application)
@@ -225,9 +220,7 @@ export function benchmarkAccessors(
     iterations,
     testFn: () => {
       // Simulate typical D3 simulation tick function with safe accessors
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        // Safe accessor functions
+      for (const node of nodes) {
         const x = d3Accessors.getX(node);
         const y = d3Accessors.getY(node);
         // Do something with coordinates (simulate transform application)
@@ -348,23 +341,21 @@ export function runComprehensiveBenchmarks(): {
     iterations: 1000,
     testFn: () => {
       // Simulate a D3 force simulation tick
-      for (let i = 0; i < simulationNodes.length; i++) {
-        const d = simulationNodes[i];
-        // Direct property access with manual null checking
-        const x = d.x !== undefined ? d.x : 0;
-        const y = d.y !== undefined ? d.y : 0;
+      for (const node of simulationNodes) {
+        const x = node.x ?? 0;
+        const y = node.y ?? 0;
 
         // Apply force simulation logic (simplified)
-        const vx = d.vx ?? 0;
-        const vy = d.vy ?? 0;
-        d.x = x + vx * 0.1;
-        d.y = y + vy * 0.1;
+        const vx = node.vx ?? 0;
+        const vy = node.vy ?? 0;
+        node.x = x + vx * 0.1;
+        node.y = y + vy * 0.1;
 
         // Constrain to bounds
-        if (d.x! < 0) d.x = 0;
-        if (d.x! > 500) d.x = 500;
-        if (d.y! < 0) d.y = 0;
-        if (d.y! > 500) d.y = 500;
+        if (node.x < 0) node.x = 0;
+        if (node.x > 500) node.x = 500;
+        if (node.y < 0) node.y = 0;
+        if (node.y > 500) node.y = 500;
       }
     },
   });
@@ -377,23 +368,21 @@ export function runComprehensiveBenchmarks(): {
     iterations: 1000,
     testFn: () => {
       // Simulate a D3 force simulation tick
-      for (let i = 0; i < simulationNodes.length; i++) {
-        const d = simulationNodes[i];
-        // Safe accessor functions
-        const x = d3Accessors.getX(d);
-        const y = d3Accessors.getY(d);
+      for (const node of simulationNodes) {
+        const x = d3Accessors.getX(node);
+        const y = d3Accessors.getY(node);
 
         // Apply force simulation logic (simplified)
-        const vx = d.vx ?? 0;
-        const vy = d.vy ?? 0;
-        d.x = x + vx * 0.1;
-        d.y = y + vy * 0.1;
+        const vx = node.vx ?? 0;
+        const vy = node.vy ?? 0;
+        node.x = x + vx * 0.1;
+        node.y = y + vy * 0.1;
 
         // Constrain to bounds (type-safe version still needs non-null assertion for assignment)
-        if (d.x! < 0) d.x = 0;
-        if (d.x! > 500) d.x = 500;
-        if (d.y! < 0) d.y = 0;
-        if (d.y! > 500) d.y = 500;
+        if (node.x < 0) node.x = 0;
+        if (node.x > 500) node.x = 500;
+        if (node.y < 0) node.y = 0;
+        if (node.y > 500) node.y = 500;
       }
     },
   });
@@ -424,7 +413,7 @@ in D3 visualizations across different scenarios and data sizes.
 
   // Add individual results
   results.forEach(result => {
-    report += `\n### ${result?.name}\n`;
+    report += `\n### ${result.name}\n`;
     report += formatBenchmarkResult(result) + '\n';
   });
 
@@ -465,10 +454,10 @@ in D3 visualizations across different scenarios and data sizes.
  * Run all benchmarks and output results to console
  */
 export function runAndLogBenchmarks(): void {
-  console.warn('Running D3 Accessor Benchmarks...');
+  // console.warn('Running D3 Accessor Benchmarks...');
 
-  const report = generateBenchmarkReport();
-  console.warn(report);
+  generateBenchmarkReport(); // Call the function, but don't assign the result
+  // console.warn(report);
 
-  console.warn('Benchmark complete.');
+  // console.warn('Benchmark complete.');
 }

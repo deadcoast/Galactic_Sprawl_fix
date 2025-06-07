@@ -5,7 +5,11 @@
  */
 
 import { useCallback, useRef } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 /**
  * A hook that provides an optimized version of useCallback with better dependency handling

@@ -261,7 +261,7 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
 
     // Training loop
     for (let i = 0; i < iterations; i++) {
-      // Forward pass
+      // Forcombatd pass
       const predictions = normalizedFeatures.map(feature => predict(feature, weights, bias));
 
       // Compute gradients

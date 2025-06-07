@@ -1,7 +1,8 @@
 import { ChevronDown, ChevronUp, Shield, Ship, Star, Swords } from 'lucide-react';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/Tabs';
-import { FactionId } from '../../../types/ships/FactionTypes';
+import { FactionId } from '../../../types/ships/FactionShipTypes';
+import { Card } from '../../../ui/components/Card/Card';
 import { FormationTacticsContainer } from './FormationTacticsContainer';
 
 /**
@@ -53,45 +54,44 @@ export function FormationTacticsPage() {
         <Card
           className={`cursor-pointer transition-all ${activeFaction === 'player' ? 'border-blue-500 bg-blue-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
           onClick={() => setActiveFaction('player')}
-        >
-          <CardHeader className="p-4">
-            <CardTitle className="flex items-center text-lg">
+          title={
+            <div className="flex items-center text-lg">
               <Shield className="mr-2 h-5 w-5 text-blue-400" />
               Federation
-            </CardTitle>
-          </CardHeader>
-        </Card>
+            </div>
+          }
+          compact
+        />
 
         <Card
           className={`cursor-pointer transition-all ${activeFaction === 'enemy' ? 'border-red-500 bg-red-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
           onClick={() => setActiveFaction('enemy')}
-        >
-          <CardHeader className="p-4">
-            <CardTitle className="flex items-center text-lg">
+          title={
+            <div className="flex items-center text-lg">
               <Star className="mr-2 h-5 w-5 text-red-400" />
               Imperium
-            </CardTitle>
-          </CardHeader>
-        </Card>
+            </div>
+          }
+          compact
+        />
 
         <Card
           className={`cursor-pointer transition-all ${activeFaction === 'neutral' ? 'border-green-500 bg-green-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
           onClick={() => setActiveFaction('neutral')}
-        >
-          <CardHeader className="p-4">
-            <CardTitle className="flex items-center text-lg">
+          title={
+            <div className="flex items-center text-lg">
               <Ship className="mr-2 h-5 w-5 text-green-400" />
               Collective
-            </CardTitle>
-          </CardHeader>
-        </Card>
+            </div>
+          }
+          compact
+        />
 
         <Card
           className={`cursor-pointer transition-all ${activeFaction === 'ally' ? 'border-purple-500 bg-purple-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
           onClick={() => setActiveFaction('ally')}
-        >
-          <CardHeader className="p-4">
-            <CardTitle className="flex items-center text-lg">
+          title={
+            <div className="flex items-center text-lg">
               <svg
                 viewBox="0 0 24 24"
                 width="20"
@@ -104,9 +104,10 @@ export function FormationTacticsPage() {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
               Nomads
-            </CardTitle>
-          </CardHeader>
-        </Card>
+            </div>
+          }
+          compact
+        />
       </div>
 
       <Tabs defaultValue="formations" className="w-full">
@@ -131,14 +132,12 @@ export function FormationTacticsPage() {
 
             {/* Sidebar - Stat Bonuses & More Info */}
             <div className="space-y-4 lg:col-span-4">
-              <Card className="border-gray-700 bg-gray-800">
-                <CardHeader>
-                  <CardTitle>Faction Bonuses</CardTitle>
-                  <CardDescription>
-                    Special formation bonuses for {factionDisplayNames[activeFaction]}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <Card
+                className="border-gray-700 bg-gray-800"
+                title="Faction Bonuses"
+                subtitle={`Special formation bonuses for ${factionDisplayNames[activeFaction]}`}
+              >
+                <div className="space-y-3">
                   {activeFaction === 'player' && (
                     <>
                       <div className="flex items-center justify-between rounded-md bg-blue-900/20 p-2">
@@ -190,22 +189,23 @@ export function FormationTacticsPage() {
                       </div>
                     </>
                   )}
-                </CardContent>
+                </div>
               </Card>
 
-              <Card className="border-gray-700 bg-gray-800">
-                <CardHeader
-                  className="cursor-pointer"
-                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                >
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Advanced Options</CardTitle>
+              <Card
+                className="border-gray-700 bg-gray-800"
+                header={
+                  <div
+                    className="flex cursor-pointer items-center justify-between"
+                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  >
+                    <h3 className="text-lg font-medium">Advanced Options</h3>
                     {showAdvancedOptions ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
-                </CardHeader>
-
+                }
+              >
                 {showAdvancedOptions && (
-                  <CardContent className="space-y-3">
+                  <div className="space-y-3 pt-4">
                     <div className="flex items-center">
                       <input type="checkbox" id="auto-adapt" className="mr-2" />
                       <label htmlFor="auto-adapt" className="text-sm text-gray-300">
@@ -231,7 +231,7 @@ export function FormationTacticsPage() {
                       <label className="mb-1 block text-sm text-gray-400">AI Aggressiveness</label>
                       <input type="range" min="0" max="100" className="w-full" />
                     </div>
-                  </CardContent>
+                  </div>
                 )}
               </Card>
             </div>

@@ -11,7 +11,12 @@
 
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { apiService } from './APIService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 // Define missing type alias
 type SubscriptionCallback = (data: unknown) => void; // Use 'unknown' for safer data handling

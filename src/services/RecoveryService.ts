@@ -10,7 +10,12 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 // Types of recovery strategies that can be applied
 export enum RecoveryStrategy {

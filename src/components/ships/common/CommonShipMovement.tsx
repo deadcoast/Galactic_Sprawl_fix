@@ -41,14 +41,14 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
     const category = getShipCategory(type);
     const capabilities = getDefaultCapabilities(category);
 
-    // Enable salvage for war ships if they have the cutting laser
-    if (category === 'war' && TechTreeManager.getInstance().hasWarShipSalvage()) {
+    // Enable salvage for combat ships if they have the cutting laser
+    if (category === 'combat' && TechTreeManager.getInstance().hasCombatShipSalvage()) {
       capabilities.canSalvage = true;
     }
 
     shipBehaviorManager.registerShip({
       id,
-      type: ResourceTypeConverter.stringToEnum(type) || ResourceType.MINERALS,
+      type: ResourceTypeConverter.stringToEnum(type) ?? ResourceType.MINERALS,
       category,
       capabilities,
       position: positionRef.current,
@@ -65,8 +65,12 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
 
     // Set up movement update listener
     const handlePositionUpdate = (event: CustomEvent) => {
-      if (event && event.detail) {
-        const { shipId, position: newPosition, rotation: newRotation } = event.detail;
+      if (event?.detail) {
+        const { shipId, position: newPosition, rotation: newRotation } = event.detail as {
+          shipId: string;
+          position: Position;
+          rotation: number;
+        };
         if (shipId === id) {
           positionRef.current = newPosition;
           rotationRef.current = newRotation;

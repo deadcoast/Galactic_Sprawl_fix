@@ -6,7 +6,7 @@
  * with support for validation, type checking, and complex transformations.
  */
 
-import { logger } from '../logging/loggerService';
+import { logger } from '../../services/logging/loggerService';
 
 /**
  * Represents a migration function that transforms state from one version to another

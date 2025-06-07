@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import {
-  EventBatch,
-  EventBatchConfig,
-  createBatchedEventStream,
-  getBatchConfig,
-  updateBatchConfig,
-} from '../../utils/events/EventBatcher';
+import
+  {
+    EventBatch,
+    EventBatchConfig,
+    createBatchedEventStream,
+    getBatchConfig,
+    updateBatchConfig,
+  } from '../../utils/events/EventBatcher';
 
 /**
  * Hook to use batched events for specific event types
@@ -113,8 +114,8 @@ export function useEventBatching(
   const isEmpty = !batch || batch.events.length === 0;
   const hasEvents = !isEmpty;
   const eventCount = batch?.size ?? 0;
-  const batchEventTypes = batch?.eventTypes || new Set<ModuleEventType>();
-  const batchModuleIds = batch?.moduleIds || new Set<string>();
+  const batchEventTypes = batch?.eventTypes ?? new Set<ModuleEventType>();
+  const batchModuleIds = batch?.moduleIds ?? new Set<string>();
   const events = batch?.events ?? [];
 
   return {
@@ -136,7 +137,7 @@ export function useEventBatching(
  */
 export function useEventDebouncing(
   eventTypes: ModuleEventType[],
-  debounceTime: number = 300
+  debounceTime = 300
 ): {
   /**
    * Latest debounced event
@@ -195,8 +196,8 @@ export function useEventDebouncing(
 
   // Derived values
   const hasEvent = event !== null;
-  const eventType = event?.type || null;
-  const moduleId = event?.moduleId || null;
+  const eventType = event?.type ?? null;
+  const moduleId = event?.moduleId ?? null;
 
   return {
     event,
@@ -212,7 +213,7 @@ export function useEventDebouncing(
  */
 export function useEventThrottling(
   eventTypes: ModuleEventType[],
-  throttleTime: number = 300
+  throttleTime = 300
 ): {
   /**
    * Latest throttled event
@@ -271,8 +272,8 @@ export function useEventThrottling(
 
   // Derived values
   const hasEvent = event !== null;
-  const eventType = event?.type || null;
-  const moduleId = event?.moduleId || null;
+  const eventType = event?.type ?? null;
+  const moduleId = event?.moduleId ?? null;
 
   return {
     event,

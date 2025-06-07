@@ -172,7 +172,7 @@ export function CombatSystemDemo({ className = '' }: CombatSystemDemoProps) {
       const newAlert: Alert = {
         id: `alert-${Date.now()}`,
         level: 'warning',
-        message: `Tracking hostile object: ${clickedObject.name || 'Unknown vessel'}`,
+        message: `Tracking hostile object: ${clickedObject.name ?? 'Unknown vessel'}`,
         details: `Distance: ${clickedObject.distance} LY. Confidence: ${Math.round(clickedObject.confidence * 100)}%`,
         source: 'Combat System',
         timestamp: Date.now(),
@@ -203,7 +203,6 @@ export function CombatSystemDemo({ className = '' }: CombatSystemDemoProps) {
   const handleViewAlertDetails = (alertId: string) => {
     const alert = alerts.find(a => a.id === alertId);
     if (alert) {
-      console.warn(`Viewing details for alert: ${alert.message}`);
       // In a real app, this would open a modal or panel with details
     }
   };
@@ -297,7 +296,7 @@ export function CombatSystemDemo({ className = '' }: CombatSystemDemoProps) {
               return (
                 <div className="space-y-2">
                   <p className="text-white">
-                    <span className="text-gray-400">Name:</span> {obj.name || 'Unknown'}
+                    <span className="text-gray-400">Name:</span> {obj.name ?? 'Unknown'}
                   </p>
                   <p className="text-white">
                     <span className="text-gray-400">Type:</span>{' '}

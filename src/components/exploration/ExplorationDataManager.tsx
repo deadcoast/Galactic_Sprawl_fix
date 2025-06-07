@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Database, Folder, Settings, Star } from 'lucide
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -409,7 +410,7 @@ export function ExplorationDataManager({
                 // Placeholder update action
                 const updatedCategory = { ...category, name: `${category.name} (edited)` };
                 onUpdateCategory(updatedCategory);
-                console.log('Update category clicked:', category.id);
+                errorLoggingService.logInfo(`Update category clicked: ${category.id}`);
               }}
               title="Edit Category (Placeholder)"
             >
@@ -420,7 +421,7 @@ export function ExplorationDataManager({
               onClick={e => {
                 e.stopPropagation();
                 onDeleteCategory(category.id);
-                console.log('Delete category clicked:', category.id);
+                errorLoggingService.logInfo(`Delete category clicked: ${category.id}`);
                 // Deselect if the deleted category was selected
                 if (selectedCategoryId === category.id) {
                   setSelectedCategoryId(null);
@@ -519,8 +520,8 @@ export function ExplorationDataManager({
               className="mr-2 h-6 w-6 cursor-pointer rounded border border-gray-600"
             />
             <select
-              value={newCategoryParentId || ''}
-              onChange={e => setNewCategoryParentId(e.target.value || undefined)}
+              value={newCategoryParentId ?? ''}
+              onChange={e => setNewCategoryParentId(e.target.value ?? undefined)}
               className="flex-grow rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
             >
               <option value="">No Parent</option>
@@ -587,7 +588,7 @@ export function ExplorationDataManager({
 
         {/* Records List (Scrollable) */}
         <div className="flex-grow overflow-y-auto">
-          {filteredRecords.map((record, index) => (
+          {filteredRecords.map(record => (
             <div
               key={record.id}
               className={`flex items-center border-b border-gray-800 py-2 text-sm hover:bg-gray-800 ${selectedRecordIds.includes(record.id) ? 'bg-gray-700' : ''}`}

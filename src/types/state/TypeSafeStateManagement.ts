@@ -132,7 +132,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
   build(): Reducer<S, A> {
     return (state: S, action: A) => {
       const actionType = action.type as A['type'] | 'DEFAULT';
-      const handler = this.handlers[actionType] || this.handlers['DEFAULT'];
+      const handler = this.handlers[actionType] ?? this.handlers['DEFAULT'];
       return handler ? handler(state, action) : state;
     };
   }

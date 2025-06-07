@@ -9,39 +9,39 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
-import { ReconShip, ShipCategory, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes';
+import { ExplorationTask } from '../../types/exploration/ExplorationTypes';
+import { ReconShip, ShipCategory, ShipStatus } from '../../types/ships/ShipTypes';
 
 /**
- * Define Event Map for this manager using string literals
- * Added index signature
+ * Define Event Map for this manager - data types for TypedEventEmitter
  */
-interface ReconShipManagerEvents {
-  EXPLORATION_SHIP_REGISTERED: (payload: { shipId: string; ship: ReconShip }) => void;
-  EXPLORATION_SHIP_UNREGISTERED: (payload: { shipId: string }) => void;
-  STATUS_CHANGED: (payload: { shipId: string; status: UnifiedShipStatus; ship: ReconShip }) => void;
-  MODULE_UPDATED: (payload: { shipId: string; sectorId?: string; ship: ReconShip }) => void;
-  EXPLORATION_TASK_ASSIGNED: (payload: { shipId: string; task: any }) => void; // TODO: Type task
-  EXPLORATION_TASK_COMPLETED: (payload: { shipId: string; task: any }) => void; // TODO: Type task
-  EXPLORATION_TASK_PROGRESS: (payload: { shipId: string; task: any; progress: number }) => void; // TODO: Type task
-  EXPLORATION_POSITION_UPDATED: (payload: {
+export interface ReconShipManagerEvents {
+  EXPLORATION_SHIP_REGISTERED: { shipId: string; ship: ReconShip };
+  EXPLORATION_SHIP_UNREGISTERED: { shipId: string };
+  STATUS_CHANGED: { shipId: string; status: ShipStatus; ship: ReconShip };
+  MODULE_UPDATED: { shipId: string; sectorId?: string; ship: ReconShip };
+  EXPLORATION_TASK_ASSIGNED: { shipId: string; task: ExplorationTask };
+  EXPLORATION_TASK_COMPLETED: { shipId: string; task: ExplorationTask };
+  EXPLORATION_TASK_PROGRESS: { shipId: string; task: ExplorationTask; progress: number };
+  EXPLORATION_POSITION_UPDATED: {
     shipId: string;
     position: Position;
     ship: ReconShip;
-  }) => void;
-  [key: string]: (...args: any[]) => any; // Added index signature
+  };
+  [key: string]: unknown; // Index signature for TypedEventEmitter compatibility
 }
 
 /**
  * Implementation of the ship manager for exploration ships
  */
 export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEvents> {
-  private ships: Map<string, ReconShip> = new Map();
-  private tasks: Map<string, any> = new Map(); // TODO: Define ExplorationTask type properly
+  private ships = new Map<string, ReconShip>();
+  private tasks = new Map<string, ExplorationTask>();
 
   constructor() {
     super();
-    this.ships = new Map();
-    this.tasks = new Map();
+    this.ships = new Map<string, ReconShip>();
+    this.tasks = new Map<string, ExplorationTask>();
   }
 
   /**
@@ -66,7 +66,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
    * @param status The status to filter by
    * @returns Ships with the given status
    */
-  public getShipsByStatus(status: UnifiedShipStatus): ReconShip[] {
+  public getShipsByStatus(status: ShipStatus): ReconShip[] {
     return Array.from(this.ships.values()).filter(ship => ship.status === status);
   }
 
@@ -76,16 +76,16 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
    * @param status The new status
    * @returns True if the ship was updated, false otherwise
    */
-  public updateShipStatus(shipId: string, status: UnifiedShipStatus): void {
+  public updateShipStatus(shipId: string, status: ShipStatus): void {
     const ship = this.ships.get(shipId);
     if (!ship) return;
     ship.status = status;
-    const payload: { shipId: string; status: UnifiedShipStatus; ship: ReconShip } = {
+    const payload = {
       shipId,
       status,
       ship,
     };
-    this.emit('STATUS_CHANGED', payload as any);
+    this.emit('STATUS_CHANGED', payload);
   }
 
   /**
@@ -97,13 +97,13 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
   public assignShipToSector(shipId: string, sectorId: string): boolean {
     const ship = this.ships.get(shipId);
     if (!ship) return false;
-    ship.status = UnifiedShipStatus.SCANNING;
-    const payload: { shipId: string; sectorId?: string; ship: ReconShip } = {
+    ship.status = ShipStatus.SCANNING;
+    const payload = {
       shipId,
       sectorId,
       ship,
     };
-    this.emit('MODULE_UPDATED', payload as any);
+    this.emit('MODULE_UPDATED', payload);
     return true;
   }
 
@@ -115,33 +115,38 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
   public unassignShip(shipId: string): boolean {
     const ship = this.ships.get(shipId);
     if (!ship) return false;
-    ship.status = UnifiedShipStatus.IDLE;
-    const payload: { shipId: string; sectorId?: string; ship: ReconShip } = {
+    ship.status = ShipStatus.IDLE;
+    const payload = {
       shipId,
       ship,
     };
-    this.emit('MODULE_UPDATED', payload as any);
+    this.emit('MODULE_UPDATED', payload);
     return true;
   }
 
   public registerShip(ship: ReconShip): void {
     if (ship.category !== ShipCategory.RECON) {
-      console.warn(
-        `Attempted to register non-recon ship (${ship.name}, ${ship.category}) with ReconShipManager.`
-      );
+      // console.warn(
+      //   `Attempted to register non-recon ship (${ship.name}, ${ship.category}) with ReconShipManager.`
+      // );
       return;
     }
     this.ships.set(ship.id, ship);
-    const payload: { shipId: string; ship: ReconShip } = { shipId: ship.id, ship };
-    this.emit('EXPLORATION_SHIP_REGISTERED', payload as any);
+    const payload = {
+      shipId: ship.id,
+      ship,
+    };
+    this.emit('EXPLORATION_SHIP_REGISTERED', payload);
   }
 
   public unregisterShip(shipId: string): void {
     const ship = this.ships.get(shipId);
     if (ship) {
       this.ships.delete(shipId);
-      const payload: { shipId: string } = { shipId };
-      this.emit('EXPLORATION_SHIP_UNREGISTERED', payload as any);
+      const payload = {
+        shipId,
+      };
+      this.emit('EXPLORATION_SHIP_UNREGISTERED', payload);
     }
   }
 
@@ -152,11 +157,11 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
     specialization: 'mapping' | 'anomaly' | 'resource'
   ): void {
     const ship = this.getShipById(shipId);
-    if (!ship || ship.status !== UnifiedShipStatus.IDLE) {
-      console.warn(`Cannot assign task: Ship ${shipId} not found or not idle.`);
+    if (!ship || ship.status !== ShipStatus.IDLE) {
+      // console.warn(`Cannot assign task: Ship ${shipId} not found or not idle.`);
       return;
     }
-    const task: any = {
+    const task: ExplorationTask = {
       id: uuidv4(),
       type: 'explore',
       target: { id: sectorId, position },
@@ -167,60 +172,68 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       assignedShipId: shipId,
     };
     this.tasks.set(task.id, task);
-    ship.status = UnifiedShipStatus.READY;
-    const taskPayload: { shipId: string; task: any } = { shipId: task.id, task };
-    this.emit('EXPLORATION_TASK_ASSIGNED', taskPayload as any);
-    const statusPayload: { shipId: string; status: UnifiedShipStatus; ship: ReconShip } = {
+    ship.status = ShipStatus.READY;
+    const taskPayload = {
+      shipId: ship.id,
+      task,
+    };
+    this.emit('EXPLORATION_TASK_ASSIGNED', taskPayload);
+    const statusPayload = {
       shipId,
       status: ship.status,
       ship,
     };
-    this.emit('STATUS_CHANGED', statusPayload as any);
+    this.emit('STATUS_CHANGED', statusPayload);
   }
 
   public update(deltaTime: number): void {
     for (const [taskId, task] of this.tasks) {
       if (task.status === 'in-progress') {
         const ship = this.ships.get(task.assignedShipId);
-        const efficiencyFactor = ship?.stats?.efficiency ?? 1;
+        const efficiencyFactor = ship?.details?.efficiency ?? 1;
         const progressIncrement = (deltaTime / 1000) * 0.1 * efficiencyFactor;
-        const progress = (task.progress ?? 0) + progressIncrement;
+        task.progress = (task.progress ?? 0) + progressIncrement;
 
-        if (progress >= 1) {
+        if (task.progress >= 1) {
           task.status = 'completed';
           const completedShip = this.ships.get(task.assignedShipId);
           if (completedShip) {
-            completedShip.status = UnifiedShipStatus.RETURNING;
-            const statusPayload: { shipId: string; status: UnifiedShipStatus; ship: ReconShip } = {
+            completedShip.status = ShipStatus.RETURNING;
+            const statusPayload = {
               shipId: completedShip.id,
               status: completedShip.status,
               ship: completedShip,
             };
-            this.emit('STATUS_CHANGED', statusPayload as any);
+            this.emit('STATUS_CHANGED', statusPayload);
           }
-          const taskPayload: { shipId: string; task: any } = { shipId: taskId, task };
-          this.emit('EXPLORATION_TASK_COMPLETED', taskPayload as any);
+          const taskPayload = {
+            shipId: task.assignedShipId,
+            task,
+          };
+          this.emit('EXPLORATION_TASK_COMPLETED', taskPayload);
           this.tasks.delete(taskId);
         } else {
-          task.progress = progress;
-          const progressPayload: { shipId: string; task: any; progress: number } = {
-            shipId: taskId,
-            task,
-            progress,
-          };
-          this.emit('EXPLORATION_TASK_PROGRESS', progressPayload as any);
+          const progressShip = this.ships.get(task.assignedShipId);
+          if (progressShip) {
+            const progressPayload = {
+              shipId: task.assignedShipId,
+              task,
+              progress: task.progress,
+            };
+            this.emit('EXPLORATION_TASK_PROGRESS', progressPayload);
+          }
         }
       } else if (task.status === 'queued') {
         const assignedShip = this.ships.get(task.assignedShipId);
-        if (assignedShip && assignedShip.status === UnifiedShipStatus.READY) {
+        if (assignedShip && assignedShip.status === ShipStatus.READY) {
           task.status = 'in-progress';
-          assignedShip.status = UnifiedShipStatus.SCANNING;
-          const statusPayload: { shipId: string; status: UnifiedShipStatus; ship: ReconShip } = {
+          assignedShip.status = ShipStatus.SCANNING;
+          const statusPayload = {
             shipId: assignedShip.id,
             status: assignedShip.status,
             ship: assignedShip,
           };
-          this.emit('STATUS_CHANGED', statusPayload as any);
+          this.emit('STATUS_CHANGED', statusPayload);
         }
       }
     }
@@ -228,21 +241,23 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
 
   public updateShipPosition(shipId: string, position: Position): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
     ship.position = position;
-    const payload: { shipId: string; position: Position; ship: ReconShip } = {
+    const payload = {
       shipId,
       position,
       ship,
     };
-    this.emit('EXPLORATION_POSITION_UPDATED', payload as any);
+    this.emit('EXPLORATION_POSITION_UPDATED', payload);
   }
 
   public dispose(): void {
     this.ships.clear();
     this.tasks.clear();
     this.removeAllListeners();
-    console.warn('ReconShipManager disposed - Listener cleanup via removeAllListeners()');
+    // console.warn('ReconShipManager disposed - Listener cleanup via removeAllListeners()');
   }
 
   public getVersion(): string {
@@ -250,12 +265,13 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
   }
 
   public getStats(): Record<string, number | string> {
+    // console.warn('getStats called but not fully implemented.');
     return {
       totalShips: this.ships.size,
-      idleShips: this.getShipsByStatus(UnifiedShipStatus.IDLE).length,
-      assignedShips: this.getShipsByStatus(UnifiedShipStatus.READY).length,
-      scanningShips: this.getShipsByStatus(UnifiedShipStatus.SCANNING).length,
-      returningShips: this.getShipsByStatus(UnifiedShipStatus.RETURNING).length,
+      idleShips: this.getShipsByStatus(ShipStatus.IDLE).length,
+      assignedShips: this.getShipsByStatus(ShipStatus.READY).length,
+      scanningShips: this.getShipsByStatus(ShipStatus.SCANNING).length,
+      returningShips: this.getShipsByStatus(ShipStatus.RETURNING).length,
       totalTasks: this.tasks.size,
       queuedTasks: Array.from(this.tasks.values()).filter(t => t.status === 'queued').length,
       inProgressTasks: Array.from(this.tasks.values()).filter(t => t.status === 'in-progress')

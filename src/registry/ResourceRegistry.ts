@@ -1,5 +1,9 @@
 import { EventEmitter } from '../lib/events/EventEmitter';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import {
   ResourceCategory,
   ResourceType,

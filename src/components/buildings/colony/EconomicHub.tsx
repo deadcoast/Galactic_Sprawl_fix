@@ -121,7 +121,7 @@ export function EconomicHub({ hubData }: EconomicHubProps) {
         ))}
       </div>
 
-      {/* Warnings for Disrupted Routes */}
+      {/* warnings for Disrupted Routes */}
       {hubData.tradeRoutes.some(route => route.status === 'disrupted') && (
         <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-500" />

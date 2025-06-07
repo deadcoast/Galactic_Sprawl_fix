@@ -1,4 +1,8 @@
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { Singleton } from '../patterns/Singleton';
 import { BaseService } from '../services/BaseService';
 

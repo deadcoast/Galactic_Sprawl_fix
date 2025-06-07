@@ -2,15 +2,16 @@ import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { typedInterpolators } from '../../../types/visualizations/D3AnimationTypes';
-import {
-  animationFrameManager,
-  registerD3Timer,
-} from '../../../utils/performance/D3AnimationFrameManager';
-import {
-  CacheStats,
-  createMemoizedInterpolators,
-  getMemoizationStats,
-} from '../../../utils/performance/D3InterpolationCache';
+import
+  {
+    animationFrameManager,
+    registerD3Timer,
+  } from '../../../utils/performance/D3AnimationFrameManager';
+import
+  {
+    CacheStats,
+    getMemoizationStats
+  } from '../../../utils/performance/D3InterpolationCache';
 
 interface Particle {
   id: string;
@@ -181,36 +182,35 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
       return createStandardInterpolators();
     });
 
-    // Create memoized interpolators (using animation-specific cache)
-    const animationId = `memoization-demo-${Date.now()}`;
-    const memoizedInterpolatorFactory = createMemoizedInterpolators(animationId);
+    // Memoized interpolators use shared typedInterpolators utility
+    const factory = typedInterpolators;
 
     const memoizedParticleInterpolators = particles.map(p => {
       const createMemoizedInterpolators = () => {
         switch (interpolationType) {
           case 'position':
             return {
-              position: memoizedInterpolatorFactory.object(
+              position: factory.object(
                 { x: p.x, y: p.y },
                 { x: p.targetX, y: p.targetY }
               ),
-              size: memoizedInterpolatorFactory.number(p.size, p.size),
+              size: factory.number(p.size, p.size),
             };
           case 'color':
             return {
-              position: memoizedInterpolatorFactory.object({ x: p.x, y: p.y }, { x: p.x, y: p.y }),
-              size: memoizedInterpolatorFactory.number(p.size, p.size),
-              color: memoizedInterpolatorFactory.color(p.color, p.targetColor),
+              position: factory.object({ x: p.x, y: p.y }, { x: p.x, y: p.y }),
+              size: factory.number(p.size, p.size),
+              color: factory.color(p.color, p.targetColor),
             };
           case 'mixed':
           default:
             return {
-              position: memoizedInterpolatorFactory.object(
+              position: factory.object(
                 { x: p.x, y: p.y },
                 { x: p.targetX, y: p.targetY }
               ),
-              size: memoizedInterpolatorFactory.number(p.size, p.targetSize),
-              color: memoizedInterpolatorFactory.color(p.color, p.targetColor),
+              size: factory.number(p.size, p.targetSize),
+              color: factory.color(p.color, p.targetColor),
             };
         }
       };

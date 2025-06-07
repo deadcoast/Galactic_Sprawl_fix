@@ -1,12 +1,17 @@
 import { useEffect, useRef } from 'react';
-// Remove context import
-// import { ComponentRegistryContext } from '../../contexts/ComponentRegistryContext';
+import { ComponentRegistration, componentRegistryService } from '../../services/ComponentRegistryService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 import { useComponentProfiler } from './useComponentProfiler';
-// Import the service instance
-import {
-  ComponentRegistration,
-  componentRegistryService,
-} from '../../services/ComponentRegistryService';
+
+type UpdatePriority = ComponentRegistration['updatePriority'];
+type ErrorDetails = Record<string, unknown>;
+
+/**
+ * Type guard to check if a value is a valid Record<string, unknown>
+ */
+function isValidProps(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
 
 /**
  * Options for component registration
@@ -61,67 +66,93 @@ import {
  * @param initialProps Optional initial properties for the component.
  * @returns An object containing a function to update the component's props.
  */
+/**
+ * Hook for registering a component with the ComponentRegistryService
+ * @param id Unique identifier for the component
+ * @param type Component type identifier
+ * @param initialProps Optional initial properties
+ * @param options Optional registration options
+ * @returns Object containing methods to update the component
+ * @throws Error if registration fails or if invalid props are provided
+ */
 export function useComponentRegistration(
   id: string,
   type: string,
-  initialProps?: Record<string, unknown>
+  initialProps?: Record<string, unknown>,
+  options: {
+    eventSubscriptions?: string[];
+    updatePriority?: UpdatePriority;
+  } = {}
 ) {
-  // Remove context usage
-  // const context = useContext(ComponentRegistryContext);
-  // if (!context) {
-  //   throw new Error('useComponentRegistration must be used within a ComponentRegistryProvider');
-  // }
-  // const { registerComponent, unregisterComponent, updateComponent } = context; // Added updateComponent
+  // Validate initial props
+  if (initialProps !== undefined && !isValidProps(initialProps)) {
+    const error = new Error('Invalid initialProps provided to useComponentRegistration');
+    errorLoggingService.logError(error, ErrorType.VALIDATION, ErrorSeverity.CRITICAL, {
+      componentId: id,
+      componentType: type
+    });
+    throw error;
+  }
 
   const propsRef = useRef(initialProps);
   const componentInfoRef = useRef<ComponentRegistration | null>(null);
 
   // Initial registration
   useEffect(() => {
-    const registrationInfo: ComponentRegistration = {
-      id,
-      type,
-      eventSubscriptions: [],
-      updatePriority: 'medium',
-    };
-    componentInfoRef.current = registrationInfo;
-    // Use service instance directly
-    componentRegistryService.registerComponent({
-      type: registrationInfo.type,
-      eventSubscriptions: registrationInfo.eventSubscriptions,
-      updatePriority: registrationInfo.updatePriority,
-    });
+    try {
+      const registrationInfo: ComponentRegistration = {
+        id,
+        type,
+        eventSubscriptions: options.eventSubscriptions ?? [],
+        updatePriority: options.updatePriority ?? 'medium',
+      };
+      componentInfoRef.current = registrationInfo;
 
-    // Track render with profiler
-    // NOTE: The profiler logic seems independent of context vs service, leaving as is.
-    // However, the commented-out tracking part needs clarification.
-    // If tracking is needed, componentRegistryService should have a method like trackRender.
-    const profiler = useComponentProfiler(type);
-    if (profiler && profiler.metrics.lastRenderTime !== undefined) {
-      // Notify registry of render time if needed, e.g.,
-      // componentRegistryService.trackRender(id, profiler.metrics.lastRenderTime);
+      componentRegistryService.registerComponent(registrationInfo);
+
+      // Track render performance
+      const profiler = useComponentProfiler(type);
+      if (profiler?.metrics.lastRenderTime !== undefined) {
+        componentRegistryService.trackRender(id);
+      }
+
+      return () => {
+        try {
+          componentRegistryService.unregisterComponent(id);
+        } catch (error) {
+          if (error instanceof Error) {
+            const details: ErrorDetails = { componentId: id, action: 'unregister' };
+            errorLoggingService.logError(error, ErrorType.INITIALIZATION, ErrorSeverity.MEDIUM, details);
+          }
+        }
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        const details: ErrorDetails = { componentId: id, action: 'register' };
+        errorLoggingService.logError(error, ErrorType.INITIALIZATION, ErrorSeverity.CRITICAL, details);
+      }
+      throw error;
     }
+  }, [id, type, options.eventSubscriptions, options.updatePriority]);
 
-    // Return cleanup function
-    return () => {
-      componentRegistryService.unregisterComponent(id);
-    };
-  }, [id, type]);
-
-  // Function to update component props via service
+  /**
+   * Updates component properties in the registry
+   * Note: Currently a no-op as ComponentRegistryService does not support prop updates
+   * @param newProps New properties to set
+   * @throws Error if invalid props are provided
+   */
   const updateProps = (newProps: Record<string, unknown>) => {
-    propsRef.current = newProps;
-    if (componentInfoRef.current) {
-      // ComponentRegistration doesn't store props directly, so we don't update ref here
-      // componentInfoRef.current.props = newProps;
-
-      // Notify registry about prop updates using the service
-      // componentRegistryService.updateComponent(id, { props: newProps });
-      // TODO: Verify if updateComponent exists and how it handles props
-      console.warn(
-        'TODO: Verify ComponentRegistryService.updateComponent implementation for props'
-      );
+    if (!isValidProps(newProps)) {
+      const error = new Error('Invalid props provided to updateProps');
+      errorLoggingService.logError(error, ErrorType.VALIDATION, ErrorSeverity.CRITICAL, {
+        componentId: id,
+        componentType: type
+      });
+      throw error;
     }
+
+    // Only update local ref since ComponentRegistryService doesn't support prop updates
+    propsRef.current = newProps;
   };
 
   return { updateProps };

@@ -1,25 +1,26 @@
 import React, {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useReducer,
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
 import { serviceRegistry } from '../lib/managers/ServiceRegistry';
 import { moduleManager } from '../managers/module/ModuleManager';
 import { moduleManagerWrapper } from '../managers/module/ModuleManagerWrapper';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
 import { ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
-  IModuleManager,
-  LegacyModuleAction,
-  Module,
-  moduleEventToEventType,
-  ModuleEventType,
-  ModuleStatus,
+    IModuleManager,
+    LegacyModuleAction,
+    Module,
+    moduleEventToEventType,
+    ModuleEventType,
+    ModuleStatus,
 } from '../types/modules/ModuleTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -298,12 +299,19 @@ export function useDispatchLegacyAction(): (
 
   // Return the function that can be called by components
   return (moduleId: string, action: string, data?: unknown): void => {
-    console.warn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead');
+    errorLoggingService.logWarn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead', {
+      componentName: 'ModuleContext',
+      action: 'dispatchLegacyAction'
+    });
 
     // First check if the module exists
     const module = manager?.getModule?.(moduleId);
     if (!module) {
-      console.error(`[ModuleContext] Module not found: ${moduleId}`);
+      errorLoggingService.logError(`Module not found: ${moduleId}`, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+        componentName: 'ModuleContext',
+        moduleId,
+        action: 'dispatchLegacyAction'
+      });
       return;
     }
 
@@ -334,7 +342,11 @@ export function useDispatchLegacyAction(): (
           // Use dispatch for updates
           dispatch(createUpdateModuleAction(moduleId, data as Partial<Module>));
         } else {
-          console.error(`[ModuleContext] Invalid data for 'update' action on module ${moduleId}`);
+          errorLoggingService.logError(`Invalid data for 'update' action on module ${moduleId}`, ErrorType.RUNTIME, ErrorSeverity.LOW, {
+            componentName: 'ModuleContext',
+            moduleId,
+            action: 'dispatchLegacyAction'
+          });
         }
         break;
 
@@ -344,7 +356,11 @@ export function useDispatchLegacyAction(): (
         break;
 
       default:
-        console.error(`[ModuleContext] Unknown action '${action}' for module ${moduleId}`);
+        errorLoggingService.logError(`Unknown legacy action '${action}'`, ErrorType.RUNTIME, ErrorSeverity.LOW, {
+          componentName: 'ModuleContext',
+          moduleId,
+          action: 'dispatchLegacyAction'
+        });
     }
   };
 }
@@ -375,7 +391,10 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
           ...(initialStateOverride ?? {}),
         };
       } catch (error) {
-        console.error('Error initializing module state from manager:', error);
+        errorLoggingService.logError(error instanceof Error ? error : new Error(String(error)), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+          componentName: 'ModuleContext',
+          action: 'initializeState'
+        });
       }
     }
 
@@ -645,7 +664,10 @@ export function canBuildModule(
   // Check if the player has enough resources
   const resourceManager = serviceRegistry.getService('ResourceManager');
   if (!resourceManager) {
-    console.error('Resource manager not found');
+    errorLoggingService.logError('Resource manager not found', ErrorType.RUNTIME, ErrorSeverity.HIGH, {
+      componentName: 'ModuleContext',
+      action: 'canBuildModule'
+    });
     return false;
   }
 
@@ -662,13 +684,17 @@ export function canBuildModule(
     currentMinerals = typedResourceManager.getResourceAmount(ResourceType.MINERALS) ?? 0;
     currentEnergy = typedResourceManager.getResourceAmount(ResourceType.ENERGY) ?? 0;
   } catch (error) {
-    console.error('Error getting resource amounts:', error);
+    errorLoggingService.logError(error instanceof Error ? error : new Error(String(error)), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+      componentName: 'ModuleContext',
+      action: 'canBuildModule'
+    });
     return false;
   }
 
   if (currentMinerals < mineralCost || currentEnergy < energyCost) {
-    console.warn(
-      `Cannot build module: not enough resources. Needs ${mineralCost} minerals and ${energyCost} energy.`
+    errorLoggingService.logWarn(
+      `Cannot build module: not enough resources. Needs ${mineralCost} minerals and ${energyCost} energy.`,
+      { componentName: 'ModuleContext', action: 'canBuildModule' }
     );
     return false;
   }
@@ -683,14 +709,18 @@ export function buildModule(
   cost: { minerals?: number; energy?: number }
 ) {
   // Maybe use cost within the method
-  console.warn(`Building module of type ${moduleType} with cost:`, cost);
+  errorLoggingService.logInfo(`Building module of type ${moduleType}`, {
+    componentName: 'ModuleContext',
+    action: 'buildModule',
+    cost
+  });
 
   // Get the first colony building to attach the module to
   const buildings = moduleManagerWrapper.getBuildings();
   const targetBuilding = buildings.find(building => building.type === 'colony');
 
   if (!targetBuilding) {
-    console.error('No colony building found to attach module to');
+    errorLoggingService.logError('No colony building found to attach module to', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -708,7 +738,7 @@ export function buildModule(
   const availablePoints = attachmentPoints.filter(point => !usedPoints.includes(point.id));
 
   if (availablePoints.length === 0) {
-    console.error('No available attachment points on colony building');
+    errorLoggingService.logError('No available attachment points on colony building', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -730,7 +760,7 @@ export function buildModule(
   const newModule = moduleManagerWrapper.getModulesByType(moduleType).pop();
 
   if (!newModule) {
-    console.error('Failed to create new module');
+    errorLoggingService.logError('Failed to create new module', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -756,10 +786,5 @@ export function buildModule(
 
 // Placeholder for handling potential legacy actions if needed
 const handleLegacyAction = useCallback((_action: string, _data: unknown) => {
-  // TODO: Implement logic for handling legacy actions if necessary
-  // Currently, _dispatchLegacyAction is also unused.
-  // if (_dispatchLegacyAction) {
-  //   _dispatchLegacyAction(action, data);
-  // }
-  console.warn('Received legacy action:', _action, _data);
+  errorLoggingService.logWarn(`Received legacy action: ${_action}`, { componentName: 'ModuleContext', action: 'handleLegacyAction', data: _data });
 }, []);

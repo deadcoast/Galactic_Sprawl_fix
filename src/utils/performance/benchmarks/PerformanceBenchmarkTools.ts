@@ -74,7 +74,7 @@ export interface RenderingBenchmarkResult extends BenchmarkResult {
  */
 export interface BenchmarkOptions {
   iterations?: number;
-  warmupIterations?: number;
+  combatmupIterations?: number;
   setupFn?: () => void;
   teardownFn?: () => void;
   memoryMeasurement?: boolean;
@@ -143,14 +143,14 @@ export function measureMemoryUsage(fn: () => void): MemoryMeasurement {
 export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): BenchmarkResult {
   const {
     iterations = 100,
-    warmupIterations = 10,
+    combatmupIterations = 10,
     setupFn,
     teardownFn,
     memoryMeasurement = false,
   } = options;
 
-  // Run warmup iterations
-  for (let i = 0; i < warmupIterations; i++) {
+  // Run combatmup iterations
+  for (let i = 0; i < combatmupIterations; i++) {
     if (setupFn) {
       setupFn();
     }
@@ -222,7 +222,7 @@ export async function runAsyncBenchmark<T>(
 ): Promise<BenchmarkResult> {
   const {
     iterations = 100,
-    warmupIterations = 10,
+    combatmupIterations = 10,
     setupFn,
     teardownFn,
     memoryMeasurement = false,
@@ -236,8 +236,8 @@ export async function runAsyncBenchmark<T>(
     }, timeout);
   });
 
-  // Run warmup iterations
-  for (let i = 0; i < warmupIterations; i++) {
+  // Run combatmup iterations
+  for (let i = 0; i < combatmupIterations; i++) {
     if (setupFn) {
       setupFn();
     }
@@ -464,7 +464,7 @@ export function runResourceFlowBenchmark(
     // Run the benchmark
     const basicResult = runBenchmark(benchmarkFn, {
       iterations,
-      warmupIterations: 2,
+      combatmupIterations: 2,
       memoryMeasurement: true,
     });
 

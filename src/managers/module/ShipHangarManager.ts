@@ -3,40 +3,49 @@ import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
-import {
-  ShipHangarManager as IShipHangarManager,
-  ShipBuildQueueItem,
-  ShipBuildRequirements,
-  ShipHangarBay,
-  ShipHangarEvents,
-  ShipHangarState,
-  ShipUpgradeInfo,
-  ShipUpgradeRequirement,
-  ShipUpgradeStats,
-  ShipVisualUpgrade,
-} from '../../types/buildings/ShipHangarTypes';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
+import
+  {
+    ShipHangarManager as IShipHangarManager,
+    ShipBuildQueueItem,
+    ShipBuildRequirements,
+    ShipHangarBay,
+    ShipHangarEvents,
+    ShipHangarState,
+    ShipUpgradeInfo,
+    ShipUpgradeRequirement,
+    ShipUpgradeStats,
+    ShipVisualUpgrade,
+  } from '../../types/buildings/ShipHangarTypes';
 import { Effect, Tier } from '../../types/core/GameTypes';
 import { Officer } from '../../types/officers/OfficerTypes';
 import { ResourceCost } from '../../types/resources/ResourceTypes';
-import {
-  CommonShip,
-  CommonShipAbility,
-  CommonShipStats,
-  ShipStatus,
-} from '../../types/ships/CommonShipTypes';
+import
+  {
+    CommonShip,
+    CommonShipAbility,
+    CommonShipStats,
+    ShipCategory,
+    ShipStatus,
+  } from '../../types/ships/CommonShipTypes';
 import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShipTypes';
-import {
-  WeaponCategory,
-  WeaponConfig,
-  WeaponInstance,
-  WeaponMount,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponState,
-  WeaponStats,
-  WeaponStatus,
-} from '../../types/weapons/WeaponTypes';
+import
+  {
+    WeaponCategory,
+    WeaponConfig,
+    WeaponInstance,
+    WeaponMount,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponState,
+    WeaponStats,
+    WeaponStatus,
+  } from '../../types/weapons/WeaponTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { TechTreeManager } from '../game/techTreeManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -87,7 +96,7 @@ const DEFAULT_MINING_SHIP_DESIGN = SHIP_BLUEPRINTS.find(
   bp => bp.category === 'mining' && bp.tier === 1
 );
 const DEFAULT_COMBAT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(
-  bp => bp.category === 'war' && bp.tier === 1
+  bp => bp.category === 'combat' && bp.tier === 1
 );
 
 /**
@@ -109,7 +118,12 @@ export class ShipHangarManager
       startTime: number;
       duration: number;
     }
-  > = new Map();
+  > = new Map<string, {
+    timer: NodeJS.Timeout;
+    resourceCost: ResourceCost[];
+    startTime: number;
+    duration: number;
+  }>();
   private activeUpgrades: Map<
     string,
     {
@@ -119,7 +133,13 @@ export class ShipHangarManager
       duration: number;
       targetStats: ShipUpgradeStats;
     }
-  > = new Map();
+  > = new Map<string, {
+    timer: NodeJS.Timeout;
+    resourceCost: ResourceCost[];
+    startTime: number;
+    duration: number;
+    targetStats: ShipUpgradeStats;
+  }>();
   private activeAbilities: Map<
     string,
     {
@@ -127,14 +147,21 @@ export class ShipHangarManager
       ability: CommonShipAbility;
       startTime: number;
     }
-  > = new Map();
+  > = new Map<string, {
+    timer: NodeJS.Timeout;
+    ability: CommonShipAbility;
+    startTime: number;
+  }>();
   private abilityCooldowns: Map<
     string,
     {
       timer: NodeJS.Timeout;
       endTime: number;
     }
-  > = new Map();
+  > = new Map<string, {
+    timer: NodeJS.Timeout;
+    endTime: number;
+  }>();
   private bayMaintenanceTimers: Map<
     string,
     {
@@ -142,8 +169,12 @@ export class ShipHangarManager
       lastMaintenance: number;
       efficiency: number;
     }
-  > = new Map();
-  private assignedOfficers: Map<string, string> = new Map(); // shipId -> officerId
+  > = new Map<string, {
+    timer: NodeJS.Timeout;
+    lastMaintenance: number;
+    efficiency: number;
+  }>();
+  private assignedOfficers: Map<string, string> = new Map<string, string>(); // shipId -> officerId
   private techTreeInstance: TechTreeManager | null = TechTreeManager.getInstance();
 
   constructor(resourceManager: ResourceManager, officerManager: OfficerManager) {
@@ -300,9 +331,7 @@ export class ShipHangarManager
    * Handle module status change
    */
   private handleModuleStatusChange(moduleId: string, status: string): void {
-    errorLoggingService.logWarn(
-      `[ShipHangarManager] Module ${moduleId} status changed to ${status}`
-    );
+    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} status changed to ${status}`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -390,7 +419,7 @@ export class ShipHangarManager
           ship &&
           officer.level >= minLevel &&
           officer.specialization === specialization &&
-          ship.status === 'ready'
+          ship.status === ShipStatus.READY
         ) {
           hasQualifiedOfficer = true;
           break;
@@ -541,7 +570,7 @@ export class ShipHangarManager
 
     // Add category-specific tech requirements
     switch (blueprint.category) {
-      case 'war':
+      case 'combat':
         requirements.prerequisites.technology.push(
           blueprint.tier === 3
             ? 'advanced-weapons'
@@ -760,7 +789,13 @@ export class ShipHangarManager
       );
       throw new Error(`No blueprint found for ship class: ${item?.shipClass}`);
     }
-    const baseStats = blueprint.baseStats;
+    const baseStats = blueprint.baseStats ?? {
+      hull: 100,
+      shield: 50,
+      energy: 100,
+      speed: 100,
+      cargo: 100,
+    };
 
     // Find an available bay
     const availableBay = this.state.bays.find(
@@ -774,7 +809,7 @@ export class ShipHangarManager
     const ship: CommonShip = {
       id: uuidv4(),
       name: blueprint.name,
-      category: blueprint.category,
+      category: this.convertPlayerCategoryToShipCategory(blueprint.category),
       status: ShipStatus.READY,
       stats: {
         // Use hull from baseStats for health
@@ -802,7 +837,7 @@ export class ShipHangarManager
           this.createWeaponMount(weapon, blueprint.tier)
         ),
         // Restore the abilities array inside stats
-        abilities: (blueprint.abilities || []).map(ability => ({
+        abilities: (blueprint.abilities ?? []).map(ability => ({
           id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
           name: ability.name,
           description: ability.description,
@@ -854,14 +889,27 @@ export class ShipHangarManager
     return classMap[ship.name] || PlayerShipClass.SPITFLARE; // Default to spitflare if name not found
   }
 
-  private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
+  private getShipCategory(shipClass: PlayerShipClass): ShipCategory {
     if (shipClass.includes('void-dredger')) {
-      return 'mining';
+      return ShipCategory.MINING;
     }
     if (shipClass.includes('andromeda') || shipClass.includes('schooner')) {
-      return 'recon';
+      return ShipCategory.RECON;
     }
-    return 'war';
+    return ShipCategory.COMBAT;
+  }
+
+  private convertPlayerCategoryToShipCategory(playerCategory: PlayerShipCategory): ShipCategory {
+    switch (playerCategory) {
+      case 'combat':
+        return ShipCategory.COMBAT;
+      case 'mining':
+        return ShipCategory.MINING;
+      case 'recon':
+        return ShipCategory.RECON;
+      default:
+        return ShipCategory.COMBAT;
+    }
   }
 
   private createWeaponMount(
@@ -951,7 +999,7 @@ export class ShipHangarManager
       turnRate: 2,
       cargo: blueprint.baseStats.cargo ?? 0,
       weapons,
-      abilities: (blueprint.abilities || []).map(ability => ({
+      abilities: (blueprint.abilities ?? []).map(ability => ({
         id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
         name: ability.name,
         description: ability.description,
@@ -1033,7 +1081,7 @@ export class ShipHangarManager
       throw new Error('Ship not found in unknown bay');
     }
 
-    if (targetShip.status !== 'damaged') {
+    if (targetShip.status !== ShipStatus.DAMAGED) {
       throw new Error('Ship does not need repairs');
     }
 
@@ -1156,7 +1204,7 @@ export class ShipHangarManager
     }
 
     if (!repairedShip) {
-      console.error('Ship not found for repair completion');
+      errorLoggingService.logError('Ship not found for repair completion');
       return;
     }
 
@@ -1252,7 +1300,7 @@ export class ShipHangarManager
         requirements.push({
           type: 'tech',
           name: tech,
-          met: this.techTreeInstance?.getNode(tech)?.unlocked || false,
+          met: this.techTreeInstance?.getNode(tech)?.unlocked ?? false,
         });
       });
     }
@@ -1289,7 +1337,7 @@ export class ShipHangarManager
 
     return {
       shipId,
-      tier: targetBay.tier as Tier,
+      tier: targetBay.tier,
       upgradeAvailable,
       requirements,
       stats,
@@ -1431,7 +1479,7 @@ export class ShipHangarManager
     }
 
     if (!upgradedShip || !upgradedBay) {
-      console.error('Ship not found for upgrade completion');
+      errorLoggingService.logError('Ship not found for upgrade completion');
       return;
     }
 
@@ -1463,7 +1511,7 @@ export class ShipHangarManager
   public activateAbility(shipId: string, abilityName: string): void {
     const ship = this.findShipById(shipId);
     // Access abilities via stats
-    if (!ship || !ship.stats || !ship.stats.abilities) {
+    if (!ship?.stats?.abilities) {
       this.emit('error', { message: `Ship ${shipId} not found or has no abilities` });
       return;
     }
@@ -1538,9 +1586,9 @@ export class ShipHangarManager
       }
     }
 
-    if (!targetShip || !targetShip.stats) {
+    if (!targetShip?.stats?.abilities) {
       // Check for stats existence
-      console.error('Ship not found or stats missing for ability deactivation');
+      errorLoggingService.logError('Ship not found or stats missing for ability deactivation');
       return;
     }
 
@@ -1998,8 +2046,8 @@ export class ShipHangarManager
 
     // Specialization bonuses
     switch (officer.specialization) {
-      case 'War':
-        if (ship.category === 'war') {
+      case 'combat':
+        if (ship.category === ShipCategory.COMBAT) {
           bonuses.combatEffectiveness = 0.2 + levelBonus; // 20% base + level bonus
           bonuses.buildSpeed = 0.1 + levelBonus; // 10% base + level bonus
         }
@@ -2127,7 +2175,7 @@ export class ShipHangarManager
       // Parse shipId and ability name from compound key
       const [shipId, abilityName] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
-      if (ship && ship.stats?.abilities) {
+      if (ship?.stats?.abilities) {
         // Ensure stats and abilities exist
         const ability = ship.stats.abilities.find((a: CommonShipAbility) => a.name === abilityName);
         if (ability) {
@@ -2147,10 +2195,10 @@ export class ShipHangarManager
       // Parse shipId and ability name from compound key
       const [shipId, abilityName] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
-      if (ship && ship.stats?.abilities) {
+      if (ship?.stats?.abilities) {
         // Ensure stats and abilities exist
         const ability = ship.stats.abilities.find((a: CommonShipAbility) => a.name === abilityName);
-        if (ability && ability.effect) {
+        if (ability?.effect) {
           // Check if effect exists
           ability.effect.cooldown = 0; // Reset cooldown
         }
@@ -2237,11 +2285,8 @@ export class ShipHangarManager
         }
         break;
       case 'debuff':
-        if (effect.name.includes('shield')) {
-          // Check if stats exists before modifying
-          if (ship.stats) {
-            ship.stats.shield *= 1 - effect.magnitude;
-          }
+        if (effect.name.includes('shield') && ship.stats?.shield) {
+          ship.stats.shield *= 1 - effect.magnitude;
         }
         break;
       case 'status':
@@ -2282,11 +2327,8 @@ export class ShipHangarManager
         }
         break;
       case 'debuff':
-        if (effect.name.includes('shield')) {
-          // Check if stats exists before modifying
-          if (ship.stats) {
-            ship.stats.shield /= 1 - effect.magnitude;
-          }
+        if (effect.name.includes('shield') && ship.stats) {
+              ship.stats.shield /= 1 - effect.magnitude;
         }
         break;
     }
@@ -2347,7 +2389,7 @@ export class ShipHangarManager
         result.push({
           type: 'tech',
           name: tech,
-          met: this.techTreeInstance?.getNode(tech)?.unlocked || false,
+          met: this.techTreeInstance?.getNode(tech)?.unlocked ?? false,
         });
       });
     }
@@ -2417,7 +2459,13 @@ export class ShipHangarManager
       return null;
     }
 
-    const baseStats = blueprint.baseStats;
+    const baseStats = blueprint.baseStats ?? {
+      hull: 100,
+      shield: 50,
+      energy: 100,
+      speed: 100,
+      cargo: 100,
+    };
     const mobilityStats = {
       // Define mobility stats based on blueprint or defaults
       speed: baseStats.speed ?? 100,
@@ -2429,7 +2477,7 @@ export class ShipHangarManager
       id: crypto.randomUUID(),
       name: `${blueprint.name} #${this.getDockedShips().length + 1}`,
       status: ShipStatus.READY,
-      category: blueprint.category,
+      category: this.convertPlayerCategoryToShipCategory(blueprint.category),
       stats: {
         // Use hull for health
         maxHealth: baseStats.hull ?? 100,
@@ -2449,7 +2497,7 @@ export class ShipHangarManager
         },
         mobility: mobilityStats, // Assign the created mobility object
         weapons: [],
-        abilities: (blueprint.abilities || []).map(ability => ({
+        abilities: (blueprint.abilities ?? []).map(ability => ({
           id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
           name: ability.name,
           description: ability.description,

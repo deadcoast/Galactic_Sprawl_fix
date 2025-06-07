@@ -13,7 +13,9 @@ import {
   MultitabPerformanceLauncher,
 } from '../../components/performance/MultitabPerformanceLauncher';
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+} from '../../services/logging/ErrorLoggingService';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
@@ -74,7 +76,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
     try {
       const savedResults = localStorage.getItem('multitab_performance_results');
       if (savedResults) {
-        setResults(JSON.parse(savedResults));
+        setResults(JSON.parse(savedResults) as ResultSet);
       }
     } catch (e) {
       errorLoggingService.logWarn('Failed to load previous test results:', { error: e });

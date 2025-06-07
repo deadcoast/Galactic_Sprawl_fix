@@ -153,7 +153,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
   let animationConfig: AnimationConfig = { duration: 0 };
   // Track total DOM updates (for detailed metrics reporting)
   let totalDomUpdates = 0;
-  let interpolationMeasurements: Array<{ count: number; duration: number }> = [];
+  let interpolationMeasurements: { count: number; duration: number }[] = [];
 
   const targetFrameDuration = 1000 / targetFps;
 
@@ -164,7 +164,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param name Optional name for the animation
    * @param config Configuration of the animation being profiled
    */
-  function start(id?: string, name?: string, config?: AnimationConfig) {
+  const start = (id?: string, name?: string, config?: AnimationConfig) => {
     if (isRunning) {
       stop();
     }
@@ -197,14 +197,14 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
         }
       }, profileDuration);
     }
-  }
+  };
 
   /**
    * Records metrics for a single animation frame
    *
    * @param frameMetrics Optional metrics to include
    */
-  function recordFrame(frameMetrics?: Partial<AnimationFrameMetrics>) {
+  const recordFrame = (frameMetrics?: Partial<AnimationFrameMetrics>) => {
     if (!isRunning) {
       return;
     }
@@ -225,7 +225,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     frames.push(metrics);
     frameCount++;
     lastFrameTime = now;
-  }
+  };
 
   /**
    * Records DOM update performance
@@ -233,7 +233,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param updateCount Number of elements updated
    * @param duration Time taken for the updates
    */
-  function recordDomUpdates(updateCount: number, duration: number) {
+  const recordDomUpdates = (updateCount: number, duration: number) => {
     if (!isRunning || !trackDomUpdates) {
       return;
     }
@@ -246,7 +246,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       lastFrame.domUpdateCount += updateCount;
       lastFrame.domUpdateTime += duration;
     }
-  }
+  };
 
   /**
    * Records interpolation performance
@@ -254,7 +254,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param count Number of interpolations performed
    * @param duration Time taken for the interpolations
    */
-  function recordInterpolation(count: number, duration: number) {
+  const recordInterpolation = (count: number, duration: number) => {
     if (!isRunning || !trackInterpolation) {
       return;
     }
@@ -267,14 +267,14 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       lastFrame.interpolationCount += count;
       lastFrame.interpolationTime += duration;
     }
-  }
+  };
 
   /**
    * Stops profiling and generates a performance report
    *
    * @returns A performance report for the animation
    */
-  function stop(): AnimationPerformanceReport {
+  const stop = (): AnimationPerformanceReport => {
     if (!isRunning) {
       return createEmptyReport();
     }
@@ -353,12 +353,12 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     }
 
     return report;
-  }
+  };
 
   /**
    * Creates an empty performance report
    */
-  function createEmptyReport(): AnimationPerformanceReport {
+  const createEmptyReport = (): AnimationPerformanceReport => {
     return {
       performanceData: {
         animationId,
@@ -381,7 +381,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recommendations: ['No performance data available.'],
       meetsTargets: false,
     };
-  }
+  };
 
   /**
    * Identifies performance bottlenecks in the animation
@@ -450,7 +450,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
         affectedFrames: frames
           .map((frame, index) => ({ index, duration: frame.frameDuration }))
           .filter(
-            frame => Math.abs(frame.duration - data?.averageFrameDuration) > targetFrameDuration
+            frame => Math.abs(frame.duration - data.averageFrameDuration) > targetFrameDuration
           )
           .map(frame => frame.index),
       });
@@ -477,10 +477,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     bottlenecks: AnimationBottleneck[]
   ): number {
     // Base score from frame success rate (0-50 points)
-    const frameRateScore = data?.frameSuccessRate * 50;
+    const frameRateScore = data.frameSuccessRate * 50;
 
     // Score from actual FPS vs target FPS (0-20 points)
-    const fpsRatio = Math.min(1, data?.actualFps / targetFps);
+    const fpsRatio = Math.min(1, data.actualFps / targetFps);
     const fpsScore = fpsRatio * 20;
 
     // Penalty from bottlenecks (0-30 points)
@@ -509,22 +509,22 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     });
 
     // Add general recommendations based on performance data
-    if (data?.actualFps < targetFps * 0.8) {
+    if (data.actualFps < targetFps * 0.8) {
       recommendations.push('Consider reducing animation complexity or extending duration');
     }
 
-    if (data?.frames.some(f => f.domUpdateCount > 50)) {
+    if (data.frames.some(f => f.domUpdateCount > 50)) {
       recommendations.push('Limit DOM updates per frame to improve performance');
     }
 
-    if (data?.frames.some(f => f.interpolationCount > 100)) {
+    if (data.frames.some(f => f.interpolationCount > 100)) {
       recommendations.push(
         'Reduce the number of interpolations per frame or implement memoization'
       );
     }
 
     // If performance is good, acknowledge it
-    if (data?.frameSuccessRate > 0.95 && data?.actualFps >= targetFps * 0.95) {
+    if (data.frameSuccessRate > 0.95 && data.actualFps >= targetFps * 0.95) {
       recommendations.push('Animation performance is good, no critical issues detected');
     }
 
@@ -537,16 +537,19 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param selection D3 selection to profile
    * @returns The modified selection
    */
-  function wrapSelection<GElement extends Element, Datum, PElement extends Element, PDatum>(
+  const wrapSelection = <GElement extends Element, Datum, PElement extends Element, PDatum>(
     selection: d3.Selection<GElement, Datum, PElement, PDatum>
-  ): d3.Selection<GElement, Datum, PElement, PDatum> {
+  ): d3.Selection<GElement, Datum, PElement, PDatum> => {
     if (!isRunning || !trackDomUpdates) {
       return selection;
     }
 
     // Store the original methods
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalTransition = selection.transition;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalAttr = selection.attr;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalStyle = selection.style;
 
     // Wrap transition method
@@ -595,7 +598,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     };
 
     return selection;
-  }
+  };
 
   /**
    * Creates a wrapped interpolator for performance measurement
@@ -622,7 +625,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
   /**
    * Gets the current profiling status
    */
-  function getStatus() {
+  const getStatus = () => {
     return {
       isRunning,
       frameCount,
@@ -630,13 +633,13 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       currentFps:
         isRunning && frameCount > 0 ? frameCount / ((performance.now() - startTime) / 1000) : 0,
     };
-  }
+  };
 
   // Return the profiler API
   return {
     start,
-    stop,
     recordFrame,
+    stop,
     recordDomUpdates,
     recordInterpolation,
     wrapSelection,
@@ -669,7 +672,7 @@ export function profileAnimationSequence<
 
     // Define animation sequence config interface
     interface AnimationSequenceConfig {
-      transitions?: Array<{ duration?: number }>;
+      transitions?: { duration?: number }[];
       loop?: boolean;
       onComplete?: () => void;
     }
@@ -680,9 +683,8 @@ export function profileAnimationSequence<
       'sequence-' + Date.now(),
       'Animation Sequence',
       // Extract duration from the first transition if available
-      sequenceConfig && sequenceConfig.transitions && sequenceConfig.transitions[0]
-        ? { duration: sequenceConfig.transitions[0].duration ?? 0 }
-        : { duration: 0 }
+      // Use optional chaining
+      { duration: sequenceConfig?.transitions?.[0]?.duration ?? 0 }
     );
 
     // Create a frame tracking wrapper
@@ -704,7 +706,7 @@ export function profileAnimationSequence<
       if (profiler.getStatus().isRunning) {
         profiler.stop();
       }
-    }, config.profileDuration || 10000); // Default to 10 seconds max
+    }, config.profileDuration ?? 10000); // Default to 10 seconds max
 
     // Try to access private property to detect completion
     if (sequenceConfig && !sequenceConfig.loop && sequenceConfig.onComplete) {
@@ -733,9 +735,9 @@ export function formatPerformanceReport(report: AnimationPerformanceReport): str
     `# Animation Performance Report for "${performanceData.animationName}"`,
     ``,
     `## Overview`,
-    `- **Performance Score**: ${performanceScore}/100${performanceScore >= 80 ? ' ✅' : ' ⚠️'}`,
+    `- **Performance Score**: ${performanceScore}/100${performanceScore >= 80 ? ' ' : ' '}`,
     `- **Target FPS**: ${performanceData.targetFps}`,
-    `- **Actual FPS**: ${performanceData.actualFps.toFixed(1)}${performanceData.actualFps >= performanceData.targetFps * 0.95 ? ' ✅' : ' ⚠️'}`,
+    `- **Actual FPS**: ${performanceData.actualFps.toFixed(1)}${performanceData.actualFps >= performanceData.targetFps * 0.95 ? ' ' : ' '}`,
     `- **Duration**: ${performanceData.totalDuration.toFixed(0)}ms`,
     `- **Frame Success Rate**: ${(performanceData.frameSuccessRate * 100).toFixed(1)}%`,
     `- **Dropped Frames**: ${performanceData.droppedFrames} of ${performanceData.frames.length}`,

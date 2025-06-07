@@ -11,13 +11,14 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import {
-  BaseEvent,
-  EventCategory,
-  EventType,
-  getEventTypesByCategory,
-  isValidEventType,
-} from '../../types/events/EventTypes';
+import
+  {
+    BaseEvent,
+    EventCategory,
+    EventType,
+    getEventTypesByCategory,
+    isValidEventType,
+  } from '../../types/events/EventTypes';
 
 /**
  * Type for event listener function that handles events
@@ -186,14 +187,12 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    */
   private removedSubscriptions: Set<SubscriptionId>;
 
-  private handlers: Map<string, Set<EventHandler>> = new Map();
-  private onceHandlers: Map<string, Set<EventHandler>> = new Map();
+  private handlers = new Map<string, Set<EventHandler>>();
+  private onceHandlers = new Map<string, Set<EventHandler>>();
+  private eventFilters = new Map<SubscriptionId, (event: T) => boolean>();
 
   // Map to store pattern-based subscriptions (using regular expressions)
-  private patternSubscriptions: Map<string, Set<Subscription<T>>> = new Map();
-
-  // Store filters for advanced filtering
-  private eventFilters: Map<SubscriptionId, (event: T) => boolean> = new Map();
+  private patternSubscriptions = new Map<string, Set<Subscription<T>>>();
 
   /**
    * Creates a new EventBus instance
@@ -239,7 +238,9 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     // Validate event type if it's not the wildcard
     if (eventType !== '*' && !isValidEventType(eventType)) {
       console.error(`[EventBus] Invalid event type: ${eventType}`);
-      return () => {}; // Return no-op function
+      return () => {
+        // TODO: IMPLEMENT "Return no-op function" PATTERN
+      };
     }
 
     // Create set for this event type if it doesn't exist
@@ -289,7 +290,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     options: SubscriptionOptions = {}
   ): () => void {
     const eventTypes = getEventTypesByCategory(category);
-    const unsubscribeFunctions: Array<() => void> = [];
+    const unsubscribeFunctions: (() => void)[] = [];
 
     // Subscribe to each event type in the category
     for (const eventType of eventTypes) {
@@ -348,8 +349,8 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     this.latestEvents.set(event?.type, event);
 
     // Get all subscriptions for this event type and the wildcard type
-    const specificSubscriptions = this.subscriptions.get(event?.type) || new Set<Subscription<T>>();
-    const wildcardSubscriptions = this.subscriptions.get('*') || new Set<Subscription<T>>();
+    const specificSubscriptions = this.subscriptions.get(event?.type) ?? new Set<Subscription<T>>();
+    const wildcardSubscriptions = this.subscriptions.get('*') ?? new Set<Subscription<T>>();
 
     // Combine and sort subscriptions by priority
     const allSubscriptions = [...specificSubscriptions, ...wildcardSubscriptions].sort(
@@ -409,8 +410,8 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       category: eventName as EventType,
       subCategory: eventName as EventType,
       timestamp: Date.now(),
-      moduleId: (data as { moduleId?: string })?.moduleId || 'unknown',
-      moduleType: (data as { moduleType?: ModuleType })?.moduleType || 'radar',
+      moduleId: (data as { moduleId?: string })?.moduleId ?? 'unknown',
+      moduleType: (data as { moduleType?: ModuleType })?.moduleType ?? 'radar',
       data: data as Record<string, unknown>,
     };
     this.emit(event as T);
@@ -454,7 +455,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    */
   getPerformanceMetrics(eventType: EventType | 'all' = 'all'): EventPerformanceMetrics {
     return (
-      this.metrics.get(eventType) || {
+      this.metrics.get(eventType) ?? {
         eventType,
         emitCount: 0,
         listenerCount: 0,
@@ -785,7 +786,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    * Following context pattern for bulk operations
    */
   subscribeMultiple(
-    eventTypes: Array<EventType | '*'>,
+    eventTypes: (EventType | '*')[],
     listener: EventListener<T>,
     options: SubscriptionOptions = {}
   ): () => void {
@@ -806,7 +807,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   subscribeDebounced(
     eventType: EventType | '*',
     listener: EventListener<T>,
-    debounceMs: number = 100,
+    debounceMs = 100,
     options: SubscriptionOptions = {}
   ): () => void {
     let timeoutId: NodeJS.Timeout | null = null;
@@ -883,13 +884,15 @@ export interface IEventEmitter {
  * @param Base The base class to extend
  * @returns A class that extends the base class with event emitter functionality
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-export function EventEmitterMixin<TBase extends new (...args: unknown[]) => object>(Base: TBase) {
+
+
+export function EventEmitterMixin<TBase extends new ( ...args: any[] ) => object> (
+  Base: TBase
+): new ( ...args: any[] ) => IEventEmitter {
   return class extends Base implements IEventEmitter {
     private eventBus: EventBus = new EventBus();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-    constructor(...args: unknown[]) {
+    constructor(...args: any[]) {
       super(...args);
     }
 
@@ -1014,7 +1017,7 @@ export class TypedEventEmitter<EventMap extends Record<string, unknown>> {
  * interface MyEvents {
  *   'resource:added': { type: ResourceType; amount: number };
  *   'resource:removed': { type: ResourceType; amount: number };
- *   'player:levelup': { level: number; rewards: string[] };
+ *   'player:levelup': { level: number; recombatds: string[] };
  * }
  *
  * // Create a typed event emitter

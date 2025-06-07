@@ -1,5 +1,10 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from './logging/ErrorLoggingService';
 
 /**
  * Metadata for a registered UI component
@@ -209,7 +214,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
 
-    // Forward to error logging service
+    // Forcombatd to error logging service
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       service: 'ComponentRegistryService',
       ...context,

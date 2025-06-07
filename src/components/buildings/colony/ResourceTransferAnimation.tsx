@@ -74,8 +74,8 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
     return () => clearInterval(interval);
   }, [ships]);
 
-  const getResourceColor = (type: string) => {
-    switch (type.toLowerCase()) {
+  const getResourceColor = (type: ResourceType) => {
+    switch (type) {
       case ResourceType.MINERALS:
         return 'rgb(251, 191, 36)'; // amber-400
       case ResourceType.ENERGY:

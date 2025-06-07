@@ -2,10 +2,10 @@ import { Ghost, Skull, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { LostNovaShip } from '../../common/LostNovaShip';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
+import { LostNovaShip } from './LostNovaShip';
 
 interface DarkMatterReaperProps {
   id: string;

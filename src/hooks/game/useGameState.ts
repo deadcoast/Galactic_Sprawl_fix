@@ -11,31 +11,33 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import {
-  GameActionType,
-  selectGameTime,
-  selectIsPaused,
-  selectIsRunning,
-  selectMissions,
-  selectResourceRates,
-  selectResources,
-  selectSectors,
-  selectShips,
-  selectSystems,
-  useGameDispatch,
-  useGameSelector,
-} from '../../contexts/GameContext';
+import { GameEvent } from 'src/types/core/GameTypes';
+import
+  {
+    GameActionType,
+    selectGameTime,
+    selectIsPaused,
+    selectIsRunning,
+    selectMissions,
+    selectResourceRates,
+    selectResources,
+    selectSectors,
+    selectShips,
+    selectSystems,
+    useGameDispatch,
+    useGameSelector,
+  } from '../../contexts/GameContext';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { gameManager } from '../../managers/game/gameManager';
-import { GameEvent } from '../../types/core/GameTypes';
+import { getGameManager } from '../../managers/ManagerRegistry';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import {
-  HookPerformanceConfig,
-  defaultPerformanceConfig,
-  measureComputationTime,
-  measureSelectorTime,
-  trackHookRender,
-} from '../../utils/performance/hookPerformanceMonitor';
+import
+  {
+    HookPerformanceConfig,
+    defaultPerformanceConfig,
+    measureComputationTime,
+    measureSelectorTime,
+    trackHookRender,
+  } from '../../utils/performance/hookPerformanceMonitor';
 
 // Define interfaces for event data types
 interface MissionCompletedEventData {
@@ -44,7 +46,7 @@ interface MissionCompletedEventData {
   sector: string;
   importance: 'low' | 'medium' | 'high';
   xpGained?: number;
-  resourcesFound?: Array<{ type: string; amount: number }>;
+  resourcesFound?: { type: string; amount: number }[];
   anomalyDetails?: {
     type: ResourceType;
     severity: string;
@@ -180,6 +182,9 @@ export function useGameState() {
   // Get dispatch function for actions
   const dispatch = useGameDispatch();
 
+  // Get GameManager instance via registry
+  const gm = getGameManager();
+
   // Action creators with standardized pattern
   const startGame = useCallback(
     () => dispatch({ type: GameActionType.START_GAME, payload: undefined }),
@@ -195,32 +200,41 @@ export function useGameState() {
   );
   const dispatchEvent = useCallback(
     (event: GameEvent) => {
-      gameManager.dispatchEvent(event);
-      dispatch({ type: GameActionType.ADD_EVENT, payload: event });
+      gm.dispatchEvent?.(event);
+      dispatch({
+        type: GameActionType.ADD_EVENT,
+        payload: event as unknown as GameEvent,
+      });
     },
-    [dispatch]
+    [dispatch, gm]
   );
 
   useEffect(() => {
     // Sync game manager state with context
-    const unsubscribe = gameManager.subscribeToGameTime(gameTime => {
+    const unsubscribe = gm.subscribeToGameTime?.(
+      (gameTime: number) => {
+        if (typeof gameTime !== 'number') {
+          console.warn('Invalid game time:', gameTime);
+          return;
+        }
       // Update game time in context
       dispatch({
-        type: GameActionType.UPDATE_GAME_TIME,
-        payload: gameTime,
-      });
-    });
+          type: GameActionType.UPDATE_GAME_TIME,
+          payload: gameTime,
+        });
+      }
+    );
 
     // Listen for game events
-    const unsubscribeEvents = gameManager.addEventListener('*', (event: GameEvent) => {
+    const unsubscribeEvents = gm.addEventListener?.('*', event => {
       dispatch({
         type: GameActionType.ADD_EVENT,
-        payload: event,
+        payload: event as unknown as GameEvent,
       });
     });
 
     // Listen for mission events
-    const unsubscribeMissionEvents = moduleEventBus.subscribe('MISSION_COMPLETED', event => {
+    const unsubscribeMissionEvents = moduleEventBus.subscribe?.('MISSION_COMPLETED', event => {
       if (event?.moduleType === 'radar' && event?.data) {
         if (!isMissionCompletedEventData(event?.data)) {
           console.warn('Invalid mission data format:', event?.data);
@@ -262,7 +276,7 @@ export function useGameState() {
     });
 
     // Listen for sector updates
-    const unsubscribeSectorUpdates = moduleEventBus.subscribe(
+    const unsubscribeSectorUpdates = moduleEventBus.subscribe?.(
       'AUTOMATION_CYCLE_COMPLETE',
       event => {
         if (event?.moduleType === 'radar' && event?.data) {
@@ -290,26 +304,26 @@ export function useGameState() {
     );
 
     // Sync running state
-    if (isRunning && !gameManager.isGameRunning()) {
-      gameManager.start();
+    if (isRunning && !gm.isGameRunning()) {
+      gm.start?.();
     }
 
     // Sync pause state
-    if (isPaused !== gameManager.isGamePaused()) {
+    if (isPaused !== gm.isGamePaused()) {
       if (isPaused) {
-        gameManager.pause();
+        gm.pause?.();
       } else {
-        gameManager.resume();
+        gm.resume?.();
       }
     }
 
     return () => {
-      unsubscribe();
-      unsubscribeEvents();
-      unsubscribeMissionEvents();
-      unsubscribeSectorUpdates();
+      unsubscribe?.();
+      unsubscribeEvents?.();
+      unsubscribeMissionEvents?.();
+      unsubscribeSectorUpdates?.();
     };
-  }, [isRunning, isPaused, missions.statistics, dispatch]);
+  }, [isRunning, isPaused, missions.statistics, dispatch, gameTime, gm]);
 
   // Return the game state with action methods - measure computation time for complex derived state
   return measureComputationTime(

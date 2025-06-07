@@ -1,5 +1,9 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 
 export interface DataPoint {
   id: string;
