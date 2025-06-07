@@ -1,19 +1,19 @@
-import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
-  DAMAGE_BOOST_EFFECT,
-  EXPLOSIVE_EFFECT,
-  GAUSS_EFFECT,
-  PLASMA_EFFECT,
-  SHIELD_FIELD_EFFECT,
-  SPEED_REDUCTION_EFFECT,
-  STEALTH_EFFECT,
+    DAMAGE_BOOST_EFFECT,
+    EXPLOSIVE_EFFECT,
+    GAUSS_EFFECT,
+    PLASMA_EFFECT,
+    SHIELD_FIELD_EFFECT,
+    SPEED_REDUCTION_EFFECT,
+    STEALTH_EFFECT
 } from '../../effects/types_effects/shipEffects';
+import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponInstance,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponStatus,
+    WeaponInstance,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponStatus
 } from '../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -947,4 +947,4 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
       },
     ],
   },
-} as const;
+} as Record<EquatorHorizonShipClass, FactionShipStats>;

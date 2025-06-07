@@ -1,18 +1,18 @@
 import {
-  DAMAGE_BOOST_EFFECT,
-  EXPLOSIVE_EFFECT,
-  GAUSS_EFFECT,
-  PLASMA_EFFECT,
-  SPEED_BOOST_EFFECT,
-  SPEED_REDUCTION_EFFECT,
-  STEALTH_EFFECT,
+    DAMAGE_BOOST_EFFECT,
+    EXPLOSIVE_EFFECT,
+    GAUSS_EFFECT,
+    PLASMA_EFFECT,
+    SPEED_BOOST_EFFECT,
+    SPEED_REDUCTION_EFFECT,
+    STEALTH_EFFECT
 } from '../../effects/types_effects/shipEffects';
 import { FactionShipStats, SpaceRatsShipClass } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponInstance,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponStatus,
+    WeaponInstance,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponStatus
 } from '../../types/weapons/WeaponTypes';
 
 export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
@@ -806,4 +806,4 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
       },
     ],
   },
-} as const;
+} as Record<SpaceRatsShipClass, FactionShipStats>;

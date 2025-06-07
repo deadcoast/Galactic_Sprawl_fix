@@ -1,11 +1,11 @@
 import { BaseStatus, Position, Velocity } from '../../types/core/GameTypes';
 import {
-  CommonShip as Ship,
-  CommonShipDisplayStats as ShipDisplayStats,
-  CommonShipStats as ShipStats,
+    CommonShip as Ship,
+    CommonShipDisplayStats as ShipDisplayStats,
+    CommonShipStats as ShipStats
 } from '../../types/ships/CommonShipTypes';
-import { WeaponCategory, WeaponInstance, WeaponState } from '../../types/weapons/WeaponTypes';
 import { Ship as ShipUnion } from '../../types/ships/ShipTypes';
+import { WeaponCategory, WeaponInstance, WeaponState } from '../../types/weapons/WeaponTypes';
 
 // Status Conversions
 export function normalizeShipStatus(status: string): BaseStatus {
@@ -181,7 +181,7 @@ export function calculateTotalCargoUsed(ship: ShipUnion | null): number {
 
   // Directly use ship.cargo.resources, known to be an array here
   // Cast explicitly within reduce to ensure correct type inference for 'resource'
-  return (ship.cargo.resources as CargoResource[]).reduce(
+  return (ship?.cargo.resources as CargoResource[]).reduce(
     (total: number, resource: CargoResource) => {
       // Explicitly check if amount is a number before adding
       const amount = resource?.amount;

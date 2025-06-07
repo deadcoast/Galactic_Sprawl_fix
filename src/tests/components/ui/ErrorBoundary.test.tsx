@@ -7,12 +7,12 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../../../components/ui/errors/ErrorBoundary';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/logging/ErrorLoggingService';import { renderWithProviders, screen } from '../../utils/test-utils';
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../../services/logging/ErrorLoggingService';
+import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
 vi.mock('../../../services/ErrorLoggingService', () => ({
@@ -97,7 +97,7 @@ describe('ErrorBoundary Component', () => {
     // Check that error was logged
     expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
     expect(errorLoggingService.logError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+      expect.any(Error),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
       expect.objectContaining({
@@ -126,9 +126,9 @@ describe('ErrorBoundary Component', () => {
     // Check that onError was called
     expect(handleError).toHaveBeenCalledTimes(1);
     expect(handleError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+      expect.any(Error),
       expect.objectContaining({
-        componentStack: expect.unknown(String),
+        componentStack: expect.any(String),
       })
     );
 

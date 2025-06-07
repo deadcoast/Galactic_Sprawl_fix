@@ -9,13 +9,12 @@
 // Remove unused import, resolving the linter error
 // import { ResourceType as StringResourceType } from '../../types/resources/LegacyResourceTypes'; // Assuming legacy types are here
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import
-  {
+import {
     ensureEnumResourceType,
     ensureStringResourceType,
     isValidStringType,
-    toEnumResourceType,
-  } from './ResourceTypeConverter'; // Import needed converters
+    toEnumResourceType
+} from './ResourceTypeConverter'; // Import needed converters
 
 // Keep migration-specific functions like getMigrationMapping, findEnumResourceType, generateMigrationGuide
 // Keep data transformation helpers if deemed necessary for migration specifically
@@ -288,11 +287,11 @@ export function migrateArrayResourceTypes<T extends Record<string, unknown>>(
     if (
       propertyName in item &&
       typeof item[propertyName] === 'string' &&
-      isValidStringType(item[propertyName])
+      isValidStringType(String(item[propertyName]))
     ) {
       return {
         ...item,
-        [propertyName]: toEnumResourceType(item[propertyName]),
+        [propertyName]: toEnumResourceType(String(item[propertyName])),
       };
     }
     return item;

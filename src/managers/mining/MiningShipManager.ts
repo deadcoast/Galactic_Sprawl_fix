@@ -121,9 +121,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
 
   // Revert to the previous getInstance implementation
   public static getInstance(): MiningShipManager {
-    if (!MiningShipManager._instance) {
-      MiningShipManager._instance = new MiningShipManager();
-    }
+    MiningShipManager._instance ??= new MiningShipManager();
     return MiningShipManager._instance;
   }
 

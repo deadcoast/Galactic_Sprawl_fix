@@ -1,14 +1,14 @@
 import {
-  EquatorHorizonConfig,
-  EquatorHorizonShipClass,
-  FactionBehaviorType,
-  FactionConfig,
-  FactionId,
-  FactionShipClass,
-  LostNovaConfig,
-  LostNovaShipClass,
-  SpaceRatsConfig,
-  SpaceRatsShipClass,
+    EquatorHorizonConfig,
+    EquatorHorizonShipClass,
+    FactionBehaviorType,
+    FactionConfig,
+    FactionId,
+    FactionShipClass,
+    LostNovaConfig,
+    LostNovaShipClass,
+    SpaceRatsConfig,
+    SpaceRatsShipClass
 } from '../../types/ships/FactionShipTypes';
 
 export const spaceRatsConfig: SpaceRatsConfig = {
@@ -43,11 +43,11 @@ export const spaceRatsConfig: SpaceRatsConfig = {
   spawnConditions: {
     minThreatLevel: 0, // Always hostile
     maxShipsPerFleet: 8,
-    territoryPreference: ['asteroid-fields', 'trade-routes', 'mining-sectors'],
+    territoryPreference: ['asteroid-fields', 'trade-routes', 'mining-sectors'] as string[],
   },
   pirateFleetComposition: {
     flagshipType: 'ratKing',
-    supportShips: ['asteroidMarauder', 'rogueNebula', 'darkSectorCorsair', 'wailingWreck'],
+    supportShips: ['asteroidMarauder', 'rogueNebula', 'darkSectorCorsair', 'wailingWreck'] as FactionShipClass[],
   },
 } as const;
 
@@ -242,11 +242,11 @@ export const lostNovaConfig: LostNovaConfig = {
   spawnConditions: {
     minThreatLevel: 0.3, // Only appears when somewhat threatened
     maxShipsPerFleet: 6,
-    territoryPreference: ['dark-sectors', 'nebulae', 'void-regions'],
+    territoryPreference: ['dark-sectors', 'nebulae', 'void-regions'] as string[],
   },
   forbiddenTech: {
     darkMatterLevel: 3,
-    geneticModifications: ['neural-enhancement', 'void-adaptation', 'temporal-shifting'],
+    geneticModifications: ['neural-enhancement', 'void-adaptation', 'temporal-shifting'] as string[],
   },
 } as const;
 
@@ -281,7 +281,7 @@ export const equatorHorizonConfig: EquatorHorizonConfig = {
   spawnConditions: {
     minThreatLevel: 0.7, // Only appears when player is powerful
     maxShipsPerFleet: 10,
-    territoryPreference: ['ancient-ruins', 'stellar-anomalies', 'temporal-rifts'],
+    territoryPreference: ['ancient-ruins', 'stellar-anomalies', 'temporal-rifts'] as string[],
   },
   balanceThresholds: {
     playerExpansion: 0.7, // 70% of available systems
@@ -344,7 +344,7 @@ export const factionBehaviors = [
   'hit-and-run',
   'stealth',
   'balance',
-] as const satisfies FactionBehaviorType[];
+] as FactionBehaviorType[];
 
 export const factionConfigs: Record<FactionId, FactionConfig> = {
   'space-rats': spaceRatsConfig,
@@ -370,7 +370,7 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
     spawnConditions: {
       minThreatLevel: 0,
       maxShipsPerFleet: 10,
-      territoryPreference: ['player-systems', 'core-sectors', 'resource-rich'],
+      territoryPreference: ['player-systems', 'core-sectors', 'resource-rich'] as string[],
     },
   },
   enemy: {
@@ -393,7 +393,7 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
     spawnConditions: {
       minThreatLevel: 0,
       maxShipsPerFleet: 8,
-      territoryPreference: ['border-systems', 'strategic-points', 'resource-rich'],
+              territoryPreference: ['border-systems', 'strategic-points', 'resource-rich'] as string[],
     },
   },
   neutral: {
@@ -416,7 +416,7 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
     spawnConditions: {
       minThreatLevel: 0.5,
       maxShipsPerFleet: 5,
-      territoryPreference: ['neutral-zones', 'trade-routes', 'peaceful-sectors'],
+              territoryPreference: ['neutral-zones', 'trade-routes', 'peaceful-sectors'] as string[],
     },
   },
   ally: {
@@ -439,7 +439,7 @@ export const factionConfigs: Record<FactionId, FactionConfig> = {
     spawnConditions: {
       minThreatLevel: 0.2,
       maxShipsPerFleet: 7,
-      territoryPreference: ['allied-systems', 'border-defense', 'joint-operations'],
+              territoryPreference: ['allied-systems', 'border-defense', 'joint-operations'] as string[],
     },
   },
 } as const;

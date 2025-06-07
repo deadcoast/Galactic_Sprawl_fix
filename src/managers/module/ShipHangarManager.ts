@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
+import { ShipBlueprint, SHIP_BLUEPRINTS } from '../../config/ShipBlueprints';
 import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
@@ -7,20 +7,18 @@ import
   {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
+    ErrorType
   } from '../../services/logging/ErrorLoggingService';
 import
   {
-    ShipHangarManager as IShipHangarManager,
     ShipBuildQueueItem,
     ShipBuildRequirements,
     ShipHangarBay,
-    ShipHangarEvents,
-    ShipHangarState,
+    ShipHangarEvents, ShipHangarManager as IShipHangarManager, ShipHangarState,
     ShipUpgradeInfo,
     ShipUpgradeRequirement,
     ShipUpgradeStats,
-    ShipVisualUpgrade,
+    ShipVisualUpgrade
   } from '../../types/buildings/ShipHangarTypes';
 import { Effect, Tier } from '../../types/core/GameTypes';
 import { Officer } from '../../types/officers/OfficerTypes';
@@ -31,7 +29,7 @@ import
     CommonShipAbility,
     CommonShipStats,
     ShipCategory,
-    ShipStatus,
+    ShipStatus
   } from '../../types/ships/CommonShipTypes';
 import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShipTypes';
 import
@@ -44,7 +42,7 @@ import
     WeaponMountSize,
     WeaponState,
     WeaponStats,
-    WeaponStatus,
+    WeaponStatus
   } from '../../types/weapons/WeaponTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { TechTreeManager } from '../game/techTreeManager';
@@ -547,13 +545,8 @@ export class ShipHangarManager
     };
 
     // Add tech tree requirements based on tier and category
-    if (!requirements.prerequisites) {
-      requirements.prerequisites = {};
-    }
-
-    if (!requirements.prerequisites.technology) {
-      requirements.prerequisites.technology = [];
-    }
+    requirements.prerequisites ??= {};
+    requirements.prerequisites.technology ??= [];
 
     // Add base tech requirements based on tier
     switch (blueprint.tier) {
@@ -1242,7 +1235,7 @@ export class ShipHangarManager
     }
 
     // Find the ship blueprint
-    const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === this.getShipClass(targetShip));
+    const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === this.getShipClass(targetShip!));
     if (!blueprint) {
       return undefined;
     }
@@ -1677,7 +1670,7 @@ export class ShipHangarManager
     }
 
     // Get ship blueprint
-    const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === this.getShipClass(targetShip));
+    const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === this.getShipClass(targetShip!));
     if (!blueprint) {
       return [];
     }
