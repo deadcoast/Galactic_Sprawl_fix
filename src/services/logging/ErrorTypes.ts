@@ -26,6 +26,7 @@ export enum ErrorType {
   USER_INTERFACE = 'ui',
   UI = 'ui', // Alias for USER_INTERFACE, kept for backward compatibility
   UI_WARNING = 'ui_warning',
+  WORKER = 'worker', // For web worker related errors
   // Add more specific types as needed
 }
 

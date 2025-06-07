@@ -1,12 +1,13 @@
 import { Position, Tier, Velocity } from '../core/GameTypes';
 import { WeaponMount } from '../weapons/WeaponTypes';
-import {
+import
+  {
     CommonShipCapabilities,
     CommonShipStats,
     ShipCargo,
     ShipCategory,
     ShipStatus,
-} from './CommonShipTypes';
+  } from './CommonShipTypes';
 import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
 import { PlayerShipClass } from './PlayerShipTypes';
 
@@ -56,7 +57,7 @@ export interface Ship {
 // --- DETAILS INTERFACES --- Keep these minimal with only category-specific fields
 
 export interface CombatShipDetails {
-  category: ShipCategory.combat | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER;
+  category: ShipCategory.COMBAT | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER;
   class?: FactionShipClass | PlayerShipClass;
   combatDetails?: CombatStatsDetails; // Update reference to renamed interface
   tactics?: FactionBehaviorConfig;
@@ -173,7 +174,7 @@ export function isWeaponMountWithWeapon(data: WeaponDataSource): data is WeaponM
 export function isCombatShip(ship: Ship): ship is Ship & { details: CombatShipDetails } {
   return (
     ship.details !== null && (
-      ship.details.category === ShipCategory.combat ||
+      ship.details.category === ShipCategory.COMBAT ||
       ship.details.category === ShipCategory.FIGHTER ||
       ship.details.category === ShipCategory.CRUISER ||
       ship.details.category === ShipCategory.BATTLESHIP ||
@@ -286,4 +287,3 @@ export type ReconShip = Ship & {
   details: ReconShipDetails;
   [key: string]: unknown;
 };
-// -----------------------------------------------------------------------------

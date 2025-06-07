@@ -9,8 +9,7 @@ import { ResourceType } from '../../types/resources/ResourceTypes';
 import { CommonShipAbility, CommonShipStats } from '../../types/ships/CommonShipTypes';
 import { FactionId, FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import { PlayerShipClass } from '../../types/ships/PlayerShipTypes';
-import
-  {
+import {
     BaseShip,
     CombatShip,
     DetailedShipStats,
@@ -23,9 +22,8 @@ import
     ShipCategory,
     ShipStatus,
     WeaponDataSource,
-  } from '../../types/ships/ShipTypes';
-import
-  {
+} from '../../types/ships/ShipTypes';
+import {
     WeaponCategory,
     WeaponConfig,
     WeaponInstance,
@@ -34,7 +32,7 @@ import
     WeaponMountSize,
     WeaponState,
     WeaponStats,
-  } from '../../types/weapons/WeaponTypes';
+} from '../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../utils/weapons/weaponEffectUtils';
 
 // Export the interface
@@ -125,7 +123,7 @@ export class ShipFactory {
     let ship: Ship;
 
     switch (baseShip.category) {
-      case ShipCategory.combat:
+      case ShipCategory.COMBAT:
       case ShipCategory.FIGHTER:
       case ShipCategory.CRUISER:
       case ShipCategory.BATTLESHIP:
@@ -266,10 +264,18 @@ export class ShipFactory {
       shieldPenetration: factionStats?.shieldPenetration ?? 0.1,
     };
 
+    // Safely extract and validate formation data
+    const formationData = factionStats?.formation;
+    const validatedFormation = this.isValidFormation(formationData) ? formationData : undefined;
+
+    // Safely extract and validate combat stats data
+    const combatStatsData = factionStats?.combatStats;
+    const validatedCombatStats = this.isValidCombatStats(combatStatsData) ? combatStatsData : undefined;
+
     const combatShip: CombatShip = {
       ...baseShip,
       category: baseShip.category as
-        | ShipCategory.combat
+        | ShipCategory.COMBAT
         | ShipCategory.FIGHTER
         | ShipCategory.CRUISER
         | ShipCategory.BATTLESHIP
@@ -278,11 +284,11 @@ export class ShipFactory {
       stats: detailedStats,
       experience: baseShip.experience,
       tactics: factionStats?.tactics,
-      formation: this.isValidFormation(factionStats?.formation) ? (factionStats.formation as Required<NonNullable<CombatShip['formation']>>) : undefined,
+      formation: validatedFormation,
       specialAbility: factionStats?.specialAbility,
       techBonuses: factionStats?.techBonuses,
-      combatStats: this.isValidCombatStats(factionStats?.combatStats) ? (factionStats.combatStats as Required<NonNullable<CombatShip['combatStats']>>) : undefined,
-      details: { category: baseShip.category as ShipCategory.combat | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER },
+      combatStats: validatedCombatStats,
+      details: { category: baseShip.category as ShipCategory.COMBAT | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER },
     };
     return combatShip;
   }

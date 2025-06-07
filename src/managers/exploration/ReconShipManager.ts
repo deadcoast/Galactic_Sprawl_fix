@@ -9,27 +9,26 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
-import { ReconShip, ShipCategory, ShipStatus } from '../../types/ships/ShipTypes';
 import { ExplorationTask } from '../../types/exploration/ExplorationTypes';
+import { ReconShip, ShipCategory, ShipStatus } from '../../types/ships/ShipTypes';
 
 /**
- * Define Event Map for this manager using string literals
+ * Define Event Map for this manager - data types for TypedEventEmitter
  */
 export interface ReconShipManagerEvents {
-  EXPLORATION_SHIP_REGISTERED: (payload: { shipId: string; ship: ReconShip }) => void;
-  EXPLORATION_SHIP_UNREGISTERED: (payload: { shipId: string }) => void;
-  STATUS_CHANGED: (payload: { shipId: string; status: ShipStatus; ship: ReconShip }) => void;
-  MODULE_UPDATED: (payload: { shipId: string; sectorId?: string; ship: ReconShip }) => void;
-  EXPLORATION_TASK_ASSIGNED: (payload: { shipId: string; task: ExplorationTask }) => void;
-  EXPLORATION_TASK_COMPLETED: (payload: { shipId: string; task: ExplorationTask }) => void;
-  EXPLORATION_TASK_PROGRESS: (payload: { shipId: string; task: ExplorationTask; progress: number }) => void;
-  EXPLORATION_POSITION_UPDATED: (payload: {
+  EXPLORATION_SHIP_REGISTERED: { shipId: string; ship: ReconShip };
+  EXPLORATION_SHIP_UNREGISTERED: { shipId: string };
+  STATUS_CHANGED: { shipId: string; status: ShipStatus; ship: ReconShip };
+  MODULE_UPDATED: { shipId: string; sectorId?: string; ship: ReconShip };
+  EXPLORATION_TASK_ASSIGNED: { shipId: string; task: ExplorationTask };
+  EXPLORATION_TASK_COMPLETED: { shipId: string; task: ExplorationTask };
+  EXPLORATION_TASK_PROGRESS: { shipId: string; task: ExplorationTask; progress: number };
+  EXPLORATION_POSITION_UPDATED: {
     shipId: string;
     position: Position;
     ship: ReconShip;
-  }) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: (...args: any[]) => void; // Restore index signature for TypedEventEmitter compatibility, using any[]
+  };
+  [key: string]: unknown; // Index signature for TypedEventEmitter compatibility
 }
 
 /**
@@ -86,8 +85,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       status,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('STATUS_CHANGED', payload as any);
+    this.emit('STATUS_CHANGED', payload);
   }
 
   /**
@@ -105,8 +103,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       sectorId,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('MODULE_UPDATED', payload as any);
+    this.emit('MODULE_UPDATED', payload);
     return true;
   }
 
@@ -123,8 +120,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       shipId,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('MODULE_UPDATED', payload as any);
+    this.emit('MODULE_UPDATED', payload);
     return true;
   }
 
@@ -140,8 +136,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       shipId: ship.id,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('EXPLORATION_SHIP_REGISTERED', payload as any);
+    this.emit('EXPLORATION_SHIP_REGISTERED', payload);
   }
 
   public unregisterShip(shipId: string): void {
@@ -151,8 +146,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       const payload = {
         shipId,
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-      this.emit('EXPLORATION_SHIP_UNREGISTERED', payload as any);
+      this.emit('EXPLORATION_SHIP_UNREGISTERED', payload);
     }
   }
 
@@ -183,15 +177,13 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       shipId: ship.id,
       task,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('EXPLORATION_TASK_ASSIGNED', taskPayload as any);
+    this.emit('EXPLORATION_TASK_ASSIGNED', taskPayload);
     const statusPayload = {
       shipId,
       status: ship.status,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('STATUS_CHANGED', statusPayload as any);
+    this.emit('STATUS_CHANGED', statusPayload);
   }
 
   public update(deltaTime: number): void {
@@ -212,15 +204,13 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
               status: completedShip.status,
               ship: completedShip,
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-            this.emit('STATUS_CHANGED', statusPayload as any);
+            this.emit('STATUS_CHANGED', statusPayload);
           }
           const taskPayload = {
             shipId: task.assignedShipId,
             task,
           };
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-          this.emit('EXPLORATION_TASK_COMPLETED', taskPayload as any);
+          this.emit('EXPLORATION_TASK_COMPLETED', taskPayload);
           this.tasks.delete(taskId);
         } else {
           const progressShip = this.ships.get(task.assignedShipId);
@@ -230,8 +220,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
               task,
               progress: task.progress,
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-            this.emit('EXPLORATION_TASK_PROGRESS', progressPayload as any);
+            this.emit('EXPLORATION_TASK_PROGRESS', progressPayload);
           }
         }
       } else if (task.status === 'queued') {
@@ -244,8 +233,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
             status: assignedShip.status,
             ship: assignedShip,
           };
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-          this.emit('STATUS_CHANGED', statusPayload as any);
+          this.emit('STATUS_CHANGED', statusPayload);
         }
       }
     }
@@ -262,8 +250,7 @@ export class ReconShipManagerImpl extends TypedEventEmitter<ReconShipManagerEven
       position,
       ship,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    this.emit('EXPLORATION_POSITION_UPDATED', payload as any);
+    this.emit('EXPLORATION_POSITION_UPDATED', payload);
   }
 
   public dispose(): void {

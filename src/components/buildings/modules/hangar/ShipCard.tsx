@@ -62,7 +62,7 @@ const getStatusColor = (status: ShipStatus): string => {
 const getCategoryIcon = (category: ShipCategory): JSX.Element => {
   const iconProps = { size: 18, className: 'mr-2' };
   switch (category) {
-    case ShipCategory.combat:
+    case ShipCategory.COMBAT:
     case ShipCategory.FIGHTER:
     case ShipCategory.CRUISER:
     case ShipCategory.BATTLESHIP:
@@ -135,19 +135,19 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
 
         <div className="mt-3 flex justify-around gap-2" style={{ fontSize: '0.8rem' }}>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Speed
             </Typography>
             <Typography variant="body2">{ship.stats?.speed?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Shield
             </Typography>
             <Typography variant="body2">{ship.stats?.maxShield?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Armor
             </Typography>
             <Typography variant="body2">

@@ -54,7 +54,7 @@ export const mapShipToShipCardData = (ship: Ship): ShipCardData => {
       id: ship?.id ?? 'unknown',
       name: ship?.name ?? 'Unknown Ship',
       status: ship?.status ?? ShipStatus.IDLE, // Default status using enum
-      category: ship?.category ?? ShipCategory.combat, // Default category using enum
+      category: ship?.category ?? ShipCategory.COMBAT, // Default category using enum
       stats: null, // Indicate stats are missing
     };
   }

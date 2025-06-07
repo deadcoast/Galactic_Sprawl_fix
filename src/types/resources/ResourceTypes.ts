@@ -52,7 +52,7 @@ export enum ResourceRarity {
   UNCOMMON = 'uncommon',
   RARE = 'rare',
   VERY_RARE = 'very_rare',
-  EXOTIC = ResourceType.EXOTIC,
+  EXOTIC = 'EXOTIC',
 }
 
 /**

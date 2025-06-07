@@ -370,7 +370,7 @@ export interface MockEventBus<E extends BaseEvent = BaseEvent> extends EventBus<
 /**
  * Type-safe event creator - ensures proper event structure
  */
-export function createEvent<T extends string, D>(type: T, data?: D): TypedEvent<T, D> {
+export function createEvent<T extends string, D>(type: T, data?: D): TypedEvent<T, D | undefined> {
   return {
     type,
     timestamp: Date.now(),
@@ -388,7 +388,7 @@ export function getEventData<T>(event: BaseEvent): T | undefined {
 /**
  * Event type guard - checks if an event is of a specific type
  */
-export function isEventOfType<T extends string>(event: BaseEvent, type: T): event is TypedEvent<T> {
+export function isEventOfType<T extends string>(event: BaseEvent, type: T): event is BaseEvent & TypedEvent<T, unknown> {
   return event?.type === type;
 }
 

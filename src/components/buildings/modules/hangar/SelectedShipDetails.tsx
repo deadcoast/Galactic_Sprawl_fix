@@ -4,7 +4,7 @@ import
     Button,
     Divider,
     Paper,
-    Typography,
+    Typography
   } from '@mui/material';
 import React, { ReactElement } from 'react';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
@@ -12,7 +12,7 @@ import { formatResourceAmount as formatNumber } from '../../../../types/resource
 import
   {
     ShipCategory,
-    ShipStatus,
+    ShipStatus
   } from '../../../../types/ships/ShipTypes';
 
 // --- Define the simplified data interface ---
@@ -79,7 +79,7 @@ const ShipSpecificDetailsRenderer: React.FC<ShipSpecificDetailsRendererProps> = 
   // Use direct category checks instead of type guards
   const isCombatCategory = (cat: ShipCategory): boolean => {
     switch (cat) {
-      case ShipCategory.combat:
+      case ShipCategory.COMBAT:
       case ShipCategory.FIGHTER:
       case ShipCategory.CRUISER:
       case ShipCategory.BATTLESHIP:
@@ -139,7 +139,7 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
   // Predicate helper – keeps union evaluation simple for TypeScript
   const isActionCategory = (category: ShipCategory): boolean => {
     switch (category) {
-      case ShipCategory.combat:
+      case ShipCategory.COMBAT:
       case ShipCategory.FIGHTER:
       case ShipCategory.CRUISER:
       case ShipCategory.BATTLESHIP:
@@ -191,7 +191,7 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
         Cargo: {formatNumber(totalCargoUsed)} / {formatNumber(ship.cargo?.capacity ?? 0)}
       </Typography>
       {ship.assignedOfficers && ship.assignedOfficers.length > 0 && (
-        <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+        <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
           Officer: {ship.assignedOfficers[0]?.id ?? 'Unknown ID'} (Details TBD)
         </Typography>
       )}

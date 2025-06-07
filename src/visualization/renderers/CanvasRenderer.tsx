@@ -1,11 +1,12 @@
-import {
-  ChartAxes,
-  ChartData,
-  ChartDataPoint,
-  ChartOptions,
-  ChartRenderer,
-  ChartType,
-} from '../Chart';
+import
+  {
+    ChartAxes,
+    ChartData,
+    ChartDataPoint,
+    ChartOptions,
+    ChartRenderer,
+    ChartType
+  } from '../Chart';
 
 // Define local types that extend the base chart interfaces
 interface ChartPoint extends ChartDataPoint {
@@ -154,7 +155,7 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Set background color
       const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
-      this.ctx.fillStyle = options?.backgroundColor || themeColors.backgroundColor;
+      this.ctx.fillStyle = options?.backgroundColor ?? themeColors.backgroundColor;
       if (this.ctx.fillStyle !== 'transparent') {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       }
@@ -189,7 +190,7 @@ export class CanvasRenderer implements ChartRenderer {
           this.renderHeatmapChart(data, options, chartArea);
           break;
         default:
-          console.warn(`Unsupported chart type: ${type}`);
+          console.warn(`Unsupported chart type: ${type as string}`);
       }
 
       // Render legend if enabled
@@ -353,7 +354,7 @@ export class CanvasRenderer implements ChartRenderer {
         ctx.lineTo(points[i].x, points[i].y);
       }
 
-      ctx.strokeStyle = dataset.color || this.getDefaultColor(datasetIndex);
+      ctx.strokeStyle = dataset.color ?? this.getDefaultColor(datasetIndex);
       ctx.lineWidth = 2;
       ctx.stroke();
     });
@@ -368,7 +369,7 @@ export class CanvasRenderer implements ChartRenderer {
     }
 
     const { datasets } = data;
-    const axes = options?.axes || {
+    const axes = options?.axes ?? {
       x: { type: ChartScaleType.Linear as const },
       y: { type: ChartScaleType.Linear as const },
     };
@@ -402,7 +403,7 @@ export class CanvasRenderer implements ChartRenderer {
         const y = this.mapValueToPixel(yValue, scales.y, chartArea.bottom, chartArea.top, true);
 
         if (this.ctx) {
-          const fillStyle = dataset.color || this.getDefaultColor(datasetIndex);
+          const fillStyle = dataset.color ?? this.getDefaultColor(datasetIndex);
           this.setCanvasStyle(fillStyle);
           this.ctx.fillRect(x, Math.min(y, yZero), barWidth, Math.abs(y - yZero));
         }
@@ -445,12 +446,12 @@ export class CanvasRenderer implements ChartRenderer {
 
         const cx = this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right);
         const cy = this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true);
-        const radius = (point as ChartPoint).radius || 4;
+        const radius = (point as ChartPoint).radius ?? 4;
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.fillStyle =
-          (point as ChartPoint).color || dataset.color || this.getDefaultColor(datasetIndex);
+          (point as ChartPoint).color ?? dataset.color ?? this.getDefaultColor(datasetIndex);
         ctx.fill();
       });
     });
@@ -465,7 +466,7 @@ export class CanvasRenderer implements ChartRenderer {
     }
 
     const { datasets } = data;
-    const axes = options?.axes || {
+    const axes = options?.axes ?? {
       x: { type: ChartScaleType.Linear as const },
       y: { type: ChartScaleType.Linear as const },
     };
@@ -520,7 +521,7 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Create gradient fill
       const gradient = this.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-      const color = dataset.color || this.getDefaultColor(datasetIndex);
+      const color = dataset.color ?? this.getDefaultColor(datasetIndex);
       gradient.addColorStop(0, this.hexToRgba(color, 0.6));
       gradient.addColorStop(1, this.hexToRgba(color, 0.1));
 
@@ -571,7 +572,7 @@ export class CanvasRenderer implements ChartRenderer {
         this.ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         this.ctx.closePath();
 
-        const fillStyle = (point as ChartPoint).color || this.getDefaultColor(i);
+        const fillStyle = (point as ChartPoint).color ?? this.getDefaultColor(i);
         this.setCanvasStyle(fillStyle);
         this.ctx.fill();
 
@@ -628,16 +629,16 @@ export class CanvasRenderer implements ChartRenderer {
     const angleStep = (Math.PI * 2) / labels.length;
 
     // Draw background grid (circles and lines)
-    this.ctx!.strokeStyle =
+    this.ctx.strokeStyle =
       options?.theme === 'dark' ? this.theme.dark.gridColor : this.theme.light.gridColor;
-    this.ctx!.lineWidth = 0.5;
+    this.ctx.lineWidth = 0.5;
 
     // Draw circular grid lines
     for (let i = 1; i <= 5; i++) {
       const gridRadius = radius * (i / 5);
-      this.ctx!.beginPath();
-      this.ctx!.arc(centerX, centerY, gridRadius, 0, Math.PI * 2);
-      this.ctx!.stroke();
+      this.ctx.beginPath();
+      this.ctx.arc(centerX, centerY, gridRadius, 0, Math.PI * 2);
+      this.ctx.stroke();
     }
 
     // Draw radial grid lines
@@ -697,7 +698,7 @@ export class CanvasRenderer implements ChartRenderer {
 
       this.ctx!.closePath();
 
-      const color = dataset.color || this.getDefaultColor(datasetIndex);
+      const color = dataset.color ?? this.getDefaultColor(datasetIndex);
       this.ctx!.fillStyle = this.hexToRgba(color, 0.2);
       this.ctx!.fill();
 
@@ -729,7 +730,7 @@ export class CanvasRenderer implements ChartRenderer {
       return;
     }
 
-    const axes = options?.axes || {
+    const axes = options?.axes ?? {
       x: { type: ChartScaleType.Category as const },
       y: { type: ChartScaleType.Category as const },
     };
@@ -765,7 +766,7 @@ export class CanvasRenderer implements ChartRenderer {
     datasets.forEach(dataset => {
       dataset.data?.forEach(point => {
         const pointData = point as ChartPoint;
-        const value = pointData.value !== undefined ? pointData.value : pointData.y;
+        const value = pointData.value ?? pointData.y;
         if (typeof value === 'number') {
           minValue = Math.min(minValue, value);
           maxValue = Math.max(maxValue, value);
@@ -793,7 +794,7 @@ export class CanvasRenderer implements ChartRenderer {
           return;
         }
 
-        const value = pointData.value !== undefined ? pointData.value : pointData.y;
+        const value = pointData.value ?? pointData.y;
         if (typeof value !== 'number') {
           return;
         }
@@ -850,7 +851,7 @@ export class CanvasRenderer implements ChartRenderer {
     ctx.stroke();
 
     // Draw x-axis ticks and labels
-    const xTickCount = axes.x.tickCount || 5;
+    const xTickCount = axes.x.tickCount ?? 5;
     const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
     for (let i = 0; i < xTickCount; i++) {
@@ -876,7 +877,7 @@ export class CanvasRenderer implements ChartRenderer {
     }
 
     // Draw y-axis ticks and labels
-    const yTickCount = axes.y.tickCount || 5;
+    const yTickCount = axes.y.tickCount ?? 5;
     const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
     for (let i = 0; i < yTickCount; i++) {
@@ -984,7 +985,7 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw x-axis grid lines
     if (axes.y.grid) {
-      const xTickCount = axes.x.tickCount || 5;
+      const xTickCount = axes.x.tickCount ?? 5;
       const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
       for (let i = 0; i < xTickCount; i++) {
@@ -1002,7 +1003,7 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw y-axis grid lines
     if (axes.x.grid) {
-      const yTickCount = axes.y.tickCount || 5;
+      const yTickCount = axes.y.tickCount ?? 5;
       const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
       for (let i = 0; i < yTickCount; i++) {
@@ -1029,8 +1030,8 @@ export class CanvasRenderer implements ChartRenderer {
 
     const { datasets } = data;
     const legend: ChartLegend = {
-      position: (options?.legend?.position as ChartLegendPosition) || ChartLegendPosition.Top,
-      display: options?.legend?.visible || false,
+      position: (options?.legend?.position as ChartLegendPosition) ?? ChartLegendPosition.Top,
+      display: options?.legend?.visible ?? false,
     };
 
     if (!legend.display || datasets.length === 0) {
@@ -1046,7 +1047,8 @@ export class CanvasRenderer implements ChartRenderer {
     const legendWidth = Math.min(datasets.length, itemsPerRow) * itemWidth;
     const legendHeight = rows * itemHeight;
 
-    let startX, startY;
+    let startX: number | undefined;
+    let startY: number | undefined;
 
     switch (legend.position) {
       case 'top':
@@ -1078,11 +1080,11 @@ export class CanvasRenderer implements ChartRenderer {
     datasets.forEach((dataset, i) => {
       const row = Math.floor(i / itemsPerRow);
       const col = i % itemsPerRow;
-      const x = startX + col * itemWidth;
-      const y = startY + row * itemHeight;
+      const x = (startX ?? 0) + col * itemWidth;
+      const y = (startY ?? 0) + row * itemHeight;
 
       // Draw color box
-      this.ctx!.fillStyle = dataset.color || this.getDefaultColor(i);
+      this.ctx!.fillStyle = dataset.color ?? this.getDefaultColor(i);
       this.ctx!.fillRect(x, y + 4, 12, 12);
 
       // Draw border around color box
@@ -1206,7 +1208,7 @@ export class CanvasRenderer implements ChartRenderer {
       } else {
         tooltipContent += `
           <div style="margin-bottom: 4px">
-            <span style="font-weight: bold; color: ${dataset.color || this.getDefaultColor(dataIndex)}">${dataset.label || `Series ${dataIndex + 1}`}:</span>
+            <span style="font-weight: bold; color: ${dataset.color ?? this.getDefaultColor(dataIndex)}">${dataset.label || `Series ${dataIndex + 1}`}:</span>
             <span>${formattedX}, ${formattedY}</span>
           </div>
         `;
@@ -1246,17 +1248,17 @@ export class CanvasRenderer implements ChartRenderer {
     chartArea: ChartArea,
     mode: ChartTooltipMode,
     intersect: boolean
-  ): Array<{ dataset: ChartData['datasets'][0]; point: ChartPoint; dataIndex: number }> {
+  ): { dataset: ChartData['datasets'][0]; point: ChartPoint; dataIndex: number }[] {
     const { datasets } = data;
-    const axes = options?.axes || { x: { type: 'linear' }, y: { type: 'linear' } };
+    const axes = options?.axes ?? { x: { type: 'linear' }, y: { type: 'linear' } };
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
 
-    const nearestPoints: Array<{
+    const nearestPoints: {
       dataset: ChartData['datasets'][0];
       point: ChartPoint;
       dataIndex: number;
       distance: number;
-    }> = [];
+    }[] = [];
 
     datasets.forEach((dataset, datasetIndex) => {
       dataset.data?.forEach(point => {
@@ -1273,7 +1275,7 @@ export class CanvasRenderer implements ChartRenderer {
 
         // Calculate distance
         const distance = Math.sqrt(Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2));
-        const radius = (point as ChartPoint).radius || 4;
+        const radius = (point as ChartPoint).radius ?? 4;
 
         nearestPoints.push({
           dataset,
@@ -1338,12 +1340,12 @@ export class CanvasRenderer implements ChartRenderer {
       x: {
         min: typeof xAxis.min === 'number' ? xAxis.min : xMin - xPadding,
         max: typeof xAxis.max === 'number' ? xAxis.max : xMax + xPadding,
-        type: xAxis.type || 'linear',
+        type: xAxis.type ?? 'linear',
       },
       y: {
         min: typeof yAxis.min === 'number' ? yAxis.min : yMin - yPadding,
         max: typeof yAxis.max === 'number' ? yAxis.max : yMax + yPadding,
-        type: yAxis.type || 'linear',
+        type: yAxis.type ?? 'linear',
       },
     };
   }
@@ -1372,7 +1374,7 @@ export class CanvasRenderer implements ChartRenderer {
     scale: ChartScale,
     start: number,
     end: number,
-    invert: boolean = false
+    invert = false
   ): number {
     const range = end - start;
     const domain = scale.max - scale.min;

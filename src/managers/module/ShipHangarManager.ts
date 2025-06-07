@@ -30,6 +30,7 @@ import
     CommonShip,
     CommonShipAbility,
     CommonShipStats,
+    ShipCategory,
     ShipStatus,
   } from '../../types/ships/CommonShipTypes';
 import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShipTypes';
@@ -808,7 +809,7 @@ export class ShipHangarManager
     const ship: CommonShip = {
       id: uuidv4(),
       name: blueprint.name,
-      category: blueprint.category,
+      category: this.convertPlayerCategoryToShipCategory(blueprint.category),
       status: ShipStatus.READY,
       stats: {
         // Use hull from baseStats for health
@@ -888,14 +889,27 @@ export class ShipHangarManager
     return classMap[ship.name] || PlayerShipClass.SPITFLARE; // Default to spitflare if name not found
   }
 
-  private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
+  private getShipCategory(shipClass: PlayerShipClass): ShipCategory {
     if (shipClass.includes('void-dredger')) {
-      return 'mining';
+      return ShipCategory.MINING;
     }
     if (shipClass.includes('andromeda') || shipClass.includes('schooner')) {
-      return 'recon';
+      return ShipCategory.RECON;
     }
-    return 'combat';
+    return ShipCategory.COMBAT;
+  }
+
+  private convertPlayerCategoryToShipCategory(playerCategory: PlayerShipCategory): ShipCategory {
+    switch (playerCategory) {
+      case 'combat':
+        return ShipCategory.COMBAT;
+      case 'mining':
+        return ShipCategory.MINING;
+      case 'recon':
+        return ShipCategory.RECON;
+      default:
+        return ShipCategory.COMBAT;
+    }
   }
 
   private createWeaponMount(
@@ -2033,7 +2047,7 @@ export class ShipHangarManager
     // Specialization bonuses
     switch (officer.specialization) {
       case 'combat':
-        if (ship.category === 'combat') {
+        if (ship.category === ShipCategory.COMBAT) {
           bonuses.combatEffectiveness = 0.2 + levelBonus; // 20% base + level bonus
           bonuses.buildSpeed = 0.1 + levelBonus; // 10% base + level bonus
         }
@@ -2463,7 +2477,7 @@ export class ShipHangarManager
       id: crypto.randomUUID(),
       name: `${blueprint.name} #${this.getDockedShips().length + 1}`,
       status: ShipStatus.READY,
-      category: blueprint.category,
+      category: this.convertPlayerCategoryToShipCategory(blueprint.category),
       stats: {
         // Use hull for health
         maxHealth: baseStats.hull ?? 100,

@@ -1,10 +1,9 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { componentRegistryService } from './ComponentRegistryService';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
 } from './logging/ErrorLoggingService';
 
 export interface EventSubscription {
@@ -18,8 +17,8 @@ export interface EventSubscription {
  * Service for managing event propagation and subscription throughout the application
  */
 class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationServiceImpl> {
-  private subscriptions: Map<string, EventSubscription[]> = new Map();
-  private eventQueue: Array<{ type: string; data: unknown }> = [];
+  private subscriptions = new Map<string, EventSubscription[]>();
+  private eventQueue: { type: string; data: unknown }[] = [];
   private isProcessing = false;
   private customErrorHandler?: (error: Error, context?: Record<string, unknown>) => void;
 
@@ -52,13 +51,13 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           serviceName: 'EventPropagationService',
           timestamp: Date.now(),
         });
-        errorLoggingService.logwarn(
+        errorLoggingService.logWarn(
           '[EventPropagationService] Notified component registry of initialization'
         );
       }
     } else {
       // Log that we're initializing without component registry
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         '[EventPropagationService] Initializing without component registry dependency'
       );
     }
@@ -67,7 +66,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (_dependencies) {
       // Log the dependencies we received
       const dependencyNames = Object.keys(_dependencies).join(', ');
-      errorLoggingService.logwarn(
+      errorLoggingService.logWarn(
         `[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`
       );
 
@@ -77,7 +76,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
         // Configure error handling with the error logging service
         if (errorLogging) {
-          errorLoggingService.logwarn('[EventPropagationService] Error logging service available');
+          errorLoggingService.logWarn('[EventPropagationService] Error logging service available');
 
           // Set up a custom error handler using the provided error logging service
           this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {

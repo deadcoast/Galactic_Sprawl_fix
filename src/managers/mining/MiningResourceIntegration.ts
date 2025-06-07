@@ -20,6 +20,7 @@ import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 // Fix import path for ShipStatus
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { ResourceManager } from '../game/ResourceManager';
 import { MiningShipManager } from './MiningShipManager';
 
@@ -131,7 +132,7 @@ export class MiningResourceIntegration {
       moduleEventBus.subscribe(EventType.MINING_SHIP_REGISTERED, (event: BaseEvent) => {
         // Use type guard
         if (isMiningShipRegisteredData(event.data)) {
-          const ship = event.data.ship; // Type is now known
+          const {ship} = event.data; // Type is now known
           console.warn(`[MiningResourceIntegration] Mining ship registered: ${ship.id}`);
 
           // Use UnifiedShipStatus
@@ -344,8 +345,12 @@ export class MiningResourceIntegration {
 
   private handleMiningTaskCompleted(event: BaseEvent): void {
     if (!event.data || typeof event.data !== 'object' || !('task' in event.data)) {
-      console.warn(
-        '[MiningResourceIntegration] Received MiningTaskCompleted event without valid task data.'
+      errorLoggingService.logWarn(
+        '[MiningResourceIntegration] Received MiningTaskCompleted event without valid task data',
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+        }
       );
       return;
     }
@@ -362,13 +367,17 @@ export class MiningResourceIntegration {
     }
 
     if (!isTaskData(event.data.task)) {
-      console.warn(
-        '[MiningResourceIntegration] Received MiningTaskCompleted event with invalid task structure in data.'
+      errorLoggingService.logWarn(
+        '[MiningResourceIntegration] Received MiningTaskCompleted event with invalid task structure in data',
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+        }
       );
       return;
     }
 
-    const task = event.data.task;
+    const {task} = event.data;
     const ship: MiningShip | undefined = this.miningManager.getShipData(task.shipId);
 
     if (ship && ship.status === UnifiedShipStatus.RETURNING) {
@@ -383,21 +392,51 @@ export class MiningResourceIntegration {
         cargoCapacity = (ship.stats.cargo as { capacity: number }).capacity;
       }
 
-      const amountToDeposit = ship.currentLoad ?? 0;
+      // Safely extract currentLoad and ensure it's a number
+      const rawCurrentLoad = ship.currentLoad;
+      const amountToDeposit: number = typeof rawCurrentLoad === 'number' ? rawCurrentLoad : 0;
+      
       if (amountToDeposit > 0 && cargoCapacity > 0) {
-        this.resourceManager.addResource(task.resourceType, amountToDeposit as number);
-        console.log(
-          `[MiningResourceIntegration] Ship ${ship.id} deposited ${amountToDeposit.toFixed(2)} ${task.resourceType}`
+        this.resourceManager.addResource(task.resourceType, amountToDeposit);
+        errorLoggingService.logInfo(
+          `[MiningResourceIntegration] Ship ${ship.id} deposited ${amountToDeposit.toFixed(2)} ${task.resourceType}`,
+          {
+            service: 'MiningResourceIntegration',
+            method: 'handleMiningTaskCompleted',
+            shipId: ship.id,
+            resourceType: task.resourceType,
+            amount: amountToDeposit,
+          }
         );
       } else {
-        console.log(`[MiningResourceIntegration] Ship ${ship.id} returned with empty cargo.`);
+        errorLoggingService.logInfo(
+          `[MiningResourceIntegration] Ship ${ship.id} returned with empty cargo`,
+          {
+            service: 'MiningResourceIntegration',
+            method: 'handleMiningTaskCompleted',
+            shipId: ship.id,
+          }
+        );
       }
     } else if (ship) {
-      console.log(
-        `[MiningResourceIntegration] Task completed for ship ${ship.id}, but status was ${ship.status}, not RETURNING.`
+      errorLoggingService.logInfo(
+        `[MiningResourceIntegration] Task completed for ship ${ship.id}, but status was ${ship.status}, not RETURNING`,
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+          shipId: ship.id,
+          status: ship.status,
+        }
       );
     } else {
-      console.warn(`[MiningResourceIntegration] Task completed for unknown ship ${task.shipId}.`);
+      errorLoggingService.logWarn(
+        `[MiningResourceIntegration] Task completed for unknown ship ${task.shipId}`,
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+          shipId: task.shipId,
+        }
+      );
     }
   }
 

@@ -1,13 +1,12 @@
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import
-  {
+import {
     CombatWeaponStats,
     WeaponCategory,
     WeaponInstance,
     WeaponUpgrade,
     WeaponUpgradeType,
-  } from '../../types/weapons/WeaponTypes';
+} from '../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface WeaponUpgradeEvents {
@@ -357,9 +356,8 @@ export class WeaponUpgradeManager extends TypedEventEmitter<WeaponUpgradeEvents>
     this.appliedUpgrades.clear();
   }
 
-  public subscribe<K extends keyof WeaponUpgradeEvents>(event: K, handler: (data: WeaponUpgradeEvents[K]) => void): { unsubscribe: () => void } {
-    this.on(event, handler);
-    return { unsubscribe: () => this.off(event, handler) };
+  public subscribe<K extends keyof WeaponUpgradeEvents>(event: K, handler: (data: WeaponUpgradeEvents[K]) => void): () => void {
+    return this.on(event, handler);
   }
 
   public getWeaponExperience(weaponId: string): number {

@@ -5,12 +5,10 @@ import
     Button,
     CircularProgress,
     FormControl,
-    Grid,
     InputLabel,
     MenuItem,
     Select,
-    SxProps,
-    Typography,
+    Typography
   } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getResourceManager } from '../../../../managers/ManagerRegistry';
@@ -105,7 +103,7 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 
   }
 
   return (
-    <Box sx={{ p: 2 } as SxProps}>
+    <div style={{ padding: 16 }}>
       <Typography variant="h5" gutterBottom>
         Ship Hangar ({hangarId})
       </Typography>
@@ -134,27 +132,26 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 
         </Button>
       </Box>
 
-      <Grid container spacing={2}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+          gap: '16px',
+          marginTop: '16px'
+        }}>
         {shipCards.length > 0 ? (
           shipCards.map((shipData) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              key={shipData.id}
-            >
+            <div key={shipData.id}>
               <ShipCard ship={shipData} isSelected={selectedShipId === shipData.id} onClick={handleShipSelect} />
-            </Grid>
+            </div>
           ))
         ) : (
           <Typography sx={{ p: 2 }}>No ships available.</Typography>
         )}
-      </Grid>
+      </div>
 
       <SelectedShipDetails ship={selectedDetails} />
 
-    </Box>
+    </div>
   );
 };
 

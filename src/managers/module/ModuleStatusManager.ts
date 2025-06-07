@@ -623,14 +623,14 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
 
     // Add alert
     if (message) {
-      this.addAlert(moduleId, level || 'error', message);
+      this.addAlert(moduleId, level ?? 'error', message);
     }
 
     // Update status for serious errors
     if (level === 'critical') {
-      this.updateModuleStatus(moduleId, 'critical', message || 'Critical error occurred');
+      this.updateModuleStatus(moduleId, 'critical', message ?? 'Critical error occurred');
     } else if (level === 'error') {
-      this.updateModuleStatus(moduleId, 'error', message || 'Error occurred');
+      this.updateModuleStatus(moduleId, 'error', message ?? 'Error occurred');
     }
   };
 
@@ -673,7 +673,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
     this.unsubscribeHandles = []; // Clear the array
 
     // TypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners();
+    this.removeAllListeners();
 
     // Clear data
     this.moduleStatuses.clear();

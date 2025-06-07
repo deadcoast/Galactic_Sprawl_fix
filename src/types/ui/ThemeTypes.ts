@@ -11,7 +11,7 @@ export enum ThemeColorName {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   SUCCESS = 'success',
-  combatNING = 'warning',
+  WARNING = 'warning',
   DANGER = 'danger',
   INFO = 'info',
   LIGHT = 'light',
@@ -332,14 +332,17 @@ export interface ThemeConfiguration {
 
 import { defaultTheme } from '../../ui/theme/defaultTheme';
 
-// Update deepMergePalette signature and logic
-function deepMergePalette(base: Theme['colors'], overrides: Partial<Theme['colors']>): Theme['colors'] {
+// Update deepMergePalette signature and logic with proper typing
+function deepMergePalette(
+  base: Theme['colors'], 
+  overrides: Partial<Theme['colors']>
+): Theme['colors'] {
   // Clone the base object to avoid modifying it directly
   const merged = JSON.parse(JSON.stringify(base)) as Theme['colors']; 
 
-  for (const key in overrides) {
-    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
-      const overrideValue = overrides[key];
+  // Iterate through override entries with proper type safety
+  for (const [key, overrideValue] of Object.entries(overrides)) {
+    if (overrideValue !== undefined) {
       const baseValue = base[key];
 
       // Check if both values are plain objects suitable for deep merge
@@ -347,14 +350,21 @@ function deepMergePalette(base: Theme['colors'], overrides: Partial<Theme['color
         typeof val === 'object' && val !== null && !Array.isArray(val) && val.constructor === Object;
 
       if (isPlainObject(overrideValue) && isPlainObject(baseValue)) {
-        // Recursively merge nested objects
-        merged[key] = deepMergePalette(baseValue, overrideValue as Record<string, unknown>);
-      } else if (overrideValue !== undefined) {
+        // For nested objects, merge them manually to avoid type issues
+        const mergedNested = { ...baseValue };
+        for (const [nestedKey, nestedValue] of Object.entries(overrideValue)) {
+          if (nestedValue !== undefined) {
+            (mergedNested as Record<string, unknown>)[nestedKey] = nestedValue;
+          }
+        }
+        merged[key] = mergedNested as PaletteColor | string | Record<string, string>;
+      } else {
         // Override primitive values or replace non-plain objects/arrays
         merged[key] = overrideValue;
       }
     }
   }
+  
   return merged;
 }
 

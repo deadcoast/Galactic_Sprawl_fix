@@ -10,7 +10,7 @@ export interface ShipType {
 
 // Ship Categories – unified enum used across UI & logic
 export enum ShipCategory {
-  combat = 'combat',
+  COMBAT = 'combat',
   MINING = 'mining',
   RECON = 'recon',
   TRANSPORT = 'transport',
@@ -168,7 +168,7 @@ export interface CommonShipCapabilities {
 export function getShipCategory(type: string): ShipCategory {
   const lower = type.toLowerCase();
   if (lower.includes('combat')) {
-    return ShipCategory.combat;
+    return ShipCategory.COMBAT;
   }
   if (lower.includes('recon') || lower.includes('scout')) {
     return ShipCategory.RECON;
@@ -181,7 +181,7 @@ export function getShipCategory(type: string): ShipCategory {
 
 export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabilities {
   switch (category) {
-    case ShipCategory.combat:
+    case ShipCategory.COMBAT:
       return {
         canSalvage: false,
         canScan: false,

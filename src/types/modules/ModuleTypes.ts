@@ -8,11 +8,12 @@
  */
 
 import { EventBus } from '../../lib/events/EventBus';
-import {
-  BaseModule as BuildingBaseModule,
-  ModularBuilding,
-  ModuleType,
-} from '../buildings/ModuleTypes';
+import
+  {
+    BaseModule as BuildingBaseModule,
+    ModularBuilding,
+    ModuleType
+  } from '../buildings/ModuleTypes';
 import { Position } from '../core/GameTypes';
 import { BaseEvent, EventType } from '../events/EventTypes';
 
@@ -42,7 +43,7 @@ export interface Module {
   isActive: boolean;
   level: number;
   progress?: number;
-  subModules?: Array<unknown>; // Retain compatibility with BuildingBaseModule
+  subModules?: unknown[]; // Retain compatibility with BuildingBaseModule
   parentModuleId?: string; // Retain compatibility with BuildingBaseModule
 }
 
@@ -63,12 +64,12 @@ export interface ModuleEvent {
  */
 export enum ModuleEventType {
   // Use the same values as EventType for direct compatibility
-  MODULE_CREATED = EventType.MODULE_CREATED,
-  MODULE_UPDATED = EventType.MODULE_UPDATED,
+  MODULE_CREATED = 'MODULE_CREATED',
+  MODULE_UPDATED = 'MODULE_UPDATED',
   MODULE_REMOVED = 'MODULE_REMOVED', // Special case not in EventType
-  MODULE_STATUS_CHANGED = EventType.MODULE_STATUS_CHANGED,
-  MODULE_ACTIVATED = EventType.MODULE_ACTIVATED,
-  MODULE_DEACTIVATED = EventType.MODULE_DEACTIVATED,
+  MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED',
+  MODULE_ACTIVATED = 'MODULE_ACTIVATED',
+  MODULE_DEACTIVATED = 'MODULE_DEACTIVATED',
 }
 
 /**

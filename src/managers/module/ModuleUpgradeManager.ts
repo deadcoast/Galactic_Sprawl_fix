@@ -631,7 +631,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
     this.unsubscribeHandles = [];
 
     // TypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners();
+    this.removeAllListeners();
 
     console.warn('[ModuleUpgradeManager] Disposed and cleaned up subscriptions/timers.');
   }

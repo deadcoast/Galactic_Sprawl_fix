@@ -49,12 +49,12 @@ export interface DataVisualizationShaderConfig {
 export class WebGLShaderManager {
   private gl: WebGLRenderingContext | null = null;
   private canvas: HTMLCanvasElement | null = null;
-  private programs: Map<string, WebGLProgram> = new Map();
-  private shaders: Map<string, WebGLShader> = new Map();
-  private textures: Map<string, WebGLTexture> = new Map();
-  private framebuffers: Map<string, WebGLFramebuffer> = new Map();
+  private programs = new Map<string, WebGLProgram>();
+  private shaders = new Map<string, WebGLShader>();
+  private textures = new Map<string, WebGLTexture>();
+  private framebuffers = new Map<string, WebGLFramebuffer>();
   private animationFrame: number | null = null;
-  private _lastTimestamp: number = 0;
+  private _lastTimestamp = 0;
 
   /**
    * Initialize the WebGL context
@@ -227,7 +227,7 @@ export class WebGLShaderManager {
     this.setupDataVisualizationBuffers(program, config, data, positions);
 
     // Perform drawing
-    this.gl.dracombatrays(this.gl.POINTS, 0, positions.length);
+    this.gl.drawArrays(this.gl.POINTS, 0, positions.length);
   }
 
   /**
@@ -295,7 +295,7 @@ export class WebGLShaderManager {
     if (!this.gl) return;
 
     // Resolution
-    const resolution = config.resolution || [this.canvas?.width || 800, this.canvas?.height || 600];
+    const resolution = config.resolution ?? [this.canvas?.width ?? 800, this.canvas?.height ?? 600];
     const resolutionLocation = this.gl.getUniformLocation(program, 'u_resolution');
     this.gl.uniform2f(resolutionLocation, resolution[0], resolution[1]);
 
@@ -313,7 +313,7 @@ export class WebGLShaderManager {
 
     // Intensity
     const intensityLocation = this.gl.getUniformLocation(program, 'u_intensity');
-    this.gl.uniform1f(intensityLocation, config.intensity || 1.0);
+    this.gl.uniform1f(intensityLocation, config.intensity ?? 1.0);
 
     // Time (for animations)
     const timeLocation = this.gl.getUniformLocation(program, 'u_time');
@@ -321,15 +321,15 @@ export class WebGLShaderManager {
 
     // Animation speed
     const speedLocation = this.gl.getUniformLocation(program, 'u_speed');
-    this.gl.uniform1f(speedLocation, config.animationSpeed || 1.0);
+    this.gl.uniform1f(speedLocation, config.animationSpeed ?? 1.0);
 
     // Data range
-    const dataRange = config.dataRange || [0, 1];
+    const dataRange = config.dataRange ?? [0, 1];
     const dataRangeLocation = this.gl.getUniformLocation(program, 'u_dataRange');
     this.gl.uniform2f(dataRangeLocation, dataRange[0], dataRange[1]);
 
     // Highlight range
-    const highlightRange = config.highlightRange || [0.7, 1.0];
+    const highlightRange = config.highlightRange ?? [0.7, 1.0];
     const highlightRangeLocation = this.gl.getUniformLocation(program, 'u_highlightRange');
     if (highlightRangeLocation !== null) {
       this.gl.uniform2f(highlightRangeLocation, highlightRange[0], highlightRange[1]);
@@ -351,7 +351,7 @@ export class WebGLShaderManager {
    * Set uniform value
    */
   private setUniform(location: WebGLUniformLocation | null, uniform: ShaderUniform): void {
-    const gl = this.gl;
+    const gl = this.gl!;
     if (!gl || !location) return;
 
     switch (uniform.type) {

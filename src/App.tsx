@@ -10,7 +10,7 @@ import
     GameAction,
     GameActionType,
     GameProvider,
-    useGameDispatch,
+    useGameDispatch
   } from './contexts/GameContext';
 import { ModuleActionType, useModuleDispatch } from './contexts/ModuleContext';
 import { assetManager } from './managers/game/assetManager';
@@ -33,12 +33,11 @@ import
     CircularProgress,
     CssBaseline,
     GlobalStyles,
-    SxProps,
     ThemeProvider,
-    Typography,
+    Typography
   } from '@mui/material';
 import { Suspense } from 'react';
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import { ShipHangar } from './components/buildings/modules/hangar/ShipHangar';
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
 // Removed unused import: import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
@@ -480,10 +479,10 @@ function App() {
   if (!isInitialized) {
     return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' } as SxProps}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
       >
         <CircularProgress />
-        <Typography ml={2}>Initializing Galactic Sprawl...</Typography>
+        <Typography sx={{ ml: 2 }}>Initializing Galactic Sprawl...</Typography>
       </Box>
     );
   }

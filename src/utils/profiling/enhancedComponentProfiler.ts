@@ -8,12 +8,11 @@
 import { isEqual } from 'lodash';
 import { performance } from 'perf_hooks'; // Use perf_hooks for higher resolution timing if needed
 import * as React from 'react';
-import
-  {
+import {
     ComponentProfilingOptions,
     ComponentProfilingResult,
     ComponentRenderMetrics,
-  } from '../../types/ui/UITypes';
+} from '../../types/ui/UITypes';
 import { createComponentProfiler } from './componentProfiler';
 
 export interface LayoutMetrics {
@@ -631,14 +630,18 @@ export function createEnhancedComponentProfiler(
   };
 
   // Override the base profiler's onRender method to add enhanced metrics
-  const originalProfileRender = baseProfiler.profileRender;
+  const originalProfileRender = baseProfiler.profileRender as <Props, Result>(
+    renderFn: (props: Props) => Result,
+    prevProps: Props | null,
+    nextProps: Props
+  ) => Result;
   baseProfiler.profileRender = <Props, Result>(
     renderFn: (props: Props) => Result,
     prevProps: Props | null,
     nextProps: Props
   ): Result => {
     // Call original profile render first
-    const result = originalProfileRender(renderFn, prevProps, nextProps) as unknown as Result;
+    const result = originalProfileRender(renderFn, prevProps, nextProps);
 
     // Add enhanced render info
     if (

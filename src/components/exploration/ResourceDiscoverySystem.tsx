@@ -209,7 +209,7 @@ export function ResourceDiscoverySystem({
 
   // Get the selected discovery
   const selectedDiscovery = useMemo(
-    () => discoveries.find(d => d.id === selectedDiscoveryId) || null,
+    () => discoveries.find(d => d.id === selectedDiscoveryId) ?? null,
     [discoveries, selectedDiscoveryId]
   );
 

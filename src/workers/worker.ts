@@ -110,7 +110,10 @@ const processTask = async (message: WorkerTaskMessage): Promise<void> => {
 
       default: {
         const warning = `Unknown task type received in worker: ${type}`;
-        console.warn(warning);
+        errorLoggingService.logWarn(warning, {
+          taskType: type,
+          taskId: taskId,
+        });
         sendError(taskId, warning);
         break;
       }
@@ -156,7 +159,9 @@ self.onmessage = (event: MessageEvent) => {
     };
     void processTask(syntheticMessage);
   } else {
-    console.warn('Received invalid message structure in worker:', incoming);
+    errorLoggingService.logWarn('Received invalid message structure in worker', {
+      receivedData: JSON.stringify(incoming).substring(0, 200),
+    });
     errorLoggingService.logError(
       new Error('Invalid message structure received'),
       ErrorType.WORKER,
@@ -166,4 +171,4 @@ self.onmessage = (event: MessageEvent) => {
   }
 };
 
-console.log('Generic worker initialized and ready to receive tasks');
+errorLoggingService.logInfo('Generic worker initialized and ready to receive tasks');

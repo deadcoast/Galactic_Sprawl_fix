@@ -9,21 +9,22 @@
 
 import { ResourceType } from '../resources/ResourceTypes';
 import { DataPoint } from './DataAnalysisTypes';
-import {
-  AnalysisResult,
-  AnalysisType,
-  Anomaly,
-  AnomalyType,
-  Coordinates,
-  DangerLevel,
-  Effect,
-  EffectType,
-  ExplorationStatus,
-  InvestigationStage,
-  ResourceDeposit,
-  Sector,
-  VisualData,
-} from './ExplorationTypes';
+import
+  {
+    AnalysisResult,
+    AnalysisType,
+    Anomaly,
+    AnomalyType,
+    Coordinates,
+    DangerLevel,
+    Effect,
+    EffectType,
+    ExplorationStatus,
+    InvestigationStage,
+    ResourceDeposit,
+    Sector,
+    VisualData
+  } from './ExplorationTypes';
 
 // =========================================
 // Type Conversion Utilities
@@ -203,7 +204,7 @@ function _resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint {
     id: resource.id,
     type: 'resource',
     name: `${resource.type} Deposit`,
-    date: resource.discoveredAt || Date.now(),
+    date: resource.discoveredAt ?? Date.now(),
     coordinates: {
       x: resource.coordinates.x,
       y: resource.coordinates.y,
@@ -411,7 +412,7 @@ function _createDefaultEffect(type: EffectType): Effect {
 function _createDefaultAnalysisResult(type: AnalysisType, entityIds: string[]): AnalysisResult {
   return {
     id: `analysis-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    name: `${type.charAt(0).toUpperCase() + type.slice(1)} Analysis`,
+    name: `${type.charAt(0).toUpperCase()}${type.slice(1)} Analysis`,
     type,
     createdAt: Date.now(),
     data: {},
@@ -437,7 +438,7 @@ export function filterByExplorationStatus<T extends { explorationStatus: Explora
  */
 export function sortByDiscoveryDate<T extends { discoveredAt: number }>(
   entities: T[],
-  ascending: boolean = false
+  ascending = false
 ): T[] {
   return [...entities].sort((a, b) =>
     ascending ? a.discoveredAt - b.discoveredAt : b.discoveredAt - a.discoveredAt
@@ -450,7 +451,7 @@ export function sortByDiscoveryDate<T extends { discoveredAt: number }>(
 export function calculateDistance(coord1: Coordinates, coord2: Coordinates): number {
   const x = coord2.x - coord1.x;
   const y = coord2.y - coord1.y;
-  const z = (coord2.z || 0) - (coord1.z || 0);
+  const z = (coord2.z ?? 0) - (coord1.z ?? 0);
 
   return Math.sqrt(x * x + y * y + z * z);
 }
@@ -461,7 +462,7 @@ export function calculateDistance(coord1: Coordinates, coord2: Coordinates): num
 export function findNearestEntities<T extends { coordinates: Coordinates }>(
   entities: T[],
   targetCoord: Coordinates,
-  limit: number = 5
+  limit = 5
 ): T[] {
   return [...entities]
     .map(entity => ({

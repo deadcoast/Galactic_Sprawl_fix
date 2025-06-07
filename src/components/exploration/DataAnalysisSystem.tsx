@@ -161,7 +161,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         ) {
           // In a real implementation, you would get updates from a manager/registry
           // For now, simulate with dataset refreshes
-          console.warn(`Dataset ${dataset.id} has been updated externally`);
+          errorLoggingService.logWarn(`Dataset ${dataset.id} has been updated externally`);
 
           // For demo purposes, clone and modify the dataset
           setDatasetDetails({
@@ -398,7 +398,9 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
 // Utility function that uses DatasetInfo for development purposes
 const _logDatasetDetails = (dataset: Dataset): void => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(`Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`);
+    errorLoggingService.logWarn(
+      `Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`
+    );
   }
 };
 

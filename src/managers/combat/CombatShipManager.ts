@@ -1,5 +1,6 @@
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { Position } from '../../types/core/GameTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
@@ -50,6 +51,20 @@ function isAttackData(data: unknown): data is AttackData {
   return typeof data === 'object' && data !== null && 'targetId' in data;
 }
 
+/**
+ * Safely initializes combat stats for a ship if they don't exist
+ */
+function initializeCombatStats(ship: CombatShip): void {
+  if (!ship.combatStats) {
+    ship.combatStats = {
+      damageDealt: 0,
+      damageReceived: 0,
+      killCount: 0,
+      assistCount: 0,
+    };
+  }
+}
+
 export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   private ships: Map<string, CombatShip> = new Map<string, CombatShip>();
   private tasks: Map<string, CombatTask> = new Map<string, CombatTask>();
@@ -93,33 +108,9 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   }
 
   protected onUpdate(deltaTime: number): void {
-    this.formations.forEach(formation => {
-      if (formation.ships.length > 0) {
-        const leader = this.ships.get(formation.leader!);
-        if (leader) {
-          const task = this.tasks.get(leader.id);
-          if (task?.target) {
-            const dx = task.target.position.x - leader.position.x;
-            const dy = task.target.position.y - leader.position.y;
-            formation.facing = Math.atan2(dy, dx);
-          }
-
-          formation.ships.forEach((shipId, index) => {
-            if (shipId !== formation.leader) {
-              const ship = this.ships.get(shipId);
-              if (ship) {
-                const angle = formation.facing + index * (Math.PI / 4);
-                const targetPos = {
-                  x: leader.position.x + Math.cos(angle) * formation.spacing,
-                  y: leader.position.y + Math.sin(angle) * formation.spacing,
-                };
-                getCombatManager().moveUnit(shipId, targetPos);
-              }
-            }
-          });
-        }
-      }
-    });
+    if (this.ships.size === 0) {
+      return;
+    }
 
     this.ships.forEach(ship => {
       ship.stats.weapons.forEach(mount => {
@@ -165,17 +156,10 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
             const energyEfficiency = ship.techBonuses?.energyEfficiency ?? 1;
             ship.stats.energy = Math.max(0, ship.stats.energy - energyCost * energyEfficiency);
 
-            if (!ship.combatStats) {
-              ship.combatStats = {
-                damageDealt: 0,
-                damageReceived: 0,
-                killCount: 0,
-                assistCount: 0,
-              } as Required<NonNullable<CombatShip['combatStats']>>;
-            }
+            initializeCombatStats(ship);
             const damageDealt = weaponInstance.config.baseStats.damage ?? 0;
             const weaponEfficiency = ship.techBonuses?.weaponEfficiency ?? 1;
-            ship.combatStats.damageDealt += damageDealt * weaponEfficiency;
+            ship.combatStats!.damageDealt += damageDealt * weaponEfficiency;
           }
         }
       }
@@ -312,17 +296,10 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         const energyEfficiency = ship.techBonuses?.energyEfficiency ?? 1;
         ship.stats.energy = Math.max(0, ship.stats.energy - energyCost * energyEfficiency);
 
-        if (!ship.combatStats) {
-          ship.combatStats = {
-            damageDealt: 0,
-            damageReceived: 0,
-            killCount: 0,
-            assistCount: 0,
-          } as Required<NonNullable<CombatShip['combatStats']>>;
-        }
+        initializeCombatStats(ship);
         const damageDealt = weaponInstance.config.baseStats.damage ?? 0;
         const weaponEfficiency = ship.techBonuses?.weaponEfficiency ?? 1;
-        ship.combatStats.damageDealt += damageDealt * weaponEfficiency;
+        ship.combatStats!.damageDealt += damageDealt * weaponEfficiency;
       }
     }
   }
@@ -338,7 +315,11 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
 
   public registerShip(ship: CombatShip): void {
     if (!isCombatShip(ship)) {
-      console.warn('[CombatShipManager] Attempted to register non-combat ship', ship);
+      errorLoggingService.logWarn('[CombatShipManager] Attempted to register non-combat ship', {
+        shipId: (ship as any).id,
+        shipCategory: (ship as any).category,
+        managerId: this.managerName,
+      });
       return;
     }
     this.ships.set(ship.id, ship);

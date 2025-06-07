@@ -9,9 +9,9 @@
  */
 
 import { Vector3D } from '../common/VectorTypes';
+import { Position } from '../core/GameTypes';
 import { ResourceType } from '../resources/ResourceTypes';
 import { BasePoint } from '../visualization/CommonTypes';
-import { Position } from '../core/GameTypes';
 
 // =========================================
 // Base Types
@@ -648,7 +648,7 @@ export interface AnalysisResult {
  */
 export enum AnalysisType {
   COMPOSITION = 'composition',
-  ENERGY = ResourceType.ENERGY,
+  ENERGY = 'ENERGY',
   SPATIAL = 'spatial',
   TEMPORAL = 'temporal',
   RESOURCE = 'resource',
@@ -699,7 +699,7 @@ export enum ExplorationActivityType {
   SURVEY = 'survey',
   SAMPLE = 'sample',
   INVESTIGATE = 'investigate',
-  RESEARCH = ResourceType.RESEARCH,
+  RESEARCH = 'RESEARCH',
   EXPLOIT = 'exploit',
 }
 

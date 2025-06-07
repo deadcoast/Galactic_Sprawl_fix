@@ -1,9 +1,8 @@
 import { WorkerMessageType } from '../workers/DataProcessingWorker';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
 } from './logging/ErrorLoggingService';
 
 /**
@@ -97,7 +96,7 @@ export class DataProcessingService {
         resolve(data);
       }
     } else {
-      errorLoggingService.logwarn(`Received response for unknown request ID: ${id}`);
+      errorLoggingService.logWarn(`Received response for unknown request ID: ${id}`);
     }
   };
 
@@ -153,7 +152,7 @@ export class DataProcessingService {
       operator: '==' | '!=' | '>' | '<' | '>=' | '<=' | 'contains' | 'startsWith' | 'endsWith';
       value: unknown;
     }[],
-    matchAll: boolean = true
+    matchAll = true
   ): Promise<T[]> {
     return this.sendToWorker<T[]>(WorkerMessageType.DATA_FILTERING, {
       data,

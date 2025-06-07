@@ -14,8 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { ReconShipManagerImpl, ReconShipManagerEvents } from './ReconShipManager';
 import { ReconShip, ShipStatus } from '../../types/ships/ShipTypes';
+import { ReconShipManagerEvents, ReconShipManagerImpl } from './ReconShipManager';
 /**
  * @file ExplorationManagerImpl.ts
  * Implementation of the ExplorationManager that conforms to the BaseManager interface.
@@ -165,20 +165,20 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     this.shipManager = shipManager;
 
     // Listen to ship status changes using the correct event type and method
-    this.shipManager.on(EventType.STATUS_CHANGED, this.handleShipStatusChange as (data: { shipId: string; status: ShipStatus; ship: ReconShip; }) => void);
+    this.shipManager.on('STATUS_CHANGED', this.handleShipStatusChange);
   }
 
   /**
    * Handles ship status changes, potentially canceling scan operations.
-   * This listener receives the specific payload from ReconShipManager.
-   * @param payload The event payload containing ship ID, status, and ship object.
+   * This listener receives the specific data from ReconShipManager.
+   * @param data The event data containing ship ID, status, and ship object.
    */
-  private handleShipStatusChange = (payload: {
+  private handleShipStatusChange = (data: {
     shipId: string;
     status: ShipStatus;
     ship: ReconShip;
   }): void => {
-    const { shipId, status } = payload;
+    const { shipId, status } = data;
     if (status === ShipStatus.DISABLED || status === ShipStatus.DESTROYED) {
       // Find any active scan operation involving this ship
       const activeScan = Array.from(this.scanOperations.values()).find(
@@ -195,20 +195,21 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   /**
    * Initializes the ExplorationManager.
    */
-  public onInitialize(): void {
+  protected async onInitialize(): Promise<void> {
     // Initialization logic, e.g., loading data, setting up initial state
     this.publishEvent(
       this.createEvent(EventType.MODULE_ACTIVATED, {
         status: 'active',
       })
     );
+    await Promise.resolve();
   }
 
   /**
    * Updates the manager's state based on the elapsed time.
    * @param deltaTime Time elapsed since the last update in milliseconds.
    */
-  public onUpdate(deltaTime: number): void {
+  protected onUpdate(deltaTime: number): void {
     // Update ongoing scan operations
     this.updateScanOperations(deltaTime);
   }
@@ -216,14 +217,15 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   /**
    * Cleans up resources when the manager is disposed.
    */
-  public onDispose(): void {
+  protected async onDispose(): Promise<void> {
     // Cleanup logic, e.g., unsubscribing from events, saving state
-    this.shipManager.off(EventType.STATUS_CHANGED, this.handleShipStatusChange as (data: (payload: { shipId: string; status: ShipStatus; ship: ReconShip; }) => void) => void);
+    this.shipManager.off('STATUS_CHANGED', this.handleShipStatusChange);
     this.publishEvent(
       this.createEvent(EventType.MODULE_DEACTIVATED, {
         status: 'inactive',
       })
     );
+    await Promise.resolve();
   }
 
   /**
@@ -681,22 +683,23 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
    */
   public addReconShipListener<K extends keyof ReconShipManagerEvents>(
     eventType: K,
-    listener: ReconShipManagerEvents[K]
-  ): void {
-    // Use the 'on' method provided by TypedEventEmitter
-    this.shipManager.on(eventType, listener);
+    listener: (data: ReconShipManagerEvents[K]) => void
+  ): () => void {
+    // Use the 'on' method provided by TypedEventEmitter, which returns an unsubscribe function
+    return this.shipManager.on(eventType, listener);
   }
 
   /**
    * Remove a listener for a specific event type from the ReconShipManager.
+   * Note: TypedEventEmitter's off() method is deprecated. Use the unsubscribe function returned by addReconShipListener instead.
    * @param eventType The type of event to stop listening for (must be a key of ReconShipManagerEvents).
    * @param listener The listener function to remove.
    */
   public removeReconShipListener<K extends keyof ReconShipManagerEvents>(
     eventType: K,
-    listener: ReconShipManagerEvents[K]
+    listener: (data: ReconShipManagerEvents[K]) => void
   ): void {
-    // Use the 'off' method provided by TypedEventEmitter
+    // Use the 'off' method provided by TypedEventEmitter (note: this is deprecated)
     this.shipManager.off(eventType, listener);
   }
 

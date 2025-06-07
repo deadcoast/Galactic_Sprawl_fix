@@ -33,9 +33,7 @@ export function WeaponSpecialization({
       }
     );
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return subscription;
   }, [weapon, onSpecializationUnlock]);
 
   const getSpecializationIcon = (specializationType: string) => {

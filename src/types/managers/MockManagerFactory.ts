@@ -6,14 +6,16 @@
  * that implement the interfaces defined in SharedManagerTypes.ts
  */
 
+import { EventType } from '../events/EventTypes';
 import { BaseEvent, EventBus } from '../events/SharedEventTypes';
-import {
-  EventCapableManager,
-  MockEventManager,
-  MockStateManager,
-  StateManager,
-  createMockManager,
-} from './SharedManagerTypes';
+import
+  {
+    EventCapableManager,
+    MockEventManager,
+    MockStateManager,
+    StateManager,
+    createMockManager,
+  } from './SharedManagerTypes';
 
 /**
  * Creates a mock event manager for testing
@@ -24,15 +26,23 @@ import {
  */
 export function createMockEventManager<E extends BaseEvent = BaseEvent>(
   partialImplementation: Partial<EventCapableManager<E>> = {},
-  type: string = 'mockEventManager',
+  type = 'mockEventManager',
   id?: string
 ): EventCapableManager<E> & MockEventManager<E> {
   // Track emitted events and subscriptions
   const emittedEvents: E[] = [];
-  const subscriptions = new Map<string, Array<(event: E) => void>>();
+  const subscriptions = new Map<string, ((data: E) => void)[]>();
+  const subscriptionIdCounter = { value: 0 };
 
-  // Create a simple event bus implementation
-  const eventBus: EventBus<E> = {
+  // Create a simple event bus implementation  
+  const eventBus: Partial<EventBus<E>> & {
+    emit: (event: E) => boolean;
+    on: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => () => void;
+    off: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => void;
+    subscribe: (eventType: EventType | '*', handler: (event: E) => void) => () => void;
+    unsubscribe: (subscriptionId: string) => void;
+    subscribeMultiple: (eventTypes: string[], handler: (event: E) => void) => () => void;
+  } = {
     // Basic EventEmitter methods
     emit: (event: E) => {
       emittedEvents.push(event);
@@ -41,41 +51,43 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
       return true;
     },
 
-    on: (eventType: string, handler: (event: E) => void) => {
-      const handlers = subscriptions.get(eventType) ?? [];
-      handlers.push(handler);
-      subscriptions.set(eventType, handlers);
+    on: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => {
+      const handlers = subscriptions.get(eventName) ?? [];
+      handlers.push(handler as unknown as (data: E) => void);
+      subscriptions.set(eventName, handlers);
       return () => {
-        const currentHandlers = subscriptions.get(eventType) ?? [];
-        const index = currentHandlers.indexOf(handler);
+        const currentHandlers = subscriptions.get(eventName) ?? [];
+        const index = currentHandlers.indexOf(handler as unknown as (data: E) => void);
         if (index !== -1) {
           currentHandlers.splice(index, 1);
-          subscriptions.set(eventType, currentHandlers);
+          subscriptions.set(eventName, currentHandlers);
         }
       };
     },
 
-    off: (eventType: string, handler: (event: E) => void) => {
-      const handlers = subscriptions.get(eventType) ?? [];
-      const index = handlers.indexOf(handler);
+    off: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => {
+      const handlers = subscriptions.get(eventName) ?? [];
+      const index = handlers.indexOf(handler as unknown as (data: E) => void);
       if (index !== -1) {
         handlers.splice(index, 1);
-        subscriptions.set(eventType, handlers);
+        subscriptions.set(eventName, handlers);
       }
     },
 
     // Extended EventBus methods
-    subscribe: (eventType: string, handler: (event: E) => void) => {
-      return eventBus.on(eventType, handler);
+    subscribe: (eventType: EventType | '*', handler: (event: E) => void) => {
+      return eventBus.on(eventType as string, handler);
     },
 
-    unsubscribe: (eventType: string, handler: (event: E) => void) => {
-      eventBus.off(eventType, handler);
+    unsubscribe: (subscriptionId: string) => {
+      // For simplicity, we'll clear all subscriptions for this mock implementation
+      // In a real implementation, you'd track subscription IDs and remove specific ones
+      console.warn(`Mock unsubscribe called with ID ${subscriptionId}, but not fully implemented`);
     },
 
-    subscribeToMultiple: (eventTypes: string[], handler: (event: E) => void) => {
-      const unsubscribers: Array<() => void> = eventTypes.map(type =>
-        eventBus.subscribe(type, handler)
+    subscribeMultiple: (eventTypes: string[], handler: (event: E) => void) => {
+      const unsubscribers: (() => void)[] = eventTypes.map(type =>
+        eventBus.on(type, handler)
       );
 
       // Return combined unsubscribe function
@@ -84,9 +96,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
       };
     },
 
-    clear: () => {
-      subscriptions.clear();
-    },
+
   };
 
   // Create the mock event manager
@@ -105,7 +115,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
         eventBus.emit(event);
       },
 
-      getEventBus: () => eventBus,
+      getEventBus: () => eventBus as unknown as EventBus<E>,
 
       // Mock event manager methods
       getEmittedEvents: () => [...emittedEvents],
@@ -136,7 +146,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
 export function createMockStateManager<T>(
   initialState: T,
   partialImplementation: Partial<StateManager<T>> = {},
-  type: string = 'mockStateManager',
+  type = 'mockStateManager',
   id?: string
 ): StateManager<T> & MockStateManager<T> {
   // Track state history

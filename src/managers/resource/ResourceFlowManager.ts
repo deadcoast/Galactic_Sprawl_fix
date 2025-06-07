@@ -1,51 +1,56 @@
 import { v4 as uuidv4 } from 'uuid';
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager, ManagerStatus } from '../../lib/managers/BaseManager';
-import {
-  ExtendedResourceMetadata,
-  ResourceQuality,
-  ResourceRegistrationOptions,
-  ResourceRegistry,
-} from '../../registry/ResourceRegistry';
+import
+  {
+    ExtendedResourceMetadata,
+    ResourceQuality,
+    ResourceRegistrationOptions,
+    ResourceRegistry,
+  } from '../../registry/ResourceRegistry';
 import { ResourceRegistryIntegration } from '../../registry/ResourceRegistryIntegration';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { ProcessStatus } from '../../types/resources/ProductionChainTypes';
 import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
-import {
-  ChainExecutionStatus,
-  ConversionChain,
-  ConverterFlowNode,
-  FlowConnection,
-  FlowNode,
-  FlowNodeType,
-  ResourceCategory,
-  ResourceConversionProcess,
-  ResourceConversionRecipe,
-  ResourceFlow,
-  ResourceQuantity,
-  ResourceState,
-  ResourceStateClass,
-  ResourceTransfer,
-  ResourceType,
-  ResourceTypeInfo,
-  ResourceTypeString,
-} from '../../types/resources/ResourceTypes';
-import {
-  ensureEnumResourceType,
-  ensureStringResourceType,
-  stringToResourceType,
-} from '../../utils/resources/ResourceTypeConverter';
+import
+  {
+    ChainExecutionStatus,
+    ConversionChain,
+    ConverterFlowNode,
+    FlowConnection,
+    FlowNode,
+    FlowNodeType,
+    ResourceCategory,
+    ResourceConversionProcess,
+    ResourceConversionRecipe,
+    ResourceFlow,
+    ResourceQuantity,
+    ResourceState,
+    ResourceStateClass,
+    ResourceTransfer,
+    ResourceType,
+    ResourceTypeInfo,
+    ResourceTypeString,
+  } from '../../types/resources/ResourceTypes';
+import
+  {
+    ensureEnumResourceType,
+    ensureStringResourceType,
+    stringToResourceType,
+  } from '../../utils/resources/ResourceTypeConverter';
 import { SpatialIndex, SpatialObject } from '../../utils/spatial/SpatialPartitioning';
-import {
-  FlowOptimizationResult,
-  ResourceFlowWorkerUtil,
-} from '../../utils/workers/ResourceFlowWorkerUtil';
+import
+  {
+    FlowOptimizationResult,
+    ResourceFlowWorkerUtil,
+  } from '../../utils/workers/ResourceFlowWorkerUtil';
 // Import TechTreeManager for tech checks
 import { TechTreeManager } from '../game/techTreeManager'; // Removed getTechTreeManager
 // Helper function to create a default ResourceState
@@ -2554,7 +2559,8 @@ export class ResourceFlowManager
         };
       }
       const currentAmount = node.resources[resource.type].current;
-      const { capacity } = node.resources[resource.type];
+      const resourceState = node.resources[resource.type];
+      const capacity = resourceState.capacity ?? resourceState.max ?? 1000;
       // Ensure we don't exceed capacity if state changed during delay
       const amountToAdd = Math.min(resource.amount, capacity - currentAmount);
       node.resources[resource.type].current += amountToAdd;

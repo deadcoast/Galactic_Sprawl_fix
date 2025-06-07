@@ -5,12 +5,12 @@
  */
 
 import {
-  Theme,
-  ThemeBorderRadius,
-  ThemeBreakpoint,
-  ThemeColorName,
-  ThemeFontSizeName,
-  ThemeSpacingName,
+    Theme,
+    ThemeBorderRadius,
+    ThemeBreakpoint,
+    ThemeColorName,
+    ThemeFontSizeName,
+    ThemeSpacingName,
 } from '../../types/ui/ThemeTypes';
 
 /**
@@ -26,7 +26,7 @@ export const defaultTheme: Theme = {
 
     // Status colors
     [ThemeColorName.SUCCESS]: '#10B981',
-    [ThemeColorName.combatNING]: '#F59E0B',
+    [ThemeColorName.WARNING]: '#F59E0B',
     [ThemeColorName.DANGER]: '#EF4444',
     [ThemeColorName.INFO]: '#3B82F6',
 

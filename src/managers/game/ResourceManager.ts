@@ -1,33 +1,35 @@
-import {
-  DEFAULT_PRODUCTION_RATES,
-  PRODUCTION_INTERVALS,
-  RESOURCE_MANAGER_CONFIG,
-  RESOURCE_PRIORITIES,
-  RESOURCE_THRESHOLDS,
-  STORAGE_EFFICIENCY,
-  TRANSFER_CONFIG,
-} from '../../config/resource/ResourceConfig';
+import
+  {
+    DEFAULT_PRODUCTION_RATES,
+    PRODUCTION_INTERVALS,
+    RESOURCE_MANAGER_CONFIG,
+    RESOURCE_PRIORITIES,
+    RESOURCE_THRESHOLDS,
+    STORAGE_EFFICIENCY,
+    TRANSFER_CONFIG,
+  } from '../../config/resource/ResourceConfig';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService
+  } from '../../services/logging/ErrorLoggingService';
 import { EventHandler } from '../../types/events/EventEmitterInterface';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import {
-  ResourceConsumption as ImportedResourceConsumption,
-  ResourceFlow as ImportedResourceFlow,
-  ResourceProduction as ImportedResourceProduction,
-  ResourceTransfer as ImportedResourceTransfer,
-  ResourceState,
-  ResourceThreshold,
-} from '../../types/resources/ResourceTypes';
-import {
-  ensureEnumResourceType,
-  ensureStringResourceType,
-  toEnumResourceType,
-} from '../../utils/resources/ResourceTypeConverter';
+import
+  {
+    ResourceConsumption as ImportedResourceConsumption,
+    ResourceFlow as ImportedResourceFlow,
+    ResourceProduction as ImportedResourceProduction,
+    ResourceTransfer as ImportedResourceTransfer,
+    ResourceState,
+    ResourceThreshold,
+  } from '../../types/resources/ResourceTypes';
+import
+  {
+    ensureEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType,
+  } from '../../utils/resources/ResourceTypeConverter';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -260,16 +262,30 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   /**
    * @inheritdoc
    */
-  protected onInitialize(_dependencies?: unknown): void {
+  protected async onInitialize(_dependencies?: unknown): Promise<void> {
     // Initialize resources with config limits
     if (this.config.defaultResourceLimits) {
       Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
         const resourceType = ResourceType[type as keyof typeof ResourceType];
         if (limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
-
+          this.initializeResource(resourceType, limits.min, limits.max);
+          errorLoggingService.logInfo(
+            `[ResourceManager] Initialized resource ${resourceType} with limits: min=${limits.min}, max=${limits.max}`,
+            {
+              service: 'ResourceManager',
+              method: 'onInitialize',
+              resourceType: resourceType,
+            }
+          );
+        }
+      });
     } else {
-      console.warn(
-        '[ResourceManager] warning: defaultResourceLimits is null or undefined in config'
+      errorLoggingService.logWarn(
+        '[ResourceManager] warning: defaultResourceLimits is null or undefined in config',
+        {
+          service: 'ResourceManager',
+          method: 'onInitialize',
+        }
       );
     }
 
@@ -286,8 +302,14 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       data: { config: this.config },
     });
 
-    console.warn('[ResourceManager] Initialized with config:', this.config);
-  },
+    errorLoggingService.logInfo('[ResourceManager] Initialized with config', {
+      service: 'ResourceManager',
+      method: 'onInitialize',
+      configKeys: Object.keys(this.config),
+    });
+
+    await Promise.resolve();
+  }
 
   /**
    * @inheritdoc
@@ -316,7 +338,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   /**
    * @inheritdoc
    */
-  protected onDispose(): void {
+  protected async onDispose(): Promise<void> {
     // Stop all production intervals
     for (const [_id, interval] of this.productionIntervals.entries()) {
       clearInterval(interval);
@@ -335,7 +357,12 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.errors.clear();
     this.optimizationStrategies.clear();
 
-    console.warn('[ResourceManager] Disposed');
+    errorLoggingService.logInfo('[ResourceManager] Disposed', {
+      service: 'ResourceManager',
+      method: 'onDispose',
+    });
+
+    await Promise.resolve();
   }
 
   /**
