@@ -1,26 +1,27 @@
 import InfoIcon from '@mui/icons-material/Info';
 import {
-  Box,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  MenuItem,
-  Paper,
-  Select,
-  SelectChangeEvent,
-  Switch,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography,
+    Box,
+    FormControl,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Paper,
+    Select,
+    SelectChangeEvent,
+    Switch,
+    Tab,
+    Tabs,
+    Tooltip,
+    Typography
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 import {
-  ChartDataRecord,
-  ColorAccessorFn,
-  ResourceGridCell,
-  TooltipRenderer,
+    ChartDataRecord,
+    ColorAccessorFn,
+    ResourceGridCell,
+    TooltipRenderer
 } from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
 import { ResourceType, ResourceTypeString } from '../../../types/resources/ResourceTypes';
@@ -307,7 +308,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       sx={{
         p: 2,
         mt: 2,
-        backgroundColor: theme => theme.palette.background.paper,
+        backgroundColor: (theme: Theme) => theme.palette.background.paper,
       }}
     >
       {data?.resourceTypes.map((type: ResourceType) => (
@@ -331,14 +332,14 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const renderInsights = () => {
     if (!data?.insights || data?.insights.length === 0) {
       return (
-        <Paper sx={{ p: 2, mt: 2, backgroundColor: theme => theme.palette.background.paper }}>
+        <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => theme.palette.background.paper }}>
           <Typography variant="body2">No insights available for this analysis.</Typography>
         </Paper>
       );
     }
 
     return (
-      <Paper sx={{ p: 2, mt: 2, backgroundColor: theme => theme.palette.background.paper }}>
+      <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => theme.palette.background.paper }}>
         <Typography variant="h6" sx={{ mb: 1 }}>
           Key Insights
         </Typography>

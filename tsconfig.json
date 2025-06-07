@@ -6,7 +6,6 @@
     "skipLibCheck": true,
     "incremental": false,
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

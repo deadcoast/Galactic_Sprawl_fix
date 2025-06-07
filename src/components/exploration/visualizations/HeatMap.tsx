@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useCallback, useMemo } from 'react';
-import {
-  BaseVisualizationProps,
-  ChartDataRecord,
-} from '../../../types/exploration/AnalysisComponentTypes';
+import
+  {
+    BaseVisualizationProps,
+    ChartDataRecord
+  } from '../../../types/exploration/AnalysisComponentTypes';
 import { BaseChart, ChartTooltipProps } from './BaseChart';
 
 // Cell data structure for the heat map
@@ -142,8 +143,9 @@ export const HeatMap = React.memo(function HeatMap({
       let y: number | undefined;
 
       // Get x and y coordinates from the data point
-      if (typeof item[xKey] === 'number') {
-        x = item[xKey];
+      const xValue = item[xKey];
+      if (typeof xValue === 'number') {
+        x = xValue;
       } else if (xKey.includes('.')) {
         const parts = xKey.split('.');
         let current: unknown = item;
@@ -164,8 +166,9 @@ export const HeatMap = React.memo(function HeatMap({
         }
       }
 
-      if (typeof item[yKey] === 'number') {
-        y = item[yKey];
+      const yValue = item[yKey];
+      if (typeof yValue === 'number') {
+        y = yValue;
       } else if (yKey.includes('.')) {
         const parts = yKey.split('.');
         let current: unknown = item;
@@ -188,8 +191,9 @@ export const HeatMap = React.memo(function HeatMap({
 
       // Get the value to visualize
       let value: number | undefined;
-      if (typeof item[valueKey] === 'number') {
-        value = item[valueKey];
+      const valueData = item[valueKey];
+      if (typeof valueData === 'number') {
+        value = valueData;
       } else if (valueKey.includes('.')) {
         const parts = valueKey.split('.');
         let current: unknown = item;

@@ -1,28 +1,28 @@
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  CartesianGrid,
-  LabelProps,
-  Legend,
-  Line,
-  LineChart as RechartsLineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    CartesianGrid,
+    LabelProps,
+    Legend,
+    Line,
+    LineChart as RechartsLineChart,
+    ReferenceLine,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
 } from 'recharts';
 import {
-  ChartDataRecord,
-  VisualizationValue,
+    ChartDataRecord,
+    VisualizationValue
 } from '../../../types/exploration/AnalysisComponentTypes';
 import {
-  BaseChart,
-  BaseChartProps,
-  DefaultTooltip,
-  formatAxisTick,
-  getColor,
-  ReferenceLine as ReferenceLineType,
+    BaseChart,
+    BaseChartProps,
+    DefaultTooltip,
+    formatAxisTick,
+    getColor,
+    ReferenceLine as ReferenceLineType
 } from './BaseChart';
 
 // Define the dot click event interface
@@ -141,7 +141,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         } as Record<string, VisualizationValue>;
 
         if (dateFormat && typeof item[xAxisKey] === 'number') {
-          result.formattedDate = new Date(item[xAxisKey]).toLocaleDateString();
+          result.formattedDate = new Date(item[xAxisKey] as number).toLocaleDateString();
         }
 
         // Extract all y-axis values

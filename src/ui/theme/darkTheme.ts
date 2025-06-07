@@ -1,4 +1,4 @@
-import { alpha, createTheme } from '@mui/material/styles';
+import { alpha, createTheme } from '@mui/material';
 
 // Define the color palette based on provided HEX codes
 const palette = {

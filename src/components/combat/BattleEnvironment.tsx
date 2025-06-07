@@ -4,9 +4,9 @@ import { CombatAutomationEffect } from '../../effects/component_effects/CombatAu
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
-import { FactionId } from '../../types/ships/FactionShipTypes';
-import { Position } from '../../types/core/GameTypes';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { Position } from '../../types/core/GameTypes';
+import { FactionId } from '../../types/ships/FactionShipTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -430,7 +430,8 @@ export function BattleEnvironment({
         obj: CombatWorkerMessageData | undefined,
         key: keyof CombatWorkerMessageData
       ): string => {
-        return obj && typeof obj[key] === 'string' ? obj[key] : '';
+        const value = obj?.[key];
+        return typeof value === 'string' ? value : '';
       };
 
       const safelyGetPosition = (

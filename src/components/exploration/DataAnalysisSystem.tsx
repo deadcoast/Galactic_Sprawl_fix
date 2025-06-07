@@ -1,34 +1,29 @@
-import
-  {
+import {
     Button,
     CircularProgress,
-    Divider,
-    Grid,
-    Paper,
+    Divider, Paper,
     Tab,
     Tabs,
-    Typography,
-  } from '@mui/material';
+    Typography
+} from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { Component, ErrorInfo, useCallback, useEffect } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
-import
-  {
+import {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
-  } from '../../services/logging/ErrorLoggingService';
+    ErrorType
+} from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
-import
-  {
+import {
     AnalysisConfig,
     AnalysisResult,
     DataPoint,
-    Dataset,
-  } from '../../types/exploration/DataAnalysisTypes';
+    Dataset
+} from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
 import DataPointVirtualList from './DataPointVirtualList';
@@ -674,9 +669,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         <Tab label="Results" />
       </Tabs>
 
-      <Grid container spacing={2}>
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {/* Left Panel */}
-        <Grid item xs={12} md={3}>
+        <div style={{ flex: '0 0 300px', minWidth: '250px' }}>
           {activeTab === 0 && (
             <Paper sx={{ p: 2 }}>
               <DatasetManager
@@ -718,10 +713,10 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
               />
             </Paper>
           )}
-        </Grid>
+        </div>
 
         {/* Center Panel */}
-        <Grid item xs={12} md={activeTab === 0 ? 5 : 9}>
+        <div style={{ flex: activeTab === 0 ? '1 1 400px' : '1 1 600px', minWidth: '300px' }}>
           {activeTab === 0 && selectedDataset && (
             <Paper sx={{ p: 2 }}>
               <div className="mb-2">
@@ -782,11 +777,11 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
               )}
             </Paper>
           )}
-        </Grid>
+        </div>
 
         {/* Right Panel - only visible in dataset tab */}
         {activeTab === 0 && (
-          <Grid item xs={12} md={4}>
+          <div style={{ flex: '0 0 350px', minWidth: '300px' }}>
             <Paper sx={{ p: 2 }}>
               {selectedDataset && (
                 <div className="mb-4">
@@ -814,18 +809,18 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </Typography>
                   <div className="rounded bg-gray-50 p-1">
                     <Typography variant="subtitle1">{selectedDataPoint.name}</Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Type: {selectedDataPoint.type} | ID: {selectedDataPoint.id}
                     </Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Coordinates: ({selectedDataPoint.coordinates.x},{' '}
                       {selectedDataPoint.coordinates.y})
                     </Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Date: {new Date(selectedDataPoint.date).toLocaleString()}
                     </Typography>
 
-                    <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                    <Typography variant="overline" sx={{ display: 'block', mt: 1 }}>
                       Properties
                     </Typography>
 
@@ -841,7 +836,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     {selectedDataPoint.metadata &&
                       Object.keys(selectedDataPoint.metadata).length > 0 && (
                         <>
-                          <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                          <Typography variant="overline" sx={{ display: 'block', mt: 1 }}>
                             Metadata
                           </Typography>
                           <div className="ml-1">
@@ -858,9 +853,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 </>
               )}
             </Paper>
-          </Grid>
+          </div>
         )}
-      </Grid>
+      </div>
     </div>
   );
 }

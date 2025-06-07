@@ -13,25 +13,22 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Anomaly,
-  EXPLORATION_EVENTS,
-  ExplorationManager,
-  Sector,
+    Anomaly, ExplorationManager,
+    Sector
 } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from './logging/ErrorLoggingService';
 
 /**
- * Map of ExplorationEvents to EventType enums
- * This mapping ensures type safety and proper integration between systems
+ * Local constants for exploration event types
+ * Maps directly to EventType enum values for type safety
  */
-const EVENT_TYPE_MAPPING: Record<keyof typeof EXPLORATION_EVENTS, EventType> = {
+const EXPLORATION_EVENTS = {
   SECTOR_DISCOVERED: EventType.EXPLORATION_SECTOR_DISCOVERED,
   SECTOR_SCANNED: EventType.EXPLORATION_SECTOR_SCANNED,
   ANOMALY_DETECTED: EventType.EXPLORATION_ANOMALY_DETECTED,
@@ -41,7 +38,7 @@ const EVENT_TYPE_MAPPING: Record<keyof typeof EXPLORATION_EVENTS, EventType> = {
   SCAN_FAILED: EventType.EXPLORATION_SCAN_FAILED,
   SHIP_ASSIGNED: EventType.EXPLORATION_SHIP_ASSIGNED,
   SHIP_UNASSIGNED: EventType.EXPLORATION_SHIP_UNASSIGNED,
-};
+} as const;
 
 // Define PropertyType for DataPoint properties to fix type issues
 type PropertyType = string | number | boolean | string[];

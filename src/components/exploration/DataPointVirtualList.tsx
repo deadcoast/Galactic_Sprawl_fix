@@ -1,14 +1,12 @@
-import
-  {
+import {
     Chip,
     CircularProgress,
     Divider,
     IconButton,
-    Paper,
-    Tooltip,
-    Typography,
-    styled,
-  } from '@mui/material';
+    Paper, styled, Tooltip,
+    Typography
+} from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { Info, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -38,7 +36,7 @@ const EmptyContainer = styled('div')(() => ({
   borderRadius: '4px',
 }));
 
-const LoadingText = styled(Typography)(({ theme }) => ({
+const LoadingText = styled(Typography)(({ theme }: { theme: Theme }) => ({
   marginLeft: theme.spacing(1),
 }));
 
@@ -48,7 +46,7 @@ const FlexRow = styled('div')(() => ({
   alignItems: 'center',
 }));
 
-const FlexRowGap = styled('div')(({ theme }) => ({
+const FlexRowGap = styled('div')(({ theme }: { theme: Theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
@@ -59,7 +57,7 @@ const StyledChip = styled(Chip)(() => ({
   fontSize: '0.7rem',
 }));
 
-const ExpandedBox = styled('div')(({ theme }) => ({
+const ExpandedBox = styled('div')(({ theme }: { theme: Theme }) => ({
   marginTop: theme.spacing(1.5),
 }));
 
@@ -67,22 +65,22 @@ const StyledDivider = styled(Divider)(() => ({
   marginBottom: 1.5,
 }));
 
-const CaptionBlock = styled(Typography)(({ theme }) => ({
+const CaptionBlock = styled(Typography)(({ theme }: { theme: Theme }) => ({
   display: 'block',
   marginBottom: theme.spacing(1),
 }));
 
-const CaptionBlockSmall = styled(Typography)(({ theme }) => ({
+const CaptionBlockSmall = styled(Typography)(({ theme }: { theme: Theme }) => ({
   display: 'block',
   marginBottom: theme.spacing(0.5),
 }));
 
-const OverlineText = styled(Typography)(({ theme }) => ({
+const OverlineText = styled(Typography)(({ theme }: { theme: Theme }) => ({
   marginTop: theme.spacing(1.5),
   marginBottom: theme.spacing(0.5),
 }));
 
-const PropertyRow = styled('div')(({ theme }) => ({
+const PropertyRow = styled('div')(({ theme }: { theme: Theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   marginBottom: theme.spacing(0.5),
@@ -91,7 +89,7 @@ const PropertyRow = styled('div')(({ theme }) => ({
 // Create styled Paper components for selected and unselected states
 const DataPointPaper = styled(Paper, {
   shouldForwardProp: (prop: PropertyKey) => prop !== 'isSelected',
-})<{ isSelected?: boolean }>(({ theme, isSelected }) => ({
+})<{ isSelected?: boolean }>(({ theme, isSelected }: { theme: Theme; isSelected?: boolean }) => ({
   padding: theme.spacing(1.5),
   margin: theme.spacing(0.5),
   cursor: 'pointer',
@@ -260,7 +258,7 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
                     <Typography variant="caption" color="text.secondary">
                       {key}:
                     </Typography>
-                    <Typography variant="caption" fontWeight="medium">
+                    <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                       {formatValue(value)}
                     </Typography>
                   </PropertyRow>
@@ -277,7 +275,7 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
                         <Typography variant="caption" color="text.secondary">
                           {key}:
                         </Typography>
-                        <Typography variant="caption" fontWeight="medium">
+                        <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                           {formatValue(value)}
                         </Typography>
                       </PropertyRow>
@@ -317,7 +315,7 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
     return (
       <Container>
         <AutoSizer>
-          {({ height: autoHeight, width }) => (
+          {({ height: autoHeight, width }: { height: number; width: number }) => (
             <FixedSizeList
               height={autoHeight}
               width={width}

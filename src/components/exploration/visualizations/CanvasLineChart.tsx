@@ -410,7 +410,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
     const duration = animationDuration;
 
     const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
+      startTimestamp ??= timestamp;
       const elapsed = timestamp - startTimestamp;
 
       const progress = Math.min(elapsed / duration, 1);
@@ -947,7 +947,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
               pointerEvents: 'none',
             }}
           >
-            <Typography variant="caption" component="div" fontWeight="bold">
+            <Typography variant="caption" component="div" sx={{ fontWeight: 'bold' }}>
               {tooltipContent.title}
             </Typography>
             <Typography variant="caption" component="div">
