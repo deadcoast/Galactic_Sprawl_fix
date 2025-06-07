@@ -44,7 +44,7 @@ export interface CombatConfig {
       pattern: 'offensive';
       adaptiveSpacing: boolean;
       transitionSpeed: number;
-      preferredTypes: Array<'spearhead' | 'arrow' | 'wedge'>;
+      preferredTypes: ('spearhead' | 'arrow' | 'wedge')[];
     };
     defensive: {
       spacing: number;
@@ -52,7 +52,7 @@ export interface CombatConfig {
       pattern: 'defensive';
       adaptiveSpacing: boolean;
       transitionSpeed: number;
-      preferredTypes: Array<'shield' | 'circle' | 'diamond'>;
+      preferredTypes: ('shield' | 'circle' | 'diamond')[];
     };
     balanced: {
       spacing: number;
@@ -60,7 +60,7 @@ export interface CombatConfig {
       pattern: 'balanced';
       adaptiveSpacing: boolean;
       transitionSpeed: number;
-      preferredTypes: Array<'line' | 'scattered' | 'diamond'>;
+      preferredTypes: ('line' | 'scattered' | 'diamond')[];
     };
   };
 
@@ -70,16 +70,12 @@ export interface CombatConfig {
     minSpacing: number;
     maxSpacing: number;
     adaptiveSpeedFactor: number;
-    patterns: {
-      [key: string]: {
-        to: {
-          [key: string]: {
+    patterns: Record<string, {
+        to: Record<string, {
             duration: number;
             easingFunction: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut';
-          };
-        };
-      };
-    };
+          }>;
+      }>;
   };
 }
 

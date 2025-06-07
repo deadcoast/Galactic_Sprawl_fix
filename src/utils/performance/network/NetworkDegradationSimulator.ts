@@ -818,8 +818,8 @@ export async function runAcrossNetworkConditions<T>(
   testFn: (condition: NetworkCondition) => Promise<T>,
   conditions: NetworkCondition[] = Object.values(NetworkProfiles),
   options?: EnableOptions
-): Promise<Array<{ condition: NetworkCondition; result: T }>> {
-  const results: Array<{ condition: NetworkCondition; result: T }> = [];
+): Promise<{ condition: NetworkCondition; result: T }[]> {
+  const results: { condition: NetworkCondition; result: T }[] = [];
 
   for (const condition of conditions) {
     try {

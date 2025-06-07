@@ -39,7 +39,7 @@ interface AsteroidField {
   radius: number;
   density: number;
   resources: Map<ResourceType, number>;
-  hazards: Array<Hazard>;
+  hazards: Hazard[];
   status: 'active' | 'depleted';
   createdAt: number;
   lastUpdated: number;

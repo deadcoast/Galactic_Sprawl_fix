@@ -50,15 +50,15 @@ interface ModelData {
  * Uses a linear regression approach with support for online learning
  */
 export class ResourceConsumptionPredictor {
-  private models: Map<ResourceType, ModelData> = new Map();
-  private historicalData: Map<ResourceType, ConsumptionDataPoint[]> = new Map();
-  private predictionCache: Map<ResourceType, ConsumptionPrediction> = new Map();
+  private models = new Map<ResourceType, ModelData>();
+  private historicalData = new Map<ResourceType, ConsumptionDataPoint[]>();
+  private predictionCache = new Map<ResourceType, ConsumptionPrediction>();
 
   // Configuration
   private maxHistoricalDataPoints = 1000;
   private predictionUpdateIntervalMs = 60000; // 1 minute
   private minDataPointsForTraining = 30;
-  private lastPredictionTime: number = 0;
+  private lastPredictionTime = 0;
 
   constructor() {
     this.lastPredictionTime = Date.now();

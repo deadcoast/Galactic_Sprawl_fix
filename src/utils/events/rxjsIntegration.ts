@@ -60,12 +60,12 @@ export function getEventsByData<T>(
       }
 
       // Check if the property exists in event?.data
-      if (!(propertyName in (event?.data as Record<string, unknown>))) {
+      if (!(propertyName in (event?.data))) {
         return false;
       }
 
       // Check if the property value matches
-      return (event?.data as Record<string, unknown>)[propertyName] === propertyValue;
+      return (event?.data)[propertyName] === propertyValue;
     })
   );
 }

@@ -130,7 +130,7 @@ export class SVGRenderer implements ChartRenderer {
     xAxis: ChartAxes['x'],
     yAxis: ChartAxes['y']
   ): ChartScales {
-    if (!data || !data?.datasets || data?.datasets.length === 0) {
+    if (!data?.datasets || data?.datasets.length === 0) {
       return {
         x: { min: 0, max: 1, type: xAxis.type === 'time' ? 'time' : 'linear' },
         y: { min: 0, max: 1, type: yAxis.type === 'log' ? 'linear' : yAxis.type || 'linear' },

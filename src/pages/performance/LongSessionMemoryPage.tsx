@@ -120,7 +120,7 @@ const LongSessionMemoryPage: React.FC = () => {
       if (selectedTest === 'leak') {
         // Run leak detection test
         result = await testSuite.runMemoryLeakDetectionTest(leakRate, testDuration * 1000);
-        setTestResults(result as LongSessionMemoryResult);
+        setTestResults(result);
         setTestBatteryResults(null);
 
         // Generate report
@@ -131,7 +131,7 @@ const LongSessionMemoryPage: React.FC = () => {
       } else if (selectedTest === 'battery') {
         // Run test battery
         result = await testSuite.runTestBattery();
-        setTestBatteryResults(result as Record<string, LongSessionMemoryResult>);
+        setTestBatteryResults(result);
         setTestResults(null);
 
         // Generate report
@@ -142,7 +142,7 @@ const LongSessionMemoryPage: React.FC = () => {
       } else {
         // Run manual test
         result = await testSuite.runTest();
-        setTestResults(result as LongSessionMemoryResult);
+        setTestResults(result);
         setTestBatteryResults(null);
 
         // Generate report

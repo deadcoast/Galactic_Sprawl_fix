@@ -108,7 +108,7 @@ function isTechUnlockData(data: unknown): data is { colonyId: string; project: s
 
 // Change generic type to BaseEvent
 export class ColonyManagerImpl extends AbstractBaseManager<BaseEvent> {
-  private colonies: Map<
+  private colonies = new Map<
     string,
     {
       id: string;
@@ -119,7 +119,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<BaseEvent> {
       activeResearch: Set<string>;
       emergencyProtocols: Set<string>;
     }
-  > = new Map();
+  >();
 
   // Use protected constructor (Implicit from AbstractBaseManager)
   // constructor() {

@@ -11,10 +11,10 @@ export interface VisualEffectConfig {
 export abstract class VisualEffect {
   protected id: string;
   protected config: VisualEffectConfig;
-  protected progress: number = 0;
+  protected progress = 0;
   protected batchId: string | null = null;
   protected startTime: number;
-  protected isComplete: boolean = false;
+  protected isComplete = false;
 
   constructor(config: VisualEffectConfig) {
     this.id = config.id || Math.random().toString(36).substring(7);

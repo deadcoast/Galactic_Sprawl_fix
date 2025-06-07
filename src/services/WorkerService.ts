@@ -41,8 +41,8 @@ export interface WorkerConfig {
 class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
   private workers: Worker[] = [];
   private taskQueue: WorkerTask[] = [];
-  private activeTasks: Map<string, WorkerTask> = new Map();
-  private workerPool: Map<Worker, WorkerTask | null> = new Map();
+  private activeTasks = new Map<string, WorkerTask>();
+  private workerPool = new Map<Worker, WorkerTask | null>();
 
   private config: WorkerConfig = {
     maxWorkers: navigator.hardwareConcurrency || 4,

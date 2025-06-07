@@ -109,10 +109,10 @@ export interface ConfigManagerOptions {
  * Type-safe configuration manager class
  */
 export class TypeSafeConfigManager {
-  private configItems: Map<string, ConfigItem> = new Map();
-  private featureFlags: Map<string, FeatureFlag> = new Map();
-  private configValues: Map<string, unknown> = new Map();
-  private categories: Map<string, ConfigCategory> = new Map();
+  private configItems = new Map<string, ConfigItem>();
+  private featureFlags = new Map<string, FeatureFlag>();
+  private configValues = new Map<string, unknown>();
+  private categories = new Map<string, ConfigCategory>();
   private options: ConfigManagerOptions;
   private userContext: Record<string, unknown> = {};
 
@@ -220,7 +220,7 @@ export class TypeSafeConfigManager {
           throw new Error(`Validation failed for config "${key}": ${validationErrors[0]?.message}`);
         }
 
-        return config.defaultValue as z.infer<T>;
+        return config.defaultValue;
       }
     }
 
@@ -534,7 +534,7 @@ export function useTypedConfig<T extends z.ZodType>(
   defaultValue?: z.infer<T>
 ): z.infer<T> {
   const value = configManager.get<T>(key);
-  return value !== undefined ? value : (defaultValue as z.infer<T>);
+  return value !== undefined ? value : (defaultValue!);
 }
 
 /**

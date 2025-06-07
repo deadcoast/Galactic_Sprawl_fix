@@ -118,30 +118,30 @@ export class AdvancedWeaponEffectManager
   private static instance: AdvancedWeaponEffectManager;
 
   // Store active effects with their complete data
-  private effects: Map<string, AdvancedWeaponEffectType> = new Map();
+  private effects = new Map<string, AdvancedWeaponEffectType>();
 
   // Track beam effects for continuous update
-  private beamEffects: Map<string, BeamEffect> = new Map();
+  private beamEffects = new Map<string, BeamEffect>();
 
   // Track homing effects for targeting updates
-  private homingEffects: Map<string, HomingEffect & { targetPosition: Position }> = new Map();
+  private homingEffects = new Map<string, HomingEffect & { targetPosition: Position }>();
 
   // Track multi-stage effects for stage progression
-  private multiStageEffects: Map<string, MultiStageEffect> = new Map();
+  private multiStageEffects = new Map<string, MultiStageEffect>();
 
   // Track effects that interact with environment
-  private interactiveEffects: Map<string, EnvironmentalInteractionEffect> = new Map();
+  private interactiveEffects = new Map<string, EnvironmentalInteractionEffect>();
 
   // Track effect lifecycle timers
-  private effectTimers: Map<string, number> = new Map();
+  private effectTimers = new Map<string, number>();
 
   // Track active visual configurations
-  private visualConfigs: Map<string, AdvancedEffectVisualConfig> = new Map();
+  private visualConfigs = new Map<string, AdvancedEffectVisualConfig>();
 
   // Implementation of _WeaponEvents interface
   private _effectCreated: _WeaponEvents['effectCreated'] | undefined;
   public get effectCreated(): _WeaponEvents['effectCreated'] {
-    return this._effectCreated as _WeaponEvents['effectCreated'];
+    return this._effectCreated!;
   }
   public set effectCreated(data: _WeaponEvents['effectCreated']) {
     this._effectCreated = data;
@@ -150,7 +150,7 @@ export class AdvancedWeaponEffectManager
 
   private _effectRemoved: _WeaponEvents['effectRemoved'] | undefined;
   public get effectRemoved(): _WeaponEvents['effectRemoved'] {
-    return this._effectRemoved as _WeaponEvents['effectRemoved'];
+    return this._effectRemoved!;
   }
   public set effectRemoved(data: _WeaponEvents['effectRemoved']) {
     this._effectRemoved = data;
@@ -159,7 +159,7 @@ export class AdvancedWeaponEffectManager
 
   private _effectUpdated: _WeaponEvents['effectUpdated'] | undefined;
   public get effectUpdated(): _WeaponEvents['effectUpdated'] {
-    return this._effectUpdated as _WeaponEvents['effectUpdated'];
+    return this._effectUpdated!;
   }
   public set effectUpdated(data: _WeaponEvents['effectUpdated']) {
     this._effectUpdated = data;
@@ -168,7 +168,7 @@ export class AdvancedWeaponEffectManager
 
   private _environmentalInteraction: _WeaponEvents['environmentalInteraction'] | undefined;
   public get environmentalInteraction(): _WeaponEvents['environmentalInteraction'] {
-    return this._environmentalInteraction as _WeaponEvents['environmentalInteraction'];
+    return this._environmentalInteraction!;
   }
   public set environmentalInteraction(data: _WeaponEvents['environmentalInteraction']) {
     this._environmentalInteraction = data;
@@ -727,7 +727,7 @@ export class AdvancedWeaponEffectManager
     const duration = 5 + 2 * config.targetTier;
 
     // Determine hazard types to interact with
-    const interactsWithHazardTypes: Array<'damage' | 'field' | 'weather' | 'anomaly'> = ['damage'];
+    const interactsWithHazardTypes: ('damage' | 'field' | 'weather' | 'anomaly')[] = ['damage'];
     if (config.targetTier >= 2) {
       interactsWithHazardTypes.push('field');
     }
@@ -1163,7 +1163,7 @@ export class AdvancedWeaponEffectManager
   /**
    * Handle impact of an effect with a target
    */
-  public handleImpact(effectId: string, targetId: string, damageMultiplier: number = 1.0): void {
+  public handleImpact(effectId: string, targetId: string, damageMultiplier = 1.0): void {
     const effect = this.effects.get(effectId);
     if (!effect) {
       return;

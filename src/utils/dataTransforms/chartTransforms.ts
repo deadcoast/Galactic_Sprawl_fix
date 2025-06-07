@@ -37,7 +37,7 @@ export function isString(value: unknown): value is string {
 /**
  * Type guard to check if a value is an array
  */
-export function isArray<T = unknown>(value: unknown): value is Array<T> {
+export function isArray<T = unknown>(value: unknown): value is T[] {
   return Array.isArray(value);
 }
 
@@ -232,7 +232,7 @@ export function createColorScale(
  * @param defaultColor Default color if resource type is not recognized
  */
 export function getResourceTypeColor(
-  resourceType: ResourceType | ResourceType,
+  resourceType: ResourceType  ,
   defaultColor = '#888888'
 ): string {
   const resourceTypeColors: Record<ResourceType, string> = {
@@ -318,7 +318,7 @@ export function transformClusterData(
   }
 
   const resultData =
-    result.data && typeof result.data === 'object' ? (result.data as Record<string, unknown>) : {};
+    result.data && typeof result.data === 'object' ? (result.data) : {};
 
   const clusters = safelyExtractArray(resultData, 'clusters', []);
   const features = safelyExtractArray<string>(resultData, 'features', []);
@@ -483,7 +483,7 @@ export function transformResourceMappingData(result: AnalysisResult): {
 
   // Extract with type guards
   const resultData =
-    result.data && typeof result.data === 'object' ? (result.data as Record<string, unknown>) : {};
+    result.data && typeof result.data === 'object' ? (result.data) : {};
 
   // Safely extract all data with proper type checking
   const resourcePoints = safelyExtractArray<DataPoint>(resultData, 'resourcePoints', []);
@@ -526,7 +526,7 @@ export function transformResourceMappingData(result: AnalysisResult): {
   // Use type guards for direct property access
   const insightsData =
     result.insights && Array.isArray(result.insights)
-      ? (result.insights.filter(insight => typeof insight === 'string') as string[])
+      ? (result.insights.filter(insight => typeof insight === 'string'))
       : [];
 
   const summaryText = result.summary && typeof result.summary === 'string' ? result.summary : '';
@@ -552,8 +552,8 @@ export function transformResourceMappingData(result: AnalysisResult): {
  */
 export function transformToScatterFormat(
   dataPoints: DataPoint[],
-  valueMetric: string = 'amount'
-): Array<{
+  valueMetric = 'amount'
+): {
   id: string;
   name: string;
   x: number;
@@ -561,7 +561,7 @@ export function transformToScatterFormat(
   value: number;
   type: string;
   coordinates: { x: number; y: number };
-}> {
+}[] {
   if (!isArray(dataPoints) || dataPoints.length === 0) {
     return [];
   }
@@ -606,20 +606,20 @@ export function transformToScatterFormat(
  */
 export function transformToHeatMapFormat(
   gridCells: ResourceGridCell[],
-  valueMetric: string = 'amount',
-  selectedResourceType: string = 'all'
-): Array<{
+  valueMetric = 'amount',
+  selectedResourceType = 'all'
+): {
   x: number;
   y: number;
   value: number;
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     quality?: number;
     accessibility?: number;
     estimatedValue?: number;
-  }>;
-}> {
+  }[];
+}[] {
   if (!Array.isArray(gridCells)) {
     return [];
   }
@@ -716,13 +716,13 @@ export function formatFilterValue(value: string | number | boolean | [number, nu
  * @param filters Array of filter objects
  */
 export function applyFilters(
-  data: Array<Record<string, unknown>>,
-  filters: Array<{
+  data: Record<string, unknown>[],
+  filters: {
     field: string;
     operator: string;
     value: string | number | boolean | [number, number];
-  }>
-): Array<Record<string, unknown>> {
+  }[]
+): Record<string, unknown>[] {
   if (!Array.isArray(data) || !Array.isArray(filters)) {
     return [];
   }

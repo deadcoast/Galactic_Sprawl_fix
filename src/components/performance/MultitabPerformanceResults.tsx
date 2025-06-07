@@ -186,7 +186,7 @@ export const MultitabPerformanceResults: React.FC<MultitabPerformanceResultsProp
             <Col>
               <Badge
                 status={
-                  getRatingColor() as 'success' | 'error' | 'default' | 'processing' | 'warning'
+                  getRatingColor()
                 }
                 text={getPerformanceRating()}
                 style={{ fontSize: '16px' }}

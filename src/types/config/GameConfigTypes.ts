@@ -5,7 +5,7 @@ import { ResourceType } from '../resources/ResourceTypes';
  */
 export interface GameConfig {
   initialResources: Record<ResourceType | string, number>; // Allow string for now, ideally migrate to ResourceType
-  initialShips: Array<{ type: string; count: number }>; // Replace string with ShipType enum if available
+  initialShips: { type: string; count: number }[]; // Replace string with ShipType enum if available
   worldSize: {
     width: number;
     height: number;

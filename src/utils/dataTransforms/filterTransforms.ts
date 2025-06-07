@@ -43,7 +43,7 @@ export interface Filter {
  */
 export interface FilterGroup {
   type: 'and' | 'or';
-  filters: Array<Filter | FilterGroup>;
+  filters: (Filter | FilterGroup)[];
 }
 
 //=============================================================================
@@ -167,7 +167,7 @@ export function validateFilter(filter: unknown): filter is Filter {
     return false;
   }
 
-  const { field, operator, value } = filter as Record<string, unknown>;
+  const { field, operator, value } = filter;
 
   if (!isString(field) || !isString(operator)) {
     return false;
@@ -470,9 +470,9 @@ export function applyFilterGroup(item: Record<string, unknown>, filterGroup: Fil
  * @param filters Array of filter objects
  */
 export function applyFilters(
-  data: Array<Record<string, unknown>>,
-  filters: Array<Filter>
-): Array<Record<string, unknown>> {
+  data: Record<string, unknown>[],
+  filters: Filter[]
+): Record<string, unknown>[] {
   if (!filters || filters.length === 0) {
     return data;
   }
@@ -492,10 +492,10 @@ export function applyFilters(
  * @param filterGroup Filter group to apply
  */
 export function applyComplexFilter(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   filterGroup: FilterGroup
-): Array<Record<string, unknown>> {
-  if (!filterGroup || !filterGroup.filters || filterGroup.filters.length === 0) {
+): Record<string, unknown>[] {
+  if (!filterGroup?.filters || filterGroup.filters.length === 0) {
     return data;
   }
 
@@ -512,8 +512,8 @@ export function applyComplexFilter(
  * @param sampleSize Number of items to sample (for performance with large datasets)
  */
 export function detectFieldTypes(
-  data: Array<Record<string, unknown>>,
-  sampleSize: number = 100
+  data: Record<string, unknown>[],
+  sampleSize = 100
 ): Record<string, 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'mixed'> {
   if (!data || data?.length === 0) {
     return {};
@@ -594,10 +594,10 @@ export function detectFieldTypes(
  * @param limit Maximum number of unique values to return
  */
 export function getUniqueValues(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   field: string,
-  limit: number = 100
-): Array<string | number | boolean> {
+  limit = 100
+): (string | number | boolean)[] {
   if (!data || data?.length === 0 || !field) {
     return [];
   }
@@ -650,7 +650,7 @@ export function getUniqueValues(
  * @param field Field name
  */
 export function getFieldRange(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   field: string
 ): [number, number] | null {
   if (!data || data?.length === 0 || !field) {

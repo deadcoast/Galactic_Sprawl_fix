@@ -11,11 +11,11 @@ import { ResourceType } from '../resources/ResourceTypes';
  */
 export type EventCallback<T = unknown> = (event: T) => void;
 
-export type EventHandler<T = unknown> = {
+export interface EventHandler<T = unknown> {
   type: string;
   callback: EventCallback<T>;
   once?: boolean;
-};
+}
 
 export type EventUnsubscribe = () => void;
 
@@ -30,19 +30,19 @@ export interface EventEmitter<T = unknown> {
  * Resource Types
  */
 
-export type ResourceOperation<T> = {
+export interface ResourceOperation<T> {
   type: ResourceType;
   data: T;
   timestamp: number;
   metadata?: Record<string, unknown>;
-};
+}
 
-export type ResourceMetrics = {
+export interface ResourceMetrics {
   count: number;
   rate: number;
   efficiency: number;
   utilization: number;
-};
+}
 
 /**
  * Utility Types
@@ -70,9 +70,9 @@ export type AsyncCallback<T = void> = () => Promise<T>;
 
 export type ErrorCallback = (error: Error) => void;
 
-export type Disposable = {
+export interface Disposable {
   dispose(): void;
-};
+}
 
 /**
  * Configuration Types
@@ -88,10 +88,10 @@ export interface ConfigObject {
  * Validation Types
  */
 
-export type ValidationResult = {
+export interface ValidationResult {
   valid: boolean;
   errors: string[];
-};
+}
 
 export type Validator<T> = (value: T) => ValidationResult;
 
@@ -99,15 +99,15 @@ export type Validator<T> = (value: T) => ValidationResult;
  * Data Structure Types
  */
 
-export type Tree<T> = {
+export interface Tree<T> {
   value: T;
   children?: Tree<T>[];
-};
+}
 
-export type Graph<T> = {
+export interface Graph<T> {
   nodes: T[];
   edges: [number, number][];
-};
+}
 
 export type Matrix<T> = T[][];
 
@@ -115,11 +115,11 @@ export type Matrix<T> = T[][];
  * Performance Types
  */
 
-export type PerformanceMetrics = {
+export interface PerformanceMetrics {
   duration: number;
   memory: number;
   cpu: number;
   fps: number;
-};
+}
 
 export type PerformanceCallback = (metrics: PerformanceMetrics) => void;

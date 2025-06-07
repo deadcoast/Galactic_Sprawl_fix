@@ -32,7 +32,7 @@ const useFrame = (callback: (state: FrameState, delta: number) => void): void =>
 };
 
 // Define custom element types for Three.js components
-type ThreeJSElementProps = {
+interface ThreeJSElementProps {
   ref?: React.RefObject<THREE.Object3D | THREE.BufferGeometry | THREE.Material>;
   size?: number;
   transparent?: boolean;
@@ -41,7 +41,7 @@ type ThreeJSElementProps = {
   depthWrite?: boolean;
   intensity?: number;
   [key: string]: unknown;
-};
+}
 
 // src/components/effects/ExplosionEffect.tsx
 interface ExplosionEffectProps {

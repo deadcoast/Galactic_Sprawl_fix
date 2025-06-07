@@ -229,7 +229,7 @@ export function ResourceDiscoverySystem({
         d =>
           d.sectorName.toLowerCase().includes(query) ||
           d.id.toLowerCase().includes(query) ||
-          (d.notes && d.notes.toLowerCase().includes(query))
+          (d.notes?.toLowerCase().includes(query))
       );
     }
 

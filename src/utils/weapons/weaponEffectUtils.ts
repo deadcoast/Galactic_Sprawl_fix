@@ -257,7 +257,7 @@ export function createCustomWeaponEffect(params: {
  */
 export function createScaledWeaponEffect(
   weapon: WeaponSystem & { name?: string },
-  scale: number = 1
+  scale = 1
 ): WeaponEffectType {
   return createDamageEffect({
     id: `${weapon.id}-scaled-effect`,

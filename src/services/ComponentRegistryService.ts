@@ -36,9 +36,9 @@ export interface ComponentRegistration {
  * Service for registering and tracking UI components and their event subscriptions
  */
 class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistryServiceImpl> {
-  private components: Map<string, ComponentRegistration> = new Map();
-  private typeIndex: Map<string, Set<string>> = new Map();
-  private eventIndex: Map<string, Set<string>> = new Map();
+  private components = new Map<string, ComponentRegistration>();
+  private typeIndex = new Map<string, Set<string>>();
+  private eventIndex = new Map<string, Set<string>>();
 
   public constructor() {
     super('ComponentRegistryService', '1.0.0');

@@ -16,7 +16,7 @@ interface AnomalyDetectionConfig {
   // Size of rolling window for calculations
   rollingWindowSize: number;
   // Metrics to analyze for anomalies
-  metricsToAnalyze: Array<keyof PerformanceMetrics>;
+  metricsToAnalyze: (keyof PerformanceMetrics)[];
 }
 
 /**
@@ -151,8 +151,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
       const yScale = d3
         .scaleLinear()
         .domain([
-          (d3.min(metricData, d => d.value) as number) * 0.9,
-          (d3.max(metricData, d => d.value) as number) * 1.1,
+          (d3.min(metricData, d => d.value)!) * 0.9,
+          (d3.max(metricData, d => d.value)!) * 1.1,
         ])
         .range([chartHeight_i, 0]);
 
@@ -222,8 +222,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
 
       // Calculate mean and standard deviation
       const values = metricData.map(d => d.value);
-      const mean = d3.mean(values) as number;
-      const stdDev = d3.deviation(values) as number;
+      const mean = d3.mean(values)!;
+      const stdDev = d3.deviation(values)!;
 
       if (stdDev === 0) return; // Skip if no deviation
 
@@ -264,7 +264,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
   // Analyze correlations between metrics
   const analyzeCorrelations = () => {
     const newCorrelations: MetricCorrelation[] = [];
-    const metricsKeys = Object.keys(metrics) as Array<keyof PerformanceMetrics>;
+    const metricsKeys = Object.keys(metrics) as (keyof PerformanceMetrics)[];
 
     // For each pair of metrics
     for (let i = 0; i < metricsKeys.length; i++) {
@@ -284,7 +284,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
           continue;
 
         // Ensure we have matching timestamps
-        const pairedData: Array<[number, number]> = [];
+        const pairedData: [number, number][] = [];
 
         dataX.forEach(pointX => {
           const matchingY = dataY.find(pointY => pointY.timestamp === pointX.timestamp);
@@ -415,8 +415,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
   // Helper function to calculate autocorrelation
   const calculateAutocorrelation = (values: number[]) => {
     const n = values.length;
-    const mean = d3.mean(values) as number;
-    const variance = d3.variance(values) as number;
+    const mean = d3.mean(values)!;
+    const variance = d3.variance(values)!;
 
     if (variance === 0) return Array(n).fill(0);
 

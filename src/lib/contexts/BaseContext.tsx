@@ -329,7 +329,7 @@ export function createStandardContext<
               handler(event, draft);
 
               // Dispatch an action to update the state
-              dispatch(createUpdateFromEventAction(draft as TState));
+              dispatch(createUpdateFromEventAction(draft));
             });
           });
 

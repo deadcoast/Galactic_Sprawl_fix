@@ -217,7 +217,7 @@ export function NetworkGraph({
     let frameId: number;
 
     const runSimulation = () => {
-      if (!canvasRef.current || !canvasRef.current.getContext('2d')) {
+      if (!canvasRef.current?.getContext('2d')) {
         return;
       }
 

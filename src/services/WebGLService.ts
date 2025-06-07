@@ -66,10 +66,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
   protected metadata: ServiceMetadata;
   private gl: WebGL2RenderingContext | null = null;
   private canvas: HTMLCanvasElement | null = null;
-  private programs: Map<string, ShaderProgram> = new Map();
-  private renderTargets: Map<string, RenderTarget> = new Map();
-  private computePrograms: Map<string, ComputeProgram> = new Map();
-  private storageBuffers: Map<string, StorageBuffer> = new Map();
+  private programs = new Map<string, ShaderProgram>();
+  private renderTargets = new Map<string, RenderTarget>();
+  private computePrograms = new Map<string, ComputeProgram>();
+  private storageBuffers = new Map<string, StorageBuffer>();
   private lastOptions: ExtendedChartOptions | null = null;
 
   // Default shaders
@@ -703,7 +703,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     return storageBuffer;
   }
 
-  public updateStorageBuffer(name: string, data: BufferSource, offset: number = 0): void {
+  public updateStorageBuffer(name: string, data: BufferSource, offset = 0): void {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
     }
@@ -741,7 +741,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     this.gl.getBufferSubData(storageExt.SHADER_STORAGE_BUFFER, 0, output);
   }
 
-  public dispatchCompute(name: string, x: number, y: number = 1, z: number = 1): void {
+  public dispatchCompute(name: string, x: number, y = 1, z = 1): void {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
     }

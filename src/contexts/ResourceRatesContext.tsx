@@ -202,10 +202,10 @@ export const resourceRatesReducer = (
 };
 
 // Create context
-type ResourceRatesContextType = {
+interface ResourceRatesContextType {
   state: ResourceRatesState;
   dispatch: React.Dispatch<ResourceRatesAction>;
-};
+}
 
 const ResourceRatesContext = createContext<ResourceRatesContextType | undefined>(undefined);
 

@@ -48,13 +48,13 @@ export interface DataGenerator<T> {
 
 export class RealTimeDataService extends AbstractBaseService<RealTimeDataService> {
   private static instance: RealTimeDataService;
-  private dataBuffers: Map<string, DataBuffer<unknown>> = new Map();
-  private streamConfigs: Map<string, StreamConfig> = new Map();
-  private streamIds: Map<string, string> = new Map();
-  private listeners: Map<string, Set<(data: unknown[]) => void>> = new Map();
-  private generators: Map<string, DataGenerator<unknown>> = new Map();
-  private dataSources: Map<string, () => Promise<unknown>> = new Map();
-  private subscriptions: Map<string, Set<SubscriptionCallback>> = new Map();
+  private dataBuffers = new Map<string, DataBuffer<unknown>>();
+  private streamConfigs = new Map<string, StreamConfig>();
+  private streamIds = new Map<string, string>();
+  private listeners = new Map<string, Set<(data: unknown[]) => void>>();
+  private generators = new Map<string, DataGenerator<unknown>>();
+  private dataSources = new Map<string, () => Promise<unknown>>();
+  private subscriptions = new Map<string, Set<SubscriptionCallback>>();
   private logger = errorLoggingService; // Use errorLoggingService as the logger
 
   public constructor() {
@@ -212,7 +212,7 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
     }
 
     if (buffer.head <= buffer.tail) {
-      return buffer.data.slice(buffer.head, buffer.tail) as T[];
+      return buffer.data.slice(buffer.head, buffer.tail);
     } else {
       return [...buffer.data.slice(buffer.head), ...buffer.data.slice(0, buffer.tail)] as T[];
     }
@@ -230,10 +230,10 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
   }
 
   public createSineWaveGenerator(
-    amplitude: number = 50,
-    offset: number = 50,
-    period: number = 20,
-    noise: number = 0
+    amplitude = 50,
+    offset = 50,
+    period = 20,
+    noise = 0
   ): DataGenerator<number> {
     let step = 0;
 
@@ -265,8 +265,8 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
   }
 
   public createRandomWalkGenerator(
-    initialValue: number = 50,
-    step: number = 1,
+    initialValue = 50,
+    step = 1,
     bounds: [number, number] = [0, 100]
   ): DataGenerator<number> {
     let currentValue = initialValue;

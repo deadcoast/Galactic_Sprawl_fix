@@ -42,16 +42,16 @@ export class EnvironmentalHazardManager extends TypedEventEmitter<EnvironmentalH
   // private static instance: EnvironmentalHazardManager;
 
   // Store active hazards with their complete data
-  private hazards: Map<string, HazardEffectType> = new Map();
+  private hazards = new Map<string, HazardEffectType>();
 
   // Track moving hazards for efficient updates
-  private movingHazards: Map<string, MovingHazard> = new Map();
+  private movingHazards = new Map<string, MovingHazard>();
 
   // Track splitting hazards
-  private splittingHazards: Map<string, SplittingHazard> = new Map();
+  private splittingHazards = new Map<string, SplittingHazard>();
 
   // Track hazard lifecycle timers
-  private hazardTimers: Map<string, number> = new Map();
+  private hazardTimers = new Map<string, number>();
 
   // Change constructor to protected
   protected constructor() {

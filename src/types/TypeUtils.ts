@@ -35,7 +35,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
 export function hasProperty<K extends string>(
   value: unknown,
   property: K
-): value is { [P in K]: unknown } {
+): value is Record<K, unknown> {
   return isObject(value) && property in value;
 }
 
@@ -45,7 +45,7 @@ export function hasProperty<K extends string>(
 export function hasProperties<K extends string>(
   value: unknown,
   properties: K[]
-): value is { [P in K]: unknown } {
+): value is Record<K, unknown> {
   if (!isObject(value)) return false;
   return properties.every(prop => prop in value);
 }
@@ -101,7 +101,7 @@ export function getPropertySafe<T>(obj: unknown, path: string, defaultValue: T):
     current = current[part];
   }
 
-  return current as unknown as T;
+  return current as T;
 }
 
 /**
@@ -111,7 +111,7 @@ export function isOfType<T, K extends string>(
   obj: unknown,
   discriminator: K,
   value: string
-): obj is T & { [P in K]: string } {
+): obj is T & Record<K, string> {
   return (
     isObject(obj) &&
     hasProperty(obj, discriminator) &&
@@ -152,7 +152,7 @@ export function safeMap<T, U>(
  * Type guard factory - creates type guards for specific interfaces
  */
 export function createTypeGuard<T>(
-  properties: Array<keyof T>,
+  properties: (keyof T)[],
   typeChecks: Partial<Record<keyof T, (val: unknown) => boolean>> = {}
 ): (obj: unknown) => obj is T {
   return (obj: unknown): obj is T => {
@@ -228,7 +228,7 @@ export function createEnumParser<T extends Record<string, string | number>>(
  * Deep readonly type for immutable data
  */
 export type DeepReadonly<T> = T extends (infer R)[]
-  ? ReadonlyArray<DeepReadonly<R>>
+  ? readonly DeepReadonly<R>[]
   : T extends (...args: unknown[]) => unknown
     ? T
     : T extends object

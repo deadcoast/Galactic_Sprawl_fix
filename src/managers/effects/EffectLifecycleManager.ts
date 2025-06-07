@@ -20,7 +20,7 @@ interface Effect {
 export class EffectLifecycleManager {
   private static instance: EffectLifecycleManager;
   private effects: Map<string, Effect>;
-  private cleanupInterval: number = 0;
+  private cleanupInterval = 0;
   private readonly CLEANUP_CHECK_INTERVAL = 1000; // Check every second
   private readonly BATCH_SIZE = 10;
 

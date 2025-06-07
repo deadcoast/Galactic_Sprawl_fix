@@ -179,10 +179,10 @@ export interface CombatMechanicsSystem {
 export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
   private static instance: CombatMechanicsSystemImpl | null = null;
 
-  private combatUnits: Map<string, CombatUnit> = new Map();
-  private projectiles: Map<string, Projectile> = new Map();
-  private activeEffects: Map<string, CombatEffect> = new Map();
-  private activeCombats: Map<string, Set<string>> = new Map(); // unitId -> Set of opponent unitIds
+  private combatUnits = new Map<string, CombatUnit>();
+  private projectiles = new Map<string, Projectile>();
+  private activeEffects = new Map<string, CombatEffect>();
+  private activeCombats = new Map<string, Set<string>>(); // unitId -> Set of opponent unitIds
 
   private eventEmitter = new EventEmitter<CombatEventMap>();
   private idCounter = 0;

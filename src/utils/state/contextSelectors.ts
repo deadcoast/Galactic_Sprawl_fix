@@ -128,7 +128,7 @@ export function createPropertySelector<ContextType, K extends keyof NonNullable<
   property: K
 ) {
   return function usePropertySelector(): NonNullable<ContextType>[K] {
-    return useContextSelector(context, value => (value as NonNullable<ContextType>)[property]);
+    return useContextSelector(context, value => (value)[property]);
   };
 }
 
@@ -147,7 +147,7 @@ export function createNestedPropertySelector<
   return function useNestedPropertySelector(): NonNullable<NonNullable<ContextType>[K1]>[K2] {
     return useContextSelector(context, value => {
       const [key1, key2] = path;
-      const value1 = (value as NonNullable<ContextType>)[key1];
+      const value1 = (value)[key1];
       if (value1 === undefined || value1 === null) {
         throw new Error(
           `Property ${String(key1)} is ${value1 === undefined ? 'undefined' : 'null'}`
@@ -173,7 +173,7 @@ export function createMultiPropertySelector<ContextType, K extends keyof NonNull
     return useContextSelector(context, value => {
       const result = {} as Pick<NonNullable<ContextType>, K>;
       properties.forEach(prop => {
-        result[prop] = (value as NonNullable<ContextType>)[prop];
+        result[prop] = (value)[prop];
       });
       return result;
     });

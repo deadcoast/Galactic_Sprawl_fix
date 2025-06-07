@@ -427,9 +427,7 @@ export interface EventObject<T extends string = string> {
 /**
  * Generic event map interface for strongly typed event data
  */
-export interface EventDataMap {
-  [eventType: string]: unknown;
-}
+export type EventDataMap = Record<string, unknown>;
 
 /**
  * Type-safe event subscription helper
@@ -477,9 +475,7 @@ export type { EventUnsubscribe };
 /**
  * Base structure for event data payloads.
  */
-export interface BaseEventData {
-  [key: string]: unknown;
-}
+export type BaseEventData = Record<string, unknown>;
 
 /**
  * Interface for events carrying specific payload types, enhancing type safety.
@@ -548,7 +544,7 @@ export type EventMap = Record<string, unknown>; // Base type, requires refinemen
  * @template _T A record mapping event type strings to their SpecificEvent types.
  * Example: { 'USER_LOGIN': SpecificEvent<'USER_LOGIN', UserData>, ... }
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export type TypedEventMap<_T extends Record<string, SpecificEvent<string, unknown>>> = {
   [K in keyof _T]: PayloadType<_T[K]>;
 };
@@ -569,8 +565,8 @@ export interface ItemPurchaseData {
 }
 
 // Example of a TypedEventMap using these concrete events
-export type AppEventMap = {
+export interface AppEventMap {
   USER_LOGIN: SpecificEvent<'USER_LOGIN', UserLoginData>;
   ITEM_PURCHASED: SpecificEvent<'ITEM_PURCHASED', ItemPurchaseData>;
   // Add other application-specific events here
-};
+}

@@ -396,7 +396,7 @@ export function renameProperty<T extends Record<string, unknown>, K extends stri
   const { [oldKey]: value, ...rest } = state;
 
   // Create the new object with properly typed properties
-  const result = rest as Omit<T, typeof oldKey>;
+  const result = rest;
   (result as Record<string, unknown>)[newKey] = value;
 
   return result as Omit<T, typeof oldKey> & Record<K, unknown>;
@@ -518,7 +518,7 @@ export function mapArray<T extends Record<string, unknown>, K extends keyof T, V
  */
 export function createMigrationChain<T>(
   fromVersion: number,
-  migrations: Array<{ toVersion: number; transform: MigrationFn<T>; description?: string }>
+  migrations: { toVersion: number; transform: MigrationFn<T>; description?: string }[]
 ): (state: unknown) => T {
   return (state: unknown) => {
     // Sort migrations by version

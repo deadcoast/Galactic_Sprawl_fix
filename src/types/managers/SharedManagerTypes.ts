@@ -85,7 +85,7 @@ export interface MockEventManager<E extends BaseEvent = BaseEvent>
   extends EventCapableManager<E>,
     MockManager {
   getEmittedEvents(): E[];
-  getEventSubscriptions(): Map<string, Array<EventHandler<E>>>;
+  getEventSubscriptions(): Map<string, EventHandler<E>[]>;
   mockEmitEvent(event: E): void;
 }
 
@@ -135,9 +135,7 @@ export interface BaseDTO {
 /**
  * Manager event type mapping interface
  */
-export interface ManagerEventMap {
-  [eventType: string]: unknown;
-}
+export type ManagerEventMap = Record<string, unknown>;
 
 /**
  * Type-safe way to create manager events
@@ -162,17 +160,17 @@ export function createManagerEvent<M extends ManagerEventMap, K extends keyof M 
  */
 export function createMockManager<M extends BaseManager>(
   partialImplementation: Partial<M>,
-  type: string = 'mockManager',
-  id: string = `mock-${type}-${Math.random().toString(36).substr(2, 9)}`
+  type = 'mockManager',
+  id = `mock-${type}-${Math.random().toString(36).substr(2, 9)}`
 ): M & MockManager {
   const calls: Record<string, unknown[][]> = {};
 
   // Since we can't use jest in this file, create mock function types
-  type MockFunction = {
+  interface MockFunction {
     mockClear: () => void;
     mockReset: () => void;
     mockImplementation: (fn: (...args: unknown[]) => unknown) => MockFunction;
-  };
+  }
 
   // Create mock function
   const createMockFn = (): MockFunction & ((...args: unknown[]) => unknown) => {

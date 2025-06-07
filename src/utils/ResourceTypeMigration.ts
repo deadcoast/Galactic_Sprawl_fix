@@ -30,7 +30,7 @@ export type EnumResourceType = ResourceType;
  */
 export function deprecateStringResourceType(
   resourceType: StringResourceType,
-  context: string = 'unknown'
+  context = 'unknown'
 ): StringResourceType {
   // Only log in development to avoid console spam in production
   if (process.env.NODE_ENV !== 'production') {
@@ -53,7 +53,7 @@ export function deprecateStringResourceType(
  */
 export function migrateToEnumResourceType(
   resourceType: StringResourceType,
-  context: string = 'unknown'
+  context = 'unknown'
 ): EnumResourceType | undefined {
   deprecateStringResourceType(resourceType, context);
   return ResourceTypeConverter.stringToEnum(resourceType);

@@ -7,7 +7,7 @@
 type ImportableComponent = () => Promise<unknown>;
 
 // Preload function - accepts a list of import functions to preload
-export const preloadComponents = (imports: Array<ImportableComponent>): void => {
+export const preloadComponents = (imports: ImportableComponent[]): void => {
   // Only preload in production to avoid unnecessary load during development
   if (import.meta.env.PROD) {
     // Use requestIdleCallback if available, otherwise use a short timeout

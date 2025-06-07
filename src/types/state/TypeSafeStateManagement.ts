@@ -120,7 +120,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
    * @returns The builder for chaining
    */
   addDefaultCase(handler: (state: S) => S): ReducerBuilder<S, A> {
-    this.handlers['DEFAULT'] = (state: S) => handler(state);
+    this.handlers.DEFAULT = (state: S) => handler(state);
     return this;
   }
 
@@ -132,7 +132,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
   build(): Reducer<S, A> {
     return (state: S, action: A) => {
       const actionType = action.type as A['type'] | 'DEFAULT';
-      const handler = this.handlers[actionType] ?? this.handlers['DEFAULT'];
+      const handler = this.handlers[actionType] ?? this.handlers.DEFAULT;
       return handler ? handler(state, action) : state;
     };
   }
@@ -306,11 +306,11 @@ export function createAsyncReducer<S, P, R>(
   };
 
   // Create reducer
-  type AsyncState = {
+  interface AsyncState {
     loading: boolean;
     error: Error | null;
     data: R | null;
-  };
+  }
 
   type AsyncReducerState = S & AsyncState;
 

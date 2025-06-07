@@ -95,7 +95,7 @@ export function LineGraph({
 export function createTimeSeriesData(
   values: number[],
   timeLabels: string[],
-  datasetLabel: string = 'Time Series',
+  datasetLabel = 'Time Series',
   color?: string
 ): ChartProps['data'] {
   const data: DataPoint[] = values.map((value, index) => ({

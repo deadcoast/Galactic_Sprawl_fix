@@ -104,10 +104,10 @@ export interface ObjectDetectionSystem {
 export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   private static instance: ObjectDetectionSystemImpl | null = null;
 
-  private detectors: Map<string, DetectorUnit> = new Map();
-  private detectables: Map<string, DetectableObject> = new Map();
-  private detectedObjectsCache: Map<string, Set<string>> = new Map();
-  private detectionConfidenceCache: Map<string, Map<string, number>> = new Map();
+  private detectors = new Map<string, DetectorUnit>();
+  private detectables = new Map<string, DetectableObject>();
+  private detectedObjectsCache = new Map<string, Set<string>>();
+  private detectionConfidenceCache = new Map<string, Map<string, number>>();
   private environmentalFactors: EnvironmentalFactors = {};
   private eventEmitter = new EventEmitter<ObjectDetectionEventMap>();
   private scanLoopActive = false;
@@ -321,7 +321,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
     return new Promise(resolve => {
       const detector = this.detectors.get(detectorId);
 
-      if (!detector || !detector.isActive) {
+      if (!detector?.isActive) {
         resolve([]);
         return;
       }

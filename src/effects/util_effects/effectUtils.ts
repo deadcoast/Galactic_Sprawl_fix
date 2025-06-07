@@ -43,7 +43,7 @@ export function createWeaponEffect(
   baseEffect: BaseEffect,
   strength: number,
   type: 'damage' | 'area' | 'status' = 'damage',
-  duration: number = 0
+  duration = 0
 ): WeaponEffect {
   return {
     ...baseEffect,

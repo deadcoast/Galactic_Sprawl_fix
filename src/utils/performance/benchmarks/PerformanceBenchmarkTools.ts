@@ -743,18 +743,18 @@ export function detectPerformanceRegressions(
   baselineResults: BenchmarkResult[],
   threshold = 5
 ): {
-  regressions: Array<{
+  regressions: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }>;
-  improvements: Array<{
+  }[];
+  improvements: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }>;
+  }[];
   summary: {
     totalTests: number;
     regressionCount: number;
@@ -762,19 +762,19 @@ export function detectPerformanceRegressions(
     unchangedCount: number;
   };
 } {
-  const regressions: Array<{
+  const regressions: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }> = [];
+  }[] = [];
 
-  const improvements: Array<{
+  const improvements: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }> = [];
+  }[] = [];
 
   // Create a map of baseline results for easy lookup
   const baselineMap = new Map(baselineResults.map(result => [result?.name, result]));
@@ -869,8 +869,8 @@ export interface BenchmarkJob {
  * Manages scheduling and execution of benchmark jobs
  */
 export class PerformanceBenchmarkManager {
-  private jobs: Map<string, BenchmarkJob> = new Map();
-  private results: Map<string, BenchmarkResult[]> = new Map();
+  private jobs = new Map<string, BenchmarkJob>();
+  private results = new Map<string, BenchmarkResult[]>();
 
   /**
    * Registers a benchmark job

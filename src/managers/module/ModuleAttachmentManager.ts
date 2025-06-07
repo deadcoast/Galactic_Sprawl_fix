@@ -73,8 +73,8 @@ export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentM
 
   private visualizationOptions: AttachmentVisualizationOptions;
   private previewModule: BaseModule | null = null;
-  private validAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
-  private incompatibleAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
+  private validAttachmentPoints = new Map<string, ModuleAttachmentPoint[]>();
+  private incompatibleAttachmentPoints = new Map<string, ModuleAttachmentPoint[]>();
   private unsubscribeModuleAttached: (() => void) | null = null;
   private unsubscribeModuleDetached: (() => void) | null = null;
 

@@ -144,22 +144,22 @@ export class ResourceRegistry {
   private static _instance: ResourceRegistry | null = null;
 
   // Resource metadata storage
-  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> = new Map();
+  private resourceMetadata = new Map<ResourceType, ExtendedResourceMetadata>();
 
   // Resource category mappings
-  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> = new Map();
+  private resourcesByCategory = new Map<ResourceCategory, Set<ResourceType>>();
 
   // Resource tag mappings
-  private resourcesByTag: Map<string, Set<ResourceType>> = new Map();
+  private resourcesByTag = new Map<string, Set<ResourceType>>();
 
   // Resource quality mappings
-  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> = new Map();
+  private resourcesByQuality = new Map<ResourceQuality, Map<ResourceType, number>>();
 
   // Resource conversion mappings
-  private conversionRates: Map<ResourceType, Map<ResourceType, number>> = new Map();
+  private conversionRates = new Map<ResourceType, Map<ResourceType, number>>();
 
   // Event listeners
-  private listeners: Map<RegistryEventType, Set<(data: RegistryEventData) => void>> = new Map();
+  private listeners = new Map<RegistryEventType, Set<(data: RegistryEventData) => void>>();
 
   // Event emitter for typed events
   private eventEmitter: EventEmitter<ResourceRegistryEvent>;
@@ -341,7 +341,7 @@ export class ResourceRegistry {
     this.resourceMetadata?.delete(resourceType);
 
     // Remove from category
-    const categorySet = this.resourcesByCategory.get(metadata?.category as ResourceCategory);
+    const categorySet = this.resourcesByCategory.get(metadata?.category!);
     if (categorySet) {
       categorySet.delete(resourceType);
     }
@@ -849,7 +849,7 @@ export class ResourceRegistry {
       // Import resources
       Object.entries(data?.resources).forEach(([, metadata]) => {
         this.registerResource({
-          metadata: metadata as ExtendedResourceMetadata,
+          metadata: metadata,
           overrideExisting: true,
         });
       });

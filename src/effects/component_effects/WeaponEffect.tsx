@@ -295,7 +295,7 @@ export class WeaponEffectVisual extends VisualEffect {
   protected override config: WeaponEffectConfig;
   private trailPoints: Position[] = [];
   private impactParticles: Position[] = [];
-  private impactStartTime: number = 0;
+  private impactStartTime = 0;
 
   constructor(config: WeaponEffectConfig) {
     super(config);

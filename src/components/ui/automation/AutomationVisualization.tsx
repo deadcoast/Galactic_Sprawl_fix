@@ -222,7 +222,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     const matchesSystem =
       filter.system === 'all' ||
       (Array.isArray(routine.systems) &&
-        routine.systems.some(sys => sys === (filter.system as SystemId)));
+        routine.systems.some(sys => sys === (filter.system)));
     const matchesStatus =
       filter.status === 'all' ||
       (filter.status === 'active' && routine.enabled) ||

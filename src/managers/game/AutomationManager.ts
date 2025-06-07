@@ -78,19 +78,19 @@ export interface ResourceRatioConditionValue {
 }
 
 export interface MultipleResourcesConditionValue {
-  resources: Array<{
+  resources: {
     resourceType: ResourceType;
     amount: number;
     operator: 'greater' | 'less' | 'equals';
-  }>;
+  }[];
   combinationType: LogicalOperator;
 }
 
 export interface ComplexEventConditionValue {
-  eventSequence: Array<{
+  eventSequence: {
     eventType: string;
     eventData?: Record<string, unknown>;
-  }>;
+  }[];
   timeWindow: number; // milliseconds
   inOrder: boolean;
 }
@@ -209,7 +209,7 @@ export class AutomationManager {
    */
   startRule(ruleId: string): void {
     const rule = this.rules.get(ruleId);
-    if (!rule || !rule.enabled) {
+    if (!rule?.enabled) {
       return;
     }
 

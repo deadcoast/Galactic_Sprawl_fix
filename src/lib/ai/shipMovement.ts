@@ -27,7 +27,7 @@ interface ShipMovementEvents {
 }
 
 class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
-  private movementStates: Map<string, MovementState> = new Map();
+  private movementStates = new Map<string, MovementState>();
 
   constructor() {
     super();

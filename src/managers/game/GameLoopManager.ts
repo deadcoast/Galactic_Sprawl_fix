@@ -66,12 +66,12 @@ export interface GameLoopConfig {
  * Game loop manager for centralized timing and updates
  */
 export class GameLoopManager {
-  private updates: Map<string, UpdateRegistration> = new Map();
-  private running: boolean = false;
-  private lastFrameTime: number = 0;
-  private frameCount: number = 0;
-  private skippedFrames: number = 0;
-  private elapsedTime: number = 0;
+  private updates = new Map<string, UpdateRegistration>();
+  private running = false;
+  private lastFrameTime = 0;
+  private frameCount = 0;
+  private skippedFrames = 0;
+  private elapsedTime = 0;
   private animationFrameId: number | null = null;
   private statsInterval: number | null = null;
   private stats: GameLoopStats;
@@ -360,7 +360,7 @@ export class GameLoopManager {
    */
   private processUpdates(deltaTime: number, elapsedTime: number): void {
     // Group updates by priority
-    const priorityGroups: Map<UpdatePriority, UpdateRegistration[]> = new Map();
+    const priorityGroups = new Map<UpdatePriority, UpdateRegistration[]>();
 
     for (const update of this.updates.values()) {
       if (!priorityGroups.has(update.priority)) {

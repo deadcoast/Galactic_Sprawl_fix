@@ -103,7 +103,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const internalRef = useRef<HTMLInputElement>(null);
 
     // Expose the internal ref imperatively to the parent component
-    useImperativeHandle(ref, () => internalRef.current as HTMLInputElement);
+    useImperativeHandle(ref, () => internalRef.current!);
 
     // Update indeterminate state when it changes
     useEffect(() => {

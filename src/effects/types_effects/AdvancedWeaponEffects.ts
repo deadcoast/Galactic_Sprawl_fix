@@ -116,12 +116,12 @@ export interface BeamEffect extends BaseAdvancedWeaponEffect {
  */
 export interface MultiStageEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  stages: Array<{
+  stages: {
     stageType: 'damage' | 'area' | 'status' | 'movement';
     stageDuration: number;
     stageMultiplier: number;
     interruptible: boolean;
-  }>;
+  }[];
   currentStage: number;
   autoProgress: boolean; // Whether stages progress automatically
   isLooping: boolean; // Whether the effect loops after completion
@@ -150,7 +150,7 @@ export interface HomingEffect extends BaseAdvancedWeaponEffect {
  */
 export interface EnvironmentalInteractionEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  interactsWithHazardTypes: Array<'damage' | 'field' | 'weather' | 'anomaly'>;
+  interactsWithHazardTypes: ('damage' | 'field' | 'weather' | 'anomaly')[];
   hazardInteractions: {
     damageMultiplier: number;
     areaMultiplier: number;

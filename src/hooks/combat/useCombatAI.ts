@@ -185,7 +185,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     let unsubscribeTreeCompleted: (() => void) | undefined;
 
     if (behaviorTreeManager && typeof behaviorTreeManager.on === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+       
       unsubscribeTreeCompleted = behaviorTreeManager.on(
         'treeCompleted',
         handleTreeCompletedInternal as (event: BehaviorEventPayload) => void
@@ -356,7 +356,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     let unsubscribeActionCompleted: (() => void) | undefined;
 
     if (behaviorTreeManager && typeof behaviorTreeManager.on === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+       
       unsubscribeActionCompleted = behaviorTreeManager.on(
         'actionCompleted',
         handleActionCompleted as (event: BehaviorEventPayload) => void

@@ -42,12 +42,8 @@ export interface SessionPerformanceData {
     renderTime: number;
     eventProcessingTime: number;
     interactionLatency: number;
-    loadTimes: {
-      [componentId: string]: number;
-    };
-    eventCounts: {
-      [eventType: string]: number;
-    };
+    loadTimes: Record<string, number>;
+    eventCounts: Record<string, number>;
   };
   userInteractions: UserInteractionData[];
   errors: ErrorData[];
@@ -122,8 +118,8 @@ export class SessionPerformanceTracker {
   private options: TelemetryOptions;
   private transmitInterval: number | null = null;
   private eventSubscription: (() => void) | null = null;
-  private interactionObservers: Map<string, () => void> = new Map();
-  private componentLoadTimers: Map<string, number> = new Map();
+  private interactionObservers = new Map<string, () => void>();
+  private componentLoadTimers = new Map<string, number>();
   private startTime: number;
   private lastTransmitTime: number;
   private accumulatedEventCounts: Record<string, number> = {};
@@ -290,13 +286,13 @@ export class SessionPerformanceTracker {
           'type' in event.data &&
           event.data.type === 'performance_snapshot'
         ) {
-          this.trackPerformanceSnapshot(event.data as Record<string, unknown>);
+          this.trackPerformanceSnapshot(event.data);
         }
       }
 
       // Track errors
       if (event?.type === 'ERROR_OCCURRED') {
-        const errorData = event?.data as Record<string, unknown> | undefined;
+        const errorData = event?.data;
         this.trackError({
           errorType: errorData && typeof errorData.type === 'string' ? errorData.type : 'unknown',
           message:

@@ -17,12 +17,12 @@ export type VisualizationValue = string | number | boolean | null | undefined;
  */
 export interface VisualizationTooltipProps {
   active?: boolean;
-  payload?: Array<{
+  payload?: {
     value: VisualizationValue;
     name?: string;
     dataKey?: string;
     payload?: Record<string, VisualizationValue>;
-  }>;
+  }[];
   label?: string;
 }
 
@@ -81,13 +81,10 @@ export interface BaseVisualizationProps extends BaseChartComponentProps {
  * Extended data record for complex visualization data
  * Allows for both primitive values and nested objects/arrays
  */
-export interface ChartDataRecord {
-  [key: string]:
-    | VisualizationValue
+export type ChartDataRecord = Record<string, | VisualizationValue
     | Record<string, VisualizationValue>
-    | Array<VisualizationValue | Record<string, VisualizationValue>>
-    | { [key: string]: VisualizationValue | Record<string, VisualizationValue> };
-}
+    | (VisualizationValue | Record<string, VisualizationValue>)[]
+    | Record<string, VisualizationValue | Record<string, VisualizationValue>>>;
 
 /**
  * Props for data point visualization components
@@ -148,10 +145,10 @@ export interface ModelMetrics {
 export interface LinearRegressionModelDetails {
   coefficients: number[];
   weights?: number[];
-  featureImportance: Array<{
+  featureImportance: {
     feature: string;
     importance: number;
-  }>;
+  }[];
 }
 
 /**
@@ -195,13 +192,13 @@ export interface PredictionVisualizationProps extends BaseChartComponentProps {
 export interface ResourceGridCell {
   x: number;
   y: number;
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     quality?: number;
     accessibility?: number;
     estimatedValue?: number;
-  }>;
+  }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;

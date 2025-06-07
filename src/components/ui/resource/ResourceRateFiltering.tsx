@@ -206,7 +206,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
     }
 
     const resourceKey = toStringResourceType(resourceType).toLowerCase();
-    const rate = allResourceRates[resourceKey as keyof typeof allResourceRates];
+    const rate = allResourceRates[resourceKey];
     if (!rate) {
       return true;
     }

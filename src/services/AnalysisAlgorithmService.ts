@@ -494,7 +494,7 @@ export class AnalysisAlgorithmService {
 
           return null;
         })
-        .filter(Boolean) as Array<{ x: unknown; y: number }>;
+        .filter(Boolean) as { x: unknown; y: number }[];
 
       // Apply aggregation if specified
       let aggregatedValues = values;
@@ -644,7 +644,7 @@ export class AnalysisAlgorithmService {
   /**
    * Optimized trend line calculation using single-pass algorithm
    */
-  private calculateTrendLineOptimized(values: Array<{ x: unknown; y: number }>): {
+  private calculateTrendLineOptimized(values: { x: unknown; y: number }[]): {
     slope: number;
     intercept: number;
   } {
@@ -1208,7 +1208,7 @@ export class AnalysisAlgorithmService {
 
       // Calculate statistics for each feature within this cluster
       const featureStats = features.map((feature: string, featureIndex: number) => {
-        const typedPoints = points as Array<{ features: number[]; id: string }>;
+        const typedPoints = points as { features: number[]; id: string }[];
         const values = typedPoints
           .map(p => p.features[featureIndex])
           .filter((v: unknown): v is number => v !== null);
@@ -1231,7 +1231,7 @@ export class AnalysisAlgorithmService {
         percentage: (points.length / clusteredPoints.length) * 100,
         centroid,
         featureStats,
-        pointIds: (points as Array<{ id: string }>).map(p => p.id),
+        pointIds: (points as { id: string }[]).map(p => p.id),
       };
     });
 
@@ -1444,7 +1444,7 @@ export class AnalysisAlgorithmService {
   /**
    * Calculate distance between two vectors
    */
-  private calculateDistance(a: number[], b: number[], metric: string = 'euclidean'): number {
+  private calculateDistance(a: number[], b: number[], metric = 'euclidean'): number {
     switch (metric) {
       case 'euclidean':
         return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0));
@@ -1494,16 +1494,16 @@ export class AnalysisAlgorithmService {
     const numClusters = data.numClusters ? (data.numClusters as number) : 0;
     const inertia = data.inertia ? (data.inertia as number) : undefined;
     const clusters = data.clusters
-      ? (data.clusters as Array<{
+      ? (data.clusters as {
           id: number;
           size: number;
-          featureStats: Array<{
+          featureStats: {
             feature: string;
             mean: number;
             min: number;
             max: number;
-          }>;
-        }>)
+          }[];
+        }[])
       : [];
 
     // Generate general insights
@@ -1546,12 +1546,12 @@ export class AnalysisAlgorithmService {
           cluster: {
             id: number;
             size: number;
-            featureStats: Array<{
+            featureStats: {
               feature: string;
               mean: number;
               min: number;
               max: number;
-            }>;
+            }[];
           },
           _i // Prefix unused parameter
         ) => {
@@ -1665,9 +1665,9 @@ export class AnalysisAlgorithmService {
    * Helper method to aggregate values
    */
   private aggregateValues(
-    values: Array<{ x: unknown; y: number }>,
+    values: { x: unknown; y: number }[],
     aggregation: 'sum' | 'average' | 'min' | 'max' | 'count'
-  ): Array<{ x: unknown; y: number }> {
+  ): { x: unknown; y: number }[] {
     // Group by x value
     const groups = new Map<unknown, number[]>();
 
@@ -1680,7 +1680,7 @@ export class AnalysisAlgorithmService {
     }
 
     // Aggregate each group
-    const result: Array<{ x: unknown; y: number }> = [];
+    const result: { x: unknown; y: number }[] = [];
 
     for (const [x, yValues] of groups.entries()) {
       let aggregatedValue: number;
@@ -1807,7 +1807,7 @@ export class AnalysisAlgorithmService {
   /**
    * Calculate linear trend line
    */
-  private calculateTrendLine(values: Array<{ x: unknown; y: number }>): {
+  private calculateTrendLine(values: { x: unknown; y: number }[]): {
     slope: number;
     intercept: number;
   } {
@@ -1822,7 +1822,7 @@ export class AnalysisAlgorithmService {
     }));
 
     // Calculate means
-    const xMean = xyValues.reduce((sum, { x }) => sum + (x as number), 0) / xyValues.length;
+    const xMean = xyValues.reduce((sum, { x }) => sum + (x), 0) / xyValues.length;
     const yMean = xyValues.reduce((sum, { y }) => sum + y, 0) / xyValues.length;
 
     // Calculate slope and intercept using least squares method
@@ -1830,7 +1830,7 @@ export class AnalysisAlgorithmService {
     let denominator = 0;
 
     for (const { x, y } of xyValues) {
-      const xDiff = (x as number) - xMean;
+      const xDiff = (x) - xMean;
       numerator += xDiff * (y - yMean);
       denominator += xDiff * xDiff;
     }
@@ -1852,12 +1852,12 @@ export class AnalysisAlgorithmService {
     values: number[],
     bins: number,
     normalize: boolean
-  ): Array<{
+  ): {
     binStart: number;
     binEnd: number;
     count: number;
     normalizedCount?: number;
-  }> {
+  }[] {
     if (values.length === 0) {
       return [];
     }
@@ -2050,12 +2050,12 @@ export class AnalysisAlgorithmService {
    */
   private generateCorrelationInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const correlations = data?.correlations as Array<{
+    const correlations = data?.correlations as {
       variables: string[];
       coefficient: number;
       strength: string;
       sampleSize: number;
-    }>;
+    }[];
 
     if (correlations.length === 0) {
       insights.push('No significant correlations were found between the analyzed variables.');
@@ -2094,12 +2094,12 @@ export class AnalysisAlgorithmService {
    * Generate a summary for correlation analysis
    */
   private generateCorrelationSummary(data: Record<string, unknown>): string {
-    const correlations = data?.correlations as Array<{
+    const correlations = data?.correlations as {
       variables: string[];
       coefficient: number;
       strength: string;
       sampleSize: number;
-    }>;
+    }[];
 
     if (correlations.length === 0) {
       return 'No significant correlations were found between the analyzed variables.';
@@ -2220,12 +2220,12 @@ export class AnalysisAlgorithmService {
     const targetExtractor = this.getPropertyExtractor(targetVariable);
 
     // Extract feature vectors and target values
-    const dataPoints: Array<{
+    const dataPoints: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }> = [];
+    }[] = [];
 
     dataset.dataPoints.forEach(point => {
       // Extract feature values
@@ -2274,17 +2274,17 @@ export class AnalysisAlgorithmService {
 
     // Train the appropriate prediction model
     let modelResult: {
-      predictions: Array<{
+      predictions: {
         features: number[];
         actual: number;
         predicted: number;
         error?: number;
-      }>;
-      forecast: Array<{
+      }[];
+      forecast: {
         features: number[];
         predicted: number;
         confidence?: [number, number]; // Lower and upper bounds
-      }>;
+      }[];
       metrics: {
         mse: number;
         rmse: number;
@@ -2361,32 +2361,32 @@ export class AnalysisAlgorithmService {
    * Run linear regression model for prediction
    */
   private runLinearRegression(
-    trainingData: Array<{
+    trainingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
-    testingData: Array<{
+    }[],
+    testingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
+    }[],
     featureNames: string[],
     predictionHorizon: number
   ): {
-    predictions: Array<{
+    predictions: {
       features: number[];
       actual: number;
       predicted: number;
       error?: number;
-    }>;
-    forecast: Array<{
+    }[];
+    forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }>;
+    }[];
     metrics: {
       mse: number;
       rmse: number;
@@ -2438,11 +2438,11 @@ export class AnalysisAlgorithmService {
     }));
 
     // Generate forecast for future periods
-    const forecast: Array<{
+    const forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }> = [];
+    }[] = [];
 
     // For time series forecasting
     if (trainingData[0].date !== undefined && predictionHorizon > 0) {
@@ -2622,33 +2622,33 @@ export class AnalysisAlgorithmService {
    * Run neural network model for prediction
    */
   private async runNeuralNetwork(
-    trainingData: Array<{
+    trainingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
-    testingData: Array<{
+    }[],
+    testingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
+    }[],
     featureNames: string[],
     predictionHorizon: number,
     epochs: number
   ): Promise<{
-    predictions: Array<{
+    predictions: {
       features: number[];
       actual: number;
       predicted: number;
       error?: number;
-    }>;
-    forecast: Array<{
+    }[];
+    forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }>;
+    }[];
     metrics: {
       mse: number;
       rmse: number;
@@ -2846,11 +2846,11 @@ export class AnalysisAlgorithmService {
     }));
 
     // Generate forecast for future periods
-    const forecast: Array<{
+    const forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }> = [];
+    }[] = [];
 
     // For time series forecasting
     if (trainingData[0].date !== undefined && predictionHorizon > 0) {
@@ -2973,7 +2973,7 @@ export class AnalysisAlgorithmService {
     const insights: string[] = [];
     const model = data?.model as string;
     const metrics = data?.metrics as { mse: number; rmse: number; mae: number; r2?: number };
-    const forecast = data?.forecast as Array<{ predicted: number; confidence?: [number, number] }>;
+    const forecast = data?.forecast as { predicted: number; confidence?: [number, number] }[];
 
     // Model type and quality insights
     insights.push(
@@ -3005,10 +3005,10 @@ export class AnalysisAlgorithmService {
     if (model === 'linear' && data?.modelDetails) {
       const modelDetails = data.modelDetails as Record<string, unknown>;
       if ('featureImportance' in modelDetails) {
-        const featureImportance = modelDetails.featureImportance as Array<{
+        const featureImportance = modelDetails.featureImportance as {
           feature: string;
           importance: number;
-        }>;
+        }[];
 
         // Sort features by importance
         const sortedFeatures = [...featureImportance].sort((a, b) => b.importance - a.importance);
@@ -3147,13 +3147,13 @@ export class AnalysisAlgorithmService {
       {
         x: number;
         y: number;
-        resources: Array<{
+        resources: {
           type: ResourceType;
           amount: number;
           quality?: number;
           accessibility?: number;
           estimatedValue?: number;
-        }>;
+        }[];
         points: DataPoint[];
       }
     > = {};
@@ -3249,7 +3249,7 @@ export class AnalysisAlgorithmService {
       // Calculate total value based on selected metric
       cell.resources.forEach(resource => {
         const metricValue =
-          resource[valueMetric] !== undefined ? (resource[valueMetric] as number) : resource.amount;
+          resource[valueMetric] !== undefined ? (resource[valueMetric]) : resource.amount;
 
         totalValue += metricValue;
       });
@@ -3354,15 +3354,15 @@ export class AnalysisAlgorithmService {
     const valueMetric = data.valueMetric as string;
 
     // Cast cells to the proper type, now using ResourceType
-    const typedCells = (data.cells || []) as Array<{
+    const typedCells = (data.cells || []) as {
       x: number;
       y: number;
-      resources: Array<{ type: ResourceType; amount: number }>;
+      resources: { type: ResourceType; amount: number }[];
       totalValue: number;
       dominantResource?: ResourceType;
       dominantPercentage?: number;
       totalResourceCount: number;
-    }>;
+    }[];
 
     // Add insights about most abundant resource types
     const sortedDensities = (Object.entries(resourceDensity) as [ResourceType, number][]).sort(
@@ -3392,7 +3392,7 @@ export class AnalysisAlgorithmService {
       const sortedCells = [...typedCells].sort((a, b) => b.totalValue - a.totalValue);
       const topCell = sortedCells[0];
 
-      if (topCell && topCell.dominantResource) {
+      if (topCell?.dominantResource) {
         insights.push(
           `The region with the highest ${valueMetric} concentration is located at coordinates (${topCell.x}, ${topCell.y}), containing primarily ${topCell.dominantResource}.`
         );
@@ -3450,15 +3450,15 @@ export class AnalysisAlgorithmService {
    */
   private generateResourceMappingSummary(data: Record<string, unknown>): string {
     // Cast cells and density correctly
-    const typedCells = (data.cells || []) as Array<{
+    const typedCells = (data.cells || []) as {
       x: number;
       y: number;
-      resources: Array<{ type: ResourceType; amount: number }>;
+      resources: { type: ResourceType; amount: number }[];
       totalValue: number;
       dominantResource?: ResourceType;
       dominantPercentage?: number;
       totalResourceCount: number;
-    }>;
+    }[];
     const resourceDensity = data.resourceDensity as Record<ResourceType, number>;
     const xRange = data.xRange as [number, number];
     const yRange = data.yRange as [number, number];

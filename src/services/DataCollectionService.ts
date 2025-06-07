@@ -240,7 +240,7 @@ interface AggregationResult extends Record<string, unknown> {
  * Service for collecting and preprocessing exploration data
  */
 export class DataCollectionService {
-  private eventSubscriptions: Array<() => void> = [];
+  private eventSubscriptions: (() => void)[] = [];
   private cache: DataCache = {
     sectors: new Map(),
     anomalies: new Map(),
@@ -847,7 +847,7 @@ export class DataCollectionService {
    */
   public filterData(
     data: DataPoint[],
-    filters: Array<{
+    filters: {
       field: string;
       operator:
         | 'equals'
@@ -858,7 +858,7 @@ export class DataCollectionService {
         | 'notContains'
         | 'between';
       value: string | number | boolean | string[] | [number, number];
-    }>
+    }[]
   ): DataPoint[] {
     if (!filters.length) {
       return data;

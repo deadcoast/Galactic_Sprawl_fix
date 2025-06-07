@@ -176,7 +176,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   private logRecoveryAttempt(
     success: boolean,
     error?: Error,

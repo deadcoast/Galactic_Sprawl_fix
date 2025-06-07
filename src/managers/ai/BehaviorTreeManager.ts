@@ -36,8 +36,8 @@ interface BehaviorContext {
 
 // @ts-expect-error: Static side type incompatibility due to generic Singleton constraint
 export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
-  private trees: Map<string, BehaviorNode> = new Map();
-  private contexts: Map<string, BehaviorContext> = new Map();
+  private trees = new Map<string, BehaviorNode>();
+  private contexts = new Map<string, BehaviorContext>();
   private static _instance: BehaviorTreeManager | null = null;
 
   protected constructor() {
@@ -403,7 +403,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
   }
 
   private activateStealth(context: BehaviorContext): void {
-    if (!context.cooldowns['stealth']) {
+    if (!context.cooldowns.stealth) {
       const eventData: BehaviorActionStartedEventData = {
         unitId: context.unit.id,
         actionType: 'stealth',
@@ -414,7 +414,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
         timestamp: Date.now(),
         data: eventData,
       });
-      context.cooldowns['stealth'] = Date.now() + 10000; // 10 second cooldown
+      context.cooldowns.stealth = Date.now() + 10000; // 10 second cooldown
     }
   }
 

@@ -83,14 +83,14 @@ export interface ResourceConversionRecipe {
   id: string;
   name: string;
   description: string;
-  inputs: Array<{
+  inputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
   duration: number;
   energyCost: number;
   requiredLevel: number;
@@ -432,11 +432,11 @@ export interface ResourceConsumption {
  */
 export function createResourceState(
   type: ResourceType | ResourceTypeString,
-  current: number = 0,
-  max: number = 100,
-  min: number = 0,
-  production: number = 0,
-  consumption: number = 0
+  current = 0,
+  max = 100,
+  min = 0,
+  production = 0,
+  consumption = 0
 ): ResourceState {
   const resourceState = new ResourceStateClass({
     type,
@@ -620,7 +620,7 @@ export interface StandardResource {
 /**
  * Represents a quantity of a specific resource.
  */
-export type ResourceQuantity = {
+export interface ResourceQuantity {
   type: ResourceType;
   amount: number;
-};
+}

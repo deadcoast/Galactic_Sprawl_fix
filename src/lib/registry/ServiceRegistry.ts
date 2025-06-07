@@ -200,7 +200,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const managerInitOrder = this.getInitializationOrder([...this.managers.keys()], false);
       for (const managerName of managerInitOrder.reverse()) {
         const entry = this.managers.get(managerName);
-        if (!entry || !entry.initialized) {
+        if (!entry?.initialized) {
           continue;
         }
 
@@ -218,7 +218,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const serviceInitOrder = this.getInitializationOrder([...this.services.keys()], true);
       for (const serviceName of serviceInitOrder.reverse()) {
         const entry = this.services.get(serviceName);
-        if (!entry || !entry.initialized) {
+        if (!entry?.initialized) {
           continue;
         }
 

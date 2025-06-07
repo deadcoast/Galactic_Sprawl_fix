@@ -109,8 +109,8 @@ interface MiningEvent {
  * Checks conditions for automation rules.
  */
 export class ConditionChecker {
-  private lastCheckedTimes: Map<string, number> = new Map();
-  private checkIntervals: Map<string, number> = new Map();
+  private lastCheckedTimes = new Map<string, number>();
+  private checkIntervals = new Map<string, number>();
 
   // Removed type annotations
   private resourceThresholdManager: /* ResourceThresholdManager */ unknown;

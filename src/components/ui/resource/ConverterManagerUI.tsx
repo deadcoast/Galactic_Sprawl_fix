@@ -316,7 +316,7 @@ export const ConverterManagerUI: React.FC /*<ConverterManagerUIProps>*/ = (/*{}*
               <ul>
                 {Array.from(activeChainExecutions.entries())
                   .filter(
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                     
                     ([_, status]) =>
                       status.active &&
                       status.stepStatus.some(

@@ -196,13 +196,13 @@ export interface DataPoint {
  * Manages a particle system for animated data transitions
  */
 export class ParticleSystem {
-  private particles: Map<string, Particle> = new Map();
-  private emitters: Map<string, ParticleEmitterConfig> = new Map();
-  private lastFrameTime: number = 0;
+  private particles = new Map<string, Particle>();
+  private emitters = new Map<string, ParticleEmitterConfig>();
+  private lastFrameTime = 0;
   private animationFrame: number | null = null;
-  private transitionConfigs: Map<string, ParticleTransitionConfig> = new Map();
-  private transitionTimers: Map<string, number> = new Map();
-  private transitionProgress: Map<string, number> = new Map();
+  private transitionConfigs = new Map<string, ParticleTransitionConfig>();
+  private transitionTimers = new Map<string, number>();
+  private transitionProgress = new Map<string, number>();
 
   /**
    * Create a new particle system
@@ -570,7 +570,7 @@ export class ParticleSystem {
   private updateTransitionParticle(particle: Particle, transitionProgress: number): void {
     if (!particle.startPosition || !particle.targetPosition) return;
 
-    const data = particle.data as Record<string, unknown>;
+    const data = particle.data!;
     const staggerDelay = (data.staggerDelay as number) ?? 0;
 
     // Handle staggered start
@@ -789,7 +789,7 @@ export class ParticleSystem {
     let seeds = (particle.data?.randomSeeds as number[]) ?? [];
     if (!seeds.length) {
       seeds = Array.from({ length: 10 }, () => Math.random());
-      (particle.data as Record<string, unknown>).randomSeeds = seeds;
+      (particle.data!).randomSeeds = seeds;
     }
 
     const jitterSize = Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * jitter;
@@ -919,7 +919,7 @@ export class ParticleSystem {
 
       // Handle rgb colors
       if (color.startsWith('rgb')) {
-        const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        const match = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(color);
         if (match) {
           return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
         }

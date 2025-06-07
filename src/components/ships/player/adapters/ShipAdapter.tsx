@@ -322,7 +322,7 @@ export function ShipAdapter({
           maxHealth: commonMappedProps.maxHull,
           shield: commonMappedProps.shield,
           maxShield: commonMappedProps.maxShield,
-          // eslint-disable-next-line no-console
+           
           onStatusChange: (newStatus: string) =>
             console.log('Harbringer status changed:', newStatus),
         };

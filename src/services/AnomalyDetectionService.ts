@@ -28,7 +28,7 @@ export interface StatisticalThresholds {
 
 class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionServiceImpl> {
   private dataPoints: DataPoint[] = [];
-  private anomalyScores: Map<string, AnomalyScore> = new Map();
+  private anomalyScores = new Map<string, AnomalyScore>();
   private thresholds: StatisticalThresholds = {
     zscore: 3,
     iqrFactor: 1.5,

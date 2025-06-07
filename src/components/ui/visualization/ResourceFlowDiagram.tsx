@@ -158,7 +158,7 @@ export const ResourceFlowDiagram = memo(
         const isFiltered =
           selectedResourceTypes &&
           selectedResourceTypes.length > 0 &&
-          (!node.resources || !node.resources.some(r => selectedResourceTypes.includes(r)));
+          (!node.resources?.some(r => selectedResourceTypes.includes(r)));
 
         // Calculate node size based on capacity and current load
         const size = node.capacity

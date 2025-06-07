@@ -49,8 +49,8 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T
   constructor(
     factory: () => T,
     initialSize: number,
-    maxSize: number = 1000,
-    expandSize: number = 50
+    maxSize = 1000,
+    expandSize = 50
   ) {
     super();
     this.factory = factory;

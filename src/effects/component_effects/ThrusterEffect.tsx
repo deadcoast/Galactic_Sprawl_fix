@@ -8,24 +8,22 @@ import { useFrame as ThreeUseFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Define custom element types for Three.js components
-type ThreePointsProps = {
+interface ThreePointsProps {
   ref?: React.RefObject<THREE.Points>;
   [key: string]: unknown;
-};
+}
 
-type ThreeBufferGeometryProps = {
-  [key: string]: unknown;
-};
+type ThreeBufferGeometryProps = Record<string, unknown>;
 
-type ThreeBufferAttributeProps = {
+interface ThreeBufferAttributeProps {
   attach: string;
   count: number;
   array: Float32Array;
   itemSize: number;
   [key: string]: unknown;
-};
+}
 
-type ThreeShaderMaterialProps = {
+interface ThreeShaderMaterialProps {
   attach?: string;
   transparent?: boolean;
   depthWrite?: boolean;
@@ -34,7 +32,7 @@ type ThreeShaderMaterialProps = {
   vertexShader?: string;
   fragmentShader?: string;
   [key: string]: unknown;
-};
+}
 
 // Define mock types if @react-three/fiber is not available
 // This helps TypeScript understand the structure without the actual library

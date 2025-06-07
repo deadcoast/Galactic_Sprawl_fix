@@ -13,15 +13,15 @@ interface EngineTrailConfig extends VisualEffectConfig {
  */
 export class EngineTrailEffect extends VisualEffect {
   protected override config: EngineTrailConfig;
-  private trailPoints: Array<{
+  private trailPoints: {
     position: Position;
     size: number;
     opacity: number;
     rotation: number;
     time: number;
-  }> = [];
-  private lastEmitTime: number = 0;
-  private emitInterval: number = 50; // ms
+  }[] = [];
+  private lastEmitTime = 0;
+  private emitInterval = 50; // ms
 
   constructor(config: EngineTrailConfig) {
     super(config);

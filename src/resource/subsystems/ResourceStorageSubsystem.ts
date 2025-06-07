@@ -490,7 +490,7 @@ export class ResourceStorageSubsystem {
     containers: StorageContainerState[],
     resourceType: ResourceTypeString,
     forRetrieval = false
-  ): Array<{ containerId: string; score: number }> {
+  ): { containerId: string; score: number }[] {
     const weights = {
       containerPriority: 0.4,
       resourcePriority: 0.4,
@@ -838,7 +838,7 @@ export class ResourceStorageSubsystem {
     const stringType = ensureStringResourceType(type);
 
     const container = this.containers.get(containerId);
-    if (!container || !container.resources.has(stringType)) {
+    if (!container?.resources.has(stringType)) {
       return null;
     }
 

@@ -363,7 +363,7 @@ export function getFitToViewportTransform(
   height: number,
   contentWidth: number,
   contentHeight: number,
-  padding: number = 20
+  padding = 20
 ): d3.ZoomTransform {
   // Calculate scale to fit content
   const scaleX = (width - padding * 2) / contentWidth;

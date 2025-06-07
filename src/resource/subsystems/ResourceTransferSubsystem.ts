@@ -101,7 +101,7 @@ export class ResourceTransferSubsystem {
    */
   private handleTransferRequest = (event: Record<string, unknown>): void => {
     const { type, amount, sourceId, targetId } = event as {
-      type: StringResourceType | ResourceType;
+      type: StringResourceType  ;
       amount: number;
       sourceId: string;
       targetId: string;
@@ -124,7 +124,7 @@ export class ResourceTransferSubsystem {
    * Transfer resources between entities
    */
   public transferResource(
-    type: StringResourceType | ResourceType,
+    type: StringResourceType  ,
     amount: number,
     sourceId: string,
     targetId: string
@@ -172,7 +172,7 @@ export class ResourceTransferSubsystem {
    */
   public bulkTransfer(
     transfers: {
-      type: StringResourceType | ResourceType;
+      type: StringResourceType  ;
       amount: number;
       sourceId: string;
       targetId: string;
@@ -232,7 +232,7 @@ export class ResourceTransferSubsystem {
   /**
    * Get transfer history for a specific resource type
    */
-  public getTransfersByType(type: StringResourceType | ResourceType): StringResourceTransfer[] {
+  public getTransfersByType(type: StringResourceType  ): StringResourceTransfer[] {
     const stringType = ensureStringResourceType(type);
     return this.transferHistory.filter(transfer => transfer.type === stringType);
   }
@@ -260,7 +260,7 @@ export class ResourceTransferSubsystem {
    */
   public calculateNetFlow(
     entityId: string,
-    resourceType?: StringResourceType | ResourceType
+    resourceType?: StringResourceType  
   ): Record<string, number> {
     const netFlow: Record<string, number> = {};
 

@@ -1360,7 +1360,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Set vertex attributes
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.position!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.position);
     this.gl.vertexAttribPointer(
       lineShader.attributes.get('a_position')!.location,
       2, // size (x, y)
@@ -1371,7 +1371,7 @@ export class WebGLRenderer implements ChartRenderer {
     );
     this.gl.enableVertexAttribArray(lineShader.attributes.get('a_position')!.location);
 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.color!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.color);
     this.gl.vertexAttribPointer(
       lineShader.attributes.get('a_color')!.location,
       4, // size (r, g, b, a)
@@ -1383,7 +1383,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.enableVertexAttribArray(lineShader.attributes.get('a_color')!.location);
 
     // Draw lines
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.lines.indices!);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.lines.indices);
     this.gl.drawElements(this.gl.LINES, this.buffers.lines.count, this.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -1418,7 +1418,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Set vertex attributes
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.position!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.position);
     this.gl.vertexAttribPointer(
       pointShader.attributes.get('a_position')!.location,
       2, // size (x, y)
@@ -1429,7 +1429,7 @@ export class WebGLRenderer implements ChartRenderer {
     );
     this.gl.enableVertexAttribArray(pointShader.attributes.get('a_position')!.location);
 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.color!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.color);
     this.gl.vertexAttribPointer(
       pointShader.attributes.get('a_color')!.location,
       4, // size (r, g, b, a)
@@ -1441,7 +1441,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.enableVertexAttribArray(pointShader.attributes.get('a_color')!.location);
 
     // Draw points
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.points.indices!);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.points.indices);
     this.gl.drawElements(this.gl.POINTS, this.buffers.points.count, this.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -1884,11 +1884,11 @@ export class WebGLRenderer implements ChartRenderer {
     data: ChartData,
     options: ExtendedChartOptions,
     chartArea: ChartArea
-  ): Array<{
+  ): {
     dataset: ChartData['datasets'][0];
     point: ChartData['datasets'][0]['data'][0];
     datasetIndex: number;
-  }> {
+  }[] {
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
     const yAxis = options?.axes?.y || { type: 'linear' };

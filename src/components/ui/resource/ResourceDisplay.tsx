@@ -31,7 +31,7 @@ interface ResourceEventData {
 }
 
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
-  if (!event || !event.data || typeof event.data !== 'object') {
+  if (!event?.data || typeof event.data !== 'object') {
     return false;
   }
 

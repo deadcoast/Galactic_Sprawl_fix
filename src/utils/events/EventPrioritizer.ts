@@ -164,7 +164,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
   /**
    * Priority queues for each priority level
    */
-  private queues: Map<EventPriority, PrioritizedEvent<T>[]> = new Map();
+  private queues = new Map<EventPriority, PrioritizedEvent<T>[]>();
 
   /**
    * Whether the prioritizer is currently processing
@@ -184,12 +184,12 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
   /**
    * Map of event type to latest event (for coalescing)
    */
-  private latestEventByType: Map<string, PrioritizedEvent<T>> = new Map();
+  private latestEventByType = new Map<string, PrioritizedEvent<T>>();
 
   /**
    * Set of active subscriptions
    */
-  private subscriptions: Set<Subscription> = new Set();
+  private subscriptions = new Set<Subscription>();
 
   /**
    * Performance metrics

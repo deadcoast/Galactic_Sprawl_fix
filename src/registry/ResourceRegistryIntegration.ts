@@ -14,10 +14,10 @@ import { RegistryEventData, ResourceRegistry } from './ResourceRegistry';
 interface ResourceFlowManager {
   // Add minimal interface needed for this integration
   getAllResourceStates?: () => Map<string, { available: number }>;
-  getAllConversionRecipes?: () => Array<{
+  getAllConversionRecipes?: () => {
     input: { type: string; amount: number };
     output: { type: string; amount: number };
-  }>;
+  }[];
   setConversionRate?: (sourceType: string, targetType: string, rate: number) => void;
 }
 

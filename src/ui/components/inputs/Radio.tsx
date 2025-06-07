@@ -245,11 +245,11 @@ export interface RadioGroupProps
   /**
    * Radio options
    */
-  options?: Array<{
+  options?: {
     value: string;
     label: React.ReactNode;
     disabled?: boolean;
-  }>;
+  }[];
 
   /**
    * Callback when selection changes
@@ -338,8 +338,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 
   // Render radios from options if provided
   const radioOptions =
-    options &&
-    options.map(option => (
+    options?.map(option => (
       <Radio
         key={option.value}
         name={name}

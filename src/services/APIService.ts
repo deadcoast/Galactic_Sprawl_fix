@@ -35,8 +35,8 @@ export interface TimeSeriesAggregation {
 }
 
 class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
-  private activeStreams: Map<string, AbortController> = new Map();
-  private streamListeners: Map<string, Set<(data: unknown) => void>> = new Map();
+  private activeStreams = new Map<string, AbortController>();
+  private streamListeners = new Map<string, Set<(data: unknown) => void>>();
 
   private defaultStreamConfig: StreamConfig = {
     batchSize: 100,
@@ -87,7 +87,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
       // Make request
       const response = await fetch(`${endpoint}?${queryParams}`);
-      if (!response || !response.ok) {
+      if (!response?.ok) {
         throw new Error(`HTTP error! status: ${response?.status}`);
       }
 
@@ -177,7 +177,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
         // Fetch next batch
         const response = await fetch(`${endpoint}?${queryParams}`, { signal });
-        if (!response || !response.ok) {
+        if (!response?.ok) {
           throw new Error(`HTTP error! status: ${response?.status}`);
         }
 
@@ -242,7 +242,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
       });
 
       const response = await fetch(`${endpoint}/aggregate?${queryParams}`);
-      if (!response || !response.ok) {
+      if (!response?.ok) {
         throw new Error(`HTTP error! status: ${response?.status}`);
       }
 

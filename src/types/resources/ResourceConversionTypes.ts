@@ -24,14 +24,14 @@ export interface ChainExecutionStatus {
   progress: number;
   resourceTransfers: unknown[];
   errorMessage?: string;
-  stepStatus: Array<{
+  stepStatus: {
     recipeId: string;
     status: ProcessStatus;
     startTime: number;
     endTime: number;
     processId: string;
     converterId?: string;
-  }>;
+  }[];
 }
 
 /**
@@ -84,14 +84,14 @@ export interface ResourceConversionRecipe {
   id: string;
   name: string;
   description: string;
-  inputs: Array<{
+  inputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
   duration: number;
   energyCost: number;
   requiredLevel: number;
@@ -107,14 +107,14 @@ export interface ExtendedResourceConversionRecipe {
   id: string;
   name: string;
   description: string;
-  inputs: Array<{
+  inputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
   duration: number;
   energyCost: number;
   requiredLevel: number;

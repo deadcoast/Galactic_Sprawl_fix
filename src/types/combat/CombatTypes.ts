@@ -26,11 +26,11 @@ export type {
 };
 
 // Combat-specific types
-export type CombatUnitStatus = {
+export interface CombatUnitStatus {
   main: 'active' | 'disabled' | 'destroyed';
   secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting';
   effects: string[];
-};
+}
 
 export interface CombatUnit {
   id: string;

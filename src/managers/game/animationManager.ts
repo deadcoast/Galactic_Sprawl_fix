@@ -25,7 +25,7 @@ interface AnimationInstance {
 
 export class AnimationManager {
   private static instance: AnimationManager;
-  private animations: Map<string, AnimationInstance> = new Map();
+  private animations = new Map<string, AnimationInstance>();
 
   private constructor() {}
 

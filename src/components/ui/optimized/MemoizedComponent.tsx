@@ -123,9 +123,7 @@ export function withMemoizationForcombatdRef<P extends object, T = unknown>(
   // Set display name
   MemoizedComponent.displayName = displayName;
 
-  return MemoizedComponent as MemoExoticComponent<
-    ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>
-  >;
+  return MemoizedComponent;
 }
 
 /**

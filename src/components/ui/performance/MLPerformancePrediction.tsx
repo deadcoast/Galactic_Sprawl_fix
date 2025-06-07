@@ -16,7 +16,7 @@ interface MLPredictionConfig {
   // Number of iterations for training
   iterations: number;
   // Metrics to analyze and predict
-  metricsToPredict: Array<keyof PerformanceMetrics>;
+  metricsToPredict: (keyof PerformanceMetrics)[];
   // Window size for feature extraction
   windowSize: number;
 }
@@ -537,8 +537,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
       const yScale = d3
         .scaleLinear()
         .domain([
-          (d3.min(allData, d => d.value) as number) * 0.9,
-          (d3.max(allData, d => d.value) as number) * 1.1,
+          (d3.min(allData, d => d.value)!) * 0.9,
+          (d3.max(allData, d => d.value)!) * 1.1,
         ])
         .range([chartHeight_i, 0]);
 

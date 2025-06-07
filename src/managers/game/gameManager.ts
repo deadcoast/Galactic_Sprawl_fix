@@ -16,10 +16,10 @@ export interface GameManagerEvent extends BaseEvent {
  * Manager responsible for controlling the game loop and time
  */
 export class GameManager extends AbstractBaseManager<GameManagerEvent> {
-  private isRunning: boolean = false;
-  private isPaused: boolean = false;
-  private gameTime: number = 0;
-  private lastUpdate: number = 0;
+  private isRunning = false;
+  private isPaused = false;
+  private gameTime = 0;
+  private lastUpdate = 0;
   private frameId: number | null = null;
 
   constructor() {

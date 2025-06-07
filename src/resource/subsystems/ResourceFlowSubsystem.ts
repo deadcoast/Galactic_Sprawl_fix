@@ -74,22 +74,22 @@ interface WorkerOptimizationResult {
  */
 export class ResourceFlowSubsystem {
   // Flow network data structures
-  private nodes: Map<string, FlowNode> = new Map();
-  private connections: Map<string, FlowConnection> = new Map();
-  private sourceConnections: Map<string, string[]> = new Map();
-  private targetConnections: Map<string, string[]> = new Map();
+  private nodes = new Map<string, FlowNode>();
+  private connections = new Map<string, FlowConnection>();
+  private sourceConnections = new Map<string, string[]>();
+  private targetConnections = new Map<string, string[]>();
 
   // Type-specific node registries
-  private producerNodes: Map<string, FlowNode> = new Map();
-  private consumerNodes: Map<string, FlowNode> = new Map();
-  private storageNodes: Map<string, FlowNode> = new Map();
-  private converterNodes: Map<string, FlowNode> = new Map();
+  private producerNodes = new Map<string, FlowNode>();
+  private consumerNodes = new Map<string, FlowNode>();
+  private storageNodes = new Map<string, FlowNode>();
+  private converterNodes = new Map<string, FlowNode>();
 
   // Resource tracking
-  private resourceStates: Map<ResourceType, ResourceState> = new Map();
-  private resourceProducers: Map<ResourceType, string[]> = new Map();
-  private resourceConsumers: Map<ResourceType, string[]> = new Map();
-  private resourceStorage: Map<ResourceType, string[]> = new Map();
+  private resourceStates = new Map<ResourceType, ResourceState>();
+  private resourceProducers = new Map<ResourceType, string[]>();
+  private resourceConsumers = new Map<ResourceType, string[]>();
+  private resourceStorage = new Map<ResourceType, string[]>();
 
   // Processing state
   private transferHistory: ResourceTransfer[] = [];
@@ -626,7 +626,7 @@ export class ResourceFlowSubsystem {
               // Keep resources as Record<ResourceType, ResourceState>
               return {
                 id: node.id,
-                type: node.type as FlowNodeType,
+                type: node.type,
                 name: node.id, // Use ID as name
                 capacity: node.capacity || 100, // Use node capacity or default
                 currentLoad: 0, // Placeholder
@@ -656,7 +656,7 @@ export class ResourceFlowSubsystem {
             new Map(
               Object.entries(Object.fromEntries(this.resourceStates)).map(([key, value]) => [
                 key as ResourceType,
-                value as ResourceState,
+                value,
               ])
             )
           );
@@ -784,7 +784,7 @@ export class ResourceFlowSubsystem {
    */
   private processAdvancedConverter(
     converter: FlowNode,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     _activeConnections: FlowConnection[]
   ): void {
     // Implementation of advanced converter logic will go here
@@ -1221,7 +1221,7 @@ export class ResourceFlowSubsystem {
           source: wc.source,
           target: wc.target,
           resourceTypes:
-            wc.resourceTypes || (wc.resourceType ? [wc.resourceType as ResourceType] : []),
+            wc.resourceTypes || (wc.resourceType ? [wc.resourceType] : []),
           maxRate: wc.maxRate ?? existingConn?.maxRate ?? 0,
           currentRate: wc.currentRate ?? existingConn?.currentRate ?? 0,
           priority:

@@ -47,7 +47,7 @@ export function convertToModule(baseModule: BaseModule | undefined): Module | un
     isActive: baseModule.isActive || false,
     level: baseModule.level || 1,
     progress: baseModule.progress,
-    subModules: baseModule.subModules as Array<unknown>,
+    subModules: baseModule.subModules as unknown[],
     parentModuleId: baseModule.parentModuleId,
   };
 }

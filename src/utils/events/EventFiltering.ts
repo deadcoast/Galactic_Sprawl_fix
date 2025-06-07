@@ -17,7 +17,7 @@ export type BatchProcessor<T, R> = (events: T[]) => R;
  * Event priority queue for handling events based on priority
  */
 export class EventPriorityQueue<T extends { priority?: number }> {
-  private queues: Map<number, T[]> = new Map();
+  private queues = new Map<number, T[]>();
   private processing = false;
   private processingPromise: Promise<void> | null = null;
   private processor: (event: T) => Promise<void> | void;
@@ -419,7 +419,7 @@ export function createBatchProcessor<T, R>(
 } {
   const batch: T[] = [];
   let timeout: NodeJS.Timeout | null = null;
-  const resultCallbacks: Set<(result: R) => void> = new Set();
+  const resultCallbacks = new Set<(result: R) => void>();
 
   const processCurrentBatch = (): R | null => {
     if (batch.length === 0) {

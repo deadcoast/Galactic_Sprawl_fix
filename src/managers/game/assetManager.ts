@@ -18,7 +18,7 @@ interface AssetBundle {
 
 export class AssetManager {
   private static instance: AssetManager;
-  private loadedAssets: Map<string, PIXI.Texture | PIXI.Spritesheet> = new Map();
+  private loadedAssets = new Map<string, PIXI.Texture | PIXI.Spritesheet>();
   private loadPromise: Promise<void> | null = null;
 
   // Asset bundles configuration

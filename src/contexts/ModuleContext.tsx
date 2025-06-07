@@ -256,11 +256,11 @@ export const selectModulesByStatus = (state: ModuleState, status: ModuleStatus) 
 };
 
 // Context type definition
-type ModuleContextType = {
+interface ModuleContextType {
   state: ModuleState;
   dispatch: React.Dispatch<ModuleAction>;
   manager?: IModuleManager; // Use the extended interface
-};
+}
 
 // Create context
 const ModuleContext = createContext<ModuleContextType | undefined>(undefined);
@@ -624,7 +624,7 @@ export const useModuleActions = () => {
 
     activateModule: useCallback(
       (moduleId: string) => {
-        if (manager && manager.activateModule) {
+        if (manager?.activateModule) {
           manager.activateModule(moduleId);
         }
       },
@@ -633,7 +633,7 @@ export const useModuleActions = () => {
 
     deactivateModule: useCallback(
       (moduleId: string) => {
-        if (manager && manager.deactivateModule) {
+        if (manager?.deactivateModule) {
           manager.deactivateModule(moduleId);
         }
       },

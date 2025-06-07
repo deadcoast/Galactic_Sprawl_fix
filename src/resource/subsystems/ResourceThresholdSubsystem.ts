@@ -47,7 +47,7 @@ export enum ThresholdAction {
  */
 export interface ResourceThreshold {
   id: string;
-  resourceType: StringResourceType | ResourceType;
+  resourceType: StringResourceType  ;
   thresholdType: ThresholdType;
   comparison: ThresholdComparison;
   value: number;
@@ -66,9 +66,9 @@ export interface ResourceThreshold {
  * Monitors resource levels and triggers actions when thresholds are reached
  */
 export class ResourceThresholdSubsystem {
-  private thresholds: Map<string, ResourceThreshold> = new Map();
-  private resourceTypeThresholds: Map<StringResourceType, string[]> = new Map();
-  private entityThresholds: Map<string, string[]> = new Map();
+  private thresholds = new Map<string, ResourceThreshold>();
+  private resourceTypeThresholds = new Map<StringResourceType, string[]>();
+  private entityThresholds = new Map<string, string[]>();
   private parentSystem: ResourceSystem;
   private config: ResourceSystemConfig;
   private isInitialized = false;
@@ -249,7 +249,7 @@ export class ResourceThresholdSubsystem {
   /**
    * Get thresholds for a specific resource type
    */
-  public getThresholdsByResourceType(type: StringResourceType | ResourceType): ResourceThreshold[] {
+  public getThresholdsByResourceType(type: StringResourceType  ): ResourceThreshold[] {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
@@ -385,7 +385,7 @@ export class ResourceThresholdSubsystem {
    * Check thresholds for a specific resource type
    */
   public checkThresholds(
-    type: StringResourceType | ResourceType,
+    type: StringResourceType  ,
     state: StringResourceState,
     entityId?: string
   ): void {
