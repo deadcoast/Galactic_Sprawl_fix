@@ -1,5 +1,6 @@
 import InfoIcon from '@mui/icons-material/Info';
-import {
+import
+  {
     Box,
     FormControl,
     FormControlLabel,
@@ -13,16 +14,17 @@ import {
     Tabs,
     Tooltip,
     Typography
-} from '@mui/material';
+  } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import {
+import
+  {
     ChartDataRecord,
     ColorAccessorFn,
     ResourceGridCell,
     TooltipRenderer
-} from '../../../types/exploration/AnalysisComponentTypes';
+  } from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
 import { ResourceType, ResourceTypeString } from '../../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../../../utils/resources/ResourceTypeConverter';
@@ -53,17 +55,10 @@ const safeGetNumber = (value: unknown, fallback = 0): number => {
   return fallback;
 };
 
-// Safe theme background color access
-const getThemeBackgroundPaper = (theme: Theme): string => {
-  try {
-    if (theme?.palette?.background?.paper && typeof theme.palette.background.paper === 'string') {
-      return theme.palette.background.paper;
-    }
-    return '#ffffff'; // Default fallback
-  } catch (error) {
-    console.warn('Failed to access theme background paper color:', error);
-    return '#ffffff';
-  }
+// Static background color to avoid theme access issues
+const getThemeBackgroundPaper = (): string => {
+  // Use static value to avoid TypeScript theme access issues
+  return '#ffffff';
 };
 
 /**
@@ -345,7 +340,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       sx={{
         p: 2,
         mt: 2,
-        backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme),
+        backgroundColor: getThemeBackgroundPaper(),
       }}
     >
       {data?.resourceTypes.map((type: ResourceType) => (
