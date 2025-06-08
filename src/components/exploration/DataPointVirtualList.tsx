@@ -1,11 +1,12 @@
-import {
+import
+  {
     Chip,
     CircularProgress,
     Divider,
     IconButton,
     Paper, styled, Tooltip,
     Typography
-} from '@mui/material';
+  } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import { Info, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
@@ -14,7 +15,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { DataPoint } from '../../types/exploration/DataAnalysisTypes';
 
-// Type-safe theme access helpers
+// Type-safe theme access helpers with proper error handling
 const getThemeValue = (theme: Theme, path: string, fallback = ''): string => {
   try {
     const parts = path.split('.');
@@ -29,27 +30,29 @@ const getThemeValue = (theme: Theme, path: string, fallback = ''): string => {
     }
     
     return typeof value === 'string' ? value : fallback;
-  } catch (error) {
-    console.warn(`Failed to access theme path "${path}":`, error);
+  } catch {
+    // Return fallback on any error during theme access
     return fallback;
   }
 };
 
 const getThemeSpacing = (theme: Theme, multiplier: number): string => {
   try {
-    if (typeof theme.spacing === 'function') {
-      const result = theme.spacing(multiplier);
-      if (typeof result === 'string') {
-        return result;
-      } else if (typeof result === 'number') {
-        return `${result}px`;
-      } else {
-        return `${multiplier * 8}px`;
+    // Type guard to check if spacing is a function
+    if (theme.spacing && typeof theme.spacing === 'function') {
+      // Explicit type assertion after type guard check
+      const spacingFn = theme.spacing as (value: number) => string | number;
+      const spacingResult = spacingFn(multiplier);
+      if (typeof spacingResult === 'string') {
+        return spacingResult;
+      } else if (typeof spacingResult === 'number') {
+        return `${spacingResult}px`;
       }
     }
+    // Fallback calculation
     return `${multiplier * 8}px`;
-  } catch (error) {
-    console.warn(`Failed to get theme spacing for multiplier ${multiplier}:`, error);
+  } catch {
+    // Return fallback calculation on any error
     return `${multiplier * 8}px`;
   }
 };
