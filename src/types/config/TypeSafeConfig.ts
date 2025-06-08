@@ -204,8 +204,7 @@ export class TypeSafeConfigManager {
     // Validate if required
     if (this.options?.validateOnAccess) {
       try {
-        const parsedValue = config.schema.parse(value);
-        return parsedValue as z.infer<T>;
+        return config.schema.parse(value) as unknown as z.infer<T>;
       } catch (error) {
         const zodError = error as z.ZodError;
         const validationErrors = this.formatZodErrors(key, zodError);
@@ -231,7 +230,7 @@ export class TypeSafeConfigManager {
           throw new Error(`Validation failed for config "${key}": ${validationErrors[0]?.message}`);
         }
 
-        return config.defaultValue;
+        return config.defaultValue as unknown as z.infer<T>;
       }
     }
 
@@ -507,10 +506,10 @@ export function createConfigItem<T extends z.ZodType>(
     key,
     schema,
     defaultValue,
-    name: options?.name || key,
-    description: options?.description || '',
+    name: options?.name ?? key,
+    description: options?.description ?? '',
     category: options?.category,
-    tags: options?.tags || [],
+    tags: options?.tags ?? [],
     metadata: options?.metadata,
     isSecret: options?.isSecret,
     isRequired: options?.isRequired,
@@ -529,9 +528,9 @@ export function createFeatureFlag(
   return {
     key,
     defaultValue,
-    name: options?.name || key,
-    description: options?.description || '',
-    status: options?.status || FeatureStatus.DISABLED,
+    name: options?.name ?? key,
+    description: options?.description ?? '',
+    status: options?.status ?? FeatureStatus.DISABLED,
     targeting: options?.targeting,
     metadata: options?.metadata,
   };
@@ -546,7 +545,7 @@ export function useTypedConfig<T extends z.ZodType>(
   defaultValue?: z.infer<T>
 ): z.infer<T> {
   const value = configManager.get<T>(key);
-  return value !== undefined ? value : (defaultValue!);
+  return value ?? defaultValue!;
 }
 
 /**
@@ -558,5 +557,5 @@ export function useFeatureFlag(
   defaultValue = false
 ): boolean {
   const isEnabled = configManager.isFeatureEnabled(key);
-  return isEnabled !== undefined ? isEnabled : defaultValue;
+  return isEnabled ?? defaultValue;
 }
