@@ -6,15 +6,12 @@
  * that implement the interfaces defined in SharedManagerTypes.ts
  */
 
-import { EventType } from '../events/EventTypes';
-import { BaseEvent, EventBus } from '../events/SharedEventTypes';
+import { BaseEvent } from '../events/SharedEventTypes';
 import
   {
     EventCapableManager,
-    MockEventManager,
-    MockStateManager,
-    StateManager,
-    createMockManager,
+    MockEventManager, MockStateManager,
+    StateManager
   } from './SharedManagerTypes';
 
 /**
@@ -27,112 +24,147 @@ import
 export function createMockEventManager<E extends BaseEvent = BaseEvent>(
   partialImplementation: Partial<EventCapableManager<E>> = {},
   type = 'mockEventManager',
-  id?: string
+  id = `mock-${type}-${Math.random().toString(36).substr(2, 9)}`
 ): EventCapableManager<E> & MockEventManager<E> {
   // Track emitted events and subscriptions
   const emittedEvents: E[] = [];
-  const subscriptions = new Map<string, ((data: E) => void)[]>();
-  const subscriptionIdCounter = { value: 0 };
+  const subscriptions = new Map<string, ((event: E) => void)[]>();
 
-  // Create a simple event bus implementation  
-  const eventBus: Partial<EventBus<E>> & {
-    emit: (event: E) => boolean;
-    on: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => () => void;
-    off: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => void;
-    subscribe: (eventType: EventType | '*', handler: (event: E) => void) => () => void;
-    unsubscribe: (subscriptionId: string) => void;
-    subscribeMultiple: (eventTypes: string[], handler: (event: E) => void) => () => void;
-  } = {
-    // Basic EventEmitter methods
-    emit: (event: E) => {
-      emittedEvents.push(event);
-      const handlers = subscriptions.get(event?.type) ?? [];
-      handlers.forEach(handler => handler(event));
-      return true;
+  // Create minimal event bus mock that satisfies the interface
+  const createMockEventBus = () => {
+    const mockBus = {
+      // Add minimal required properties to satisfy EventBus interface
+      subscriptions: new Map(),
+      history: [],
+      latestEvents: new Map(),
+      maxHistorySize: 100,
+      
+      // Core methods that are actually used
+      emit: (event: E) => {
+        emittedEvents.push(event);
+        const handlers = subscriptions.get(event?.type) ?? [];
+        handlers.forEach(handler => handler(event));
+        return true;
+      },
+      
+      on: (eventName: string, handler: (event: E) => void) => {
+        const handlers = subscriptions.get(eventName) ?? [];
+        handlers.push(handler);
+        subscriptions.set(eventName, handlers);
+        return () => {
+          const currentHandlers = subscriptions.get(eventName) ?? [];
+          const index = currentHandlers.indexOf(handler);
+          if (index !== -1) {
+            currentHandlers.splice(index, 1);
+            subscriptions.set(eventName, currentHandlers);
+          }
+        };
+      },
+      
+      off: (eventName: string, handler: (event: E) => void) => {
+        const handlers = subscriptions.get(eventName) ?? [];
+        const index = handlers.indexOf(handler);
+        if (index !== -1) {
+          handlers.splice(index, 1);
+          subscriptions.set(eventName, handlers);
+        }
+      },
+    };
+    
+    // Add all other required properties with default implementations
+    return new Proxy(mockBus, {
+      get: (target, prop) => {
+        if (prop in target) {
+          return target[prop as keyof typeof target];
+        }
+        // Return a no-op function for any missing methods
+        return () => undefined;
+      }
+    });
+  };
+
+  // Create complete implementation
+  const completeImplementation: EventCapableManager<E> & MockEventManager<E> = {
+    // Base manager properties
+    id,
+    type,
+    isInitialized: false,
+
+    // Base manager methods
+    initialize: () => Promise.resolve(),
+    dispose: () => {
+      // Clean up subscriptions and events
+      subscriptions.clear();
+      emittedEvents.length = 0;
     },
 
-    on: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => {
-      const handlers = subscriptions.get(eventName) ?? [];
-      handlers.push(handler as unknown as (data: E) => void);
-      subscriptions.set(eventName, handlers);
+    // Event manager methods
+    subscribeToEvent: (eventType: string, handler: (event: E) => void) => {
+      const handlers = subscriptions.get(eventType) ?? [];
+      handlers.push(handler);
+      subscriptions.set(eventType, handlers);
       return () => {
-        const currentHandlers = subscriptions.get(eventName) ?? [];
-        const index = currentHandlers.indexOf(handler as unknown as (data: E) => void);
+        const currentHandlers = subscriptions.get(eventType) ?? [];
+        const index = currentHandlers.indexOf(handler);
         if (index !== -1) {
           currentHandlers.splice(index, 1);
-          subscriptions.set(eventName, currentHandlers);
+          subscriptions.set(eventType, currentHandlers);
         }
       };
     },
 
-    off: <TEventData = unknown>(eventName: string, handler: (data: TEventData) => void) => {
-      const handlers = subscriptions.get(eventName) ?? [];
-      const index = handlers.indexOf(handler as unknown as (data: E) => void);
+    unsubscribeFromEvent: (eventType: string, handler: (event: E) => void) => {
+      const handlers = subscriptions.get(eventType) ?? [];
+      const index = handlers.indexOf(handler);
       if (index !== -1) {
         handlers.splice(index, 1);
-        subscriptions.set(eventName, handlers);
+        subscriptions.set(eventType, handlers);
       }
     },
 
-    // Extended EventBus methods
-    subscribe: (eventType: EventType | '*', handler: (event: E) => void) => {
-      return eventBus.on(eventType as string, handler);
+    emitEvent: (event: E) => {
+      emittedEvents.push(event);
+      const handlers = subscriptions.get(event?.type) ?? [];
+      handlers.forEach(handler => handler(event));
     },
 
-    unsubscribe: (subscriptionId: string) => {
-      // For simplicity, we'll clear all subscriptions for this mock implementation
-      // In a real implementation, you'd track subscription IDs and remove specific ones
-      console.warn(`Mock unsubscribe called with ID ${subscriptionId}, but not fully implemented`);
+    getEventBus: () => {
+      // Return a mock event bus that implements the minimum required interface
+      const mockEventBus = createMockEventBus();
+      // Type assertion is necessary here for mock implementations in testing
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
+      return mockEventBus as any;
     },
 
-    subscribeMultiple: (eventTypes: string[], handler: (event: E) => void) => {
-      const unsubscribers: (() => void)[] = eventTypes.map(type =>
-        eventBus.on(type, handler)
-      );
+    // Mock event manager methods
+    getEmittedEvents: () => [...emittedEvents],
 
-      // Return combined unsubscribe function
-      return () => {
-        unsubscribers.forEach(unsubscribe => unsubscribe());
-      };
+    getEventSubscriptions: () => new Map(subscriptions),
+
+    mockEmitEvent: (event: E) => {
+      emittedEvents.push(event);
+      const handlers = subscriptions.get(event?.type) ?? [];
+      handlers.forEach(handler => handler(event));
     },
 
+    // Mock manager methods
+    mockClear: () => {
+      emittedEvents.length = 0;
+      subscriptions.clear();
+    },
 
+    mockReset: () => {
+      emittedEvents.length = 0;
+      subscriptions.clear();
+    },
+
+    getMockCalls: () => ({}),
+
+    // Apply partial implementation overrides
+    ...partialImplementation,
   };
 
-  // Create the mock event manager
-  return createMockManager<EventCapableManager<E> & MockEventManager<E>>(
-    {
-      // Event manager methods
-      subscribeToEvent: (type: string, handler: (event: E) => void) => {
-        return eventBus.on(type, handler) ?? (() => {});
-      },
-
-      unsubscribeFromEvent: (type: string, handler: (event: E) => void) => {
-        eventBus.off(type, handler);
-      },
-
-      emitEvent: (event: E) => {
-        eventBus.emit(event);
-      },
-
-      getEventBus: () => eventBus as unknown as EventBus<E>,
-
-      // Mock event manager methods
-      getEmittedEvents: () => [...emittedEvents],
-
-      getEventSubscriptions: () => new Map(subscriptions),
-
-      mockEmitEvent: (event: E) => {
-        emittedEvents.push(event);
-        const handlers = subscriptions.get(event?.type) ?? [];
-        handlers.forEach(handler => handler(event));
-      },
-
-      ...partialImplementation,
-    },
-    type,
-    id
-  );
+  return completeImplementation;
 }
 
 /**
@@ -147,39 +179,66 @@ export function createMockStateManager<T>(
   initialState: T,
   partialImplementation: Partial<StateManager<T>> = {},
   type = 'mockStateManager',
-  id?: string
+  id = `mock-${type}-${Math.random().toString(36).substr(2, 9)}`
 ): StateManager<T> & MockStateManager<T> {
   // Track state history
   const stateHistory: T[] = [initialState];
   let currentState = { ...initialState };
 
-  // Create the mock state manager
-  return createMockManager<StateManager<T> & MockStateManager<T>>(
-    {
-      // State manager methods
-      getState: () => ({ ...currentState }) as T,
-
-      setState: (state: Partial<T>) => {
-        currentState = { ...currentState, ...state };
-        stateHistory.push({ ...currentState });
-      },
-
-      resetState: () => {
-        currentState = { ...initialState };
-        stateHistory.push({ ...currentState });
-      },
-
-      // Mock state manager methods
-      getStateHistory: () => [...stateHistory],
-
-      simulateStateChange: (state: Partial<T>) => {
-        currentState = { ...currentState, ...state };
-        stateHistory.push({ ...currentState });
-      },
-
-      ...partialImplementation,
-    },
+  // Create complete implementation
+  const completeImplementation: StateManager<T> & MockStateManager<T> = {
+    // Base manager properties
+    id,
     type,
-    id
-  );
+    isInitialized: false,
+
+    // Base manager methods
+    initialize: () => Promise.resolve(),
+    dispose: () => {
+      // Reset to initial state on disposal
+      currentState = { ...initialState };
+      stateHistory.length = 0;
+      stateHistory.push(initialState);
+    },
+
+    // State manager methods
+    getState: () => ({ ...currentState }),
+
+    setState: (state: Partial<T>) => {
+      currentState = { ...currentState, ...state };
+      stateHistory.push({ ...currentState });
+    },
+
+    resetState: () => {
+      currentState = { ...initialState };
+      stateHistory.push({ ...currentState });
+    },
+
+    // Mock state manager methods
+    getStateHistory: () => [...stateHistory],
+
+    simulateStateChange: (state: Partial<T>) => {
+      currentState = { ...currentState, ...state };
+      stateHistory.push({ ...currentState });
+    },
+
+    // Mock manager methods
+    mockClear: () => {
+      stateHistory.length = 0;
+      stateHistory.push({ ...currentState });
+    },
+
+    mockReset: () => {
+      currentState = { ...initialState };
+      stateHistory.length = 0;
+      stateHistory.push(initialState);
+    },
+
+    getMockCalls: () => ({}),
+
+    // Apply partial implementation overrides
+    ...partialImplementation,
+  };
+
+  return completeImplementation;
 }

@@ -157,6 +157,8 @@ export function createManagerEvent<M extends ManagerEventMap, K extends keyof M 
 
 /**
  * Helper to create mock managers for testing
+ * Note: This function uses Object.assign with complex type merging for mock creation
+ * The unsafe return is acceptable for testing utilities
  */
 export function createMockManager<M extends BaseManager>(
   partialImplementation: Partial<M>,
@@ -259,11 +261,14 @@ export function createMockManager<M extends BaseManager>(
       // Use proper function wrapping with tracking
       (mockImplementation as Record<string, unknown>)[key] = (...args: unknown[]) => {
         calls[key].push(args);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return value.apply(mockImplementation, args);
       };
     }
   });
 
   // Return the implementation directly - it already has the correct type
+  // Testing utility function - unsafe return is acceptable for mock creation
+   
   return mockImplementation;
 }
