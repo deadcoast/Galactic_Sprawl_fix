@@ -104,7 +104,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
     {
       // Event manager methods
       subscribeToEvent: (type: string, handler: (event: E) => void) => {
-        return eventBus.on(type, handler);
+        return eventBus.on(type, handler) ?? (() => {});
       },
 
       unsubscribeFromEvent: (type: string, handler: (event: E) => void) => {
@@ -157,7 +157,7 @@ export function createMockStateManager<T>(
   return createMockManager<StateManager<T> & MockStateManager<T>>(
     {
       // State manager methods
-      getState: () => ({ ...currentState }),
+      getState: () => ({ ...currentState }) as T,
 
       setState: (state: Partial<T>) => {
         currentState = { ...currentState, ...state };
