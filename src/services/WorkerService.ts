@@ -14,6 +14,28 @@ import {
     errorLoggingService,
     ErrorType
 } from './logging/ErrorLoggingService';
+
+// Interface for worker response messages
+interface WorkerResponseMessage {
+  taskId: string;
+  type: 'progress' | 'result' | 'error';
+  data: unknown;
+}
+
+// Type guard for worker response messages
+const isWorkerResponseMessage = (data: unknown): data is WorkerResponseMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'taskId' in data &&
+    'type' in data &&
+    'data' in data &&
+    typeof (data as Record<string, unknown>).taskId === 'string' &&
+    typeof (data as Record<string, unknown>).type === 'string' &&
+    ['progress', 'result', 'error'].includes((data as Record<string, unknown>).type as string)
+  );
+};
+
 export interface WorkerTask<T = unknown> {
   id: string;
   type: string;
@@ -102,6 +124,13 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
 
   private setupWorker(worker: Worker): void {
     worker.onmessage = (event: MessageEvent) => {
+      if (!isWorkerResponseMessage(event.data)) {
+        errorLoggingService.logWarn('Received invalid worker message format', {
+          data: JSON.stringify(event.data).substring(0, 200)
+        });
+        return;
+      }
+
       const { taskId, type, data } = event.data;
       const task = this.activeTasks.get(taskId);
 
@@ -109,13 +138,16 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
 
       switch (type) {
         case 'progress':
-          task.progress = data;
+          if (typeof data === 'number') {
+            task.progress = data;
+          }
           break;
         case 'result':
           this.completeTask(taskId, data);
           break;
         case 'error':
-          this.failTask(taskId, new Error(data));
+          const errorMessage = typeof data === 'string' ? data : 'Unknown error occurred';
+          this.failTask(taskId, new Error(errorMessage));
           break;
       }
     };
@@ -125,7 +157,8 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
         task => this.workerPool.get(worker) === task
       );
       if (task) {
-        this.failTask(task.id, error.error);
+        const errorInstance = error.error instanceof Error ? error.error : new Error(error.message || 'Worker error');
+        this.failTask(task.id, errorInstance);
       }
     };
   }
@@ -147,7 +180,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_tasks = (metrics.total_tasks ?? 0) + 1;
     this.metadata.metrics = metrics;
 
@@ -231,7 +264,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.active_tasks = this.activeTasks.size;
     this.metadata.metrics = metrics;
 
@@ -254,7 +287,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.completed_tasks = (metrics.completed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
 

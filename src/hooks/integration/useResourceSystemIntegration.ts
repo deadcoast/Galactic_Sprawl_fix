@@ -9,13 +9,13 @@ import
   {
     getResourceConversionManager,
     getResourceFlowManager,
-    getResourceManager,
+    getResourceManager
   } from '../../managers/ManagerRegistry';
 import
   {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
+    ErrorType
   } from '../../services/logging/ErrorLoggingService';
 import { EventType, isResourceUpdateEventData } from '../../types/events/EventTypes';
 import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
@@ -334,9 +334,11 @@ export function useResourceActions() {
  */
 export function useResourceSystemIntegration(enableLogging = false) {
   // const dispatch = useAppDispatch();
-  const _resourceFlowManager = getResourceFlowManager(); // underscore to indicate intentional unused
-  const _resourceConversionManager = getResourceConversionManager();
+  const resourceFlowManager = getResourceFlowManager(); // underscore to indicate intentional unused
+  const resourceConversionManager = getResourceConversionManager();
   const resourceManager = getResourceManager(); // frequently used
+  void resourceFlowManager;
+  void resourceConversionManager;
 
   if (enableLogging) {
     // Minimal debug log to avoid no-console rule; replace with logger if available

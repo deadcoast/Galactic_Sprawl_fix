@@ -121,20 +121,17 @@ export function createTypedZoomBehavior<Element extends d3.ZoomedElementBaseType
   }
 
   // Configure wheel zoom
-  if (config.wheelZoom !== undefined) {
-    // If wheelZoom is false, we need to filter out wheel events
-    if (!config.wheelZoom) {
-      const originalFilter = zoom.filter();
-      // The unknown cast is necessary here due to d3's complex typing
-      // Adjust the filter function to match D3's expected signature
-      // Capture datum `d` in the filter function signature
-      zoom.filter(function (this: Element, event: Event, d: Datum) {
-        // Check if the event is a wheel event and call the original filter
-        return (
-          event.type !== 'wheel' && originalFilter.call(this, event, d) // Pass correct arguments: event and datum
-        );
-      });
-    }
+  if (config.wheelZoom !== undefined && !config.wheelZoom) {
+        const originalFilter = zoom.filter();
+        // The unknown cast is necessary here due to d3's complex typing
+        // Adjust the filter function to match D3's expected signature
+        // Capture datum `d` in the filter function signature
+        zoom.filter(function (this: Element, event: Event, d: Datum) {
+          // Check if the event is a wheel event and call the original filter
+          return (
+            event.type !== 'wheel' && originalFilter.call(this, event, d) // Pass correct arguments: event and datum
+          );
+        });
   }
 
   // Configure double-click zoom
@@ -219,7 +216,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   if (config.enablePan === false) {
     // Disable panning by only allowing scaling transformations
     zoom.on('zoom', (event: TypedZoomEvent<Element, Datum>) => {
-      const transform = event.transform;
+      const {transform} = event;
       const newTransform = d3.zoomIdentity.scale(transform.k);
 
       if (config.targetElement) {

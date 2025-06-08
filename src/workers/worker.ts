@@ -20,6 +20,12 @@ interface WorkerTaskMessage {
   context?: Record<string, unknown>;
 }
 
+// Legacy message format type
+interface LegacyWorkerMessage {
+  type: string;
+  payload: unknown;
+}
+
 // Determine if the incoming data matches the WorkerTaskMessage structure
 const isWorkerTaskMessage = (data: unknown): data is WorkerTaskMessage => {
   return (
@@ -28,6 +34,18 @@ const isWorkerTaskMessage = (data: unknown): data is WorkerTaskMessage => {
     'type' in data &&
     'taskId' in data &&
     (/* Accept both `data` and legacy `payload` fields */ 'data' in data || 'payload' in data)
+  );
+};
+
+// Type guard for legacy message format
+const isLegacyWorkerMessage = (data: unknown): data is LegacyWorkerMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    'payload' in data &&
+    !('taskId' in data) && // Ensure it's not the new format
+    typeof (data as Record<string, unknown>).type === 'string'
   );
 };
 
@@ -125,13 +143,13 @@ const processTask = async (message: WorkerTaskMessage): Promise<void> => {
       message: 'Error processing task in worker',
     });
 
-    const logContext = {
+    const logContext: Record<string, unknown> = {
       workerMessageType: message.type,
-      ...(message.context ?? {}),
+      ...(message.context && typeof message.context === 'object' ? message.context : {}),
     };
     errorLoggingService.logError(error, ErrorType.WORKER, ErrorSeverity.HIGH, logContext);
 
-    sendError(taskId, error);
+    sendError(taskId, error.message);
   }
 };
 
@@ -144,17 +162,12 @@ self.onmessage = (event: MessageEvent) => {
   if (isWorkerTaskMessage(incoming)) {
     // Fire-and-forget the async processing – the promise is intentionally not awaited here.
     void processTask(incoming);
-  } else if (
+  } else if (isLegacyWorkerMessage(incoming)) {
     // Legacy handler – accept the old shape `{ type, payload }` without taskId
-    typeof incoming === 'object' &&
-    incoming !== null &&
-    'type' in incoming &&
-    'payload' in incoming
-  ) {
     // Coerce into new structure with a synthetic taskId so downstream logic works.
     const syntheticMessage: WorkerTaskMessage = {
       taskId: `legacy-${Date.now()}`,
-      type: incoming.type as string,
+      type: incoming.type,
       data: incoming.payload,
     };
     void processTask(syntheticMessage);

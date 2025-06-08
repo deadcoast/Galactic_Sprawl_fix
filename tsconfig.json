@@ -25,6 +25,6 @@
     "types": ["vitest/globals", "@testing-library/jest-dom"],
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src"],
+  "include": ["src", "json-to-ajef.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

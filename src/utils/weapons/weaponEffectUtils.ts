@@ -1,10 +1,11 @@
-import {
-  AreaEffect,
-  DamageEffect,
-  StatusEffect,
-  WeaponEffect,
-  WeaponEffectType,
-} from '../../effects/types_effects/WeaponEffects';
+import
+  {
+    AreaEffect,
+    DamageEffect,
+    StatusEffect,
+    WeaponEffect,
+    WeaponEffectType
+  } from '../../effects/types_effects/WeaponEffects';
 import { Effect } from '../../types/core/GameTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { WeaponCategory, WeaponSystem } from '../../types/weapons/WeaponTypes';
@@ -87,8 +88,8 @@ export function createBaseWeaponEffect(params: {
     magnitude: params.magnitude,
     duration: params.duration,
     strength: params.strength,
-    name: params.name || params.id,
-    description: params.description || `${params.type} effect with magnitude ${params.magnitude}`,
+    name: params.name ?? params.id,
+    description: params.description ?? `${params.type} effect with magnitude ${params.magnitude}`,
   };
 }
 
@@ -118,8 +119,8 @@ export function createDamageEffect(params: {
   return {
     ...baseEffect,
     type: 'damage' as const,
-    damageType: params.damageType,
-    penetration: params.penetration,
+    damageType: params.damageType ?? 'physical',
+    penetration: params.penetration ?? 0,
   };
 }
 
@@ -149,8 +150,8 @@ export function createAreaEffect(params: {
   return {
     ...baseEffect,
     type: 'area' as const,
-    radius: params.radius,
-    falloff: params.falloff,
+    radius: params.radius ?? 0,
+    falloff: params.falloff ?? 0,
   };
 }
 
@@ -179,7 +180,7 @@ export function createStatusEffect(params: {
   return {
     ...baseEffect,
     type: 'status' as const,
-    statusType: params.statusType,
+    statusType: params.statusType ?? 'stun',
   };
 }
 
@@ -194,8 +195,8 @@ export function createWeaponEffect(source: WeaponLike): WeaponEffectType {
     strength: source.damage ?? 0,
     damageType: 'physical',
     penetration: 0,
-    name: source.displayName || `${source.type} Effect`,
-    description: `Effect from ${source.displayName || source.type}`,
+    name: source.displayName ?? `${source.type} Effect`,
+    description: `Effect from ${source.displayName ?? source.type}`,
   });
 }
 
@@ -223,7 +224,7 @@ export function createCustomWeaponEffect(params: {
         magnitude: params.magnitude,
         duration: params.duration,
         strength: params.strength,
-        damageType: params.damageType || 'physical',
+        damageType: params.damageType ?? 'physical',
         penetration: params.penetration ?? 0,
         name: params.name,
         description: params.description,
@@ -245,7 +246,7 @@ export function createCustomWeaponEffect(params: {
         magnitude: params.magnitude,
         duration: params.duration,
         strength: params.strength,
-        statusType: params.statusType || 'stun',
+        statusType: params.statusType ?? 'stun',
         name: params.name,
         description: params.description,
       });
@@ -266,8 +267,8 @@ export function createScaledWeaponEffect(
     strength: weapon.damage * scale,
     damageType: 'physical',
     penetration: 0,
-    name: weapon.name || `Scaled ${weapon.type}`,
-    description: `Scaled effect (${scale}x) from ${weapon.name || weapon.type}`,
+    name: weapon.name ?? `Scaled ${weapon.type}`,
+    description: `Scaled effect (${scale}x) from ${weapon.name ?? weapon.type}`,
   });
 }
 
@@ -408,9 +409,9 @@ export function createShipAbility(params: {
   id?: string;
 }): CommonShipAbility {
   return {
-    id: params.id || `ability-${Math.random().toString(36).substring(2, 9)}`,
+    id: params.id ?? `ability-${Math.random().toString(36).substring(2, 9)}`,
     name: params.name,
-    type: params.type || 'offensive',
+    type: params.type ?? 'offensive',
     cooldown: params.cooldown,
     damage: params.damage,
   };
@@ -453,6 +454,6 @@ export function createCustomShipAbility(
     ...baseAbility,
     ...customizations,
     // Always ensure an ID exists following the ID generation pattern
-    id: customizations.id || baseAbility.id || defaultAbility.id,
+    id: customizations.id ?? baseAbility.id ?? defaultAbility.id,
   };
 }

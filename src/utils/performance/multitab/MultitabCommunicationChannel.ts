@@ -315,7 +315,7 @@ export class MultitabCommunicationChannel {
    */
   public getState(): 'idle' | 'ready' | 'testing' | 'complete' | 'error' {
     const tabInfo = this.knownTabs.get(this.tabId);
-    return tabInfo?.state || 'idle';
+    return tabInfo?.state ?? 'idle';
   }
 
   /**

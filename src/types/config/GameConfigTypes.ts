@@ -1,6 +1,16 @@
 import { ResourceType } from '../resources/ResourceTypes';
 
 /**
+ * Standard difficulty levels
+ */
+export type StandardDifficulty = 'easy' | 'normal' | 'hard';
+
+/**
+ * Difficulty type that allows both standard and custom difficulty levels
+ */
+export type DifficultyLevel = StandardDifficulty | (string & {});
+
+/**
  * Defines the structure for the main game configuration.
  */
 export interface GameConfig {
@@ -12,7 +22,7 @@ export interface GameConfig {
   };
   sectorCount: number;
   asteroidDensity: number;
-  difficulty: 'easy' | 'normal' | 'hard' | string; // Allow custom string difficulties
+  difficulty: DifficultyLevel; // Allows standard difficulties and custom string values
   gameSpeedMultiplier: number;
   tickRate: number;
   saveInterval: number; // in seconds

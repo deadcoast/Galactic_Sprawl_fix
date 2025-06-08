@@ -34,7 +34,36 @@ import { createTooltipComponent } from './TooltipAdapter';
 // Type guard to check if a value is a valid ResourceType enum member
 const isResourceType = (value: unknown): value is ResourceType => {
   // Check if the value exists in the enum's values (assuming string enum)
-  return Object.values(ResourceType).includes(value as ResourceType); // Assertion needed for .includes check with unknown
+  return typeof value === 'string' && Object.values(ResourceType).includes(value as ResourceType);
+};
+
+// Safe property extraction from DataPoint properties
+const safeGetProperty = (properties: Record<string, unknown> | undefined, key: string, fallback: unknown = null): unknown => {
+  if (!properties || typeof properties !== 'object') return fallback;
+  return properties[key] ?? fallback;
+};
+
+// Safe number extraction
+const safeGetNumber = (value: unknown, fallback = 0): number => {
+  if (typeof value === 'number' && !isNaN(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed)) return parsed;
+  }
+  return fallback;
+};
+
+// Safe theme background color access
+const getThemeBackgroundPaper = (theme: Theme): string => {
+  try {
+    if (theme?.palette?.background?.paper && typeof theme.palette.background.paper === 'string') {
+      return theme.palette.background.paper;
+    }
+    return '#ffffff'; // Default fallback
+  } catch (error) {
+    console.warn('Failed to access theme background paper color:', error);
+    return '#ffffff';
+  }
 };
 
 /**
@@ -194,16 +223,23 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
     if (!data?.resourcePoints || data?.resourcePoints.length === 0) return [];
 
     return data?.resourcePoints.map((point: DataPoint) => {
-      // Safely extract resource data from properties
+      // Safely extract resource data from properties using helper functions
       const properties = point.properties ?? {};
-      const resourceType = properties.resourceType || properties.type || 'unknown';
-      const value = properties[data?.valueMetric] || properties.amount || 1;
+      const resourceType = safeGetProperty(properties, 'resourceType') || 
+                          safeGetProperty(properties, 'type') || 
+                          'unknown';
+      
+      const valueMetric = data?.valueMetric || 'amount';
+      const rawValue = safeGetProperty(properties, valueMetric) || 
+                      safeGetProperty(properties, 'amount') || 
+                      1;
+      const value = safeGetNumber(rawValue, 1);
 
       return {
         id: point.id,
         name: point.name || `Resource ${point.id}`,
-        x: point.coordinates?.x ?? 0,
-        y: point.coordinates?.y ?? 0,
+        x: safeGetNumber(point.coordinates?.x, 0),
+        y: safeGetNumber(point.coordinates?.y, 0),
         value,
         type: resourceType,
         coordinates: point.coordinates || { x: 0, y: 0 },
@@ -236,8 +272,9 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
     const resources = heatMapCell.resources ?? [];
     const sortedResources = [...resources].sort((a, b) => {
-      const aValue = (a[data?.valueMetric as keyof typeof a] as number) || a.amount;
-      const bValue = (b[data?.valueMetric as keyof typeof b] as number) || b.amount;
+      const valueMetric = data?.valueMetric || 'amount';
+      const aValue = safeGetNumber(safeGetProperty(a as Record<string, unknown>, valueMetric), a.amount);
+      const bValue = safeGetNumber(safeGetProperty(b as Record<string, unknown>, valueMetric), b.amount);
       return bValue - aValue;
     });
 
@@ -308,7 +345,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       sx={{
         p: 2,
         mt: 2,
-        backgroundColor: (theme: Theme) => theme.palette.background.paper,
+        backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme),
       }}
     >
       {data?.resourceTypes.map((type: ResourceType) => (
@@ -332,14 +369,14 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const renderInsights = () => {
     if (!data?.insights || data?.insights.length === 0) {
       return (
-        <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => theme.palette.background.paper }}>
+        <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme) }}>
           <Typography variant="body2">No insights available for this analysis.</Typography>
         </Paper>
       );
     }
 
     return (
-      <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => theme.palette.background.paper }}>
+      <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme) }}>
         <Typography variant="h6" sx={{ mb: 1 }}>
           Key Insights
         </Typography>

@@ -33,7 +33,7 @@ export function createSelector<State, Selected>(
     cache.set(key, { state, selected });
 
     if (cache.size > 100) {
-      const firstKey = cache.keys().next().value;
+      const firstKey = cache.keys().next().value as unknown;
       cache.delete(firstKey);
     }
 
@@ -59,7 +59,7 @@ export function useContextSelector<ContextType, Selected>(
 
   if (contextValue === null || contextValue === undefined) {
     throw new Error(
-      `useContextSelector must be used within a Provider for ${context.displayName || 'unknown context'}`
+      `useContextSelector must be used within a Provider for ${context.displayName ?? 'unknown context'}`
     );
   }
 
@@ -195,7 +195,7 @@ export function createStandardContextSelectors<State, Action>(
     const contextValue = useContext(context);
     if (!contextValue) {
       throw new Error(
-        `useState must be used within a Provider for ${context.displayName || 'unknown context'}`
+        `useState must be used within a Provider for ${context.displayName ?? 'unknown context'}`
       );
     }
     return contextValue.state;
@@ -205,7 +205,7 @@ export function createStandardContextSelectors<State, Action>(
     const contextValue = useContext(context);
     if (!contextValue) {
       throw new Error(
-        `useDispatch must be used within a Provider for ${context.displayName || 'unknown context'}`
+          `useDispatch must be used within a Provider for ${context.displayName ?? 'unknown context'}`
       );
     }
     return contextValue.dispatch;

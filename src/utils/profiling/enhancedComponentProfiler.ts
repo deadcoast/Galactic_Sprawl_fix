@@ -770,9 +770,7 @@ export function useEnhancedComponentProfiler(
   });
 
   // Initialize the profiler if it doesn't exist
-  if (!profilerRef.current) {
-    profilerRef.current = createEnhancedComponentProfiler(componentName, options);
-  }
+  profilerRef.current ??= createEnhancedComponentProfiler(componentName, options);
 
   // Get the profiler
   const profiler = profilerRef.current;

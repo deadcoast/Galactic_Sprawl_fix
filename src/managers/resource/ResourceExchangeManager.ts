@@ -1,4 +1,4 @@
-import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/logging/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 import { ResourceExchangeRate } from '../../types/resources/ResourceConversionTypes';
 import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 
@@ -542,7 +542,7 @@ export class ResourceExchangeManager {
     // Apply modifiers to base rates
     // Convert Map entries to array to avoid MapIterator error
     const modifierEntries = Array.from(this.modifiers.entries());
-    for (const [_id, modifier] of modifierEntries) {
+    for (const [id, modifier] of modifierEntries) {
       // Check if modifier has active property and it's false
       if (modifier.active === false) {
         continue;
@@ -614,7 +614,7 @@ export class ResourceExchangeManager {
 
     // Convert Map entries to array to avoid MapIterator error
     const rateEntries = Array.from(this.currentRates.entries());
-    for (const [_rateKey, rate] of rateEntries) {
+    for (const [rateKey, rate] of rateEntries) {
       // Cast to extended type for compatibility
       const extendedRate = rate as ExtendedRate;
 

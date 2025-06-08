@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base configuration value types that can be represented in JSON
@@ -203,13 +204,23 @@ export class TypeSafeConfigManager {
     // Validate if required
     if (this.options?.validateOnAccess) {
       try {
-        return config.schema.parse(value) as z.infer<T>;
+        const parsedValue = config.schema.parse(value);
+        return parsedValue as z.infer<T>;
       } catch (error) {
         const zodError = error as z.ZodError;
         const validationErrors = this.formatZodErrors(key, zodError);
 
         if (this.options?.logErrors) {
-          console.error(`Validation failed for config "${key}":`, validationErrors);
+          errorLoggingService.logError(
+            new Error(`Config validation failed for "${key}"`),
+            ErrorType.VALIDATION,
+            ErrorSeverity.MEDIUM,
+            { 
+              key, 
+              validationErrors,
+              value 
+            }
+          );
         }
 
         if (this.options?.onValidationError) {
@@ -244,7 +255,7 @@ export class TypeSafeConfigManager {
 
     // Validate the value
     try {
-      const validValue = config.schema.parse(value);
+      const validValue = config.schema.parse(value) as z.infer<T>;
       const oldValue = this.configValues.get(key);
       this.configValues.set(key, validValue);
 
@@ -259,7 +270,16 @@ export class TypeSafeConfigManager {
       const validationErrors = this.formatZodErrors(key, zodError);
 
       if (this.options?.logErrors) {
-        console.error(`Validation failed for config "${key}":`, validationErrors);
+        errorLoggingService.logError(
+          new Error(`Config validation failed for "${key}"`),
+          ErrorType.VALIDATION,
+          ErrorSeverity.MEDIUM,
+          { 
+            key, 
+            validationErrors,
+            value 
+          }
+        );
       }
 
       if (this.options?.onValidationError) {
@@ -411,7 +431,7 @@ export class TypeSafeConfigManager {
       }
 
       try {
-        const validatedValue = configItem.schema.parse(value);
+        const validatedValue = configItem.schema.parse(value) as unknown;
         this.configValues.set(key, validatedValue);
       } catch (error) {
         const zodError = error as z.ZodError;

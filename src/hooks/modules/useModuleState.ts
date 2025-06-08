@@ -57,7 +57,7 @@ export function useModuleState() {
     moduleStatePerformanceConfig
   );
 
-  const _modules = measureSelectorTime(
+  const modules = measureSelectorTime(
     'modules',
     () => useMemo(() => Object.values(state.modules), [state.modules]),
     moduleStatePerformanceConfig

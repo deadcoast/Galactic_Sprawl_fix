@@ -60,12 +60,12 @@ export function getEventsByData<T>(
       }
 
       // Check if the property exists in event?.data
-      if (!(propertyName in (event?.data))) {
+      if (!(propertyName in event.data)) {
         return false;
       }
 
       // Check if the property value matches
-      return (event?.data)[propertyName] === propertyValue;
+      return event.data[propertyName] === propertyValue;
     })
   );
 }
@@ -132,7 +132,7 @@ export function createEventTypeSubject<T extends ModuleEventType>(
 /**
  * Create a specialized event stream with transformation
  */
-export function createTransformedEventStream<_T, R>(
+export function createTransformedEventStream<T extends ModuleEvent, R>(
   eventType: ModuleEventType,
   transformFn: (event: ModuleEvent) => R
 ): Observable<R> {

@@ -14,7 +14,47 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { DataPoint } from '../../types/exploration/DataAnalysisTypes';
 
-// Create styled components to avoid complex sx props
+// Type-safe theme access helpers
+const getThemeValue = (theme: Theme, path: string, fallback = ''): string => {
+  try {
+    const parts = path.split('.');
+    let value: unknown = theme;
+    
+    for (const part of parts) {
+      if (value && typeof value === 'object' && part in value) {
+        value = (value as Record<string, unknown>)[part];
+      } else {
+        return fallback;
+      }
+    }
+    
+    return typeof value === 'string' ? value : fallback;
+  } catch (error) {
+    console.warn(`Failed to access theme path "${path}":`, error);
+    return fallback;
+  }
+};
+
+const getThemeSpacing = (theme: Theme, multiplier: number): string => {
+  try {
+    if (typeof theme.spacing === 'function') {
+      const result = theme.spacing(multiplier);
+      if (typeof result === 'string') {
+        return result;
+      } else if (typeof result === 'number') {
+        return `${result}px`;
+      } else {
+        return `${multiplier * 8}px`;
+      }
+    }
+    return `${multiplier * 8}px`;
+  } catch (error) {
+    console.warn(`Failed to get theme spacing for multiplier ${multiplier}:`, error);
+    return `${multiplier * 8}px`;
+  }
+};
+
+// Create styled components to avoid complex sx props with proper typing
 const Container = styled('div')(() => ({
   height: 400,
   width: '100%',
@@ -37,7 +77,7 @@ const EmptyContainer = styled('div')(() => ({
 }));
 
 const LoadingText = styled(Typography)(({ theme }: { theme: Theme }) => ({
-  marginLeft: theme.spacing(1),
+  marginLeft: getThemeSpacing(theme, 1),
 }));
 
 const FlexRow = styled('div')(() => ({
@@ -49,7 +89,7 @@ const FlexRow = styled('div')(() => ({
 const FlexRowGap = styled('div')(({ theme }: { theme: Theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
+  gap: getThemeSpacing(theme, 1),
 }));
 
 const StyledChip = styled(Chip)(() => ({
@@ -58,7 +98,7 @@ const StyledChip = styled(Chip)(() => ({
 }));
 
 const ExpandedBox = styled('div')(({ theme }: { theme: Theme }) => ({
-  marginTop: theme.spacing(1.5),
+  marginTop: getThemeSpacing(theme, 1.5),
 }));
 
 const StyledDivider = styled(Divider)(() => ({
@@ -67,44 +107,54 @@ const StyledDivider = styled(Divider)(() => ({
 
 const CaptionBlock = styled(Typography)(({ theme }: { theme: Theme }) => ({
   display: 'block',
-  marginBottom: theme.spacing(1),
+  marginBottom: getThemeSpacing(theme, 1),
 }));
 
 const CaptionBlockSmall = styled(Typography)(({ theme }: { theme: Theme }) => ({
   display: 'block',
-  marginBottom: theme.spacing(0.5),
+  marginBottom: getThemeSpacing(theme, 0.5),
 }));
 
 const OverlineText = styled(Typography)(({ theme }: { theme: Theme }) => ({
-  marginTop: theme.spacing(1.5),
-  marginBottom: theme.spacing(0.5),
+  marginTop: getThemeSpacing(theme, 1.5),
+  marginBottom: getThemeSpacing(theme, 0.5),
 }));
 
 const PropertyRow = styled('div')(({ theme }: { theme: Theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  marginBottom: theme.spacing(0.5),
+  marginBottom: getThemeSpacing(theme, 0.5),
 }));
 
-// Create styled Paper components for selected and unselected states
+// Type-safe styled Paper component with proper theme access
+interface DataPointPaperProps {
+  isSelected?: boolean;
+  theme: Theme;
+}
+
 const DataPointPaper = styled(Paper, {
   shouldForwardProp: (prop: PropertyKey) => prop !== 'isSelected',
-})<{ isSelected?: boolean }>(({ theme, isSelected }: { theme: Theme; isSelected?: boolean }) => ({
-  padding: theme.spacing(1.5),
-  margin: theme.spacing(0.5),
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-  backgroundColor: isSelected
-    ? theme.palette.primary.light // Use light instead of [50]
-    : theme.palette.background.paper,
-  border: isSelected ? '1px solid' : '1px solid transparent',
-  borderColor: isSelected ? theme.palette.primary.main : theme.palette.divider,
-  '&:hover': {
-    backgroundColor: isSelected
-      ? theme.palette.primary.light // Use light instead of [50]
-      : theme.palette.action.hover,
-  },
-}));
+})<{ isSelected?: boolean }>(({ theme, isSelected }: DataPointPaperProps) => {
+  // Safe theme access with fallbacks
+  const primaryLight = getThemeValue(theme, 'palette.primary.light', '#bbdefb');
+  const primaryMain = getThemeValue(theme, 'palette.primary.main', '#2196f3');
+  const backgroundPaper = getThemeValue(theme, 'palette.background.paper', '#ffffff');
+  const actionHover = getThemeValue(theme, 'palette.action.hover', 'rgba(0, 0, 0, 0.04)');
+  const dividerColor = getThemeValue(theme, 'palette.divider', 'rgba(0, 0, 0, 0.12)');
+  
+  return {
+    padding: getThemeSpacing(theme, 1.5),
+    margin: getThemeSpacing(theme, 0.5),
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    backgroundColor: isSelected ? primaryLight : backgroundPaper,
+    border: isSelected ? '1px solid' : '1px solid transparent',
+    borderColor: isSelected ? primaryMain : dividerColor,
+    '&:hover': {
+      backgroundColor: isSelected ? primaryLight : actionHover,
+    },
+  };
+});
 
 interface DataPointVirtualListProps {
   dataPoints: DataPoint[];

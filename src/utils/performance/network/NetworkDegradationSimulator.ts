@@ -713,12 +713,12 @@ export function createCustomNetworkCondition(
   config: Partial<NetworkCondition> & { name: string }
 ): NetworkCondition {
   return {
-    description: config.description || 'Custom network condition',
+    description: config.description ?? 'Custom network condition',
     latencyMs: config.latencyMs ?? 0,
-    throughputKbps: config.throughputKbps || 1000000,
+    throughputKbps: config.throughputKbps ?? 1000000,
     packetLoss: config.packetLoss ?? 0,
     jitterMs: config.jitterMs ?? 0,
-    enableConnectionStalls: config.enableConnectionStalls || false,
+    enableConnectionStalls: config.enableConnectionStalls ?? false,
     stallDurationMs: config.stallDurationMs,
     stallProbability: config.stallProbability,
     ...config,

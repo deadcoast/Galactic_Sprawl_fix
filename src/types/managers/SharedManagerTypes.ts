@@ -199,7 +199,7 @@ export function createMockManager<M extends BaseManager>(
   };
 
   // Build the base mock implementation
-  const mockBase = {
+  const mockBase: BaseManager & MockManager = {
     id,
     type,
     get isInitialized() {
@@ -209,11 +209,11 @@ export function createMockManager<M extends BaseManager>(
     initialize: createMockFn().mockImplementation(() => {
       internalState.isInitialized = true;
       return Promise.resolve();
-    }),
+    }) as unknown as () => Promise<void>,
 
     dispose: createMockFn().mockImplementation(() => {
       internalState.isInitialized = false;
-    }),
+    }) as unknown as () => void,
 
     // Mock manager specific methods
     mockClear: () => {
@@ -248,18 +248,15 @@ export function createMockManager<M extends BaseManager>(
     getMockCalls: () => calls,
   };
 
-  // Merge the implementations
-  const mockImplementation = {
-    ...mockBase,
-    ...partialImplementation,
-  };
+  // Merge the implementations with proper type safety
+  const mockImplementation = Object.assign(mockBase, partialImplementation);
 
   // Add tracking for methods that aren't mocked yet
   Object.keys(partialImplementation).forEach(key => {
     const value = partialImplementation[key as keyof typeof partialImplementation];
     if (typeof value === 'function' && !('mockImplementation' in value)) {
       calls[key] = [];
-      // Use a more basic unknown type assertion here since we can't predict the exact function signature
+      // Use proper function wrapping with tracking
       (mockImplementation as Record<string, unknown>)[key] = (...args: unknown[]) => {
         calls[key].push(args);
         return value.apply(mockImplementation, args);
@@ -267,7 +264,6 @@ export function createMockManager<M extends BaseManager>(
     }
   });
 
-  // At this point, we've built a complete implementation that satisfies MockManager and has
-  // all the provided properties from partialImplementation, so it's safe to cast
-  return mockImplementation as unknown as M & MockManager;
+  // Return with proper type assertion after validation
+  return mockImplementation as M & MockManager;
 }

@@ -176,8 +176,8 @@ export function DetailedAnomalyAnalysis({
           a.sectorName.toLowerCase().includes(query) ||
           a.type.toLowerCase().includes(query) ||
           a.severity.toLowerCase().includes(query) ||
-          (a.classification?.category?.toLowerCase().includes(query)) ||
-          (a.classification?.subcategory?.toLowerCase().includes(query))
+          (a.classification?.category?.toLowerCase().includes(query) ?? false) ||
+          (a.classification?.subcategory?.toLowerCase().includes(query) ?? false)
       );
     }
 
@@ -211,7 +211,7 @@ export function DetailedAnomalyAnalysis({
 
   // Get the selected anomaly
   const selectedAnomaly = useMemo(() => {
-    return anomalies.find(a => a.id === selectedAnomalyId) || null;
+    return anomalies.find(a => a.id === selectedAnomalyId) ?? null;
   }, [anomalies, selectedAnomalyId]);
 
   // Get related anomalies
@@ -1302,7 +1302,7 @@ export function DetailedAnomalyAnalysis({
                                           (selectedAnomaly.analysisResults.materialProperties
                                             .radioactivity /
                                             5) *
-                                            100,
+                                          100,
                                           100
                                         )}%`,
                                       }}

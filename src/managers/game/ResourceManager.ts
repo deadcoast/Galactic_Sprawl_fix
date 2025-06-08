@@ -6,7 +6,7 @@ import
     RESOURCE_PRIORITIES,
     RESOURCE_THRESHOLDS,
     STORAGE_EFFICIENCY,
-    TRANSFER_CONFIG,
+    TRANSFER_CONFIG
   } from '../../config/resource/ResourceConfig';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import
@@ -19,16 +19,14 @@ import
   {
     ResourceConsumption as ImportedResourceConsumption,
     ResourceFlow as ImportedResourceFlow,
-    ResourceProduction as ImportedResourceProduction,
-    ResourceTransfer as ImportedResourceTransfer,
-    ResourceState,
-    ResourceThreshold,
+    ResourceProduction as ImportedResourceProduction, ResourceState,
+    ResourceThreshold, ResourceTransfer as ImportedResourceTransfer
   } from '../../types/resources/ResourceTypes';
 import
   {
     ensureEnumResourceType,
     ensureStringResourceType,
-    toEnumResourceType,
+    toEnumResourceType
   } from '../../utils/resources/ResourceTypeConverter';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -340,7 +338,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   protected async onDispose(): Promise<void> {
     // Stop all production intervals
-    for (const [_id, interval] of this.productionIntervals.entries()) {
+    for (const [id, interval] of this.productionIntervals.entries()) {
       clearInterval(interval);
     }
     this.productionIntervals.clear();

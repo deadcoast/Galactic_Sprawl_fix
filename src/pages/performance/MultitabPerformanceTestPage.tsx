@@ -27,7 +27,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<ResultSet | null>(null);
   const [isCoordinator, setIsCoordinator] = useState(true);
-  const [_report, setReport] = useState<string>('');
+  const [report, setReport] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
 
   // Check URL parameters to determine if this is a worker tab

@@ -6,11 +6,12 @@
  * once the migration is complete.
  */
 
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
 import { ResourceType, ResourceTypeString } from '../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from './ResourceTypeConverter';
 
 /**
- * Type alias for string-based resource types (for backcombatd compatibility)
+ * Type alias for string-based resource types (for backward compatibility)
  */
 export type StringResourceType = ResourceTypeString;
 
@@ -26,7 +27,7 @@ export type EnumResourceType = ResourceType;
  *
  * @param resourceType The string-based resource type
  * @param context Additional context about where the resource type is being used
- * @returns The original string resource type for backcombatd compatibility
+ * @returns The original string resource type for backward compatibility
  */
 export function deprecateStringResourceType(
   resourceType: StringResourceType,
@@ -34,10 +35,13 @@ export function deprecateStringResourceType(
 ): StringResourceType {
   // Only log in development to avoid console spam in production
   if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `[DEPRECATED] String-based ResourceType "${resourceType}" used in ${context}. ` +
-        `Use enum-based ResourceType.${resourceType} instead. ` +
-        `This will be removed in a future version.`
+    errorLoggingService.logWarn(
+      `String-based ResourceType "${resourceType}" used in ${context}. Use enum-based ResourceType instead.`,
+      {
+        resourceType,
+        context,
+        migrationStatus: 'deprecated'
+      }
     );
   }
   return resourceType;
@@ -73,8 +77,16 @@ export function wrapResourceTypeFunction<T, R>(
     if (typeof resourceType !== 'string') {
       const stringType = ResourceTypeConverter.enumToString(resourceType);
       if (!stringType) {
-        throw new Error(`Cannot convert enum resource type ${resourceType} to string`);
+        const errorMsg = `Cannot convert enum resource type to string`;
+        errorLoggingService.logError(
+          new Error(errorMsg),
+          ErrorType.VALIDATION,
+          ErrorSeverity.HIGH,
+          { resourceType, functionName: fn.name }
+        );
+        throw new Error(errorMsg);
       }
+      // Type assertion for safety after validation
       return fn(stringType as StringResourceType, ...args);
     }
 
@@ -91,12 +103,13 @@ export function wrapResourceTypeFunction<T, R>(
  * @param methodNames The names of the methods to wrap
  * @returns The same object with wrapped methods
  */
-export function wrapResourceTypeMethods<T extends object>(obj: T, methodNames: (keyof T)[]): T {
+export function wrapResourceTypeMethods<T extends Record<string, unknown>>(obj: T, methodNames: (keyof T)[]): T {
   methodNames.forEach(methodName => {
     const originalMethod = obj[methodName];
     if (typeof originalMethod === 'function') {
-      // @ts-expect-error - This is a complex type transformation that TypeScript can't fully type check
-      obj[methodName] = wrapResourceTypeFunction(originalMethod.bind(obj));
+      // Safe function wrapping with proper type handling
+      const wrappedMethod = wrapResourceTypeFunction(originalMethod.bind(obj) as (resourceType: StringResourceType, ...args: unknown[]) => unknown);
+      (obj as Record<string, unknown>)[methodName as string] = wrappedMethod;
     }
   });
 
@@ -125,10 +138,11 @@ export function createResourceTypeProxy<T>(
       }
 
       // Try to convert enum to string
-      const stringType = ResourceTypeConverter.enumToString(prop as unknown as EnumResourceType);
-      if (stringType && stringType in target) {
-        // Cast stringType to StringResourceType to ensure type safety
-        return target[stringType as unknown as StringResourceType];
+      if (typeof prop === 'string' || typeof prop === 'number') {
+        const stringType = ResourceTypeConverter.enumToString(prop as EnumResourceType);
+        if (stringType && stringType in target) {
+          return target[stringType as StringResourceType];
+        }
       }
 
       return undefined;
@@ -140,15 +154,16 @@ export function createResourceTypeProxy<T>(
       }
 
       // Try to convert enum to string
-      const stringType = ResourceTypeConverter.enumToString(prop as unknown as EnumResourceType);
-      if (stringType) {
-        // Cast stringType to StringResourceType to ensure type safety
-        target[stringType as unknown as StringResourceType] = value;
-        return true;
+      if (typeof prop === 'string' || typeof prop === 'number') {
+        const stringType = ResourceTypeConverter.enumToString(prop as EnumResourceType);
+        if (stringType) {
+          target[stringType as StringResourceType] = value;
+          return true;
+        }
       }
 
       // For new properties, just set them directly
-      (target as unknown as Record<string, T>)[prop as string] = value;
+      (target as Record<string, T>)[prop as string] = value;
       return true;
     },
     has(target, prop) {
@@ -157,8 +172,12 @@ export function createResourceTypeProxy<T>(
       }
 
       // Try to convert enum to string
-      const stringType = ResourceTypeConverter.enumToString(prop as unknown as EnumResourceType);
-      return stringType ? stringType in target : false;
+      if (typeof prop === 'string' || typeof prop === 'number') {
+        const stringType = ResourceTypeConverter.enumToString(prop as EnumResourceType);
+        return stringType ? stringType in target : false;
+      }
+
+      return false;
     },
   }) as Record<StringResourceType | EnumResourceType, T>;
 }
@@ -166,21 +185,6 @@ export function createResourceTypeProxy<T>(
 /**
  * Marks a class or method as using the new enum-based resource type system.
  * This is a TypeScript decorator that can be used to document code that has been migrated.
- *
- * @example
- * ```
- * @usesEnumResourceType
- * class ResourceProcessor {
- *   // This class uses enum-based resource types
- * }
- *
- * class ResourceManager {
- *   @usesEnumResourceType
- *   processResource(type: EnumResourceType) {
- *     // This method uses enum-based resource types
- *   }
- * }
- * ```
  */
 export function usesEnumResourceType(
   target: unknown,
@@ -190,9 +194,11 @@ export function usesEnumResourceType(
   if (propertyKey && descriptor) {
     // Method decorator
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: unknown[]) {
-      return originalMethod.apply(this, args);
-    };
+    if (typeof originalMethod === 'function') {
+      descriptor.value = function (...args: unknown[]) {
+        return originalMethod.apply(this, args);
+      };
+    }
     return descriptor;
   } else {
     // Class decorator
@@ -203,50 +209,50 @@ export function usesEnumResourceType(
 /**
  * Adds a deprecation notice to a class or method that uses string-based resource types.
  * This is a TypeScript decorator that can be used to document code that needs migration.
- *
- * @example
- * ```
- * @deprecatedStringResourceType
- * class LegacyResourceProcessor {
- *   // This class uses string-based resource types and should be migrated
- * }
- *
- * class ResourceManager {
- *   @deprecatedStringResourceType
- *   processResource(type: StringResourceType) {
- *     // This method uses string-based resource types and should be migrated
- *   }
- * }
- * ```
  */
 export function deprecatedStringResourceType(
   target: unknown,
   propertyKey?: string,
   descriptor?: PropertyDescriptor
 ) {
-  // Use type assertion to access constructor and name properties
-  const context = propertyKey
-    ? `${(target as { constructor: { name: string } }).constructor.name}.${propertyKey}`
-    : (target as { name: string }).name;
+  // Safe context determination
+  let context = 'unknown';
+  try {
+    if (propertyKey && target && typeof target === 'object' && 'constructor' in target) {
+      const constructor = target.constructor as { name?: string };
+      context = `${constructor.name || 'UnknownClass'}.${propertyKey}`;
+    } else if (target && typeof target === 'object' && 'name' in target) {
+      const namedTarget = target as { name?: string };
+      context = namedTarget.name || 'UnknownTarget';
+    }
+  } catch (error) {
+    errorLoggingService.logWarn('Failed to determine context for deprecation warning', { error });
+  }
 
   if (propertyKey && descriptor) {
     // Method decorator
     const originalMethod = descriptor.value;
-    descriptor.value = function (...args: unknown[]) {
-      console.warn(
-        `[DEPRECATED] Method ${context} uses string-based ResourceType. ` +
-          `Migrate to enum-based ResourceType from ResourceTypes.ts. ` +
-          `This will be removed in a future version.`
-      );
-      return originalMethod.apply(this, args);
-    };
+    if (typeof originalMethod === 'function') {
+      descriptor.value = function (...args: unknown[]) {
+        errorLoggingService.logWarn(
+          `Method ${context} uses string-based ResourceType. Migrate to enum-based ResourceType.`,
+          {
+            context,
+            migrationStatus: 'needs-migration'
+          }
+        );
+        return originalMethod.apply(this, args);
+      };
+    }
     return descriptor;
   } else {
     // Class decorator
-    console.warn(
-      `[DEPRECATED] Class ${context} uses string-based ResourceType. ` +
-        `Migrate to enum-based ResourceType from ResourceTypes.ts. ` +
-        `This will be removed in a future version.`
+    errorLoggingService.logWarn(
+      `Class ${context} uses string-based ResourceType. Migrate to enum-based ResourceType.`,
+      {
+        context,
+        migrationStatus: 'needs-migration'
+      }
     );
     return target;
   }

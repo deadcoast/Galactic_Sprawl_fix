@@ -252,12 +252,12 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
       ...config,
       batchConfigByPriority: new Map([
         ...DEFAULT_CONFIG.batchConfigByPriority,
-        ...(config.batchConfigByPriority || new Map()),
+        ...(config.batchConfigByPriority ?? new Map()),
       ]),
-      priorityMap: new Map([...(config.priorityMap || new Map())]),
+      priorityMap: new Map([...(config.priorityMap ?? new Map())]),
       coalesceableEventTypes: new Set([
         ...DEFAULT_CONFIG.coalesceableEventTypes,
-        ...(config.coalesceableEventTypes || new Set()),
+        ...(config.coalesceableEventTypes ?? new Set()),
       ]),
     };
 
@@ -282,7 +282,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
         const priorityEvents$ = this.events$.pipe(filter(e => e.priority === priority));
 
         // Get batch config for this priority
-        const batchConfig = this.config.batchConfigByPriority.get(priority) || {
+        const batchConfig = this.config.batchConfigByPriority.get(priority) ?? {
           timeWindow: 100,
           maxBatchSize: 50,
           emitEmptyBatches: false,
@@ -310,7 +310,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
             bufferTime(
               batchConfig.timeWindow,
               null,
-              batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER
+              batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER
             ),
             // Only process non-empty batches
             filter(events => events.length > 0),
@@ -501,12 +501,12 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
       ...config,
       batchConfigByPriority: new Map([
         ...this.config.batchConfigByPriority,
-        ...(config.batchConfigByPriority || new Map()),
+        ...(config.batchConfigByPriority ?? new Map()),
       ]),
-      priorityMap: new Map([...this.config.priorityMap, ...(config.priorityMap || new Map())]),
+      priorityMap: new Map([...this.config.priorityMap, ...(config.priorityMap ?? new Map())]),
       coalesceableEventTypes: new Set([
         ...this.config.coalesceableEventTypes,
-        ...(config.coalesceableEventTypes || new Set()),
+        ...(config.coalesceableEventTypes ?? new Set()),
       ]),
     };
   }

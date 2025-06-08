@@ -154,7 +154,7 @@ export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): Be
     if (setupFn) {
       setupFn();
     }
-    fn();
+    void fn();
     if (teardownFn) {
       teardownFn();
     }
@@ -681,8 +681,8 @@ export function generateBenchmarkReport(results: BenchmarkResult[]): string {
             <tr>
               <td>${r.name}</td>
               <td>${r.executionTimeMs.toFixed(2)}</td>
-              <td>${r.operationsPerSecond?.toFixed(2) || 'N/A'}</td>
-              <td>${r.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
+              <td>${r.operationsPerSecond?.toFixed(2) ?? 'N/A'}</td>
+              <td>${r.memoryUsageMB?.toFixed(2) ?? 'N/A'}</td>
               <td>${r.description ?? ''}</td>
             </tr>
           `
@@ -840,7 +840,7 @@ export function loadBenchmarkResults(key: string): BenchmarkResult[] {
     const stored = localStorage.getItem(key);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        return JSON.parse(stored) as unknown as BenchmarkResult[];
       } catch (e) {
         console.error('Failed to parse stored benchmark results', e);
       }

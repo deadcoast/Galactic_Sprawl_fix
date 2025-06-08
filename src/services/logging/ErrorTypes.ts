@@ -24,7 +24,7 @@ export enum ErrorType {
   RUNTIME = 'runtime',
   EVENT_HANDLING = 'event_handling',
   USER_INTERFACE = 'ui',
-  UI = 'ui', // Alias for USER_INTERFACE, kept for backward compatibility
+  UI = USER_INTERFACE, // Alias for USER_INTERFACE, kept for backward compatibility
   UI_WARNING = 'ui_warning',
   WORKER = 'worker', // For web worker related errors
   // Add more specific types as needed

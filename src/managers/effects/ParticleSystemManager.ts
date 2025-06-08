@@ -348,7 +348,7 @@ class ParticleSystem {
       i++;
     });
 
-    const geometry = this.points.geometry;
+    const {geometry} = this.points;
     geometry.setAttribute('position', new BufferAttribute(positions, 3));
     geometry.setAttribute('size', new BufferAttribute(sizes, 1));
     geometry.setAttribute('opacity', new BufferAttribute(opacities, 1));
