@@ -314,25 +314,17 @@ export class TypeSafeConfigManager {
     // Check targeting rules if present
     if (feature.targeting) {
       // Check user roles
-      if (
-        feature.targeting.userRoles &&
-        feature.targeting.userRoles.length > 0 &&
-        this.userContext.role
-      ) {
-        if (!feature.targeting.userRoles.includes(this.userContext.role as string)) {
-          return false;
-        }
+      if (feature.targeting.userRoles &&
+              feature.targeting.userRoles.length > 0 &&
+              this.userContext.role && !feature.targeting.userRoles.includes(this.userContext.role as string)) {
+            return false;
       }
 
       // Check environments
-      if (
-        feature.targeting.environments &&
-        feature.targeting.environments.length > 0 &&
-        this.userContext.environment
-      ) {
-        if (!feature.targeting.environments.includes(this.userContext.environment as string)) {
-          return false;
-        }
+      if (feature.targeting.environments &&
+              feature.targeting.environments.length > 0 &&
+              this.userContext.environment && !feature.targeting.environments.includes(this.userContext.environment as string)) {
+            return false;
       }
 
       // Check percentage rollout
@@ -489,7 +481,7 @@ export class TypeSafeConfigManager {
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash &= hash; // Convert to 32bit integer
     }
     return Math.abs(hash);
   }

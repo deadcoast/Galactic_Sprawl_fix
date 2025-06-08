@@ -162,7 +162,7 @@ export function createMockManager<M extends BaseManager>(
   partialImplementation: Partial<M>,
   type = 'mockManager',
   id = `mock-${type}-${Math.random().toString(36).substr(2, 9)}`
-): M & MockManager {
+): BaseManager & MockManager & Partial<M> {
   const calls: Record<string, unknown[][]> = {};
 
   // Since we can't use jest in this file, create mock function types
@@ -264,6 +264,6 @@ export function createMockManager<M extends BaseManager>(
     }
   });
 
-  // Return with proper type assertion after validation
-  return mockImplementation as M & MockManager;
+  // Return the implementation directly - it already has the correct type
+  return mockImplementation;
 }

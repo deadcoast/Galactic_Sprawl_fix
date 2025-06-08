@@ -149,7 +149,7 @@ export function createResourceTypeProxy<T>(
     },
     set(target, prop, value) {
       if (typeof prop === 'string' && prop in target) {
-        target[prop as StringResourceType] = value;
+          ;
         return true;
       }
 
@@ -157,13 +157,13 @@ export function createResourceTypeProxy<T>(
       if (typeof prop === 'string' || typeof prop === 'number') {
         const stringType = ResourceTypeConverter.enumToString(prop as EnumResourceType);
         if (stringType) {
-          target[stringType as StringResourceType] = value;
+          target[stringType as StringResourceType] = value as T;
           return true;
         }
       }
 
       // For new properties, just set them directly
-      (target as Record<string, T>)[prop as string] = value;
+      (target as Record<string, T>)[prop as string] = value as T;
       return true;
     },
     has(target, prop) {
@@ -193,7 +193,7 @@ export function usesEnumResourceType(
 ) {
   if (propertyKey && descriptor) {
     // Method decorator
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
     if (typeof originalMethod === 'function') {
       descriptor.value = function (...args: unknown[]) {
         return originalMethod.apply(this, args);
@@ -220,10 +220,10 @@ export function deprecatedStringResourceType(
   try {
     if (propertyKey && target && typeof target === 'object' && 'constructor' in target) {
       const constructor = target.constructor as { name?: string };
-      context = `${constructor.name || 'UnknownClass'}.${propertyKey}`;
+      context = `${constructor.name ?? 'UnknownClass'}.${propertyKey}`;
     } else if (target && typeof target === 'object' && 'name' in target) {
       const namedTarget = target as { name?: string };
-      context = namedTarget.name || 'UnknownTarget';
+      context = namedTarget.name ?? 'UnknownTarget';
     }
   } catch (error) {
     errorLoggingService.logWarn('Failed to determine context for deprecation warning', { error });
@@ -231,7 +231,7 @@ export function deprecatedStringResourceType(
 
   if (propertyKey && descriptor) {
     // Method decorator
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
     if (typeof originalMethod === 'function') {
       descriptor.value = function (...args: unknown[]) {
         errorLoggingService.logWarn(

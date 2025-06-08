@@ -10,10 +10,11 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import {
+import
+  {
     errorLoggingService,
     ErrorType
-} from './logging/ErrorLoggingService';
+  } from './logging/ErrorLoggingService';
 
 // Interface for worker response messages
 interface WorkerResponseMessage {
@@ -81,7 +82,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     super('WorkerService', '1.0.0');
   }
 
-  protected async onInitialize(): Promise<void> {
+  protected onInitialize(): Promise<void> {
     // Initialize worker pool
     for (let i = 0; i < this.config.maxWorkers; i++) {
       const worker = new Worker(new URL('../workers/worker.ts', import.meta.url), {
@@ -93,9 +94,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     }
 
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_tasks: 0,
       active_tasks: 0,
@@ -103,9 +102,15 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
       failed_tasks: 0,
       average_task_time: 0,
     };
+    
+    return Promise.resolve();
   }
 
-  protected async onDispose(): Promise<void> {
+  protected onDispose(): Promise<void> {
+    return this.dispose();
+  }
+
+  public dispose(): Promise<void> {
     // Cancel all active tasks
     for (const task of this.activeTasks.values()) {
       this.cancelTask(task.id);
@@ -120,6 +125,8 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     this.taskQueue = [];
     this.activeTasks.clear();
     this.workerPool.clear();
+    
+    return Promise.resolve();
   }
 
   private setupWorker(worker: Worker): void {
@@ -146,8 +153,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
           this.completeTask(taskId, data);
           break;
         case 'error':
-          const errorMessage = typeof data === 'string' ? data : 'Unknown error occurred';
-          this.failTask(taskId, new Error(errorMessage));
+          this.failTask(taskId, new Error(typeof data === 'string' ? data : 'Unknown error occurred'));
           break;
       }
     };
@@ -177,9 +183,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     };
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const {metrics} = this.metadata;
     metrics.total_tasks = (metrics.total_tasks ?? 0) + 1;
     this.metadata.metrics = metrics;
@@ -216,7 +220,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
       Object.assign(task, { onComplete, onError });
 
       // Try to process task immediately
-      this.processNextTask();
+      void this.processNextTask();
     });
   }
 
@@ -244,7 +248,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     this.failTask(taskId, new Error('Task cancelled'));
   }
 
-  private async processNextTask(): Promise<void> {
+  private processNextTask(): void {
     // Find available worker
     const workerEntry = Array.from(this.workerPool.entries()).find(([, task]) => task === null);
 
@@ -261,9 +265,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     this.workerPool.set(availableWorker, task);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const {metrics} = this.metadata;
     metrics.active_tasks = this.activeTasks.size;
     this.metadata.metrics = metrics;
@@ -284,9 +286,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     task.result = result;
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const {metrics} = this.metadata;
     metrics.completed_tasks = (metrics.completed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
@@ -310,7 +310,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     typedTask.onComplete?.(result);
 
     // Process next task
-    this.processNextTask();
+    void this.processNextTask();
   }
 
   private failTask(taskId: string, error: Error): void {
@@ -318,10 +318,8 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     if (!task) return;
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
-    const metrics = this.metadata.metrics;
+    this.metadata.metrics ??= {};
+    const {metrics} = this.metadata;
     metrics.failed_tasks = (metrics.failed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
     this.metadata.metrics = metrics;
@@ -338,7 +336,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     typedTask.onError?.(error);
 
     // Process next task
-    this.processNextTask();
+    void this.processNextTask(); 
   }
 
   public override handleError(error: Error): void {
