@@ -36,26 +36,8 @@ const getThemeValue = (theme: Theme, path: string, fallback = ''): string => {
   }
 };
 
-const getThemeSpacing = (theme: Theme, multiplier: number): string => {
-  try {
-    // Type guard to check if spacing is a function
-    if (theme.spacing && typeof theme.spacing === 'function') {
-      // Explicit type assertion after type guard check
-      const spacingFn = theme.spacing as (value: number) => string | number;
-      const spacingResult = spacingFn(multiplier);
-      if (typeof spacingResult === 'string') {
-        return spacingResult;
-      } else if (typeof spacingResult === 'number') {
-        return `${spacingResult}px`;
-      }
-    }
-    // Fallback calculation
-    return `${multiplier * 8}px`;
-  } catch {
-    // Return fallback calculation on any error
-    return `${multiplier * 8}px`;
-  }
-};
+// Safe spacing utility that doesn't use theme parameter
+const spacing = (multiplier: number): string => `${multiplier * 8}px`;
 
 // Create styled components to avoid complex sx props with proper typing
 const Container = styled('div')(() => ({
@@ -79,8 +61,8 @@ const EmptyContainer = styled('div')(() => ({
   borderRadius: '4px',
 }));
 
-const LoadingText = styled(Typography)(({ theme }: { theme: Theme }) => ({
-  marginLeft: getThemeSpacing(theme, 1),
+const LoadingText = styled(Typography)(() => ({
+  marginLeft: spacing(1),
 }));
 
 const FlexRow = styled('div')(() => ({
@@ -89,10 +71,10 @@ const FlexRow = styled('div')(() => ({
   alignItems: 'center',
 }));
 
-const FlexRowGap = styled('div')(({ theme }: { theme: Theme }) => ({
+const FlexRowGap = styled('div')(() => ({
   display: 'flex',
   alignItems: 'center',
-  gap: getThemeSpacing(theme, 1),
+  gap: spacing(1),
 }));
 
 const StyledChip = styled(Chip)(() => ({
@@ -100,54 +82,49 @@ const StyledChip = styled(Chip)(() => ({
   fontSize: '0.7rem',
 }));
 
-const ExpandedBox = styled('div')(({ theme }: { theme: Theme }) => ({
-  marginTop: getThemeSpacing(theme, 1.5),
+const ExpandedBox = styled('div')(() => ({
+  marginTop: spacing(1.5),
 }));
 
 const StyledDivider = styled(Divider)(() => ({
-  marginBottom: 1.5,
+  marginBottom: spacing(1.5),
 }));
 
-const CaptionBlock = styled(Typography)(({ theme }: { theme: Theme }) => ({
+const CaptionBlock = styled(Typography)(() => ({
   display: 'block',
-  marginBottom: getThemeSpacing(theme, 1),
+  marginBottom: spacing(1),
 }));
 
-const CaptionBlockSmall = styled(Typography)(({ theme }: { theme: Theme }) => ({
+const CaptionBlockSmall = styled(Typography)(() => ({
   display: 'block',
-  marginBottom: getThemeSpacing(theme, 0.5),
+  marginBottom: spacing(0.5),
 }));
 
-const OverlineText = styled(Typography)(({ theme }: { theme: Theme }) => ({
-  marginTop: getThemeSpacing(theme, 1.5),
-  marginBottom: getThemeSpacing(theme, 0.5),
+const OverlineText = styled(Typography)(() => ({
+  marginTop: spacing(1.5),
+  marginBottom: spacing(0.5),
 }));
 
-const PropertyRow = styled('div')(({ theme }: { theme: Theme }) => ({
+const PropertyRow = styled('div')(() => ({
   display: 'flex',
   justifyContent: 'space-between',
-  marginBottom: getThemeSpacing(theme, 0.5),
+  marginBottom: spacing(0.5),
 }));
 
-// Type-safe styled Paper component with proper theme access
-interface DataPointPaperProps {
-  isSelected?: boolean;
-  theme: Theme;
-}
-
+// Type-safe styled Paper component with static color values
 const DataPointPaper = styled(Paper, {
   shouldForwardProp: (prop: PropertyKey) => prop !== 'isSelected',
-})<{ isSelected?: boolean }>(({ theme, isSelected }: DataPointPaperProps) => {
-  // Safe theme access with fallbacks
-  const primaryLight = getThemeValue(theme, 'palette.primary.light', '#bbdefb');
-  const primaryMain = getThemeValue(theme, 'palette.primary.main', '#2196f3');
-  const backgroundPaper = getThemeValue(theme, 'palette.background.paper', '#ffffff');
-  const actionHover = getThemeValue(theme, 'palette.action.hover', 'rgba(0, 0, 0, 0.04)');
-  const dividerColor = getThemeValue(theme, 'palette.divider', 'rgba(0, 0, 0, 0.12)');
+})<{ isSelected?: boolean }>(({ isSelected }: { isSelected?: boolean }) => {
+  // Static color values to avoid theme access issues
+  const primaryLight = '#bbdefb';
+  const primaryMain = '#2196f3';
+  const backgroundPaper = '#ffffff';
+  const actionHover = 'rgba(0, 0, 0, 0.04)';
+  const dividerColor = 'rgba(0, 0, 0, 0.12)';
   
   return {
-    padding: getThemeSpacing(theme, 1.5),
-    margin: getThemeSpacing(theme, 0.5),
+    padding: spacing(1.5),
+    margin: spacing(0.5),
     cursor: 'pointer',
     transition: 'all 0.2s',
     backgroundColor: isSelected ? primaryLight : backgroundPaper,
