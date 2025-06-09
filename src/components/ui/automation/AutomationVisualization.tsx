@@ -3,18 +3,11 @@ import { useEffect, useState } from 'react';
 import {
   GlobalAutomationManager,
   GlobalRoutine,
+  GlobalRoutineType,
 } from '../../../managers/automation/GlobalAutomationManager';
 import { AutomationRule } from '../../../managers/game/AutomationManager';
 import '../../../styles/automation.css';
 import AutomationRuleEditor from './AutomationRuleEditor';
-
-// Define the routine type enum to match what's in GlobalAutomationManager
-enum RoutineType {
-  RESOURCE_BALANCING = 'RESOURCE_BALANCING',
-  PERFORMANCE_OPTIMIZATION = 'PERFORMANCE_OPTIMIZATION',
-  EMERGENCY_RESPONSE = 'EMERGENCY_RESPONSE',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
-}
 
 // Define SystemId type to match what's expected
 type SystemId = string;
@@ -48,7 +41,14 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
 
   // Get all available types and systems for filtering
-  const routineTypes = Object.values(RoutineType);
+  const routineTypes: GlobalRoutineType[] = [
+    'resource-balancing',
+    'performance-optimization', 
+    'emergency-response',
+    'system-maintenance',
+    'scheduled-task',
+    'custom'
+  ];
   const systems = [
     ...new Set(
       routines.map(routine =>
@@ -93,12 +93,17 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
 
   const subscribeToAutomationEvents = () => {
     if (!automationManager) {
-      return () => {};
+      return () => {
+        // TODO: Implement proper cleanup when automationManager is available
+      };
     }
 
-    // This would be implemented with the event system
-    // For now, we'll just return an empty function
-    return () => {};
+    // TODO: Implement with event system integration
+    // This should subscribe to automation events from the event bus
+    // For now, returning a placeholder cleanup function
+    return () => {
+      // TODO: Unsubscribe from automation events when event system is integrated
+    };
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -237,16 +242,20 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     return matchesType && matchesSystem && matchesStatus && matchesSearch;
   });
 
-  // Get routine type icon based on type
-  const getRoutineTypeIcon = (type: string) => {
+  // Get routine type icon based on GlobalRoutineType
+  const getRoutineTypeIcon = (type: GlobalRoutineType) => {
     switch (type) {
-      case RoutineType.RESOURCE_BALANCING:
+      case 'resource-balancing':
         return '⚖️';
-      case RoutineType.PERFORMANCE_OPTIMIZATION:
+      case 'performance-optimization':
         return '⚡';
-      case RoutineType.EMERGENCY_RESPONSE:
+      case 'emergency-response':
         return '🚨';
-      case RoutineType.SYSTEM_MAINTENANCE:
+      case 'system-maintenance':
+        return '🔧';
+      case 'scheduled-task':
+        return '⏰';
+      case 'custom':
         return '🔧';
       default:
         return '🤖';
