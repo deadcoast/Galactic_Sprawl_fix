@@ -35,11 +35,11 @@ export interface PoolDistributionRule {
 export interface PoolAllocationResult {
   poolId: string;
   resourceType: ResourceType;
-  allocations: Array<{
+  allocations: {
     targetId: string;
     amount: number;
     percentage: number;
-  }>;
+  }[];
   timestamp: number;
 }
 
@@ -86,7 +86,6 @@ export class ResourcePoolManager {
    */
   public registerPool(pool: ResourcePool): boolean {
     if (!pool) {
-      console.error('Invalid resource pool:', pool);
       return false;
     }
 
@@ -118,7 +117,6 @@ export class ResourcePoolManager {
    */
   public registerContainer(container: ResourceContainer): boolean {
     if (!container.id) {
-      console.error('Invalid container:', container);
       return false;
     }
 
@@ -143,20 +141,17 @@ export class ResourcePoolManager {
    */
   public registerDistributionRule(rule: PoolDistributionRule): boolean {
     if (!rule.id || !rule.poolId || !rule.targetIds || rule.targetIds.length === 0) {
-      console.error('Invalid distribution rule:', rule);
       return false;
     }
 
     // Verify pool exists
     if (!this.pools.has(rule.poolId)) {
-      console.error(`Pool ${rule.poolId} does not exist`);
       return false;
     }
 
     // Verify targets exist
     for (const targetId of rule.targetIds) {
       if (!this.containers.has(targetId)) {
-        console.error(`Target container ${targetId} does not exist`);
         return false;
       }
     }
@@ -197,7 +192,6 @@ export class ResourcePoolManager {
   public addToPool(poolId: string, type: ResourceType, amount: number): boolean {
     const pool = this.pools.get(poolId);
     if (!pool) {
-      console.error(`Pool ${poolId} does not exist`);
       return false;
     }
 
@@ -238,14 +232,12 @@ export class ResourcePoolManager {
    */
   public removeFromPool(poolId: string, type: ResourceType, amount: number): boolean {
     const pool = this.pools.get(poolId);
-    if (!pool || !pool.resources) {
-      console.error(`Pool ${poolId} does not exist or has no resources`);
+    if (!pool?.resources) {
       return false;
     }
 
     const currentAmount = pool.resources[type] ?? 0;
     if (currentAmount < amount) {
-      console.error(`Insufficient ${type} in pool ${poolId}`);
       return false;
     }
 
@@ -302,7 +294,7 @@ export class ResourcePoolManager {
       }
 
       const pool = this.pools.get(rule.poolId);
-      if (!pool || !pool.resources) {
+      if (!pool?.resources) {
         continue;
       }
 
@@ -419,7 +411,7 @@ export class ResourcePoolManager {
     targetIds: string[],
     resourceType: ResourceType,
     amount: number
-  ): Array<{ targetId: string; amount: number; percentage: number }> {
+  ): { targetId: string; amount: number; percentage: number }[] {
     if (targetIds.length === 0 || amount <= 0) {
       return [];
     }
@@ -444,7 +436,7 @@ export class ResourcePoolManager {
   private allocateEqual(
     targetIds: string[],
     amount: number
-  ): Array<{ targetId: string; amount: number; percentage: number }> {
+  ): { targetId: string; amount: number; percentage: number }[] {
     const equalAmount = amount / targetIds.length;
     const percentage = 100 / targetIds.length;
 
@@ -462,7 +454,7 @@ export class ResourcePoolManager {
     targetIds: string[],
     resourceType: ResourceType,
     amount: number
-  ): Array<{ targetId: string; amount: number; percentage: number }> {
+  ): { targetId: string; amount: number; percentage: number }[] {
     // Get containers with priority
     const containersWithPriority = targetIds
       .map(id => {
@@ -475,9 +467,6 @@ export class ResourcePoolManager {
             typedContainer.acceptedTypes &&
             !typedContainer.acceptedTypes.includes(resourceType)
           ) {
-            console.warn(
-              `[ResourcePoolManager] Container ${id} cannot accept resource type ${resourceType}`
-            );
             return { id, priority: 0 }; // Zero priority means it won't receive unknown allocation
           }
         }
@@ -496,22 +485,10 @@ export class ResourcePoolManager {
       0
     );
 
-    // Log allocation details
-    console.warn(
-      `[ResourcePoolManager] Allocating ${amount} units of ${resourceType} based on priority`
-    );
-
     // Allocate based on priority
     return containersWithPriority.map(container => {
       const containerPercentage = (container.priority / totalPriority) * 100;
       const containerAmount = (container.priority / totalPriority) * amount;
-
-      // Log individual container allocation
-      if (containerAmount > 0) {
-        console.warn(
-          `[ResourcePoolManager] Allocated ${containerAmount.toFixed(2)} units of ${resourceType} to container ${container.id} (${containerPercentage.toFixed(2)}%)`
-        );
-      }
 
       return {
         targetId: container.id,
@@ -528,7 +505,7 @@ export class ResourcePoolManager {
     targetIds: string[],
     resourceType: ResourceType,
     amount: number
-  ): Array<{ targetId: string; amount: number; percentage: number }> {
+  ): { targetId: string; amount: number; percentage: number }[] {
     // Calculate demand for each container
     const containerDemands = targetIds.map(id => {
       const container = this.containers.get(id);
@@ -575,7 +552,7 @@ export class ResourcePoolManager {
     targetIds: string[],
     resourceType: ResourceType,
     amount: number
-  ): Array<{ targetId: string; amount: number; percentage: number }> {
+  ): { targetId: string; amount: number; percentage: number }[] {
     // This is a placeholder for custom allocation logic
     // In a real implementation, this would use more complex rules
 
@@ -675,7 +652,6 @@ export class ResourcePoolManager {
     const targetContainer = this.containers.get(targetId);
 
     if (!sourceContainer || !targetContainer) {
-      console.error(`Source or target container not found: ${sourceId}, ${targetId}`);
       return false;
     }
 
@@ -732,7 +708,6 @@ export class ResourcePoolManager {
     const sourceAmount =
       sourceContainer.resources[resourceType] ?? createResourceState(resourceType);
     if (sourceAmount.current < amount) {
-      console.error(`Insufficient ${resourceType} in source container ${sourceId}`);
       return false;
     }
 
@@ -752,4 +727,39 @@ export class ResourcePoolManager {
 
     return true;
   }
+
+  /**
+   * Get resource amount
+   */
+  public getResourceAmount(poolId: string, resourceType: ResourceType): number {
+    const pool = this.pools.get(poolId);
+    return pool?.resources[resourceType] ?? 0;
+  }
+
+  /**
+   * Get resource state
+   */
+  public getResourceState(poolId: string, resourceType: ResourceType): ResourceState | undefined {
+    const pool = this.pools.get(poolId);
+    if (pool?.resources) {
+      const amount = pool.resources[resourceType];
+      if (amount !== undefined) {
+        // Found the amount, create a ResourceState object
+        return createResourceState(resourceType, amount, pool.maxCapacity);
+      }
+    }
+    // Pool or resource not found
+    // console.error(`[ResourcePoolManager] Resource ${resourceType} not found in pool ${poolId}`);
+    return undefined;
+  }
+
+  // /**
+  //  * Get pool settings
+  //  * TODO: Review this function. ResourcePool does not have a 'settings' property
+  //  * and ResourcePoolSettings type is not defined.
+  //  */
+  // public getPoolSettings(poolId: string): ResourcePoolSettings | undefined {
+  //   const pool = this.pools.get(poolId);
+  //   return pool?.settings;
+  // }
 }

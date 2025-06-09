@@ -497,7 +497,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
-        d3.forceCollide<FlowNode>().radius(d => (d.radius || 20) + 10)
+        d3.forceCollide<FlowNode>().radius(d => (d.radius ?? 20) + 10)
       );
 
     // Store simulation reference for cleanup
@@ -512,8 +512,8 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       .enter()
       .append('line')
       .attr('class', d => `link ${d.active ? 'active' : 'inactive'}`)
-      .attr('stroke', d => d.color || '#999')
-      .attr('stroke-width', d => d.width || 1)
+      .attr('stroke', d => d.color ?? '#999')
+      .attr('stroke-width', d => d.width ?? 1)
       .attr('marker-end', d => {
         // Determine marker based on link properties
         if (!d.active) return 'url(#arrowhead-inactive)';
@@ -554,8 +554,8 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
     // Add circles to nodes
     node
       .append('circle')
-      .attr('r', d => d.radius || 20)
-      .attr('fill', d => d.color || '#999')
+      .attr('r', d => d.radius ?? 20)
+      .attr('fill', d => d.color ?? '#999')
       .attr('stroke', d => (selectedNodeId === d.id ? '#1f2937' : '#fff'))
       .attr('stroke-width', d => (selectedNodeId === d.id ? 3 : 1.5));
 
@@ -584,14 +584,14 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
           .select('circle')
           .transition()
           .duration(200)
-          .attr('r', (d.radius || 20) * 1.1);
+          .attr('r', (d.radius ?? 20) * 1.1);
       })
       .on('mouseout', function (event, d) {
         d3.select(this)
           .select('circle')
           .transition()
           .duration(200)
-          .attr('r', d.radius || 20);
+          .attr('r', d.radius ?? 20);
       });
 
     // Add flow effects to links
@@ -604,7 +604,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
           // Add animated dash array for active links
           element
             .attr('stroke-dasharray', '5,5')
-            .style('animation', `flowAnimation ${5000 / (d.value || 1)}ms linear infinite`);
+            .style('animation', `flowAnimation ${5000 / (d.value ?? 1)}ms linear infinite`);
         });
     }
 
@@ -631,7 +631,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
         // Apply selected style conditionally
         .attr('stroke', d => (selectedLinkId === d.id ? '#1f2937' : d.color || '#999'))
         .attr('stroke-width', d =>
-          selectedLinkId === d.id ? Math.max(2, (d.width || 1) * 1.5) : d.width || 1
+          selectedLinkId === d.id ? Math.max(2, (d.width ?? 1) * 1.5) : d.width ?? 1
         );
 
       // Update nodes with safe transforms

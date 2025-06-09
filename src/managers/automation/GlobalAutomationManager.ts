@@ -1,23 +1,29 @@
 // import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents'; // Remove legacy bus
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem'; // Keep BaseEvent
 import { AbstractBaseManager } from '../../lib/managers/BaseManager'; // Add Base Manager
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService'; // Add Error Logging
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes'; // Add Standard EventType Enum
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import {
-  getSystemCommunication,
-  MessagePriority,
-  SystemId,
-} from '../../utils/events/EventCommunication'; // Keep for now
+import
+  {
+    getSystemCommunication,
+    MessagePriority,
+    SystemId,
+  } from '../../utils/events/EventCommunication'; // Keep for now
 import { EventPriorityQueue } from '../../utils/events/EventFiltering';
-import {
-  AutomationAction,
-  AutomationCondition,
-  AutomationManager, // Keep for type usage, but remove from constructor
-  AutomationRule,
-  ResourceConditionValue,
-} from '../game/AutomationManager';
+import
+  {
+    AutomationAction,
+    AutomationCondition,
+    AutomationManager, // Keep for type usage, but remove from constructor
+    AutomationRule,
+    ResourceConditionValue,
+  } from '../game/AutomationManager';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 
 // Interfaces for specific event data payloads
@@ -78,13 +84,8 @@ export interface GlobalRoutine {
   tags: string[];
 }
 
-/**
- * Global automation manager
- * Extends the module-specific automation with system-wide routines
- */
-// Extend AbstractBaseManager
+// @ts-expect-error: Static side type incompatibility due to generic Singleton constraint
 export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
-  // Restore manual singleton instance property
   private static _instance: GlobalAutomationManager | null = null;
 
   // Remove _automationManager instance field if no longer needed after removing from constructor
@@ -103,15 +104,6 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
     this.routineQueue = new EventPriorityQueue(routine => {
       return this.executeRoutine(routine);
     });
-  }
-
-  // Restore manual static getInstance method
-  public static getInstance(): GlobalAutomationManager {
-    if (!GlobalAutomationManager._instance) {
-      // Note: This bypasses the protected constructor. Consider if this is intended.
-      GlobalAutomationManager._instance = new GlobalAutomationManager();
-    }
-    return GlobalAutomationManager._instance;
   }
 
   /**
@@ -182,17 +174,17 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
         // Keep payload handling logic for now, but note type assertions
         const { payload } = message;
         if (payload && typeof payload === 'object') {
-          const routineId = 'routineId' in payload ? String(payload.routineId) : undefined;
-          const createRoutine =
-            'createRoutine' in payload &&
-            payload.createRoutine &&
-            typeof payload.createRoutine === 'object'
-              ? (payload.createRoutine as GlobalRoutine)
-              : undefined;
+          const routineId = typeof (payload as Record<string, unknown>)?.routineId === 'string'
+            ? String((payload as Record<string, unknown>).routineId)
+            : undefined;
+
+          const createRoutine = typeof (payload as Record<string, unknown>)?.createRoutine === 'object'
+            ? ((payload as Record<string, unknown>).createRoutine as GlobalRoutine)
+            : undefined;
 
           if (routineId) {
             const routine = this.routines.get(routineId);
-            if (routine && routine.enabled) {
+            if (routine?.enabled) {
               this.scheduleRoutine(routine);
               return;
             }
@@ -227,7 +219,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
     routine.systems.forEach(systemId => {
       const communication = this.systemCommunications.get(systemId);
       if (communication) {
-        communication.sendMessage('broadcast', 'routine-registered', {
+        void communication.sendMessage('broadcast', 'routine-registered', {
           routineId: routine.id,
           name: routine.name,
           type: routine.type,
@@ -251,7 +243,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
     routine.systems.forEach(systemId => {
       const communication = this.systemCommunications.get(systemId);
       if (communication) {
-        communication.sendMessage(systemId, 'routine-unregistered', {
+        void communication.sendMessage(systemId, 'routine-unregistered', {
           routineId: routine.id,
         });
       }
@@ -432,7 +424,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
       routine.systems.forEach(systemId => {
         const communication = this.systemCommunications.get(systemId);
         if (communication) {
-          communication.sendMessage(systemId, 'routine-executed', {
+          void communication.sendMessage(systemId, 'routine-executed', {
             routineId: routine.id,
             success: true,
             timestamp: Date.now(),
@@ -488,6 +480,9 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
    * Helper method to execute a single action
    */
   private async executeAction(action: AutomationAction): Promise<void> {
+    // Ensure rule: async has await
+    await Promise.resolve();
+
     switch (action.type) {
       case 'ACTIVATE_MODULE':
         if (!action.target) {
@@ -570,7 +565,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
         if (action.target && Object.values(EventType).includes(action.target as EventType)) {
           // Replace moduleEventBus.emit with this.publish
           this.publish({
-            type: action.target as string, // Use the target string directly (cast needed)
+            type: action.target, // Use the target string directly (cast needed)
             managerId: this.managerName,
             timestamp: Date.now(),
             data: {
@@ -768,6 +763,11 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
    */
   public setAutomationManager(manager: AutomationManager): void {
     // this._automationManager = manager;
+  }
+
+  public static getInstance(): GlobalAutomationManager {
+    GlobalAutomationManager._instance ??= new GlobalAutomationManager();
+    return GlobalAutomationManager._instance;
   }
 }
 

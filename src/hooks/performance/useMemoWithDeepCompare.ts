@@ -26,13 +26,13 @@ import { deepEqual } from '../../utils/performance/ComponentOptimizer';
  */
 export function useMemoWithDeepCompare<T>(
   factory: () => T,
-  dependencies: ReadonlyArray<unknown>
+  dependencies: readonly unknown[]
 ): T {
   // Ref to store the memoized value
   const valueRef = useRef<T | undefined>(undefined);
 
   // Ref to store the previous dependencies
-  const depsRef = useRef<ReadonlyArray<unknown>>([]);
+  const depsRef = useRef<readonly unknown[]>([]);
 
   // Check if dependencies have deeply changed
   const depsChanged =

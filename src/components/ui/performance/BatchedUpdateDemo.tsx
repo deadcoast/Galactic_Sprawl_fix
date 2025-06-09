@@ -71,7 +71,13 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
   });
 
   // Animation state (shared)
-  type ElementType = { id: number; x: number; y: number; radius: number; color: string };
+  interface ElementType {
+    id: number;
+    x: number;
+    y: number;
+    radius: number;
+    color: string;
+  }
 
   const [elements, setElements] = useState<ElementType[]>([]);
   const [animationId, setAnimationId] = useState<string | null>(null);

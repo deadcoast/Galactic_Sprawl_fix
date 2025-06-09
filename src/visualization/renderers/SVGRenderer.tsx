@@ -51,7 +51,7 @@ export class SVGRenderer implements ChartRenderer {
     // Convert theme 'auto' to 'light' for SVG renderer
     const svgOptions = {
       ...options,
-      theme: options?.theme === 'auto' ? 'light' : options?.theme || 'light',
+      theme: options?.theme === 'auto' ? 'light' : options?.theme ?? 'light',
     };
 
     this.containerWidth = typeof svgOptions.width === 'number' ? svgOptions.width : 300;
@@ -130,7 +130,7 @@ export class SVGRenderer implements ChartRenderer {
     xAxis: ChartAxes['x'],
     yAxis: ChartAxes['y']
   ): ChartScales {
-    if (!data || !data?.datasets || data?.datasets.length === 0) {
+    if (!data?.datasets || data?.datasets.length === 0) {
       return {
         x: { min: 0, max: 1, type: xAxis.type === 'time' ? 'time' : 'linear' },
         y: { min: 0, max: 1, type: yAxis.type === 'log' ? 'linear' : yAxis.type || 'linear' },
@@ -242,7 +242,7 @@ export class SVGRenderer implements ChartRenderer {
       const datasetGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       datasetGroup.setAttribute('class', `dataset-${datasetIndex}`);
       datasetGroup.setAttribute('fill', 'none');
-      datasetGroup.setAttribute('stroke', dataset.color || this.getDefaultColor(datasetIndex));
+      datasetGroup.setAttribute('stroke', dataset.color ?? this.getDefaultColor(datasetIndex));
       datasetGroup.setAttribute('stroke-width', '2');
       datasetGroup.setAttribute('stroke-linecap', 'round');
       datasetGroup.setAttribute('stroke-linejoin', 'round');
@@ -283,7 +283,7 @@ export class SVGRenderer implements ChartRenderer {
 
       path.setAttribute('d', pathData);
       path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', dataset.color || this.getDefaultColor(datasetIndex));
+      path.setAttribute('stroke', dataset.color ?? this.getDefaultColor(datasetIndex));
       path.setAttribute('stroke-width', '2');
 
       datasetGroup.appendChild(path);
@@ -320,7 +320,7 @@ export class SVGRenderer implements ChartRenderer {
       chartGroup.appendChild(datasetGroup);
 
       // Set default circle style and color based on theme
-      const pointColor = dataset.color || this.getDefaultColor(datasetIndex);
+      const pointColor = dataset.color ?? this.getDefaultColor(datasetIndex);
       const pointOutline = themeColors.backgroundColor;
 
       // Draw each point
@@ -382,7 +382,7 @@ export class SVGRenderer implements ChartRenderer {
     chartGroup.appendChild(axesGroup);
 
     // Draw x-axis ticks and labels
-    const xTickCount = axes.x.tickCount || 5;
+    const xTickCount = axes.x.tickCount ?? 5;
     const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
     for (let i = 0; i < xTickCount; i++) {
@@ -426,7 +426,7 @@ export class SVGRenderer implements ChartRenderer {
     }
 
     // Draw y-axis ticks and labels
-    const yTickCount = axes.y.tickCount || 5;
+    const yTickCount = axes.y.tickCount ?? 5;
     const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
     for (let i = 0; i < yTickCount; i++) {
@@ -520,8 +520,8 @@ export class SVGRenderer implements ChartRenderer {
     options: ChartOptions,
     chartGroup: SVGGElement
   ): void {
-    const xAxis = options?.axes?.x || { type: 'linear', grid: true };
-    const yAxis = options?.axes?.y || { type: 'linear', grid: true };
+    const xAxis = options?.axes?.x ?? { type: 'linear', grid: true };
+    const yAxis = options?.axes?.y ?? { type: 'linear', grid: true };
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Create a group for the grid
@@ -531,7 +531,7 @@ export class SVGRenderer implements ChartRenderer {
 
     // Draw x-axis grid lines
     if (yAxis?.grid) {
-      const xTickCount = xAxis.tickCount || 5;
+      const xTickCount = xAxis.tickCount ?? 5;
       const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
       for (let i = 0; i < xTickCount; i++) {
@@ -552,7 +552,7 @@ export class SVGRenderer implements ChartRenderer {
 
     // Draw y-axis grid lines
     if (xAxis?.grid) {
-      const yTickCount = yAxis.tickCount || 5;
+      const yTickCount = yAxis.tickCount ?? 5;
       const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
       for (let i = 0; i < yTickCount; i++) {

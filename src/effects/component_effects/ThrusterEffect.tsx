@@ -8,24 +8,22 @@ import { useFrame as ThreeUseFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Define custom element types for Three.js components
-type ThreePointsProps = {
+interface ThreePointsProps {
   ref?: React.RefObject<THREE.Points>;
   [key: string]: unknown;
-};
+}
 
-type ThreeBufferGeometryProps = {
-  [key: string]: unknown;
-};
+type ThreeBufferGeometryProps = Record<string, unknown>;
 
-type ThreeBufferAttributeProps = {
+interface ThreeBufferAttributeProps {
   attach: string;
   count: number;
   array: Float32Array;
   itemSize: number;
   [key: string]: unknown;
-};
+}
 
-type ThreeShaderMaterialProps = {
+interface ThreeShaderMaterialProps {
   attach?: string;
   transparent?: boolean;
   depthWrite?: boolean;
@@ -34,7 +32,7 @@ type ThreeShaderMaterialProps = {
   vertexShader?: string;
   fragmentShader?: string;
   [key: string]: unknown;
-};
+}
 
 // Define mock types if @react-three/fiber is not available
 // This helps TypeScript understand the structure without the actual library
@@ -128,8 +126,8 @@ const useFrame = ThreeUseFrame || mockUseFrame;
  * @param style - CSS styles for the canvas container
  */
 const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
-  const defaultCamera = camera || { position: [0, 0, 5], fov: 75 };
-  const defaultStyle = style || { width: '100%', height: '100%' };
+  const defaultCamera = camera ?? { position: [0, 0, 5], fov: 75 };
+  const defaultStyle = style ?? { width: '100%', height: '100%' };
 
   // Create a camera element using the defaultCamera
   const cameraElement = React.createElement('div', {
@@ -192,7 +190,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
       // Initial opacity
       opacities[i] = Math.random() * 0.7 + 0.3;
 
-      // Velocity - primarily in the z-direction (backward from thruster)
+      // Velocity - primarily in the z-direction (backcombatd from thruster)
       velocities[i * 3] = (Math.random() - 0.5) * 0.1 * intensity;
       velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.1 * intensity;
       velocities[i * 3 + 2] = -(Math.random() * 0.5 + 0.5) * intensity;

@@ -8,7 +8,7 @@ interface ShipPathEffectProps {
   target: Position;
   progress: number;
   quality: 'low' | 'medium' | 'high';
-  type: 'recon' | 'mining' | 'war';
+  type: 'recon' | 'mining' | 'combat';
 }
 
 export function ShipPathEffect({ source, target, progress, quality, type }: ShipPathEffectProps) {
@@ -36,7 +36,7 @@ export function ShipPathEffect({ source, target, progress, quality, type }: Ship
         return 'teal';
       case 'mining':
         return 'amber';
-      case 'war':
+      case 'combat':
         return 'red';
       default:
         return 'blue';

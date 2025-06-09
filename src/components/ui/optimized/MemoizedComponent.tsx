@@ -47,7 +47,7 @@ export function withMemoization<P extends object>(
   options: MemoizationOptions<P>
 ): MemoExoticComponent<ComponentType<P>> {
   const {
-    componentName = Component.displayName || Component.name || 'UnnamedComponent',
+    componentName = Component.displayName ?? Component.name ?? 'UnnamedComponent',
     displayName = `Memoized(${componentName})`,
     trackRenders = process.env.NODE_ENV === 'development',
     logPerformance = process.env.NODE_ENV === 'development',
@@ -57,7 +57,7 @@ export function withMemoization<P extends object>(
 
   // Create optimized props comparison function
   const propsAreEqual =
-    arePropsEqual ||
+    arePropsEqual ??
     createPropsComparison({
       componentName,
       trackRenders,
@@ -76,19 +76,19 @@ export function withMemoization<P extends object>(
 }
 
 /**
- * HOC that adds memoization with forwarded refs
+ * HOC that adds memoization with forcombatded refs
  *
- * @param Component Component to memoize with ref forwarding
+ * @param Component Component to memoize with ref forcombatding
  * @param options Memoization options
- * @returns Memoized component with ref forwarding
+ * @returns Memoized component with ref forcombatding
  */
-export function withMemoizationForwardRef<P extends object, T = unknown>(
+export function withMemoizationForcombatdRef<P extends object, T = unknown>(
   Component: ComponentType<P & { ref?: React.ForwardedRef<T> }>,
   options: MemoizationOptions<P>
 ): MemoExoticComponent<ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>> {
   const {
-    componentName = Component.displayName || Component.name || 'UnnamedComponent',
-    displayName = `MemoizedForwardRef(${componentName})`,
+    componentName = Component.displayName ?? Component.name ?? 'UnnamedComponent',
+    displayName = `MemoizedForcombatdRef(${componentName})`,
     trackRenders = process.env.NODE_ENV === 'development',
     logPerformance = process.env.NODE_ENV === 'development',
     renderTimeThreshold = 16,
@@ -97,7 +97,7 @@ export function withMemoizationForwardRef<P extends object, T = unknown>(
 
   // Create optimized props comparison function
   const propsAreEqual =
-    arePropsEqual ||
+    arePropsEqual ??
     createPropsComparison({
       componentName,
       trackRenders,
@@ -123,9 +123,7 @@ export function withMemoizationForwardRef<P extends object, T = unknown>(
   // Set display name
   MemoizedComponent.displayName = displayName;
 
-  return MemoizedComponent as MemoExoticComponent<
-    ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>
-  >;
+  return MemoizedComponent;
 }
 
 /**
@@ -141,7 +139,7 @@ export function createMemoizedComponent<P extends object>(
   componentName?: string
 ): MemoExoticComponent<ComponentType<P>> {
   return withMemoization(Component, {
-    componentName: componentName || Component.displayName || Component.name || 'Component',
+    componentName: componentName ?? Component.displayName ?? Component.name ?? 'Component',
     trackRenders: process.env.NODE_ENV === 'development',
     logPerformance: process.env.NODE_ENV === 'development',
     renderTimeThreshold: 16,

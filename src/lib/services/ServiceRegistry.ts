@@ -49,8 +49,8 @@ interface ServiceRegistration {
  */
 export class ServiceRegistry {
   private static instance: ServiceRegistry;
-  private services: Map<string, ServiceRegistration> = new Map();
-  private initializing: Set<string> = new Set();
+  private services = new Map<string, ServiceRegistration>();
+  private initializing = new Set<string>();
 
   protected constructor() {}
 

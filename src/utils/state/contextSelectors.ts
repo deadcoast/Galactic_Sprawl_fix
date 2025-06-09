@@ -33,7 +33,7 @@ export function createSelector<State, Selected>(
     cache.set(key, { state, selected });
 
     if (cache.size > 100) {
-      const firstKey = cache.keys().next().value;
+      const firstKey = cache.keys().next().value as unknown;
       cache.delete(firstKey);
     }
 
@@ -59,7 +59,7 @@ export function useContextSelector<ContextType, Selected>(
 
   if (contextValue === null || contextValue === undefined) {
     throw new Error(
-      `useContextSelector must be used within a Provider for ${context.displayName || 'unknown context'}`
+      `useContextSelector must be used within a Provider for ${context.displayName ?? 'unknown context'}`
     );
   }
 
@@ -128,7 +128,7 @@ export function createPropertySelector<ContextType, K extends keyof NonNullable<
   property: K
 ) {
   return function usePropertySelector(): NonNullable<ContextType>[K] {
-    return useContextSelector(context, value => (value as NonNullable<ContextType>)[property]);
+    return useContextSelector(context, value => (value)[property]);
   };
 }
 
@@ -147,7 +147,7 @@ export function createNestedPropertySelector<
   return function useNestedPropertySelector(): NonNullable<NonNullable<ContextType>[K1]>[K2] {
     return useContextSelector(context, value => {
       const [key1, key2] = path;
-      const value1 = (value as NonNullable<ContextType>)[key1];
+      const value1 = (value)[key1];
       if (value1 === undefined || value1 === null) {
         throw new Error(
           `Property ${String(key1)} is ${value1 === undefined ? 'undefined' : 'null'}`
@@ -173,7 +173,7 @@ export function createMultiPropertySelector<ContextType, K extends keyof NonNull
     return useContextSelector(context, value => {
       const result = {} as Pick<NonNullable<ContextType>, K>;
       properties.forEach(prop => {
-        result[prop] = (value as NonNullable<ContextType>)[prop];
+        result[prop] = (value)[prop];
       });
       return result;
     });
@@ -195,7 +195,7 @@ export function createStandardContextSelectors<State, Action>(
     const contextValue = useContext(context);
     if (!contextValue) {
       throw new Error(
-        `useState must be used within a Provider for ${context.displayName || 'unknown context'}`
+        `useState must be used within a Provider for ${context.displayName ?? 'unknown context'}`
       );
     }
     return contextValue.state;
@@ -205,7 +205,7 @@ export function createStandardContextSelectors<State, Action>(
     const contextValue = useContext(context);
     if (!contextValue) {
       throw new Error(
-        `useDispatch must be used within a Provider for ${context.displayName || 'unknown context'}`
+          `useDispatch must be used within a Provider for ${context.displayName ?? 'unknown context'}`
       );
     }
     return contextValue.dispatch;

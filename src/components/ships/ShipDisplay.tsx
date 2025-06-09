@@ -14,7 +14,7 @@ interface ShipDisplayProps {
 //   // ... other resource icons
 // };
 
-const ShipDisplay: React.FC<ShipDisplayProps> = ({ ship }) => {
+const ShipDisplay: React.FC<ShipDisplayProps> = ({ ship }: ShipDisplayProps) => {
   return (
     <div className="ship-display">
       <h2>{ship.name}</h2>

@@ -7,7 +7,7 @@ export interface FactionConfig {
   banner: {
     primaryColor: string;
     secondaryColor: string;
-    icon: typeof Crown | typeof Skull | typeof Star;
+    icon: typeof Crown    ;
   };
   behavior: {
     baseAggression: number; // 0-1, determines likelihood of initiating combat

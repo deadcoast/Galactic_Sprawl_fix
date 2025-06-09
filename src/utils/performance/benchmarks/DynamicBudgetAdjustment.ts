@@ -411,7 +411,7 @@ class PerformanceTelemetryCollector {
 
     const memorySamples = samples
       .filter(sample => sample.memoryUsageMB !== undefined)
-      .map(sample => sample.memoryUsageMB as number)
+      .map(sample => sample.memoryUsageMB!)
       .sort((a, b) => a - b);
 
     if (memorySamples.length > 0) {
@@ -425,7 +425,7 @@ class PerformanceTelemetryCollector {
 
     const opsSamples = samples
       .filter(sample => sample.operationsPerSecond !== undefined)
-      .map(sample => sample.operationsPerSecond as number)
+      .map(sample => sample.operationsPerSecond!)
       .sort((a, b) => a - b);
 
     if (opsSamples.length > 0) {

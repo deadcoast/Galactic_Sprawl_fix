@@ -82,7 +82,7 @@ export interface ModuleEfficiencyEvent extends ModuleEvent {
 /**
  * Interface defining all module-related events
  */
-type ModuleEventMap = {
+interface ModuleEventMap {
   'module:created': ModuleEvent;
   'module:destroyed': ModuleEvent;
   'module:state-changed': ModuleStateEvent;
@@ -94,7 +94,7 @@ type ModuleEventMap = {
   'module:damaged': ModuleDamageEvent;
   'module:repaired': ModuleRepairEvent;
   'module:efficiency-changed': ModuleEfficiencyEvent;
-};
+}
 
 export type ModuleEvents = {
   [K in keyof ModuleEventMap]: ModuleEventMap[K];

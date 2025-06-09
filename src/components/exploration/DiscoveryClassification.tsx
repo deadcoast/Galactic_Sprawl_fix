@@ -1,22 +1,22 @@
 import {
-  AlertTriangle,
-  Brain,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Database,
-  FolderTree,
-  Search,
-  X,
+    AlertTriangle,
+    Brain,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Database,
+    FolderTree,
+    Search,
+    X
 } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useClassification } from '../../contexts/ClassificationContext';
 import {
-  ClassifiableDiscovery,
-  Classification,
-  ClassificationSuggestion,
-  ConfidenceLevel,
+    ClassifiableDiscovery,
+    Classification,
+    ClassificationSuggestion,
+    ConfidenceLevel
 } from '../../types/exploration/ClassificationTypes';
 
 interface DiscoveryClassificationProps {
@@ -51,7 +51,6 @@ export function DiscoveryClassification({
 
   // State for UI
   const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
-  const [_showSimilarDiscoveries, _setShowSimilarDiscoveries] = useState<boolean>(false);
   const [showTaxonomyBrowser, setShowTaxonomyBrowser] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'classify' | 'history' | 'similar'>('classify');
@@ -196,7 +195,7 @@ export function DiscoveryClassification({
         >
           <div
             className="mr-2 h-3 w-3 rounded-full"
-            style={{ backgroundColor: category.color || '#6b7280' }}
+            style={{ backgroundColor: category.color ?? '#6b7280' }}
           ></div>
           <span>{category.name}</span>
         </div>
@@ -223,9 +222,9 @@ export function DiscoveryClassification({
                   <div className="flex items-center">
                     <div
                       className="mr-2 h-3 w-3 rounded-full"
-                      style={{ backgroundColor: category?.color || '#6b7280' }}
+                      style={{ backgroundColor: category?.color ?? '#6b7280' }}
                     ></div>
-                    <span className="font-medium">{category?.name || 'Unknown Category'}</span>
+                    <span className="font-medium">{category?.name ?? 'Unknown Category'}</span>
                     <span
                       className={`ml-2 text-xs ${getConfidenceColor(classification.confidenceLevel)}`}
                     >
@@ -349,10 +348,10 @@ export function DiscoveryClassification({
                               <div className="flex items-center">
                                 <div
                                   className="mr-2 h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: category?.color || '#6b7280' }}
+                                  style={{ backgroundColor: category?.color ?? '#6b7280' }}
                                 ></div>
                                 <span className="font-medium">
-                                  {category?.name || 'Unknown Category'}
+                                  {category?.name ?? 'Unknown Category'}
                                 </span>
                               </div>
                               <span className={`text-sm ${getConfidenceColor(confidenceLevel)}`}>
@@ -426,11 +425,11 @@ export function DiscoveryClassification({
                       className="mr-2 h-3 w-3 rounded-full"
                       style={{
                         backgroundColor:
-                          getTaxonomyCategory(selectedCategoryId)?.color || '#6b7280',
+                          getTaxonomyCategory(selectedCategoryId)?.color ?? '#6b7280',
                       }}
                     ></div>
                     <span>
-                      {getTaxonomyCategory(selectedCategoryId)?.name || 'Unknown Category'}
+                      {getTaxonomyCategory(selectedCategoryId)?.name ?? 'Unknown Category'}
                     </span>
                     <button
                       type="button"
@@ -588,10 +587,10 @@ export function DiscoveryClassification({
                         <div className="flex items-center">
                           <div
                             className="mr-2 h-3 w-3 rounded-full"
-                            style={{ backgroundColor: category?.color || '#6b7280' }}
+                            style={{ backgroundColor: category?.color ?? '#6b7280' }}
                           ></div>
                           <span className="font-medium">
-                            {category?.name || 'Unknown Category'}
+                            {category?.name ?? 'Unknown Category'}
                           </span>
                         </div>
                         <span
@@ -677,7 +676,7 @@ export function DiscoveryClassification({
                           <div className="flex items-center">
                             <div
                               className="mr-2 h-3 w-3 rounded-full"
-                              style={{ backgroundColor: category.color || '#6b7280' }}
+                              style={{ backgroundColor: category.color ?? '#6b7280' }}
                             ></div>
                             <span className="font-medium">{category.name}</span>
                             <span

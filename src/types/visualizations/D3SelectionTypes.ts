@@ -431,12 +431,7 @@ export function createSelectionBuilder<
       exit?: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void
     ) {
       // --- Inlined logic from joinElements --- START ---
-      const joined = selection.join(elementType) as d3.Selection<
-        GElement | d3.EnterElement,
-        Datum,
-        PElement,
-        PDatum
-      >;
+      const joined = selection.join(elementType);
 
       if (enter && selection.enter().size()) {
         enter(selection.enter());

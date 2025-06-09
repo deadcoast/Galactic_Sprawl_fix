@@ -91,7 +91,7 @@ export function registerService<T>(serviceName: keyof Window & string, serviceIn
  * @returns Object with results for each service
  */
 export function checkServicesAvailability(
-  serviceNames: Array<keyof Window & string>
+  serviceNames: (keyof Window & string)[]
 ): Record<string, boolean> {
   return serviceNames.reduce(
     (result, name) => {

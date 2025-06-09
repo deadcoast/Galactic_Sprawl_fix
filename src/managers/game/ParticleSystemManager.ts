@@ -23,10 +23,10 @@ interface Particle {
  */
 export class ParticleSystemManager {
   private particlePool: EntityPool<Particle>;
-  private systems: Map<string, ParticleSystem> = new Map();
-  private lastUpdate: number = 0;
+  private systems = new Map<string, ParticleSystem>();
+  private lastUpdate = 0;
 
-  constructor(initialPoolSize: number = 1000) {
+  constructor(initialPoolSize = 1000) {
     this.particlePool = new EntityPool<Particle>(() => this.createParticle(), initialPoolSize);
 
     // Debug logging
@@ -145,8 +145,8 @@ interface ParticleSystemConfig {
 class ParticleSystem {
   private pool: EntityPool<Particle>;
   private config: ParticleSystemConfig;
-  private particles: Set<Particle> = new Set();
-  private timeSinceLastSpawn: number = 0;
+  private particles = new Set<Particle>();
+  private timeSinceLastSpawn = 0;
 
   constructor(pool: EntityPool<Particle>, config: ParticleSystemConfig) {
     this.pool = pool;

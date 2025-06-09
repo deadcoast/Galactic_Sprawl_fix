@@ -10,23 +10,24 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import {
-  AnalysisConfig,
-  AnalysisResult,
-  ClusteringAnalysisConfig,
-  ComparisonAnalysisConfig,
-  CorrelationAnalysisConfig,
-  DataPoint,
-  Dataset,
-  DistributionAnalysisConfig,
-  PredictionAnalysisConfig,
-  ResourceMappingAnalysisConfig,
-  SectorAnalysisConfig,
-  TrendAnalysisConfig,
-} from '../types/exploration/DataAnalysisTypes';
+import
+  {
+    AnalysisConfig,
+    AnalysisResult,
+    ClusteringAnalysisConfig,
+    ComparisonAnalysisConfig,
+    CorrelationAnalysisConfig,
+    DataPoint,
+    Dataset,
+    DistributionAnalysisConfig,
+    PredictionAnalysisConfig,
+    ResourceMappingAnalysisConfig,
+    SectorAnalysisConfig,
+    TrendAnalysisConfig
+  } from '../types/exploration/DataAnalysisTypes';
 import { ResourceType } from '../types/resources/ResourceTypes';
 import { isResourceType } from '../utils/typeGuards/resourceTypeGuards';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService'; // Added import
+import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService'; // Added import
 
 /**
  * Interface for algorithm options
@@ -45,6 +46,57 @@ interface AlgorithmOptions {
 // Type definition for property extraction and value memoization
 type PropertyExtractor = (point: DataPoint) => unknown;
 
+// Enhanced property extractor that returns typed values
+type TypedPropertyExtractor<T> = (point: DataPoint) => T | undefined;
+
+/**
+ * Matrix type definitions for mathematical operations
+ */
+type Matrix = number[][];
+type Vector = number[];
+
+/**
+ * Type-safe matrix operations interface
+ */
+interface MatrixOperations {
+  isValidMatrix(matrix: unknown): matrix is Matrix;
+  isValidVector(vector: unknown): vector is Vector;
+  safeMatrixMultiply(a: Matrix, b: Matrix): Matrix | null;
+  safeMatrixInverse(matrix: Matrix): Matrix | null;
+}
+
+/**
+ * Type guard for number arrays
+ */
+function isNumberArray(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'number' && !isNaN(item));
+}
+
+/**
+ * Type guard for matrix (array of number arrays)
+ */
+function isMatrix(value: unknown): value is Matrix {
+  return Array.isArray(value) && value.length > 0 && value.every(row => isNumberArray(row));
+}
+
+/**
+ * Safe array conversion utility
+ */
+function toNumberArray(value: unknown[]): number[] {
+  return value
+    .map(item => (typeof item === 'number' && !isNaN(item) ? item : null))
+    .filter((item): item is number => item !== null);
+}
+
+/**
+ * Safe matrix conversion utility
+ */
+function toMatrix(value: unknown[][]): Matrix {
+  return value
+    .map(row => (Array.isArray(row) ? toNumberArray(row) : []))
+    .filter(row => row.length > 0);
+}
+
 /**
  * Interface for distribution bins
  */
@@ -61,7 +113,7 @@ interface DistributionBin {
 interface ResourceCell {
   x: number;
   y: number;
-  resources: Array<{ type: ResourceType; amount: number }>;
+  resources: { type: ResourceType; amount: number }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;
@@ -73,24 +125,27 @@ interface ResourceCell {
  */
 export class AnalysisAlgorithmService {
   // Cache for storing computed results to improve performance
-  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map();
+  private resultCache: Map<string, { result: AnalysisResult; expiresAt: number }> = new Map<
+    string,
+    { result: AnalysisResult; expiresAt: number }
+  >();
 
   // Cache expiration time (10 minutes)
   private cacheExpirationMs = 10 * 60 * 1000;
 
   // Property access cache for faster property extraction
-  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map();
+  private propertyExtractorCache: Map<string, PropertyExtractor> = new Map<string, PropertyExtractor>();
 
   // Default sample size for large datasets
   private defaultSampleSize = 1000;
 
   // Memoization for common statistical operations
-  private memoizedMeans: Map<string, number> = new Map();
+  private memoizedMeans: Map<string, number> = new Map<string, number>();
 
   // WebWorker pool for parallel processing
   private workerPool: Worker[] = [];
   private isWorkerSupported = typeof Worker !== 'undefined';
-  private maxWorkers = navigator.hardwareConcurrency || 4;
+  private maxWorkers = navigator.hardwareConcurrency ?? 4;
 
   constructor() {
     // Initialize WebWorker pool if supported
@@ -189,42 +244,42 @@ export class AnalysisAlgorithmService {
             );
             break;
           case 'distribution':
-            result = await this.analyzeDistribution(
+            result = this.analyzeDistribution(
               config as DistributionAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'clustering':
-            result = await this.analyzeClustering(
+            result = this.analyzeClustering(
               config as ClusteringAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'prediction':
-            result = await this.analyzePrediction(
+            result = this.analyzePrediction(
               config as PredictionAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'comparison':
-            result = await this.analyzeComparison(
+            result = this.analyzeComparison(
               config as ComparisonAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'resourceMapping':
-            result = await this.analyzeResourceMapping(
+            result = this.analyzeResourceMapping(
               config as ResourceMappingAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'sectorAnalysis':
-            result = await this.analyzeSector(
+            result = this.analyzeSector(
               config as SectorAnalysisConfig,
               dataToProcess,
               effectiveOptions
@@ -239,8 +294,7 @@ export class AnalysisAlgorithmService {
       if (
         effectiveOptions.sampleData &&
         dataset.dataPoints.length > effectiveOptions.sampleSize &&
-        result &&
-        result.data
+        result?.data
       ) {
         result.data.samplingInfo = {
           originalSize: dataset.dataPoints.length,
@@ -289,14 +343,28 @@ export class AnalysisAlgorithmService {
 
       // Set up message handler
       const handleMessage = (event: MessageEvent) => {
-        if (event?.data?.messageId === messageId) {
+        // Type guard for message data
+        const isValidMessage = (data: unknown): data is {
+          messageId: string;
+          result?: AnalysisResult;
+          error?: string;
+        } => {
+          return (
+            typeof data === 'object' &&
+            data !== null &&
+            'messageId' in data &&
+            typeof (data as { messageId: unknown }).messageId === 'string'
+          );
+        };
+
+        if (isValidMessage(event.data) && event.data.messageId === messageId && event.data.result) {
           // Clean up message handler
           worker.removeEventListener('message', handleMessage);
 
-          if (event?.data?.error) {
-            reject(new Error(event?.data?.error));
+          if (event.data.error) {
+            reject(new Error(event.data.error));
           } else {
-            resolve(event?.data?.result);
+            resolve(event.data.result);
           }
         }
       };
@@ -402,7 +470,7 @@ export class AnalysisAlgorithmService {
 
       // Add selected points to result
       for (const index of selected) {
-        result?.push(typeDataPoints[index]);
+        result.push(typeDataPoints[index]);
       }
     }
 
@@ -432,7 +500,7 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze trend data
    */
-  private async analyzeTrend(
+  private analyzeTrend(
     config: TrendAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
@@ -492,7 +560,7 @@ export class AnalysisAlgorithmService {
 
           return null;
         })
-        .filter(Boolean) as Array<{ x: unknown; y: number }>;
+        .filter(Boolean) as { x: unknown; y: number }[];
 
       // Apply aggregation if specified
       let aggregatedValues = values;
@@ -525,7 +593,7 @@ export class AnalysisAlgorithmService {
       insights,
     };
 
-    return result;
+    return Promise.resolve(result);
   }
 
   /**
@@ -590,6 +658,32 @@ export class AnalysisAlgorithmService {
   }
 
   /**
+   * Safely converts a value to string for comparison
+   */
+  private safeStringify(value: unknown): string {
+    if (value === null || value === undefined) {
+      return 'null';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    if (typeof value === 'symbol') {
+      return value.toString();
+    }
+    if (typeof value === 'function') {
+      return '[Function]';
+    }
+    // For any other types, convert to their type name
+    return `[${typeof value}]`;
+  }
+
+  /**
    * Sort data points using the optimized property extractor
    */
   private sortDataPointsByExtractor(
@@ -611,7 +705,10 @@ export class AnalysisAlgorithmService {
         return aValue - bValue;
       }
 
-      return String(aValue).localeCompare(String(bValue));
+      // Safe string conversion to avoid object stringification issues
+      const aString = this.safeStringify(aValue);
+      const bString = this.safeStringify(bValue);
+      return aString.localeCompare(bString);
     });
   }
 
@@ -628,7 +725,7 @@ export class AnalysisAlgorithmService {
       const value = extractor(point);
 
       if (value !== undefined) {
-        const key = String(value);
+        const key = this.safeStringify(value);
         if (!result[key]) {
           result[key] = [];
         }
@@ -642,7 +739,7 @@ export class AnalysisAlgorithmService {
   /**
    * Optimized trend line calculation using single-pass algorithm
    */
-  private calculateTrendLineOptimized(values: Array<{ x: unknown; y: number }>): {
+  private calculateTrendLineOptimized(values: { x: unknown; y: number }[]): {
     slope: number;
     intercept: number;
   } {
@@ -767,7 +864,7 @@ export class AnalysisAlgorithmService {
         }
 
         // Calculate correlation coefficient based on method
-        const promise = (async () => {
+        const promise = Promise.resolve((() => {
           let coefficient: number;
 
           const var1Values = commonValues.map(v => v.var1);
@@ -799,7 +896,7 @@ export class AnalysisAlgorithmService {
           }
 
           return null;
-        })();
+        })());
 
         promises.push(promise);
       }
@@ -824,7 +921,7 @@ export class AnalysisAlgorithmService {
       insights,
     };
 
-    return result;
+    return Promise.resolve(result);
   }
 
   /**
@@ -961,9 +1058,12 @@ export class AnalysisAlgorithmService {
       merged[k++] = right[j++];
     }
 
-    // Copy merged array back to original
-    for (let i = 0; i < merged.length; i++) {
-      arr[i] = merged[i];
+    // Copy merged array back to original with type safety
+    for (let i = 0; i < merged.length && i < arr.length; i++) {
+      const mergedValue = merged[i] as number;
+      if (typeof mergedValue === 'number') {
+        arr[i] = mergedValue;
+      }
     }
 
     return count;
@@ -1008,17 +1108,18 @@ export class AnalysisAlgorithmService {
       i = j;
     }
 
+    // Convert Float64Array to number[] safely
     return Array.from(ranks);
   }
 
   /**
    * Analyze distribution of a variable
    */
-  private async analyzeDistribution(
+  private analyzeDistribution(
     config: DistributionAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters
@@ -1068,11 +1169,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze clustering patterns in the dataset using k-means algorithm
    */
-  private async analyzeClustering(
+  private analyzeClustering(
     config: ClusteringAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters from the config
@@ -1206,7 +1307,7 @@ export class AnalysisAlgorithmService {
 
       // Calculate statistics for each feature within this cluster
       const featureStats = features.map((feature: string, featureIndex: number) => {
-        const typedPoints = points as Array<{ features: number[]; id: string }>;
+        const typedPoints = points as { features: number[]; id: string }[];
         const values = typedPoints
           .map(p => p.features[featureIndex])
           .filter((v: unknown): v is number => v !== null);
@@ -1229,7 +1330,7 @@ export class AnalysisAlgorithmService {
         percentage: (points.length / clusteredPoints.length) * 100,
         centroid,
         featureStats,
-        pointIds: (points as Array<{ id: string }>).map(p => p.id),
+        pointIds: (points as { id: string }[]).map(p => p.id),
       };
     });
 
@@ -1323,8 +1424,8 @@ export class AnalysisAlgorithmService {
     const centroids = this.initializeKMeansPlusPlusCentroids(vectors, k, distanceMetric);
 
     // Initialize cluster assignments
-    const clusters = new Array(n).fill(0);
-    let prevClusters = new Array(n).fill(-1);
+    const clusters = new Array<number>(n).fill(0);
+    let prevClusters = new Array<number>(n).fill(-1);
     let iteration = 0;
 
     // Repeat until convergence or max iterations reached
@@ -1350,14 +1451,22 @@ export class AnalysisAlgorithmService {
       }
 
       // Update centroids based on new cluster assignments
-      const newCentroids: number[][] = Array(k)
-        .fill(0)
-        .map(() => Array(dimensions).fill(0));
-      const counts = Array(k).fill(0);
+      const newCentroids: number[][] = [];
+      for (let i = 0; i < k; i++) {
+        const centroidVector: number[] = [];
+        for (let j = 0; j < dimensions; j++) {
+          centroidVector[j] = 0;
+        }
+        newCentroids[i] = centroidVector;
+      }
+      const counts: number[] = [];
+      for (let i = 0; i < k; i++) {
+        counts[i] = 0;
+      }
 
       for (let i = 0; i < n; i++) {
         const cluster = clusters[i];
-        counts[cluster]++;
+        counts[cluster] += 1;
 
         for (let d = 0; d < dimensions; d++) {
           newCentroids[cluster][d] += vectors[i][d];
@@ -1442,7 +1551,7 @@ export class AnalysisAlgorithmService {
   /**
    * Calculate distance between two vectors
    */
-  private calculateDistance(a: number[], b: number[], metric: string = 'euclidean'): number {
+  private calculateDistance(a: number[], b: number[], metric = 'euclidean'): number {
     switch (metric) {
       case 'euclidean':
         return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0));
@@ -1492,16 +1601,16 @@ export class AnalysisAlgorithmService {
     const numClusters = data.numClusters ? (data.numClusters as number) : 0;
     const inertia = data.inertia ? (data.inertia as number) : undefined;
     const clusters = data.clusters
-      ? (data.clusters as Array<{
+      ? (data.clusters as {
           id: number;
           size: number;
-          featureStats: Array<{
+          featureStats: {
             feature: string;
             mean: number;
             min: number;
             max: number;
-          }>;
-        }>)
+          }[];
+        }[])
       : [];
 
     // Generate general insights
@@ -1544,12 +1653,12 @@ export class AnalysisAlgorithmService {
           cluster: {
             id: number;
             size: number;
-            featureStats: Array<{
+            featureStats: {
               feature: string;
               mean: number;
               min: number;
               max: number;
-            }>;
+            }[];
           },
           _i // Prefix unused parameter
         ) => {
@@ -1611,7 +1720,10 @@ export class AnalysisAlgorithmService {
         return aValue - bValue;
       }
 
-      return String(aValue).localeCompare(String(bValue));
+      // Safe string conversion to avoid object stringification issues
+      const aString = this.safeStringify(aValue);
+      const bString = this.safeStringify(bValue);
+      return aString.localeCompare(bString);
     });
   }
 
@@ -1630,7 +1742,7 @@ export class AnalysisAlgorithmService {
         continue;
       }
 
-      const groupKey = String(value);
+      const groupKey = this.safeStringify(value);
       if (!groups[groupKey]) {
         groups[groupKey] = [];
       }
@@ -1663,9 +1775,9 @@ export class AnalysisAlgorithmService {
    * Helper method to aggregate values
    */
   private aggregateValues(
-    values: Array<{ x: unknown; y: number }>,
+    values: { x: unknown; y: number }[],
     aggregation: 'sum' | 'average' | 'min' | 'max' | 'count'
-  ): Array<{ x: unknown; y: number }> {
+  ): { x: unknown; y: number }[] {
     // Group by x value
     const groups = new Map<unknown, number[]>();
 
@@ -1678,7 +1790,7 @@ export class AnalysisAlgorithmService {
     }
 
     // Aggregate each group
-    const result: Array<{ x: unknown; y: number }> = [];
+    const result: { x: unknown; y: number }[] = [];
 
     for (const [x, yValues] of groups.entries()) {
       let aggregatedValue: number;
@@ -1703,11 +1815,11 @@ export class AnalysisAlgorithmService {
           aggregatedValue = yValues.reduce((sum, value) => sum + value, 0);
       }
 
-      result?.push({ x, y: aggregatedValue });
+      result.push({ x, y: aggregatedValue });
     }
 
     // Sort by x value
-    return result?.sort((a, b) => {
+    return result.sort((a, b) => {
       if (typeof a.x === 'number' && typeof b.x === 'number') {
         return a.x - b.x;
       }
@@ -1799,13 +1911,13 @@ export class AnalysisAlgorithmService {
       i = j;
     }
 
-    return ranks;
+    return Array.from(ranks) as number[];
   }
 
   /**
    * Calculate linear trend line
    */
-  private calculateTrendLine(values: Array<{ x: unknown; y: number }>): {
+  private calculateTrendLine(values: { x: unknown; y: number }[]): {
     slope: number;
     intercept: number;
   } {
@@ -1820,7 +1932,7 @@ export class AnalysisAlgorithmService {
     }));
 
     // Calculate means
-    const xMean = xyValues.reduce((sum, { x }) => sum + (x as number), 0) / xyValues.length;
+    const xMean = xyValues.reduce((sum, { x }) => sum + (x), 0) / xyValues.length;
     const yMean = xyValues.reduce((sum, { y }) => sum + y, 0) / xyValues.length;
 
     // Calculate slope and intercept using least squares method
@@ -1828,7 +1940,7 @@ export class AnalysisAlgorithmService {
     let denominator = 0;
 
     for (const { x, y } of xyValues) {
-      const xDiff = (x as number) - xMean;
+      const xDiff = (x) - xMean;
       numerator += xDiff * (y - yMean);
       denominator += xDiff * xDiff;
     }
@@ -1850,12 +1962,12 @@ export class AnalysisAlgorithmService {
     values: number[],
     bins: number,
     normalize: boolean
-  ): Array<{
+  ): {
     binStart: number;
     binEnd: number;
     count: number;
     normalizedCount?: number;
-  }> {
+  }[] {
     if (values.length === 0) {
       return [];
     }
@@ -2048,12 +2160,12 @@ export class AnalysisAlgorithmService {
    */
   private generateCorrelationInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const correlations = data?.correlations as Array<{
+    const correlations = data?.correlations as {
       variables: string[];
       coefficient: number;
       strength: string;
       sampleSize: number;
-    }>;
+    }[];
 
     if (correlations.length === 0) {
       insights.push('No significant correlations were found between the analyzed variables.');
@@ -2092,12 +2204,12 @@ export class AnalysisAlgorithmService {
    * Generate a summary for correlation analysis
    */
   private generateCorrelationSummary(data: Record<string, unknown>): string {
-    const correlations = data?.correlations as Array<{
+    const correlations = data?.correlations as {
       variables: string[];
       coefficient: number;
       strength: string;
       sampleSize: number;
-    }>;
+    }[];
 
     if (correlations.length === 0) {
       return 'No significant correlations were found between the analyzed variables.';
@@ -2150,7 +2262,7 @@ export class AnalysisAlgorithmService {
       return 'No valid statistics found for distribution analysis.';
     }
 
-    return `Distribution analysis of ${data?.variable} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
+    return `Distribution analysis of ${this.safeStringify(data?.variable) ?? 'unknown variable'} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
   }
 
   /**
@@ -2171,11 +2283,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze data to generate predictions using various models
    */
-  private async analyzePrediction(
+  private analyzePrediction(
     config: PredictionAnalysisConfig,
     dataset: Dataset,
     _options: AlgorithmOptions // Prefix unused parameter
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters from config
@@ -2218,12 +2330,12 @@ export class AnalysisAlgorithmService {
     const targetExtractor = this.getPropertyExtractor(targetVariable);
 
     // Extract feature vectors and target values
-    const dataPoints: Array<{
+    const dataPoints: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }> = [];
+    }[] = [];
 
     dataset.dataPoints.forEach(point => {
       // Extract feature values
@@ -2272,17 +2384,17 @@ export class AnalysisAlgorithmService {
 
     // Train the appropriate prediction model
     let modelResult: {
-      predictions: Array<{
+      predictions: {
         features: number[];
         actual: number;
         predicted: number;
         error?: number;
-      }>;
-      forecast: Array<{
+      }[];
+      forecast: {
         features: number[];
         predicted: number;
         confidence?: [number, number]; // Lower and upper bounds
-      }>;
+      }[];
       metrics: {
         mse: number;
         rmse: number;
@@ -2302,7 +2414,7 @@ export class AnalysisAlgorithmService {
         );
         break;
       case 'neuralNetwork':
-        modelResult = await this.runNeuralNetwork(
+        modelResult = this.runNeuralNetwork(
           trainingData,
           testingData,
           features,
@@ -2359,32 +2471,32 @@ export class AnalysisAlgorithmService {
    * Run linear regression model for prediction
    */
   private runLinearRegression(
-    trainingData: Array<{
+    trainingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
-    testingData: Array<{
+    }[],
+    testingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
+    }[],
     featureNames: string[],
     predictionHorizon: number
   ): {
-    predictions: Array<{
+    predictions: {
       features: number[];
       actual: number;
       predicted: number;
       error?: number;
-    }>;
-    forecast: Array<{
+    }[];
+    forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }>;
+    }[];
     metrics: {
       mse: number;
       rmse: number;
@@ -2436,11 +2548,11 @@ export class AnalysisAlgorithmService {
     }));
 
     // Generate forecast for future periods
-    const forecast: Array<{
+    const forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }> = [];
+    }[] = [];
 
     // For time series forecasting
     if (trainingData[0].date !== undefined && predictionHorizon > 0) {
@@ -2503,9 +2615,14 @@ export class AnalysisAlgorithmService {
     const numFeatures = X[0].length;
 
     // Calculate X^T (transpose of X)
-    const X_T = Array(numFeatures)
-      .fill(0)
-      .map(() => Array(numSamples).fill(0));
+    const X_T: Matrix = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const row: number[] = [];
+      for (let j = 0; j < numSamples; j++) {
+        row[j] = 0;
+      }
+      X_T[i] = row;
+    }
     for (let i = 0; i < numSamples; i++) {
       for (let j = 0; j < numFeatures; j++) {
         X_T[j][i] = X[i][j];
@@ -2513,9 +2630,14 @@ export class AnalysisAlgorithmService {
     }
 
     // Calculate X^T * X
-    const X_T_X = Array(numFeatures)
-      .fill(0)
-      .map(() => Array(numFeatures).fill(0));
+    const X_T_X: Matrix = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const row: number[] = [];
+      for (let j = 0; j < numFeatures; j++) {
+        row[j] = 0;
+      }
+      X_T_X[i] = row;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numFeatures; j++) {
         for (let k = 0; k < numSamples; k++) {
@@ -2528,7 +2650,10 @@ export class AnalysisAlgorithmService {
     const X_T_X_inv = this.calculateMatrixInverse(X_T_X);
 
     // Calculate X^T * y
-    const X_T_y = Array(numFeatures).fill(0);
+    const X_T_y: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      X_T_y[i] = 0;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numSamples; j++) {
         X_T_y[i] += X_T[i][j] * y[j];
@@ -2536,7 +2661,10 @@ export class AnalysisAlgorithmService {
     }
 
     // Calculate coefficients = (X^T * X)^(-1) * X^T * y
-    const coefficients = Array(numFeatures).fill(0);
+    const coefficients: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      coefficients[i] = 0;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numFeatures; j++) {
         coefficients[i] += X_T_X_inv[i][j] * X_T_y[j];
@@ -2557,7 +2685,7 @@ export class AnalysisAlgorithmService {
     // Create augmented matrix [A|I]
     const augMatrix: number[][] = [];
     for (let i = 0; i < n; i++) {
-      augMatrix.push([...matrix[i], ...Array(n).fill(0)]);
+      augMatrix.push([...matrix[i], ...(new Array(n).fill(0) as number[])]);
       augMatrix[i][n + i] = 1;
     }
 
@@ -2582,10 +2710,10 @@ export class AnalysisAlgorithmService {
       // Skip singular matrix
       if (Math.abs(pivot) < 1e-10) {
         // Return identity matrix (fallback)
-        return Array(n)
+        return new Array(n)
           .fill(0)
           .map((_, i) =>
-            Array(n)
+            new Array(n)
               .fill(0)
               .map((_, j) => (i === j ? 1 : 0))
           );
@@ -2619,41 +2747,41 @@ export class AnalysisAlgorithmService {
   /**
    * Run neural network model for prediction
    */
-  private async runNeuralNetwork(
-    trainingData: Array<{
+  private runNeuralNetwork(
+    trainingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
-    testingData: Array<{
+    }[],
+    testingData: {
       features: number[];
       target: number;
       date?: number;
       original: DataPoint;
-    }>,
+    }[],
     featureNames: string[],
     predictionHorizon: number,
     epochs: number
-  ): Promise<{
-    predictions: Array<{
+  ): {
+    predictions: {
       features: number[];
       actual: number;
       predicted: number;
       error?: number;
-    }>;
-    forecast: Array<{
+    }[];
+    forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }>;
+    }[];
     metrics: {
       mse: number;
       rmse: number;
       mae: number;
     };
     modelDetails: Record<string, unknown>;
-  }> {
+  } {
     // Extract feature and target matrices
     const X_train = trainingData.map(point => point.features);
     const y_train = trainingData.map(point => point.target);
@@ -2680,21 +2808,24 @@ export class AnalysisAlgorithmService {
     const hiddenSize = Math.max(5, Math.min(20, Math.floor(numFeatures * 2)));
 
     // Initialize weights randomly
-    const weights1 = Array(numFeatures)
-      .fill(0)
-      .map(() =>
-        Array(hiddenSize)
-          .fill(0)
-          .map(() => (Math.random() - 0.5) * 0.1)
-      );
+    const weights1: number[][] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const featureWeights: number[] = [];
+      for (let j = 0; j < hiddenSize; j++) {
+        featureWeights[j] = (Math.random() - 0.5) * 0.1;
+      }
+      weights1[i] = featureWeights;
+    }
 
-    const bias1 = Array(hiddenSize)
-      .fill(0)
-      .map(() => (Math.random() - 0.5) * 0.1);
+    const bias1: number[] = [];
+    for (let i = 0; i < hiddenSize; i++) {
+      bias1[i] = (Math.random() - 0.5) * 0.1;
+    }
 
-    const weights2 = Array(hiddenSize)
-      .fill(0)
-      .map(() => (Math.random() - 0.5) * 0.1);
+    const weights2: number[] = [];
+    for (let i = 0; i < hiddenSize; i++) {
+      weights2[i] = (Math.random() - 0.5) * 0.1;
+    }
     let bias2 = (Math.random() - 0.5) * 0.1; // Change from const to let
 
     // Training parameters
@@ -2704,7 +2835,7 @@ export class AnalysisAlgorithmService {
     // Training loop
     for (let epoch = 0; epoch < epochs; epoch++) {
       // Shuffle training data
-      const indices = Array(normalizedTrainFeatures.length)
+      const indices = new Array(normalizedTrainFeatures.length)
         .fill(0)
         .map((_, i) => i);
       for (let i = indices.length - 1; i > 0; i--) {
@@ -2722,11 +2853,22 @@ export class AnalysisAlgorithmService {
         const batchIndices = indices.slice(batchStart, batchEnd);
 
         // Initialize gradients
-        const gradWeights1 = Array(numFeatures)
-          .fill(0)
-          .map(() => Array(hiddenSize).fill(0));
-        const gradBias1 = Array(hiddenSize).fill(0);
-        const gradWeights2 = Array(hiddenSize).fill(0);
+        const gradWeights1: number[][] = [];
+        for (let i = 0; i < numFeatures; i++) {
+          const gradRow: number[] = [];
+          for (let j = 0; j < hiddenSize; j++) {
+            gradRow[j] = 0;
+          }
+          gradWeights1[i] = gradRow;
+        }
+        const gradBias1: number[] = [];
+        for (let i = 0; i < hiddenSize; i++) {
+          gradBias1[i] = 0;
+        }
+        const gradWeights2: number[] = [];
+        for (let i = 0; i < hiddenSize; i++) {
+          gradWeights2[i] = 0;
+        }
         let gradBias2 = 0; // Change from const to let
 
         let batchLoss = 0;
@@ -2738,7 +2880,10 @@ export class AnalysisAlgorithmService {
 
           // Forward pass
           // Hidden layer with ReLU activation
-          const hidden = Array(hiddenSize).fill(0);
+          const hidden: number[] = [];
+          for (let i = 0; i < hiddenSize; i++) {
+            hidden[i] = 0;
+          }
           for (let i = 0; i < hiddenSize; i++) {
             for (let j = 0; j < numFeatures; j++) {
               hidden[i] += x[j] * weights1[j][i];
@@ -2759,7 +2904,7 @@ export class AnalysisAlgorithmService {
           const error = output - y;
           batchLoss += error * error;
 
-          // Backward pass
+          // Backcombatd pass
           // Output layer gradient
           const gradOutput = 2 * error;
 
@@ -2804,7 +2949,10 @@ export class AnalysisAlgorithmService {
       );
 
       // Forward pass through the network
-      const hidden = Array(hiddenSize).fill(0);
+      const hidden: number[] = [];
+      for (let i = 0; i < hiddenSize; i++) {
+        hidden[i] = 0;
+      }
       for (let i = 0; i < hiddenSize; i++) {
         for (let j = 0; j < numFeatures; j++) {
           hidden[i] += normalizedFeatures[j] * weights1[j][i];
@@ -2844,11 +2992,11 @@ export class AnalysisAlgorithmService {
     }));
 
     // Generate forecast for future periods
-    const forecast: Array<{
+    const forecast: {
       features: number[];
       predicted: number;
       confidence?: [number, number];
-    }> = [];
+    }[] = [];
 
     // For time series forecasting
     if (trainingData[0].date !== undefined && predictionHorizon > 0) {
@@ -2918,8 +3066,14 @@ export class AnalysisAlgorithmService {
     featureStdDevs: number[];
   } {
     const numFeatures = trainFeatures[0].length;
-    const featureMeans = Array(numFeatures).fill(0);
-    const featureStdDevs = Array(numFeatures).fill(0);
+    const featureMeans: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      featureMeans[i] = 0;
+    }
+    const featureStdDevs: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      featureStdDevs[i] = 0;
+    }
 
     // Calculate means
     for (const features of trainFeatures) {
@@ -2971,7 +3125,7 @@ export class AnalysisAlgorithmService {
     const insights: string[] = [];
     const model = data?.model as string;
     const metrics = data?.metrics as { mse: number; rmse: number; mae: number; r2?: number };
-    const forecast = data?.forecast as Array<{ predicted: number; confidence?: [number, number] }>;
+    const forecast = data?.forecast as { predicted: number; confidence?: [number, number] }[];
 
     // Model type and quality insights
     insights.push(
@@ -3003,10 +3157,10 @@ export class AnalysisAlgorithmService {
     if (model === 'linear' && data?.modelDetails) {
       const modelDetails = data.modelDetails as Record<string, unknown>;
       if ('featureImportance' in modelDetails) {
-        const featureImportance = modelDetails.featureImportance as Array<{
+        const featureImportance = modelDetails.featureImportance as {
           feature: string;
           importance: number;
-        }>;
+        }[];
 
         // Sort features by importance
         const sortedFeatures = [...featureImportance].sort((a, b) => b.importance - a.importance);
@@ -3029,9 +3183,9 @@ export class AnalysisAlgorithmService {
       const lastPrediction = forecast[forecast.length - 1].predicted;
       const trend =
         lastPrediction > firstPrediction
-          ? 'upward'
+          ? 'upcombatd'
           : lastPrediction < firstPrediction
-            ? 'downward'
+            ? 'downcombatd'
             : 'stable';
 
       insights.push(
@@ -3074,11 +3228,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze the spatial distribution of resources
    */
-  private async analyzeResourceMapping(
+  private analyzeResourceMapping(
     config: ResourceMappingAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters
@@ -3145,13 +3299,13 @@ export class AnalysisAlgorithmService {
       {
         x: number;
         y: number;
-        resources: Array<{
+        resources: {
           type: ResourceType;
           amount: number;
           quality?: number;
           accessibility?: number;
           estimatedValue?: number;
-        }>;
+        }[];
         points: DataPoint[];
       }
     > = {};
@@ -3182,7 +3336,7 @@ export class AnalysisAlgorithmService {
       } else {
         // Log or handle cases where the resource type is invalid
         errorLoggingService.logError(
-          new Error(`Invalid resource type found: ${resourceTypeRaw}`),
+          new Error(`Invalid resource type found: ${String(resourceTypeRaw)}`),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
           { pointId: point.id }
@@ -3247,7 +3401,7 @@ export class AnalysisAlgorithmService {
       // Calculate total value based on selected metric
       cell.resources.forEach(resource => {
         const metricValue =
-          resource[valueMetric] !== undefined ? (resource[valueMetric] as number) : resource.amount;
+          resource[valueMetric] ?? resource.amount;
 
         totalValue += metricValue;
       });
@@ -3352,15 +3506,15 @@ export class AnalysisAlgorithmService {
     const valueMetric = data.valueMetric as string;
 
     // Cast cells to the proper type, now using ResourceType
-    const typedCells = (data.cells || []) as Array<{
+    const typedCells = (data.cells ?? []) as {
       x: number;
       y: number;
-      resources: Array<{ type: ResourceType; amount: number }>;
+      resources: { type: ResourceType; amount: number }[];
       totalValue: number;
       dominantResource?: ResourceType;
       dominantPercentage?: number;
       totalResourceCount: number;
-    }>;
+    }[];
 
     // Add insights about most abundant resource types
     const sortedDensities = (Object.entries(resourceDensity) as [ResourceType, number][]).sort(
@@ -3390,7 +3544,7 @@ export class AnalysisAlgorithmService {
       const sortedCells = [...typedCells].sort((a, b) => b.totalValue - a.totalValue);
       const topCell = sortedCells[0];
 
-      if (topCell && topCell.dominantResource) {
+      if (topCell?.dominantResource) {
         insights.push(
           `The region with the highest ${valueMetric} concentration is located at coordinates (${topCell.x}, ${topCell.y}), containing primarily ${topCell.dominantResource}.`
         );
@@ -3448,15 +3602,15 @@ export class AnalysisAlgorithmService {
    */
   private generateResourceMappingSummary(data: Record<string, unknown>): string {
     // Cast cells and density correctly
-    const typedCells = (data.cells || []) as Array<{
+    const typedCells = (data.cells ?? []) as {
       x: number;
       y: number;
-      resources: Array<{ type: ResourceType; amount: number }>;
+      resources: { type: ResourceType; amount: number }[];
       totalValue: number;
       dominantResource?: ResourceType;
       dominantPercentage?: number;
       totalResourceCount: number;
-    }>;
+    }[];
     const resourceDensity = data.resourceDensity as Record<ResourceType, number>;
     const xRange = data.xRange as [number, number];
     const yRange = data.yRange as [number, number];
@@ -3467,8 +3621,11 @@ export class AnalysisAlgorithmService {
       .slice(0, 3);
 
     const topResourceTypes = sortedDensities
-      // Format ResourceType enums directly
-      .map(([type, density]) => `${type} (${(density * 100).toFixed(1)}%)`)
+      // Format ResourceType enums safely without template literals
+      .map(([type, density]) => {
+        const typeString = typeof type === 'string' ? type : String(type);
+        return typeString + ' (' + (density * 100).toFixed(1) + '%)';
+      })
       .join(', ');
 
     const mapSize = `${(xRange[1] - xRange[0]).toFixed(0)}x${(yRange[1] - yRange[0]).toFixed(0)}`;
@@ -3481,11 +3638,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze comparison between datasets or variables
    */
-  private async analyzeComparison(
+  private analyzeComparison(
     config: ComparisonAnalysisConfig,
     _dataset: Dataset, // Prefix unused parameter (stub)
     _options: AlgorithmOptions // Prefix unused parameter (stub)
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     // This is a stub implementation that will be fully implemented later
     const startTime = Date.now();
 
@@ -3521,11 +3678,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze sectors for various metrics
    */
-  private async analyzeSector(
+  private analyzeSector(
     config: SectorAnalysisConfig,
     _dataset: Dataset, // Prefix unused parameter (stub)
     _options: AlgorithmOptions // Prefix unused parameter (stub)
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     // This is a stub implementation that will be fully implemented later
     const startTime = Date.now();
 

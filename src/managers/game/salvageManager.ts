@@ -42,7 +42,7 @@ class SalvageManagerImpl implements SalvageManager {
       return { canSalvage: true, reason: 'recon-ship' };
     }
 
-    // War ships can salvage if they have the cutting laser upgrade
+    // combat ships can salvage if they have the cutting laser upgrade
     if (this.techTree.unlockedNodes.has('cutting-laser')) {
       return { canSalvage: true, reason: 'cutting-laser' };
     }

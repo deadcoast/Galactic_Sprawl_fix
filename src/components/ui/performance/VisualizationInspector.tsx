@@ -334,12 +334,9 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         });
 
         // Get JS heap size if available
-        let jsHeapSize = undefined;
+        let jsHeapSize: number | undefined = undefined;
         const windowWithPerformance = window as WindowWithPerformance;
-        if (
-          windowWithPerformance.performance.memory &&
-          windowWithPerformance.performance.memory.usedJSHeapSize
-        ) {
+        if (windowWithPerformance.performance.memory?.usedJSHeapSize) {
           jsHeapSize = windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
         }
 
@@ -431,7 +428,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
     const yScale = d3
       .scaleLinear()
-      .domain([0, Math.max(60, d3.max(renderingPerformanceData, d => d.fps) as number)])
+      .domain([0, Math.max(60, d3.max(renderingPerformanceData, d => d.fps) ?? 0)])
       .range([chartHeight, 0]);
 
     // Create axes for FPS chart
@@ -499,7 +496,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
     // Set up scales for frame time chart
     const yScaleFrameTime = d3
       .scaleLinear()
-      .domain([0, Math.max(33, d3.max(renderingPerformanceData, d => d.frameTime) as number)])
+      .domain([0, Math.max(33, d3.max(renderingPerformanceData, d => d.frameTime) ?? 0)])
       .range([chartHeight, 0]);
 
     // Create axes for frame time chart
@@ -686,7 +683,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         const now = performance.now();
 
         return prev.map(comp => {
-          // Simulate render time (1-20ms, weighted towards lower values)
+          // Simulate render time (1-20ms, weighted tocombatds lower values)
           const renderTime = Math.pow(Math.random(), 2) * 19 + 1;
 
           // Simulate DOM updates (0-10, integer)
@@ -949,7 +946,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       // Set up scales
       const xScale = d3
         .scaleLinear()
-        .domain([0, (d3.max(data, valueAccessor) as number) * 1.1])
+        .domain([0, (d3.max(data, valueAccessor) ?? 0) * 1.1])
         .range([0, chartWidth]);
 
       const yScale = d3
@@ -1007,8 +1004,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
           tooltip.transition().duration(200).style('opacity', 0.9);
           tooltip
             .html(`<strong>${d.name}</strong><br/>${yAxisLabel}: ${valueAccessor(d).toFixed(2)}`)
-            .style('left', `${event.pageX + 10}px`)
-            .style('top', `${event.pageY - 15}px`);
+            .style('left', `${(event as MouseEvent).pageX + 10}px`)
+            .style('top', `${(event as MouseEvent).pageY - 15}px`);
         })
         .on('mouseout', () => {
           tooltip.transition().duration(500).style('opacity', 0);
@@ -1053,8 +1050,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
             element: getElementDescription(mutation.target as Element),
             details: {
               mutationType: mutation.type,
-              attributeName: mutation.attributeName || undefined,
-              oldValue: mutation.oldValue || undefined,
+              attributeName: mutation.attributeName ?? undefined,
+              oldValue: mutation.oldValue ?? undefined,
               addedNodes: mutation.addedNodes.length,
               removedNodes: mutation.removedNodes.length,
             },
@@ -1370,7 +1367,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Helper function to get a readable description of an element
   const getElementDescription = (element: Element): string => {
-    if (!element || !element.tagName) return 'Unknown Element';
+    if (!element?.tagName) return 'Unknown Element';
 
     let description = element.tagName.toLowerCase();
 
@@ -1395,7 +1392,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
       window.onerror = (message, source, lineno, colno, error) => {
         const now = performance.now();
-        const stack = error?.stack || 'Stack trace unavailable';
+        const stack = error?.stack ?? 'Stack trace unavailable';
 
         // Create performance issue for unhandled error
         const newIssue: PerformanceIssue = {
@@ -1419,7 +1416,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
         // Call original error handler if it exists
         if (originalOnError) {
-          return originalOnError.call(window, message, source, lineno, colno, error);
+          return originalOnError.call(window, message, source, lineno, colno, error) as boolean;
         }
 
         // Return false to prevent default browser error handling
@@ -1543,8 +1540,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         // First by severity
         const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
         const severityDiff =
-          severityOrder[a.severity as keyof typeof severityOrder] -
-          severityOrder[b.severity as keyof typeof severityOrder];
+          severityOrder[a.severity] -
+          severityOrder[b.severity];
 
         if (severityDiff !== 0) return severityDiff;
 
@@ -1811,9 +1808,18 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
     } else if (typeof value === 'boolean') {
       return value ? 'Yes' : 'No';
     } else if (typeof value === 'object') {
-      return JSON.stringify(value);
+      return JSON.stringify(value, null, 2);
+    } else if (typeof value === 'function') {
+      return '[Function]';
+    } else if (typeof value === 'symbol') {
+      return value.toString();
+    } else if (typeof value === 'bigint') {
+      return value.toString();
+    } else if (typeof value === 'string') {
+      return value;
     } else {
-      return String(value);
+      // This should not happen, but fallback to safe string conversion
+      return `[${typeof value}]`;
     }
   };
 

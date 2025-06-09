@@ -1,15 +1,18 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-  ResourceTransfer as StringResourceTransfer,
-  ResourceType as StringResourceType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../services/logging/ErrorLoggingService';
+import {
+    ResourceTransfer as StringResourceTransfer,
+    ResourceType as StringResourceType
 } from '../../types/resources/ResourceTypes';
 import {
-  ensureStringResourceType,
-  toEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType
 } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
-import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * ResourceTransferSubsystem
@@ -40,6 +43,7 @@ export class ResourceTransferSubsystem {
 
     try {
       // Initialize event subscriptions
+      await Promise.resolve();
       this.initializeEventSubscriptions();
 
       this.isInitialized = true;
@@ -66,6 +70,7 @@ export class ResourceTransferSubsystem {
 
     try {
       // Unsubscribe from events
+      await Promise.resolve();
       eventSystem.clearSubscriptions(undefined, this.constructor.name);
 
       this.isInitialized = false;
@@ -97,7 +102,7 @@ export class ResourceTransferSubsystem {
    */
   private handleTransferRequest = (event: Record<string, unknown>): void => {
     const { type, amount, sourceId, targetId } = event as {
-      type: StringResourceType | ResourceType;
+      type: StringResourceType  ;
       amount: number;
       sourceId: string;
       targetId: string;
@@ -120,7 +125,7 @@ export class ResourceTransferSubsystem {
    * Transfer resources between entities
    */
   public transferResource(
-    type: StringResourceType | ResourceType,
+    type: StringResourceType  ,
     amount: number,
     sourceId: string,
     targetId: string
@@ -168,7 +173,7 @@ export class ResourceTransferSubsystem {
    */
   public bulkTransfer(
     transfers: {
-      type: StringResourceType | ResourceType;
+      type: StringResourceType  ;
       amount: number;
       sourceId: string;
       targetId: string;
@@ -228,7 +233,7 @@ export class ResourceTransferSubsystem {
   /**
    * Get transfer history for a specific resource type
    */
-  public getTransfersByType(type: StringResourceType | ResourceType): StringResourceTransfer[] {
+  public getTransfersByType(type: StringResourceType  ): StringResourceTransfer[] {
     const stringType = ensureStringResourceType(type);
     return this.transferHistory.filter(transfer => transfer.type === stringType);
   }
@@ -256,7 +261,7 @@ export class ResourceTransferSubsystem {
    */
   public calculateNetFlow(
     entityId: string,
-    resourceType?: StringResourceType | ResourceType
+    resourceType?: StringResourceType  
   ): Record<string, number> {
     const netFlow: Record<string, number> = {};
 

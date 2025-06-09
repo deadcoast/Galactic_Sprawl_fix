@@ -111,7 +111,7 @@ export interface ParticleTransitionVisualizationProps {
   loop?: boolean;
 
   /**
-   * Whether to ping-pong the transition (forward then backward)
+   * Whether to ping-pong the transition (forcombatd then backcombatd)
    */
   pingPong?: boolean;
 
@@ -165,7 +165,9 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
   // State
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [transitionProgress, setTransitionProgress] = useState(0);
-  const [currentDirection, setCurrentDirection] = useState<'forward' | 'backward'>('forward');
+  const [currentDirection, setCurrentDirection] = useState<'forcombatd' | 'backcombatd'>(
+    'forcombatd'
+  );
   const [renderedParticles, setRenderedParticles] = useState<JSX.Element[]>([]);
 
   // Initialize particle system
@@ -183,7 +185,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
     particleSystemRef.current.setupTransition(transitionId, {
       id: transitionId,
       sourceData: initialData,
-      targetData: targetData || initialData,
+      targetData: targetData ?? initialData,
       duration,
       easing,
       path,
@@ -198,7 +200,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
           if (pingPong) {
             // Swap direction
             setCurrentDirection(prevDirection =>
-              prevDirection === 'forward' ? 'backward' : 'forward'
+              prevDirection === 'forcombatd' ? 'backcombatd' : 'forcombatd'
             );
           }
 
@@ -207,11 +209,11 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
             if (particleSystemRef.current) {
               const ps = particleSystemRef.current;
 
-              if (pingPong && currentDirection === 'backward') {
+              if (pingPong && currentDirection === 'backcombatd') {
                 // Reverse the transition for ping-pong
                 ps.setupTransition(transitionId, {
                   id: transitionId,
-                  sourceData: targetData || initialData,
+                  sourceData: targetData ?? initialData,
                   targetData: initialData,
                   duration,
                   easing,
@@ -223,11 +225,11 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
                   onUpdate: onTransitionUpdate,
                 });
               } else {
-                // Regular forward transition
+                // Regular forcombatd transition
                 ps.setupTransition(transitionId, {
                   id: transitionId,
                   sourceData: initialData,
-                  targetData: targetData || initialData,
+                  targetData: targetData ?? initialData,
                   duration,
                   easing,
                   path,
@@ -306,7 +308,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
       ps.setupTransition('main-transition', {
         id: 'main-transition',
         sourceData: initialData,
-        targetData: targetData || initialData,
+        targetData: targetData ?? initialData,
         duration,
         easing,
         path,
@@ -319,7 +321,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
       setIsPlaying(false);
       setTransitionProgress(0);
-      setCurrentDirection('forward');
+      setCurrentDirection('forcombatd');
     }
   }, [
     initialData,

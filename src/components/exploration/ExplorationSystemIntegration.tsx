@@ -17,10 +17,10 @@ interface Sector {
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
-  resources?: Array<{
+  resources?: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
 }
 
 interface Anomaly {
@@ -83,7 +83,7 @@ export function ExplorationSystemIntegration({
       // Anomaly type filter
       if (filters.anomalyTypes.length > 0) {
         const hasMatchingType = sector.anomalies.some(anomaly =>
-          filters.anomalyTypes.includes(anomaly.type as 'artifact' | 'signal' | 'phenomenon')
+          filters.anomalyTypes.includes(anomaly.type)
         );
         if (!hasMatchingType) {
           return false;

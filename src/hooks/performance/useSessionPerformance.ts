@@ -6,11 +6,12 @@
  */
 
 import { useEffect, useRef } from 'react';
-import {
-  SessionPerformanceTracker,
-  TelemetryOptions,
-  UserInteractionData,
-} from '../../services/telemetry/SessionPerformanceTracker';
+import
+  {
+    SessionPerformanceTracker,
+    TelemetryOptions,
+    UserInteractionData,
+  } from '../../services/telemetry/SessionPerformanceTracker';
 
 // Create a singleton instance of the tracker to be shared across the application
 let globalTracker: SessionPerformanceTracker | null = null;
@@ -19,9 +20,7 @@ let globalTracker: SessionPerformanceTracker | null = null;
  * Initialize the global performance tracker
  */
 export function initializeSessionPerformanceTracker(options?: Partial<TelemetryOptions>): void {
-  if (!globalTracker) {
-    globalTracker = new SessionPerformanceTracker(options);
-  }
+  globalTracker ??= new SessionPerformanceTracker(options);
 }
 
 /**
@@ -84,7 +83,7 @@ export default function useSessionPerformance(componentId: string) {
     handler: T,
     interactionType: 'click' | 'hover' | 'scroll' | 'keypress' | 'custom' = 'click'
   ): ((...args: Parameters<T>) => ReturnType<T>) => {
-    return (...args: Parameters<T>) => {
+    const wrappedHandler = (...args: Parameters<T>): ReturnType<T> => {
       const startTime = performance.now();
 
       try {
@@ -115,20 +114,18 @@ export default function useSessionPerformance(componentId: string) {
                 });
               }
             });
-        } else {
-          // For synchronous handlers, track completion immediately
-          if (trackerRef.current) {
-            trackerRef.current.trackUserInteraction({
-              interactionType,
-              targetComponent: componentId,
-              timestamp: Date.now(),
-              responseTime: performance.now() - startTime,
-              successful: true,
-            });
-          }
+        } else if (trackerRef.current) {
+          trackerRef.current.trackUserInteraction({
+            interactionType,
+            targetComponent: componentId,
+            timestamp: Date.now(),
+            responseTime: performance.now() - startTime,
+            successful: true,
+          });
         }
 
-        return result;
+        // Type assertion: result is ReturnType<T>
+        return result as ReturnType<T>;
       } catch (error) {
         // Track failed interactions
         if (trackerRef.current) {
@@ -143,6 +140,7 @@ export default function useSessionPerformance(componentId: string) {
         throw error;
       }
     };
+    return wrappedHandler;
   };
 
   return {

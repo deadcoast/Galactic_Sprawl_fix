@@ -75,7 +75,7 @@ export function ResourceFlowVisualization({
     }
 
     const container = containerRef.current;
-    const ctx = (container.querySelector('canvas') as HTMLCanvasElement).getContext('2d');
+    const ctx = (container.querySelector('canvas')!).getContext('2d');
 
     if (!ctx) {
       return;

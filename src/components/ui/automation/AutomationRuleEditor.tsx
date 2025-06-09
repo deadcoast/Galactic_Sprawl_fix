@@ -35,9 +35,9 @@ const createConditionNode = (
   condition: AutomationCondition,
   position: { x: number; y: number }
 ): EditorNode => ({
-  id: condition.id || `condition-${uuidv4()}`,
+  id: condition.id ?? `condition-${uuidv4()}`,
   type: 'condition',
-  data: { ...condition, id: condition.id || `condition-${uuidv4()}` },
+  data: { ...condition, id: condition.id ?? `condition-${uuidv4()}` },
   position,
   connectedTo: [],
 });
@@ -46,9 +46,9 @@ const createActionNode = (
   action: AutomationAction,
   position: { x: number; y: number }
 ): EditorNode => ({
-  id: action.id || `action-${uuidv4()}`,
+  id: action.id ?? `action-${uuidv4()}`,
   type: 'action',
-  data: { ...action, id: action.id || `action-${uuidv4()}` },
+  data: { ...action, id: action.id ?? `action-${uuidv4()}` },
   position,
   connectedTo: [],
 });
@@ -74,8 +74,8 @@ const AutomationRuleEditor: React.FC<AutomationRuleEditorProps> = ({
   onCancel,
 }) => {
   // Editor state
-  const [ruleName, setRuleName] = useState(rule?.name || 'New Rule');
-  const [ruleInterval, setRuleInterval] = useState(rule?.interval || 60000);
+  const [ruleName, setRuleName] = useState(rule?.name ?? 'New Rule');
+  const [ruleInterval, setRuleInterval] = useState(rule?.interval ?? 60000);
   const [nodes, setNodes] = useState<EditorNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -324,10 +324,10 @@ const AutomationRuleEditor: React.FC<AutomationRuleEditorProps> = ({
     });
 
     return {
-      id: rule?.id || `rule-${uuidv4()}`,
+      id: rule?.id ?? `rule-${uuidv4()}`,
       moduleId,
       name: ruleName,
-      enabled: rule?.enabled || false,
+      enabled: rule?.enabled ?? false,
       conditions,
       actions,
       interval: ruleInterval,

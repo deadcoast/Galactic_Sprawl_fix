@@ -52,7 +52,7 @@ interface Unit {
   maxSpeed: number;
   status: string;
   target?: string;
-  weapons: Array<{
+  weapons: {
     id: string;
     type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
     range: number;
@@ -61,14 +61,14 @@ interface Unit {
     status: 'ready' | 'charging' | 'cooling' | 'firing';
     lastFired?: number;
     stats?: WeaponStats;
-  }>;
-  specialAbilities?: Array<{
+  }[];
+  specialAbilities?: {
     name: string;
     description: string;
     cooldown: number;
     active: boolean;
     effectiveness?: number;
-  }>;
+  }[];
   combatStats?: {
     kills: number;
     assists: number;
@@ -76,25 +76,25 @@ interface Unit {
   lastHitPosition?: { x: number; y: number };
   lastHitDamage?: number;
   smokeTrail?: boolean;
-  explosions?: Array<{ type: string }>;
+  explosions?: { type: string }[];
 }
 
 interface ExtendedCombatManager {
-  getActiveProjectiles: () => Array<{
+  getActiveProjectiles: () => {
     id: string;
     type: 'bullet' | 'laser' | 'missile' | 'torpedo';
     sourceId: string;
     damage: number;
     accuracy: number;
     lifetime: number;
-  }>;
-  getActiveCombatZones: () => Array<{
+  }[];
+  getActiveCombatZones: () => {
     id: string;
     type: 'skirmish' | 'battle' | 'siege';
     participants: number;
     intensity: number;
     duration: number;
-  }>;
+  }[];
 }
 
 export function useDebugOverlay() {
@@ -240,7 +240,7 @@ export function useDebugOverlay() {
   // Combat metrics collection
   const collectCombatMetrics = useCallback((unit: Unit): CombatStats => {
     const weaponEffects = unit.weapons.map(weapon => ({
-      type: weapon.type as 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets',
+      type: weapon.type,
       status: weapon.status,
       damage: weapon.damage,
       accuracy: weapon.stats

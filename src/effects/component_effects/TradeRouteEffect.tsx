@@ -100,7 +100,7 @@ export function TradeRouteEffect({
 function getPointOnPath(path: string, progress: number): { x: number; y: number } {
   // Simple linear interpolation for demo
   // In production, use proper path interpolation
-  const match = path.match(/M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/);
+  const match = /M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/.exec(path);
   if (!match) {
     return { x: 0, y: 0 };
   }

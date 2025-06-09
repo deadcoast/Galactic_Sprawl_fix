@@ -16,7 +16,7 @@ export function useTooltip() {
   const showTooltip = useCallback((content: ReactNode, position?: { x: number; y: number }) => {
     setTooltip({
       content,
-      position: position || { x: 0, y: 0 },
+      position: position ?? { x: 0, y: 0 },
       visible: true,
     });
   }, []);

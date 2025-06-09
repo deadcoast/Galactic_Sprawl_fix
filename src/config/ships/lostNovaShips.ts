@@ -1,19 +1,19 @@
 import {
-  DAMAGE_BOOST_EFFECT,
-  EXPLOSIVE_EFFECT,
-  GAUSS_EFFECT,
-  PLASMA_EFFECT,
-  SHIELD_FIELD_EFFECT,
-  SPEED_BOOST_EFFECT,
-  SPEED_REDUCTION_EFFECT,
-  STEALTH_EFFECT,
+    DAMAGE_BOOST_EFFECT,
+    EXPLOSIVE_EFFECT,
+    GAUSS_EFFECT,
+    PLASMA_EFFECT,
+    SHIELD_FIELD_EFFECT,
+    SPEED_BOOST_EFFECT,
+    SPEED_REDUCTION_EFFECT,
+    STEALTH_EFFECT
 } from '../../effects/types_effects/shipEffects';
 import { FactionShipStats, LostNovaShipClass } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponInstance,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponStatus,
+    WeaponInstance,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponStatus
 } from '../../types/weapons/WeaponTypes';
 
 export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
@@ -807,4 +807,4 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
       },
     ],
   },
-} as const;
+} as Record<LostNovaShipClass, FactionShipStats>;

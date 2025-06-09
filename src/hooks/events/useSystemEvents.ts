@@ -79,11 +79,11 @@ export function useGlobalSystemEvents(
  * @param subscriptions Array of module event subscriptions
  */
 export function useMultipleModuleEvents(
-  subscriptions: Array<{
+  subscriptions: {
     eventType: ModuleEventType;
     handler: ModuleEventHandler;
     dependencies?: React.DependencyList;
-  }>
+  }[]
 ): void {
   subscriptions.forEach(({ eventType, handler, dependencies = [] }) => {
     useModuleEvents(eventType, handler, dependencies);

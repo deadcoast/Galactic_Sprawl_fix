@@ -31,18 +31,18 @@ interface RecipeDetail {
   id: string;
   name: string;
   baseEfficiency: number;
-  inputs: Array<{
+  inputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  byproducts?: Array<{
+  }[];
+  byproducts?: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
 }
 
 interface EfficiencyFactors {

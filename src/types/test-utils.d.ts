@@ -25,7 +25,7 @@ declare namespace jest {
     toHaveValue(value: string | string[] | number | null): R;
     toBeEmpty(): R;
     toBeRequired(): R;
-    toHaveDisplayValue(value: string | RegExp | Array<string | RegExp>): R;
+    toHaveDisplayValue(value: string | RegExp | (string | RegExp)[]): R;
   }
 }
 

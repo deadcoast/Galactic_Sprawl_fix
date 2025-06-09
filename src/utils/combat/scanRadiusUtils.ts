@@ -69,7 +69,7 @@ export interface EnvironmentalFactors {
  */
 export function calculateScanRadius(
   scannerClass: ScannerClass,
-  techBonuses: number = 1.0,
+  techBonuses = 1.0,
   environmentalFactors: EnvironmentalFactors = {}
 ): number {
   const profile = SCANNER_PROFILES[scannerClass];
@@ -119,7 +119,7 @@ export function calculateScanRadius(
 export function calculateDetectionProbability(
   distance: number,
   scanRadius: number,
-  targetSignature: number = 0.5
+  targetSignature = 0.5
 ): number {
   if (distance <= scanRadius * 0.5) {
     // Objects within 50% of scan radius are almost certainly detected

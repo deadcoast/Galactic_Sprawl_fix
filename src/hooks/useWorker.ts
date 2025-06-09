@@ -19,7 +19,7 @@ interface UseWorkerResult<T> {
 export function useWorker<T>({
   type,
   priority = 'MEDIUM',
-  onProgress,
+  onProgress: _onProgress,
 }: UseWorkerOptions): UseWorkerResult<T> {
   const { service } = useService<typeof workerService>('worker');
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -47,8 +47,7 @@ export function useWorker<T>({
       setError(null);
 
       try {
-        const result = await service.submitTask<T>(type, data, priority);
-        return result;
+        return await service.submitTask<T>(type, data, priority);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         setError(error);

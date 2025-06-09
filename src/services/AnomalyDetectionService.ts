@@ -1,5 +1,7 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import {
+    errorLoggingService, ErrorType
+} from '../services/logging/ErrorLoggingService';
 
 export interface DataPoint {
   id: string;
@@ -24,7 +26,7 @@ export interface StatisticalThresholds {
 
 class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionServiceImpl> {
   private dataPoints: DataPoint[] = [];
-  private anomalyScores: Map<string, AnomalyScore> = new Map();
+  private anomalyScores = new Map<string, AnomalyScore>();
   private thresholds: StatisticalThresholds = {
     zscore: 3,
     iqrFactor: 1.5,
@@ -37,30 +39,28 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_datapoints: 0,
       total_anomalies: 0,
       last_detection_run: 0,
       average_detection_time: 0,
     };
+    return Promise.resolve();
   }
 
   protected async onDispose(): Promise<void> {
     // Clear all data
     this.dataPoints = [];
     this.anomalyScores.clear();
+    return Promise.resolve();
   }
 
   public addDataPoints(points: DataPoint[]): void {
     this.dataPoints.push(...points);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_datapoints = this.dataPoints.length;
     this.metadata.metrics = metrics;
@@ -75,18 +75,16 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
       let scores: AnomalyScore[];
 
       if (method === 'statistical') {
-        scores = await this.detectStatisticalAnomalies();
+        scores = await Promise.resolve(this.detectStatisticalAnomalies());
       } else {
-        scores = await this.detectIsolationForestAnomalies();
+        scores = await Promise.resolve(this.detectIsolationForestAnomalies());
       }
 
       // Store scores in map
       scores.forEach(score => this.anomalyScores.set(score.dataPointId, score));
 
       // Update metrics
-      if (!this.metadata.metrics) {
-        this.metadata.metrics = {};
-      }
+      this.metadata.metrics ??= {};
       const { metrics } = this.metadata;
       metrics.total_anomalies = scores.filter(s => s.score > 0.7).length;
       metrics.last_detection_run = Date.now();
@@ -105,7 +103,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
     }
   }
 
-  private async detectStatisticalAnomalies(): Promise<AnomalyScore[]> {
+  private detectStatisticalAnomalies(): AnomalyScore[] {
     if (this.dataPoints.length < this.thresholds.minSampleSize) {
       throw new Error(
         `Insufficient data points for statistical analysis. Need at least ${this.thresholds.minSampleSize}`
@@ -146,7 +144,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionSe
     return scores;
   }
 
-  private async detectIsolationForestAnomalies(): Promise<AnomalyScore[]> {
+  private detectIsolationForestAnomalies(): never {
     // This is a placeholder for the isolation forest implementation
     // In a real implementation, you would use a proper machine learning library
     throw new Error('Isolation Forest implementation pending');

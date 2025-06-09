@@ -2,9 +2,9 @@ import { AlertTriangle, Cpu, Database, Radar, Settings, Zap } from 'lucide-react
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
-  automationManager,
-  AutomationRule,
-  EmitEventValue,
+    automationManager,
+    AutomationRule,
+    EmitEventValue
 } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -18,10 +18,10 @@ interface Sector {
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
-  resources?: Array<{
+  resources?: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
 }
 
 interface Anomaly {
@@ -444,7 +444,7 @@ export function AutomatedSectorScanner({
             return (
               <div key={item?.sectorId} className="rounded bg-gray-800/40 p-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-white">{sector?.name || item?.sectorId}</span>
+                  <span className="font-medium text-white">{sector?.name ?? item?.sectorId}</span>
                   <span
                     className={`rounded px-1.5 py-0.5 ${
                       item?.priority > 0.7

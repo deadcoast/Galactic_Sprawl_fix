@@ -78,19 +78,19 @@ export interface ResourceRatioConditionValue {
 }
 
 export interface MultipleResourcesConditionValue {
-  resources: Array<{
+  resources: {
     resourceType: ResourceType;
     amount: number;
     operator: 'greater' | 'less' | 'equals';
-  }>;
+  }[];
   combinationType: LogicalOperator;
 }
 
 export interface ComplexEventConditionValue {
-  eventSequence: Array<{
+  eventSequence: {
     eventType: string;
     eventData?: Record<string, unknown>;
-  }>;
+  }[];
   timeWindow: number; // milliseconds
   inOrder: boolean;
 }
@@ -209,7 +209,7 @@ export class AutomationManager {
    */
   startRule(ruleId: string): void {
     const rule = this.rules.get(ruleId);
-    if (!rule || !rule.enabled) {
+    if (!rule?.enabled) {
       return;
     }
 
@@ -230,7 +230,7 @@ export class AutomationManager {
     moduleEventBus.emit({
       type: 'AUTOMATION_STARTED',
       moduleId: rule.moduleId,
-      moduleType: module?.type || 'radar', // Default to radar as it's a valid type
+      moduleType: module?.type ?? 'radar', // Default to radar as it's a valid type
       timestamp: Date.now(),
       data: { ruleId, rule },
     });
@@ -251,7 +251,7 @@ export class AutomationManager {
         moduleEventBus.emit({
           type: 'AUTOMATION_STOPPED',
           moduleId: rule.moduleId,
-          moduleType: module?.type || 'radar',
+          moduleType: module?.type ?? 'radar',
           timestamp: Date.now(),
           data: { ruleId, rule },
         });
@@ -283,7 +283,7 @@ export class AutomationManager {
       moduleEventBus.emit({
         type: 'AUTOMATION_CYCLE_COMPLETE',
         moduleId: rule.moduleId,
-        moduleType: module?.type || 'radar',
+        moduleType: module?.type ?? 'radar',
         timestamp: Date.now(),
         data: { ruleId: rule.id, rule },
       });
@@ -293,7 +293,7 @@ export class AutomationManager {
       moduleEventBus.emit({
         type: 'ERROR_OCCURRED',
         moduleId: rule.moduleId,
-        moduleType: module?.type || 'radar',
+        moduleType: module?.type ?? 'radar',
         timestamp: Date.now(),
         data: { ruleId: rule.id, error },
       });

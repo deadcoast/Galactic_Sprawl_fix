@@ -192,7 +192,7 @@ export const resourceRatesReducer = (
     case ResourceRatesActionType.SET_ERROR:
       return {
         ...state,
-        error: action.payload.error || null,
+        error: action.payload.error ?? null,
         isLoading: false,
       };
 
@@ -202,10 +202,10 @@ export const resourceRatesReducer = (
 };
 
 // Create context
-type ResourceRatesContextType = {
+interface ResourceRatesContextType {
   state: ResourceRatesState;
   dispatch: React.Dispatch<ResourceRatesAction>;
-};
+}
 
 const ResourceRatesContext = createContext<ResourceRatesContextType | undefined>(undefined);
 

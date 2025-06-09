@@ -67,7 +67,7 @@ function registerResourceIntegration(): void {
     // Get module config
     const configs = getModuleConfigs();
     const config = configs[module.type];
-    if (!config || !config.resourceConsumption) {
+    if (!config?.resourceConsumption) {
       return;
     }
 
@@ -75,7 +75,7 @@ function registerResourceIntegration(): void {
     for (const [resourceType, amount] of Object.entries(config.resourceConsumption)) {
       resourceManager.registerConsumption(`module-${module.id}`, {
         type: resourceType as ResourceType,
-        amount: amount as number,
+        amount: amount,
         interval: 60000, // 1 minute
         required: false,
       });
@@ -97,14 +97,14 @@ function registerResourceIntegration(): void {
     // Get module config
     const configs = getModuleConfigs();
     const config = configs[module.type];
-    if (!config || !config.resourceProduction) {
+    if (!config?.resourceProduction) {
       return;
     }
 
     // Update resource production based on level
     for (const [resourceType, baseAmount] of Object.entries(config.resourceProduction)) {
       const levelMultiplier = 1 + (module.level - 1) * 0.25; // 25% increase per level
-      const amount = (baseAmount as number) * levelMultiplier;
+      const amount = (baseAmount) * levelMultiplier;
 
       resourceManager.registerProduction(`module-${module.id}`, {
         type: resourceType as ResourceType,
@@ -152,9 +152,7 @@ function initializeStatusTracking(): void {
       const configs = getModuleConfigs();
       const config = configs[module.type];
       return (
-        config &&
-        config.resourceConsumption &&
-        config.resourceConsumption[resourceType as keyof typeof config.resourceConsumption]
+        config?.resourceConsumption?.[resourceType as keyof typeof config.resourceConsumption]
       );
     });
 
@@ -183,9 +181,7 @@ function initializeStatusTracking(): void {
       const configs = getModuleConfigs();
       const config = configs[module.type];
       return (
-        config &&
-        config.resourceConsumption &&
-        config.resourceConsumption[resourceType as keyof typeof config.resourceConsumption]
+        config?.resourceConsumption?.[resourceType as keyof typeof config.resourceConsumption]
       );
     });
 
@@ -219,7 +215,7 @@ function initializeSubModuleSystem(): void {
           resourceCosts: config.resourceCost
             ? Object.entries(config.resourceCost).map(([type, amount]) => ({
                 type: type as ResourceType,
-                amount: amount as number,
+                amount: amount,
               }))
             : [],
         },

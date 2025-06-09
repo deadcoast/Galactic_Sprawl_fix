@@ -41,7 +41,7 @@ export interface Module {
  * Provides common functionality for all module managers
  */
 export abstract class BaseModuleManager extends TypedEventEmitter<ModuleEvents> {
-  protected modules: Map<string, Module> = new Map();
+  protected modules = new Map<string, Module>();
   protected moduleType: ModuleType;
 
   /**
@@ -342,7 +342,7 @@ export abstract class BaseModuleManager extends TypedEventEmitter<ModuleEvents> 
     parentModuleType: ModuleType
   ): boolean {
     const module = this.modules.get(moduleId);
-    if (!module || !module.parentId || module.parentId !== parentModuleId) {
+    if (!module?.parentId || module.parentId !== parentModuleId) {
       return false;
     }
 
@@ -672,7 +672,7 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
     }
 
     const attachmentPoint = building.attachmentPoints.find(p => p.id === attachmentPointId);
-    if (!attachmentPoint || !attachmentPoint.allowedTypes.includes(module.type)) {
+    if (!attachmentPoint?.allowedTypes.includes(module.type)) {
       return false;
     }
 

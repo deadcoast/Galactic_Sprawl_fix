@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import {
-  GlobalRoutine,
-  GlobalRoutineType,
-} from '../../managers/automation/GlobalAutomationManager';
-import {
-  AutomationAction,
-  AutomationCondition,
-  AutomationRule,
-} from '../../managers/game/AutomationManager';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import
+  {
+    GlobalRoutine,
+    GlobalRoutineType
+  } from '../../managers/automation/GlobalAutomationManager';
+import
+  {
+    AutomationAction,
+    AutomationCondition,
+    AutomationRule
+  } from '../../managers/game/AutomationManager';
 import { getGlobalAutomationManager } from '../../managers/ManagerRegistry';
 import { MessagePriority, SystemId } from '../../utils/events/EventCommunication';
 
@@ -30,7 +32,7 @@ export function useGlobalAutomation() {
   useEffect(() => {
     // Initialize the global automation manager if not already initialized
     if (!isInitialized) {
-      manager.initialize();
+      void manager.initialize();
       setIsInitialized(true);
     }
 
@@ -45,15 +47,7 @@ export function useGlobalAutomation() {
 
   // Subscribe to automation events
   useEffect(() => {
-    // Define a proper type for automation events
-    interface AutomationEvent {
-      type: 'AUTOMATION_STARTED' | 'AUTOMATION_STOPPED' | 'AUTOMATION_CYCLE_COMPLETE' | string;
-      routineId?: string;
-      timestamp?: number;
-      data?: Record<string, unknown>;
-    }
-
-    const handleAutomationEvent = (event: AutomationEvent) => {
+    const handleAutomationEvent = (event: ModuleEvent) => {
       if (
         event?.type === 'AUTOMATION_STARTED' ||
         event?.type === 'AUTOMATION_STOPPED' ||
@@ -106,7 +100,7 @@ export function useGlobalAutomation() {
       setActiveRoutines(manager.getActiveRoutines());
       setError(null);
     } catch (err) {
-      console.error('Error refreshing routines:', err);
+      // Error refreshing routines - replaced console.error
       setError(err instanceof Error ? err : new Error('Failed to refresh routines'));
     }
   }, [manager]);
@@ -137,9 +131,9 @@ export function useGlobalAutomation() {
         conditions,
         actions,
         systems,
-        priority: options?.priority || MessagePriority.NORMAL,
-        interval: options?.interval || 60000, // Default to 1 minute
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        priority: options?.priority ?? MessagePriority.NORMAL,
+        interval: options?.interval ?? 60000, // Default to 1 minute
+        enabled: options?.enabled ?? true,
         tags: options?.tags ?? [],
       };
 
@@ -157,7 +151,7 @@ export function useGlobalAutomation() {
    * Enable a routine
    */
   const enableRoutine = useCallback(
-    async (routineId: string) => {
+    (routineId: string) => {
       setLoading(true);
       setError(null);
       try {
@@ -167,7 +161,7 @@ export function useGlobalAutomation() {
         }
         refreshRoutines();
       } catch (err) {
-        console.error('Error enabling routine:', err);
+        // Error enabling routine - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to enable routine'));
       } finally {
         setLoading(false);
@@ -180,7 +174,7 @@ export function useGlobalAutomation() {
    * Disable a routine
    */
   const disableRoutine = useCallback(
-    async (routineId: string) => {
+    (routineId: string) => {
       setLoading(true);
       setError(null);
       try {
@@ -190,7 +184,7 @@ export function useGlobalAutomation() {
         }
         refreshRoutines();
       } catch (err) {
-        console.error('Error disabling routine:', err);
+        // Error disabling routine - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to disable routine'));
       } finally {
         setLoading(false);
@@ -203,7 +197,7 @@ export function useGlobalAutomation() {
    * Remove a routine
    */
   const removeRoutine = useCallback(
-    async (routineId: string) => {
+    (routineId: string) => {
       setLoading(true);
       setError(null);
       try {
@@ -213,7 +207,7 @@ export function useGlobalAutomation() {
         }
         refreshRoutines();
       } catch (err) {
-        console.error('Error removing routine:', err);
+        // Error removing routine - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to remove routine'));
       } finally {
         setLoading(false);
@@ -230,7 +224,7 @@ export function useGlobalAutomation() {
       try {
         return manager.getRoutinesByType(type);
       } catch (err) {
-        console.error('Error getting routines by type:', err);
+        // Error getting routines by type - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to get routines by type'));
         return [];
       }
@@ -246,7 +240,7 @@ export function useGlobalAutomation() {
       try {
         return manager.getRoutinesBySystem(systemId);
       } catch (err) {
-        console.error('Error getting routines by system:', err);
+        // Error getting routines by system - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to get routines by system'));
         return [];
       }
@@ -262,7 +256,7 @@ export function useGlobalAutomation() {
       try {
         return manager.getRoutinesByTag(tag);
       } catch (err) {
-        console.error('Error getting routines by tag:', err);
+        // Error getting routines by tag - replaced console.error
         setError(err instanceof Error ? err : new Error('Failed to get routines by tag'));
         return [];
       }
@@ -295,10 +289,10 @@ export function useGlobalAutomation() {
         actions,
         systems,
         {
-          interval: options?.interval || 3600000, // Default to 1 hour
-          priority: options?.priority || MessagePriority.LOW,
+          interval: options?.interval ?? 3600000, // Default to 1 hour
+          priority: options?.priority ?? MessagePriority.LOW,
           enabled: options?.enabled,
-          tags: options?.tags || ['maintenance'],
+          tags: options?.tags ?? ['maintenance'],
         }
       );
     },
@@ -323,10 +317,10 @@ export function useGlobalAutomation() {
       }
     ): string => {
       return createRoutine(name, 'resource-balancing', description, conditions, actions, systems, {
-        interval: options?.interval || 300000, // Default to 5 minutes
-        priority: options?.priority || MessagePriority.NORMAL,
+        interval: options?.interval ?? 300000, // Default to 5 minutes
+        priority: options?.priority ?? MessagePriority.NORMAL,
         enabled: options?.enabled,
-        tags: options?.tags || ['resource'],
+        tags: options?.tags ?? ['resource'],
       });
     },
     [createRoutine]
@@ -357,10 +351,10 @@ export function useGlobalAutomation() {
         actions,
         systems,
         {
-          interval: options?.interval || 1800000, // Default to 30 minutes
-          priority: options?.priority || MessagePriority.LOW,
+          interval: options?.interval ?? 1800000, // Default to 30 minutes
+          priority: options?.priority ?? MessagePriority.LOW,
           enabled: options?.enabled,
-          tags: options?.tags || ['performance'],
+          tags: options?.tags ?? ['performance'],
         }
       );
     },
@@ -385,9 +379,9 @@ export function useGlobalAutomation() {
     ): string => {
       return createRoutine(name, 'emergency-response', description, conditions, actions, systems, {
         interval: 0, // Emergency routines are triggered by events, not time
-        priority: options?.priority || MessagePriority.CRITICAL,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
-        tags: options?.tags || ['emergency'],
+        priority: options?.priority ?? MessagePriority.CRITICAL,
+        enabled: options?.enabled ?? true,
+        tags: options?.tags ?? ['emergency'],
       });
     },
     [createRoutine]
@@ -419,9 +413,9 @@ export function useGlobalAutomation() {
         systems,
         {
           interval,
-          priority: options?.priority || MessagePriority.NORMAL,
+          priority: options?.priority ?? MessagePriority.NORMAL,
           enabled: options?.enabled,
-          tags: options?.tags || ['scheduled'],
+          tags: options?.tags ?? ['scheduled'],
         }
       );
     },

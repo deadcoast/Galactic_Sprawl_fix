@@ -8,10 +8,11 @@ import { ResourceType } from './../types/resources/ResourceTypes';
  */
 
 import {
-  FlowConnection,
-  FlowNode,
-  ResourceState,
-  ResourceTransfer,
+    FlowConnection,
+    FlowNode,
+    FlowNodeType,
+    ResourceState,
+    ResourceTransfer,
 } from '../types/resources/ResourceTypes';
 
 // Correct import for error logging service (if main thread context available, otherwise use postMessage)
@@ -215,7 +216,7 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         break;
 
       default:
-        throw new Error(`Unknown task type: ${type}`);
+        throw new Error(`Unknown task type: ${'type'}`);
     }
 
     // Send successful result back to main thread
@@ -278,9 +279,9 @@ function optimizeFlows(
   });
 
   // Categorize nodes by type
-  const producers = activeNodes.filter(node => node.type === 'producer');
-  const consumers = activeNodes.filter(node => node.type === 'consumer');
-  const storages = activeNodes.filter(node => node.type === 'storage');
+  const producers = activeNodes.filter(node => node.type === FlowNodeType.PRODUCER);
+  const consumers = activeNodes.filter(node => node.type === FlowNodeType.CONSUMER);
+  const storages = activeNodes.filter(node => node.type === FlowNodeType.STORAGE);
 
   // Calculate resource balance
   const { availability, demand } = calculateResourceBalance(
@@ -384,7 +385,7 @@ function calculateResourceBalance(
     connection.resourceTypes.forEach(resourceType => {
       if (connection.maxFlow && availability[resourceType]) {
         // If this connection has a bottleneck, adjust the available throughput
-        availability[resourceType] = Math.min(availability[resourceType]!, connection.maxFlow);
+        availability[resourceType] = Math.min(availability[resourceType] ?? 0, connection.maxFlow);
       }
     });
   }

@@ -18,7 +18,7 @@ export interface TechNode {
   unlocked: boolean;
   category:
     | 'infrastructure'
-    | 'warFleet'
+    | 'combatFleet'
     | 'reconFleet'
     | 'miningFleet'
     | 'weapons'
@@ -41,13 +41,13 @@ export interface TechPath {
 }
 
 // Define event types
-type TechTreeEventMap = {
+interface TechTreeEventMap {
   nodeUnlocked: { nodeId: string; node: TechNode };
   researchStarted: { nodeId: string; node: TechNode; startTime: number };
   researchProgress: { nodeId: string; progress: number; remainingTime: number };
   researchCompleted: { nodeId: string; node: TechNode };
   synergyActivated: { nodeIds: string[]; synergyBonus: number };
-};
+}
 
 type TechTreeEvents = {
   [K in keyof TechTreeEventMap]: TechTreeEventMap[K];
@@ -59,18 +59,18 @@ type TechTreeEvents = {
  */
 export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
   private static instance: TechTreeManager | null = null;
-  private unlockedNodes: Set<string> = new Set();
-  private techNodes: Map<string, TechNode> = new Map();
-  private activeResearch: Map<
+  private unlockedNodes = new Set<string>();
+  private techNodes = new Map<string, TechNode>();
+  private activeResearch = new Map<
     string,
     {
       startTime: number;
       endTime: number;
       intervalId?: NodeJS.Timeout;
     }
-  > = new Map();
-  private synergies: Map<string, Set<string>> = new Map();
-  private activeSynergies: Set<string> = new Set();
+  >();
+  private synergies = new Map<string, Set<string>>();
+  private activeSynergies = new Set<string>();
 
   /**
    * Private constructor to enforce singleton pattern
@@ -83,9 +83,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
    * Get the singleton instance of TechTreeManager
    */
   public static getInstance(): TechTreeManager {
-    if (!TechTreeManager.instance) {
-      TechTreeManager.instance = new TechTreeManager();
-    }
+    TechTreeManager.instance ??= new TechTreeManager();
     return TechTreeManager.instance;
   }
 
@@ -181,9 +179,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
     }
 
     // Default research time if not specified
-    if (!node.researchTime) {
-      node.researchTime = 60 * (node.tier || 1); // Default to 60 seconds * tier
-    }
+    node.researchTime ??= 60 * (node.tier ?? 1); // Default to 60 seconds * tier
 
     // Initialize progress
     node.researchProgress = 0;
@@ -400,7 +396,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
 
     for (const [nodeId, researchData] of this.activeResearch.entries()) {
       const node = this.techNodes.get(nodeId);
-      if (node && node.researchProgress !== undefined) {
+      if (node?.researchProgress !== undefined) {
         const now = Date.now();
         const remainingTime = Math.max(0, (researchData.endTime - now) / 1000);
 
@@ -496,8 +492,8 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
       }
 
       // Then sort by synergy potential
-      const synergiesA = this.synergies.get(a)?.size || 0;
-      const synergiesB = this.synergies.get(b)?.size || 0;
+      const synergiesA = this.synergies.get(a)?.size ?? 0;
+      const synergiesB = this.synergies.get(b)?.size ?? 0;
 
       return synergiesB - synergiesA;
     });
@@ -509,7 +505,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
     nodeArray.forEach(nodeId => {
       const node = this.techNodes.get(nodeId);
       if (node) {
-        totalResearchTime += node.researchTime || 60 * (node.tier || 1);
+        totalResearchTime += node.researchTime ?? 60 * (node.tier ?? 1);
 
         // Check for potential synergies
         const nodeSynergies = this.synergies.get(nodeId);
@@ -542,12 +538,12 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
   }
 
   /**
-   * Check if the player has unlocked unknown war ship salvage technologies
-   * @returns True if unknown war ship salvage tech is unlocked
+   * Check if the player has unlocked unknown combat ship salvage technologies
+   * @returns True if unknown combat ship salvage tech is unlocked
    */
-  public hasWarShipSalvage(): boolean {
+  public hasCombatShipSalvage(): boolean {
     return Array.from(this.unlockedNodes.values()).some(
-      id => id.includes('salvage') && id.includes('warship')
+      id => id.includes('salvage') && id.includes('CombatShip')
     );
   }
 }

@@ -1,7 +1,12 @@
 import { Singleton } from '../lib/patterns/Singleton';
 import { BaseService, ServiceMetadata } from '../lib/services/BaseService';
 import { ChartAxes, ChartLegend, ChartOptions, ChartTooltip } from '../visualization/Chart';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+  } from './logging/ErrorLoggingService';
 
 // Add error types
 export enum WebGLErrorType {
@@ -57,14 +62,63 @@ export interface ExtendedChartOptions extends Omit<ChartOptions, 'axes' | 'legen
   tooltip?: ChartTooltip;
 }
 
+// Type definitions for WebGL extensions to fix unsafe operations
+interface WebGLComputeShaderExtension {
+  readonly COMPUTE_SHADER: number;
+  readonly MAX_COMPUTE_WORK_GROUP_COUNT: number;
+  readonly MAX_COMPUTE_WORK_GROUP_SIZE: number;
+  readonly MAX_COMPUTE_WORK_GROUP_INVOCATIONS: number;
+  readonly MAX_COMPUTE_UNIFORM_BLOCKS: number;
+  readonly MAX_COMPUTE_TEXTURE_IMAGE_UNITS: number;
+  readonly MAX_COMPUTE_SHARED_MEMORY_SIZE: number;
+  readonly MAX_COMPUTE_UNIFORM_COMPONENTS: number;
+  readonly MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS: number;
+  readonly MAX_COMPUTE_ATOMIC_COUNTERS: number;
+  readonly MAX_COMBINED_COMPUTE_UNIFORM_COMPONENTS: number;
+  readonly COMPUTE_WORK_GROUP_SIZE: number;
+  readonly DISPATCH_INDIRECT_BUFFER: number;
+  readonly DISPATCH_INDIRECT_BUFFER_BINDING: number;
+  readonly COMPUTE_SHADER_WORK_GROUP_SIZE: number;
+  readonly SHADER_STORAGE_BARRIER_BIT: number;
+  
+  dispatchCompute(num_groups_x: number, num_groups_y: number, num_groups_z: number): void;
+  memoryBarrier(barriers: number): void;
+}
+
+interface WebGLStorageBufferExtension {
+  readonly SHADER_STORAGE_BUFFER: number;
+  readonly SHADER_STORAGE_BUFFER_BINDING: number;
+  readonly SHADER_STORAGE_BUFFER_START: number;
+  readonly SHADER_STORAGE_BUFFER_SIZE: number;
+  readonly MAX_VERTEX_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_GEOMETRY_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_FRAGMENT_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_COMPUTE_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_COMBINED_SHADER_STORAGE_BLOCKS: number;
+  readonly MAX_SHADER_STORAGE_BUFFER_BINDINGS: number;
+  readonly MAX_SHADER_STORAGE_BLOCK_SIZE: number;
+  readonly SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT: number;
+}
+
+// Type-safe extension getters
+function getComputeShaderExtension(gl: WebGL2RenderingContext): WebGLComputeShaderExtension | null {
+  return gl.getExtension('WEBGL_compute_shader') as WebGLComputeShaderExtension | null;
+}
+
+function getStorageBufferExtension(gl: WebGL2RenderingContext): WebGLStorageBufferExtension | null {
+  return gl.getExtension('WEBGL_storage_buffer') as WebGLStorageBufferExtension | null;
+}
+
 export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements BaseService {
   protected metadata: ServiceMetadata;
   private gl: WebGL2RenderingContext | null = null;
   private canvas: HTMLCanvasElement | null = null;
-  private programs: Map<string, ShaderProgram> = new Map();
-  private renderTargets: Map<string, RenderTarget> = new Map();
-  private computePrograms: Map<string, ComputeProgram> = new Map();
-  private storageBuffers: Map<string, StorageBuffer> = new Map();
+  private programs = new Map<string, ShaderProgram>();
+  private renderTargets = new Map<string, RenderTarget>();
+  private computePrograms = new Map<string, ComputeProgram>();
+  private storageBuffers = new Map<string, StorageBuffer>();
   private lastOptions: ExtendedChartOptions | null = null;
 
   // Default shaders
@@ -282,10 +336,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       // Create default shaders
       await this.createDefaultShaders();
 
-      // Initialize WebGL2 compute extensions
+      // Initialize WebGL2 compute extensions with proper typing
       if (this.gl) {
-        const computeExt = this.gl.getExtension('WEBGL_compute_shader');
-        const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
+        const computeExt = getComputeShaderExtension(this.gl);
+        const storageExt = getStorageBufferExtension(this.gl);
 
         if (!computeExt || !storageExt) {
           errorLoggingService.logWarn(
@@ -679,7 +733,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       throw new Error('WebGL context not initialized');
     }
 
-    const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
+    const storageExt = getStorageBufferExtension(this.gl);
     if (!storageExt) {
       throw new Error('Storage buffers not supported');
     }
@@ -698,12 +752,12 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     return storageBuffer;
   }
 
-  public updateStorageBuffer(name: string, data: BufferSource, offset: number = 0): void {
+  public updateStorageBuffer(name: string, data: BufferSource, offset = 0): void {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
     }
 
-    const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
+    const storageExt = getStorageBufferExtension(this.gl);
     if (!storageExt) {
       throw new Error('Storage buffers not supported');
     }
@@ -722,7 +776,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       throw new Error('WebGL context not initialized');
     }
 
-    const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
+    const storageExt = getStorageBufferExtension(this.gl);
     if (!storageExt) {
       throw new Error('Storage buffers not supported');
     }
@@ -736,12 +790,12 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     this.gl.getBufferSubData(storageExt.SHADER_STORAGE_BUFFER, 0, output);
   }
 
-  public dispatchCompute(name: string, x: number, y: number = 1, z: number = 1): void {
+  public dispatchCompute(name: string, x: number, y = 1, z = 1): void {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
     }
 
-    const computeExt = this.gl.getExtension('WEBGL_compute_shader');
+    const computeExt = getComputeShaderExtension(this.gl);
     if (!computeExt) {
       throw new Error('Compute shaders not supported');
     }

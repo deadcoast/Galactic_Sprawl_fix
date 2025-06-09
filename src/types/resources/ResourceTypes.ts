@@ -30,7 +30,7 @@ export enum ResourceType {
 }
 
 /**
- * For backward compatibility with string-based resource types
+ * For backcombatd compatibility with string-based resource types
  * @deprecated Use ResourceType enum instead for better type safety and intellisense support
  */
 export type ResourceTypeString = keyof typeof ResourceType;
@@ -52,7 +52,7 @@ export enum ResourceRarity {
   UNCOMMON = 'uncommon',
   RARE = 'rare',
   VERY_RARE = 'very_rare',
-  EXOTIC = ResourceType.EXOTIC,
+  EXOTIC = 'EXOTIC',
 }
 
 /**
@@ -83,14 +83,14 @@ export interface ResourceConversionRecipe {
   id: string;
   name: string;
   description: string;
-  inputs: Array<{
+  inputs: {
     type: ResourceType;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
   duration: number;
   energyCost: number;
   requiredLevel: number;
@@ -285,6 +285,7 @@ export class ResourceStateClass {
     this._max = data?.max ?? metadata?.defaultMax;
     this._min = data?.min ?? 0;
     this._production = data?.production ?? 0;
+    this._consumption = data?.consumption ?? 0;
   }
 
   get current(): number {
@@ -374,7 +375,7 @@ export class ResourceStateClass {
  */
 export interface ResourceState {
   current: number;
-  capacity: number;
+  capacity?: number;
   max: number;
   min: number;
   production: number;
@@ -431,11 +432,11 @@ export interface ResourceConsumption {
  */
 export function createResourceState(
   type: ResourceType | ResourceTypeString,
-  current: number = 0,
-  max: number = 100,
-  min: number = 0,
-  production: number = 0,
-  consumption: number = 0
+  current = 0,
+  max = 100,
+  min = 0,
+  production = 0,
+  consumption = 0
 ): ResourceState {
   const resourceState = new ResourceStateClass({
     type,
@@ -595,13 +596,13 @@ export interface ResourcePool {
 
 // Export types from ResourceConversionTypes.ts
 export type {
-  ChainExecutionStatus,
-  ConversionChain,
-  ConverterFlowNode,
-  ConverterNodeConfig,
-  ConverterStatus,
-  ExtendedResourceConversionRecipe,
-  ResourceConversionProcess,
+    ChainExecutionStatus,
+    ConversionChain,
+    ConverterFlowNode,
+    ConverterNodeConfig,
+    ConverterStatus,
+    ExtendedResourceConversionRecipe,
+    ResourceConversionProcess
 } from './ResourceConversionTypes';
 
 /**
@@ -619,7 +620,7 @@ export interface StandardResource {
 /**
  * Represents a quantity of a specific resource.
  */
-export type ResourceQuantity = {
+export interface ResourceQuantity {
   type: ResourceType;
   amount: number;
-};
+}

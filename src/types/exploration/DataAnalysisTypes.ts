@@ -221,7 +221,7 @@ export interface ResourceMappingAnalysisConfig extends AnalysisConfig {
 export interface SectorAnalysisConfig extends AnalysisConfig {
   type: 'sectorAnalysis';
   parameters: {
-    metrics: Array<'resourcePotential' | 'habitabilityScore' | 'anomalyCount' | 'resourceCount'>;
+    metrics: ('resourcePotential' | 'habitabilityScore' | 'anomalyCount' | 'resourceCount')[];
     sectorIds?: string[];
     includeNeighbors?: boolean;
     timeRange?: [number, number];
@@ -286,7 +286,7 @@ export interface DataAnalysisContextType {
   refreshData: () => void;
   filterDataset: (
     datasetId: string,
-    filters: Array<{
+    filters: {
       field: string;
       operator:
         | 'equals'
@@ -297,7 +297,7 @@ export interface DataAnalysisContextType {
         | 'notContains'
         | 'between';
       value: string | number | boolean | string[] | [number, number];
-    }>
+    }[]
   ) => DataPoint[];
 
   // Conversion utilities

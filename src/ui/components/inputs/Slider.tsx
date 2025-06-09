@@ -198,7 +198,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
     const [validationError, setValidationError] = useState<string | undefined>(undefined);
     const [localValue, setLocalValue] = useState<number>(() => {
       // Initialize with controlled or uncontrolled value, or default to min
-      return value !== undefined ? value : defaultValue !== undefined ? defaultValue : min;
+      return value ?? defaultValue ?? min;
     });
     const [isDragging, setIsDragging] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
@@ -214,7 +214,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
       }
     }, [value]);
 
-    // Forward ref
+    // Forcombatd ref
     React.useImperativeHandle(ref, () => internalRef.current!);
 
     // Format value for display
@@ -381,7 +381,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
 
     // Determine error state
     const showError = hasError || (isValidated && !!validationError);
-    const errorToShow = errorMessage || validationError;
+    const errorToShow = errorMessage ?? validationError;
 
     // Build slider class names
     const sliderContainerClassName = useMemo(() => {
@@ -419,7 +419,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
     }, [className, size, variant, disabled, isDragging, showError, fullWidth]);
 
     // Generate a unique ID for the component if not provided
-    const sliderId = id || `slider-${Math.random().toString(36).substring(2, 9)}`;
+    const sliderId = id ?? `slider-${Math.random().toString(36).substring(2, 9)}`;
 
     return (
       <div
@@ -429,7 +429,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
         onMouseLeave={handleMouseLeave}
       >
         {/* Label and value display */}
-        {(label || (showValue && !showValueOnHover)) && (
+        {(label ?? (showValue && !showValueOnHover)) && (
           <div className="ui-slider-header">
             {label && !hideLabel && (
               <label htmlFor={sliderId} className="ui-slider-label">
@@ -525,14 +525,14 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
                 onBlur={handleInputBlur}
                 disabled={disabled}
                 className="ui-slider-input-field"
-                aria-label={`${label || 'Slider'} value input`}
+                aria-label={`${label ?? 'Slider'} value input`}
               />
             </div>
           )}
         </div>
 
         {/* Helper text or error message */}
-        {(helperText || showError) && (
+        {(helperText ?? showError) && (
           <div
             className={`ui-slider-helper-text ${showError ? 'ui-slider-error-text' : ''}`}
             id={showError ? `${sliderId}-error` : undefined}

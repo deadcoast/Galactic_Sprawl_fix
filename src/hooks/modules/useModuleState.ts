@@ -57,7 +57,7 @@ export function useModuleState() {
     moduleStatePerformanceConfig
   );
 
-  const _modules = measureSelectorTime(
+  const modules = measureSelectorTime(
     'modules',
     () => useMemo(() => Object.values(state.modules), [state.modules]),
     moduleStatePerformanceConfig
@@ -291,7 +291,7 @@ export function useModuleState() {
 
   const getAvailableAttachmentPoints = useCallback(
     (building: ModularBuilding, moduleType: ModuleType) => {
-      if (!building || !building.attachmentPoints) {
+      if (!building?.attachmentPoints) {
         return [];
       }
 
@@ -389,7 +389,7 @@ export function useActiveModules(): BaseModule[] {
       return Object.values(modules).filter(module => {
         // Type guard to ensure module has an id property
         if (module && typeof module === 'object' && 'id' in module) {
-          return activeModuleIds.includes(module.id as string);
+          return activeModuleIds.includes(module.id);
         }
         return false;
       }) as BaseModule[];

@@ -1,84 +1,187 @@
-interface WorkerMessage {
+import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
+
+// Access the manager instance via getInstance() – kept outside of the main processor so
+// there is only ever one ResourceFlowManager per worker thread.
+const resourceFlowManager = ResourceFlowManager.getInstance();
+
+// Redesigned worker implementation to align with WorkerService protocol.
+// Accepts messages that include a `taskId`, `type`, and `data` field and responds
+// with `{ taskId, type: 'result' | 'progress' | 'error', data: unknown }`.
+
+// --------------------------------------------------------------------------------
+// Message & type guards
+
+interface WorkerTaskMessage {
   taskId: string;
   type: string;
-  data: unknown;
+  data?: unknown; // Alias for the payload that the task operates on
+  payload?: unknown; // Retained for backward-compatibility
+  context?: Record<string, unknown>;
 }
 
-interface TaskHandler {
-  (data: unknown, reportProgress: (progress: number) => void): Promise<unknown>;
+// Legacy message format type
+interface LegacyWorkerMessage {
+  type: string;
+  payload: unknown;
 }
 
-const taskHandlers = new Map<string, TaskHandler>();
+// Determine if the incoming data matches the WorkerTaskMessage structure
+const isWorkerTaskMessage = (data: unknown): data is WorkerTaskMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    'taskId' in data &&
+    (/* Accept both `data` and legacy `payload` fields */ 'data' in data || 'payload' in data)
+  );
+};
 
-// Register task handlers
-taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
-  // Example heavy computation task
-  // Validate data structure
-  if (
-    typeof data !== 'object' ||
-    data === null ||
-    typeof (data as Record<string, unknown>).iterations !== 'number'
-  ) {
-    throw new Error('Invalid data format for heavyComputation: Expected { iterations: number }');
-  }
-  // Safe access after validation
-  const iterations = (data as { iterations: number }).iterations;
-  let result = 0;
+// Type guard for legacy message format
+const isLegacyWorkerMessage = (data: unknown): data is LegacyWorkerMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    'payload' in data &&
+    !('taskId' in data) && // Ensure it's not the new format
+    typeof (data as Record<string, unknown>).type === 'string'
+  );
+};
 
-  for (let i = 0; i < iterations; i++) {
-    result += Math.sqrt(i);
-    if (i % (iterations / 100) === 0) {
-      reportProgress((i / iterations) * 100);
-    }
-  }
+// --------------------------------------------------------------------------------
+// Internal helpers
 
-  return result;
-});
+// Store cancelled taskIds so long-running handlers can bail out early if needed
+const cancelledTasks = new Set<string>();
 
-// Handle messages from the main thread
-self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-  const rawData = event?.data;
-  // Validate the basic structure of the incoming message
-  if (
-    !rawData ||
-    typeof rawData !== 'object' ||
-    typeof rawData.type !== 'string' || // Basic check for type
-    !('data' in rawData) || // Check if data property exists
-    typeof rawData.taskId !== 'string' // Basic check for taskId
-  ) {
-    // Post error back to main thread for invalid message structure
-    const errorMsg = 'Received invalid message structure in generic worker';
-    console.error(errorMsg, rawData); // Log within worker for debugging
-    self.postMessage({
-      taskId: typeof rawData?.taskId === 'string' ? rawData.taskId : 'unknown',
-      type: 'error', // Use the standard error type for this worker
-      data: errorMsg,
-    });
+const sendProgress = (taskId: string, progress: number): void => {
+  // Clamp progress to 0-100 range
+  const pct = Math.max(0, Math.min(100, progress));
+  postMessage({ taskId, type: 'progress', data: pct });
+};
+
+const sendResult = (taskId: string, result: unknown): void => {
+  postMessage({ taskId, type: 'result', data: result });
+};
+
+const sendError = (taskId: string, error: Error | string): void => {
+  const errObj = typeof error === 'string' ? new Error(error) : error;
+  postMessage({ taskId, type: 'error', data: errObj.message });
+};
+
+// --------------------------------------------------------------------------------
+// Main task processor – kept async so heavy work can be awaited.
+
+const processTask = async (message: WorkerTaskMessage): Promise<void> => {
+  const { taskId, type } = message;
+
+  // If the task has been marked as cancelled before it even started, bail out.
+  if (cancelledTasks.has(taskId)) {
+    sendError(taskId, 'Task cancelled');
     return;
   }
 
-  // Now we know rawData conforms to WorkerMessage structure
-  const { taskId, type, data } = event.data;
-
   try {
-    const handler = taskHandlers.get(type);
-    if (!handler) {
-      throw new Error(`Unknown task type: ${type}`);
+    switch (type) {
+      // Example of a heavy task delegated to ResourceFlowManager
+      case 'OPTIMIZE_RESOURCE_FLOW': {
+        sendProgress(taskId, 5);
+        const optimizationResult = await resourceFlowManager.optimizeFlows();
+        // Task may have been cancelled while awaiting the result
+        if (cancelledTasks.has(taskId)) {
+          sendError(taskId, 'Task cancelled');
+          break;
+        }
+        sendProgress(taskId, 100);
+        sendResult(taskId, optimizationResult);
+        break;
+      }
+
+      // Placeholder for additional generic tasks – extend as needed.
+      case 'ANOTHER_TASK': {
+        // Demonstration of how to periodically emit progress updates.
+        for (let i = 1; i <= 5; i++) {
+          if (cancelledTasks.has(taskId)) {
+            sendError(taskId, 'Task cancelled');
+            return;
+          }
+          // Simulate work
+          await new Promise(res => setTimeout(res, 100));
+          sendProgress(taskId, (i / 5) * 100);
+        }
+        sendResult(taskId, { success: true });
+        break;
+      }
+
+      // Handle task cancellation requests
+      case 'CANCEL_TASK': {
+        const targetId = (message.data as { taskId?: string })?.taskId;
+        if (typeof targetId === 'string') {
+          cancelledTasks.add(targetId);
+        }
+        // Acknowledge receipt – no further action required here because
+        // the running task checks the `cancelledTasks` set periodically.
+        sendResult(taskId, { cancelled: true });
+        break;
+      }
+
+      default: {
+        const warning = `Unknown task type received in worker: ${type}`;
+        errorLoggingService.logWarn(warning, {
+          taskType: type,
+          taskId: taskId,
+        });
+        sendError(taskId, warning);
+        break;
+      }
     }
-
-    // Execute task with progress reporting
-    const result = await handler(data, (progress: number) => {
-      self.postMessage({ taskId, type: 'progress', data: progress });
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    // Send to structured logger
+    errorLoggingService.logError(error, ErrorType.WORKER, ErrorSeverity.HIGH, {
+      message: 'Error processing task in worker',
     });
 
-    // Send result back to main thread
-    self.postMessage({ taskId, type: 'result', data: result });
-  } catch (error) {
-    // Send error back to main thread
-    self.postMessage({
-      taskId,
-      type: 'error',
-      data: error instanceof Error ? error.message : String(error),
-    });
+    const logContext: Record<string, unknown> = {
+      workerMessageType: message.type,
+      ...(message.context && typeof message.context === 'object' ? message.context : {}),
+    };
+    errorLoggingService.logError(error, ErrorType.WORKER, ErrorSeverity.HIGH, logContext);
+
+    sendError(taskId, error.message);
   }
 };
+
+// --------------------------------------------------------------------------------
+// Wire up the message handler
+
+self.onmessage = (event: MessageEvent) => {
+  const incoming = event.data;
+
+  if (isWorkerTaskMessage(incoming)) {
+    // Fire-and-forget the async processing – the promise is intentionally not awaited here.
+    void processTask(incoming);
+  } else if (isLegacyWorkerMessage(incoming)) {
+    // Legacy handler – accept the old shape `{ type, payload }` without taskId
+    // Coerce into new structure with a synthetic taskId so downstream logic works.
+    const syntheticMessage: WorkerTaskMessage = {
+      taskId: `legacy-${Date.now()}`,
+      type: incoming.type,
+      data: incoming.payload,
+    };
+    void processTask(syntheticMessage);
+  } else {
+    errorLoggingService.logWarn('Received invalid message structure in worker', {
+      receivedData: JSON.stringify(incoming).substring(0, 200),
+    });
+    errorLoggingService.logError(
+      new Error('Invalid message structure received'),
+      ErrorType.WORKER,
+      ErrorSeverity.MEDIUM,
+      { receivedData: JSON.stringify(incoming).substring(0, 200) }
+    );
+  }
+};
+
+errorLoggingService.logInfo('Generic worker initialized and ready to receive tasks');

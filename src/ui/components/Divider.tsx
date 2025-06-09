@@ -166,7 +166,7 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
         label ? 'gs-divider--with-label' : '',
         label ? `gs-divider--label-${labelPosition}` : '',
         color ? `gs-divider--color-${color}` : '',
-        ...(hideOn || []).map(size => `gs-divider--hide-on-${size}`),
+        ...(hideOn ?? []).map(size => `gs-divider--hide-on-${size}`),
         className,
       ]
         .filter(Boolean)

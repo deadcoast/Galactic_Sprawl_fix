@@ -4,11 +4,11 @@ import { shipFactory } from '../../factories/ships/ShipFactory';
 import { Position } from '../../types/core/GameTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
-import { UnifiedShip } from '../../types/ships/UnifiedShipTypes';
+import { Ship } from '../../types/ships/ShipTypes';
 
 interface FleetComposition {
   factionId: FactionId;
-  ships: UnifiedShip[];
+  ships: Ship[];
   formation: {
     type: 'offensive' | 'defensive' | 'balanced';
     spacing: number;

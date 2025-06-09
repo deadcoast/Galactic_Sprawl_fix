@@ -2,7 +2,11 @@ import { Loader2, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../../utils/resources/ResourceTypeConverter';
 
@@ -22,10 +26,10 @@ interface Sector {
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
-  resources?: Array<{
+  resources?: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
 }
 
 interface Anomaly {
@@ -109,7 +113,7 @@ export function RealTimeMapUpdates({
   // Handle sector scan events
   useEffect(() => {
     const handleSectorScan = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId) {
+      if (!event?.data?.sectorId || !event?.data?.shipId) {
         return;
       }
 
@@ -151,7 +155,7 @@ export function RealTimeMapUpdates({
     };
 
     const handleScanComplete = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId) {
+      if (!event?.data?.sectorId) {
         return;
       }
 
@@ -192,7 +196,7 @@ export function RealTimeMapUpdates({
     };
 
     const handleAnomalyDetected = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId || !event?.data?.anomaly) {
+      if (!event?.data?.sectorId || !event?.data?.anomaly) {
         return;
       }
 
@@ -219,7 +223,7 @@ export function RealTimeMapUpdates({
     };
 
     const handleResourceDiscovered = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId || !event?.data?.resource) {
+      if (!event?.data?.sectorId || !event?.data?.resource) {
         return;
       }
 
@@ -228,7 +232,7 @@ export function RealTimeMapUpdates({
 
       // Convert string type to ResourceType enum
       const resource = {
-        type: ResourceTypeConverter.stringToEnum(resourceData.type) || ResourceType.MINERALS,
+        type: ResourceTypeConverter.stringToEnum(resourceData.type) ?? ResourceType.MINERALS,
         amount: resourceData.amount,
       };
 
@@ -324,7 +328,7 @@ export function RealTimeMapUpdates({
           }
 
           // Calculate progress based on efficiency and time
-          const lastUpdateTime = ship.lastUpdate || Date.now();
+          const lastUpdateTime = ship.lastUpdate ?? Date.now();
           const elapsedTime = Date.now() - lastUpdateTime;
           const progressFactor = ship.efficiency * (elapsedTime / 10000);
 

@@ -57,7 +57,7 @@ const categoryIcons = {
       <path d="M2 10h20"></path>
     </svg>
   ),
-  warFleet: (
+  combatFleet: (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
@@ -228,7 +228,7 @@ export function TechVisualFeedback({
       setRemainingTime(researchData.remainingTime);
     } else {
       setResearchActive(false);
-      setResearchProgress(node.researchProgress || 0);
+      setResearchProgress(node.researchProgress ?? 0);
     }
 
     // Subscribe to research progress events
@@ -315,7 +315,7 @@ export function TechVisualFeedback({
       return 'bg-gradient-to-br from-blue-400 to-blue-700';
     }
 
-    if (techPath && techPath.nodes.includes(node.id)) {
+    if (techPath?.nodes.includes(node.id)) {
       return 'bg-gradient-to-br from-purple-400 to-purple-700';
     }
 
@@ -532,7 +532,7 @@ export function TechVisualFeedback({
                         key={`req-${index}`}
                         className={isUnlocked ? 'text-green-400' : 'text-red-400'}
                       >
-                        {reqNode?.name || req}
+                        {reqNode?.name ?? req}
                       </li>
                     );
                   })}
@@ -547,7 +547,7 @@ export function TechVisualFeedback({
                     const targetNode = getTechTreeManager().getNode(targetId);
                     return (
                       <li key={`synergy-${index}`}>
-                        {targetNode?.name || targetId}: +{Math.round(value * 100)}%
+                        {targetNode?.name ?? targetId}: +{Math.round(value * 100)}%
                       </li>
                     );
                   })}

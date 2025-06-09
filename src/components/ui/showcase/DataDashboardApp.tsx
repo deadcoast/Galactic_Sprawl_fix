@@ -1,32 +1,37 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import * as d3 from 'd3';
 import { Feature } from 'geojson';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
-import {
-  animationQualityManager,
-  QualitySettings,
-} from '../../../utils/performance/D3AnimationQualityManager';
+import
+  {
+    animationQualityManager,
+    QualitySettings,
+  } from '../../../utils/performance/D3AnimationQualityManager';
 
 // Import type-safe D3 utilities
 import { createSimulationDragBehavior } from '../../../types/visualizations/D3DragTypes';
-import {
-  d3Accessors,
-  SimulationLinkDatum,
-  SimulationNodeDatum,
-} from '../../../types/visualizations/D3Types';
-import {
-  createSvgZoomBehavior,
-  getFitToViewportTransform,
-} from '../../../types/visualizations/D3ZoomTypes';
+import
+  {
+    d3Accessors,
+    SimulationLinkDatum,
+    SimulationNodeDatum,
+  } from '../../../types/visualizations/D3Types';
+import
+  {
+    createSvgZoomBehavior,
+    getFitToViewportTransform,
+  } from '../../../types/visualizations/D3ZoomTypes';
 
 // Fix import path for error logging service
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../services/logging/ErrorLoggingService';
 
 // Type definitions
 interface DataDashboardAppProps {
@@ -254,7 +259,7 @@ interface HierarchyDatum {
   leaves(): HierarchyDatum[];
   find(filter: (node: HierarchyDatum) => boolean): HierarchyDatum | undefined;
   path(target: HierarchyDatum): HierarchyDatum[];
-  links(): Array<{ source: HierarchyDatum; target: HierarchyDatum }>;
+  links(): { source: HierarchyDatum; target: HierarchyDatum }[];
   sum(value: (d: D3HierarchyNode) => number): HierarchyDatum;
   sort(compare: (a: HierarchyDatum, b: HierarchyDatum) => number): HierarchyDatum;
   count(): HierarchyDatum;
@@ -548,9 +553,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         // This node has a parent, add it to the parent's children
         const parentNode = nodeMap.get(node.parentId);
         if (parentNode) {
-          if (!parentNode.children) {
-            parentNode.children = [];
-          }
+          parentNode.children ??= [];
           parentNode.children.push(d3Node!);
         }
       }
@@ -642,7 +645,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
    */
   const initializeHierarchyVisualization = useCallback(() => {
     const rootNodeData = convertHierarchyDataToD3Format();
-    if (!hierarchyRef.current || hierarchyData.length === 0 || !rootNodeData) return;
+    if (!hierarchyRef.current || hierarchyData.length === 0 || !rootNodeData) {
+      return;
+    }
 
     console.warn(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
 
@@ -658,19 +663,16 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     // Default settings with fallbacks
     const animationsEnabled =
-      extendedSettings.animationsEnabled !== undefined ? extendedSettings.animationsEnabled : true;
-    const animationDuration = extendedSettings.animationDuration || 1000;
+      extendedSettings.animationsEnabled ?? true;
+    const animationDuration = extendedSettings.animationDuration ?? 1000;
     const showLabels =
-      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true;
-    const textScaleFactor = extendedSettings.textScaleFactor || 1;
-    const nodeColor = extendedSettings.nodeColor || 'byCategory';
-    const linkStyle = extendedSettings.linkStyle || 'diagonal';
-    const treemapTiling = extendedSettings.treemapTiling || 'squarify';
-    const includeSizeEncoding =
-      extendedSettings.includeSizeEncoding !== undefined
-        ? extendedSettings.includeSizeEncoding
-        : true;
-    const treeOrientation = extendedSettings.treeOrientation || 'vertical';
+      extendedSettings.showLabels ?? true;
+    const textScaleFactor = extendedSettings.textScaleFactor ?? 1;
+    const nodeColor = extendedSettings.nodeColor ?? 'byCategory';
+    const linkStyle = extendedSettings.linkStyle ?? 'diagonal';
+    const treemapTiling = extendedSettings.treemapTiling ?? 'squarify';
+    const includeSizeEncoding = extendedSettings.includeSizeEncoding ?? true;
+    const treeOrientation = extendedSettings.treeOrientation ?? 'vertical';
 
     // Create the SVG container
     const svg = d3
@@ -709,8 +711,12 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     // Apply category filter if selected entities exist
     const _filterByCategory = (node: D3HierarchyNode): boolean => {
-      if (selectedEntities.length === 0) return true;
-      if (selectedEntities.includes(node.category)) return true;
+      if (selectedEntities.length === 0) {
+        return true;
+      }
+      if (selectedEntities.includes(node.category)) {
+        return true;
+      }
       if (node.children) {
         // Include if any children match the filter
         return node.children.some(_filterByCategory);
@@ -749,7 +755,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           return depthColorScale(d.depth.toString());
         case 'byCategory':
         default:
-          return d.data?.color || categoryScale(d.data?.category);
+          return d.data?.color ?? categoryScale(d.data?.category);
       }
     };
 
@@ -765,10 +771,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
             child =>
               selectedEntities.length === 0 ||
               selectedEntities.includes(child.data?.category) ||
-              (child.children &&
-                child.children.some(grandchild =>
-                  selectedEntities.includes(grandchild.data?.category)
-                ))
+              child.children?.some(grandchild =>
+                selectedEntities.includes(grandchild.data?.category)
+              )
           );
         }
       });
@@ -833,8 +838,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .attr('fill', getNodeColor)
         .attr('stroke', '#fff')
         .attr('stroke-width', 1)
-        .on('click', (event, d) => {
-          event?.stopPropagation();
+        .on('click', (event: MouseEvent, d) => {
+          event.stopPropagation();
           handleEntitySelection(d.data?.id);
         });
 
@@ -863,8 +868,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         );
 
       // Add click handlers for selection
-      nodes.on('click', (event, d) => {
-        event?.stopPropagation();
+      nodes.on('click', (event: MouseEvent, d) => {
+        event.stopPropagation();
         handleEntitySelection(d.data?.id);
       });
 
@@ -984,7 +989,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           } as CustomHierarchyPointLink;
 
           const pathData = linkGenerator(link);
-          return pathData === null ? '' : pathData; // Return empty string if generator returns null
+          return pathData ?? ''; // Return empty string if generator returns null
         })
         .attr('fill', 'none')
         .attr('stroke', '#ccc')
@@ -1033,8 +1038,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         );
 
       // Add click handlers for selection
-      nodes.on('click', (event, d) => {
-        event?.stopPropagation();
+      nodes.on('click', (event: MouseEvent, d) => {
+        event.stopPropagation();
         handleEntitySelection(d.data?.category);
       });
 
@@ -1053,19 +1058,22 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       // Add initial transform to center the root node
       if (treeOrientation === 'horizontal') {
         const initialTransform = d3.zoomIdentity.translate(margin.left, visHeight / 2);
-        svg.call(zoom.transform, initialTransform);
+        svg.call(zoom.transform, initialTransform as unknown as d3.ZoomTransform);
       }
 
       // Add animations if enabled
       if (animationsEnabled && isAnimating) {
         // Animate the links
         links
-          .attr('stroke-dasharray', function () {
-            const length = this.getTotalLength();
+
+          .attr('stroke-dasharray', function (this: SVGPathElement) {
+
+            const length = (this).getTotalLength();
             return `${length} ${length}`;
           })
-          .attr('stroke-dashoffset', function () {
-            return this.getTotalLength();
+          .attr('stroke-dashoffset', function (this: SVGPathElement) {
+
+            return (this).getTotalLength();
           })
           .transition()
           .duration(animationDuration)
@@ -1120,9 +1128,10 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     });
 
     // Reset selection when clicking on the background
-    svg.on('click', event => {
+    svg.on('click', (event: MouseEvent) => {
       // Prevent triggering if clicking on nodes
-      if (event?.target === svg.node()) {
+      const target = event.target as Element | null;
+      if (target === svg.node()) {
         setSelectedEntities([]);
       }
     });
@@ -1145,7 +1154,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
    * This uses D3's force layout with type-safe implementation
    */
   const initializeNetworkVisualization = useCallback(() => {
-    if (!networkRef.current || networkData.nodes.length === 0) return;
+    if (!networkRef.current || networkData.nodes.length === 0) {
+      return;
+    }
 
     console.warn('Initializing network visualization with force-directed graph');
 
@@ -1190,7 +1201,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       svgHeight,
       50
     );
-    svg.call(zoom.transform, initialTransform);
+    svg.call(zoom.transform, initialTransform as unknown as d3.ZoomTransform);
 
     // Create link elements
     const link = g
@@ -1200,9 +1211,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       .data(links)
       .enter()
       .append('line')
-      .attr('stroke', d => d.color || '#999')
+      .attr('stroke', d => d.color ?? '#999')
       .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', d => d.width || 1);
+      .attr('stroke-width', d => d.width ?? 1);
 
     // Create node elements
     const node = g
@@ -1212,8 +1223,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       .data(nodes)
       .enter()
       .append('circle')
-      .attr('r', d => d.radius || 5)
-      .attr('fill', d => d.color || '#666')
+      .attr('r', d => d.radius ?? 5)
+      .attr('fill', d => d.color ?? '#666')
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
       .classed('selected', d => selectedEntities.includes(d.id));
@@ -1224,8 +1235,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     // Cast to ExtendedQualitySettings to use the additional properties
     const extendedSettings = qualitySettings as ExtendedQualitySettings;
     const showLabels =
-      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true; // Default to true
-    const textScaleFactor = extendedSettings.textScaleFactor || 1; // Default to 1
+      extendedSettings.showLabels ?? true; // Default to true
+    const textScaleFactor = extendedSettings.textScaleFactor ?? 1; // Default to 1
 
     // Create text labels based on quality settings
     if (showLabels) {
@@ -1262,7 +1273,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
       .force(
         'collision',
-        d3.forceCollide<D3NetworkNode>().radius(d => (d.radius || 5) + 2)
+        d3.forceCollide<D3NetworkNode>().radius(d => (d.radius ?? 5) + 2)
       );
 
     // Create drag behavior with type safety
@@ -1272,8 +1283,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     node.call(drag as CircleDragBehavior);
 
     // Node click handler
-    node.on('click', (event, d) => {
-      event?.stopPropagation(); // Prevent triggering container click
+    node.on('click', (event: MouseEvent, d) => {
+      event.stopPropagation(); // Prevent triggering container click
       handleEntitySelection(d.id);
     });
 
@@ -1392,7 +1403,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           const prevValue =
             catIdx === 0
               ? 0
-              : (data?.find(
+              : (data.find(
                   d =>
                     d.category === categories[catIdx] &&
                     d.timePeriod === timePeriods[periodIdx === 0 ? 3 : periodIdx - 1]
@@ -1401,7 +1412,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           const randomChange = Math.random() * 20 - 10; // -10 to +10
           const value = Math.max(0, prevValue + randomChange + Math.random() * 5 + 50);
 
-          data?.push({
+          data.push({
             id: `ts-${year}-${timePeriods[periodIdx]}-${categories[catIdx]}`,
             value,
             category: categories[catIdx],
@@ -1457,7 +1468,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           longitude = Math.random() * 360 - 180;
       }
 
-      data?.push({
+      data.push({
         id: `geo-${i}`,
         value: Math.random() * 100,
         category: ['customers', 'sales', 'partners'][Math.floor(Math.random() * 3)],
@@ -1477,7 +1488,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     const data: HierarchyNode[] = [];
 
     // Create root node
-    data?.push({
+    data.push({
       id: 'root',
       value: 1000,
       category: 'root',
@@ -1489,7 +1500,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     // Create first level children
     const firstLevelCount = 5;
     for (let i = 0; i < firstLevelCount; i++) {
-      data?.push({
+      data.push({
         id: `level1-${i}`,
         value: 200 + Math.random() * 200,
         category: ['category-A', 'category-B', 'category-C'][Math.floor(Math.random() * 3)],
@@ -1505,7 +1516,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     for (let i = 0; i < firstLevelCount; i++) {
       for (let j = 0; j < nodesPerFirstLevel; j++) {
-        data?.push({
+        data.push({
           id: `level2-${i}-${j}`,
           value: 50 + Math.random() * 100,
           category: ['subcategory-1', 'subcategory-2', 'subcategory-3'][
@@ -1561,7 +1572,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
   // Initialize visualizations once data is loaded
   useEffect(() => {
-    if (!dataLoaded) return;
+    if (!dataLoaded) {
+      return;
+    }
 
     // Initialize visualizations based on current view
     switch (currentView) {
@@ -1604,7 +1617,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       try {
         // Simplified world map in GeoJSON format (low resolution for performance)
         const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json');
-        const data = await response?.json();
+        const data = (await response.json()) as GeoJSON.FeatureCollection;
         setWorldMapData(data);
       } catch (error) {
         // Replace console.error with errorLoggingService.logError
@@ -1623,7 +1636,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       }
     };
 
-    fetchWorldMap();
+    void fetchWorldMap();
   }, []);
 
   // Rendering
@@ -1838,7 +1851,9 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
               min="0"
               max="100"
               value={50}
-              onChange={() => {}}
+              onChange={() => {
+                // do nothing
+              }}
               style={{ width: '100%' }}
             />
           </div>

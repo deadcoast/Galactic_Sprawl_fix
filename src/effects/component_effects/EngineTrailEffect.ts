@@ -13,15 +13,15 @@ interface EngineTrailConfig extends VisualEffectConfig {
  */
 export class EngineTrailEffect extends VisualEffect {
   protected override config: EngineTrailConfig;
-  private trailPoints: Array<{
+  private trailPoints: {
     position: Position;
     size: number;
     opacity: number;
     rotation: number;
     time: number;
-  }> = [];
-  private lastEmitTime: number = 0;
-  private emitInterval: number = 50; // ms
+  }[] = [];
+  private lastEmitTime = 0;
+  private emitInterval = 50; // ms
 
   constructor(config: EngineTrailConfig) {
     super(config);
@@ -137,7 +137,7 @@ export class EngineTrailEffect extends VisualEffect {
       size: { width: coreSize * 2, height: coreSize * 2 },
       rotation: 0,
       opacity: 0.8 * pulse,
-      color: this.config.color || '#00ffff',
+      color: this.config.color ?? '#00ffff',
       shader: 'additive',
     });
 
@@ -165,7 +165,7 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size, height: point.size },
         rotation: point.rotation + time,
         opacity: point.opacity * flicker,
-        color: this.config.color || '#00ffff',
+        color: this.config.color ?? '#00ffff',
         shader: 'additive',
       });
 
@@ -176,7 +176,7 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size * 2, height: point.size * 2 },
         rotation: -point.rotation + time,
         opacity: point.opacity * 0.5 * flicker,
-        color: this.config.color || '#00ffff',
+        color: this.config.color ?? '#00ffff',
         shader: 'additive',
       });
     });

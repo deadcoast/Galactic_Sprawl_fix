@@ -2,11 +2,12 @@ import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
-import {
-  BehaviorActionStartedEventData,
-  BehaviorNodeExecutedEventData,
-  EventType,
-} from '../../types/events/EventTypes';
+import
+  {
+    BehaviorActionStartedEventData,
+    BehaviorNodeExecutedEventData,
+    EventType,
+  } from '../../types/events/EventTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
 
 interface BehaviorNode {
@@ -33,9 +34,11 @@ interface BehaviorContext {
   cooldowns: Record<string, number>;
 }
 
+// @ts-expect-error: Static side type incompatibility due to generic Singleton constraint
 export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
-  private trees: Map<string, BehaviorNode> = new Map();
-  private contexts: Map<string, BehaviorContext> = new Map();
+  private trees = new Map<string, BehaviorNode>();
+  private contexts = new Map<string, BehaviorContext>();
+  private static _instance: BehaviorTreeManager | null = null;
 
   protected constructor() {
     super('BehaviorTreeManager');
@@ -97,7 +100,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
             {
               id: 'approach-target',
               type: 'action',
-              execute: context => this.moveTowardsTarget(context),
+              execute: context => this.moveTocombatdsTarget(context),
             },
             {
               id: 'attack-target',
@@ -223,7 +226,37 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
     });
   }
 
-  public evaluateTree(unitId: string, treeId: string): boolean {
+  /**
+   * Get the singleton instance of BehaviorTreeManager.
+   * Creates a new instance if it does not exist yet.
+   */
+  public static getInstance(): BehaviorTreeManager {
+    BehaviorTreeManager._instance ??= new BehaviorTreeManager();
+    return BehaviorTreeManager._instance;
+  }
+
+  /**
+   * Subscribe to BehaviorTreeManager-specific events.
+   * Exposes the protected subscribe method from the base class.
+   * @param eventType Event type string
+   * @param handler   Callback executed when the event is published
+   * @returns         Unsubscribe function
+   */
+  public on(eventType: string, handler: (event: unknown) => void): () => void {
+    // Accept any event payload for flexibility; internal subscribe enforces BaseEvent shape.
+    return this.subscribe(eventType, handler as (event: BaseEvent) => void);
+  }
+
+  public evaluateTree(unitId: string, treeId?: string): boolean {
+    // Derive treeId automatically if not provided
+    if (!treeId) {
+      const context = this.contexts.get(unitId);
+      if (!context) {
+        return false;
+      }
+      treeId = `${context.factionId}-combat`;
+    }
+
     const tree = this.trees.get(treeId);
     const context = this.contexts.get(unitId);
 
@@ -241,7 +274,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
       case 'selector':
         return this.evaluateSelector(node, context);
       case 'condition':
-        return node.evaluate?.(context) || false;
+        return node.evaluate?.(context) ?? false;
       case 'action':
         if (node.execute) {
           node.execute(context);
@@ -326,7 +359,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
     }
   }
 
-  private moveTowardsTarget(context: BehaviorContext): void {
+  private moveTocombatdsTarget(context: BehaviorContext): void {
     const target = context.nearbyEnemies.find(e => e.id === context.unit.target);
     if (!target) {
       return;
@@ -368,7 +401,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
   }
 
   private activateStealth(context: BehaviorContext): void {
-    if (!context.cooldowns['stealth']) {
+    if (!context.cooldowns.stealth) {
       const eventData: BehaviorActionStartedEventData = {
         unitId: context.unit.id,
         actionType: 'stealth',
@@ -379,7 +412,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
         timestamp: Date.now(),
         data: eventData,
       });
-      context.cooldowns['stealth'] = Date.now() + 10000; // 10 second cooldown
+      context.cooldowns.stealth = Date.now() + 10000; // 10 second cooldown
     }
   }
 
@@ -495,8 +528,4 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
   }
 }
 
-// Keep export, but it's the class now, not the instance
-// export const behaviorTreeManager = BehaviorTreeManager.getInstance();
-// Modify export if necessary based on how ManagerRegistry uses it
-// For now, just export the class
-// export default BehaviorTreeManager; // Or keep named export if registry imports it directly
+// No direct exports of instances here; access through ManagerRegistry as per guidelines.

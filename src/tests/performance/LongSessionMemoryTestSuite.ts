@@ -4,10 +4,11 @@
  * Test suite for long-term memory performance testing
  */
 
-import {
-  MemorySnapshot,
-  MemoryTrendAnalysis,
-} from '../../utils/performance/longsession/LongSessionMemoryTracker';
+import
+  {
+    MemorySnapshot,
+    MemoryTrendAnalysis,
+  } from '../../utils/performance/longsession/LongSessionMemoryTracker';
 
 export interface MemoryTestResult {
   testName: string;
@@ -72,14 +73,14 @@ export class LongSessionMemoryTestSuite {
 
   constructor(config: Partial<MemorySuiteConfig> = {}) {
     this.config = {
-      iterations: config.iterations || 10,
-      dataSize: config.dataSize || 'medium',
-      allowGC: config.allowGC !== undefined ? config.allowGC : true,
-      trackDetailedStats: config.trackDetailedStats || false,
-      delayBetweenTests: config.delayBetweenTests || 1000,
-      snapshotIntervalMs: config.snapshotIntervalMs || 5000,
-      leakThresholdMBPerMinute: config.leakThresholdMBPerMinute || 0.5,
-      durationMs: config.durationMs || 60000,
+      iterations: config.iterations ?? 10,
+      dataSize: config.dataSize ?? 'medium',
+      allowGC: config.allowGC ?? true,
+      trackDetailedStats: config.trackDetailedStats ?? false,
+      delayBetweenTests: config.delayBetweenTests ?? 1000,
+      snapshotIntervalMs: config.snapshotIntervalMs ?? 5000,
+      leakThresholdMBPerMinute: config.leakThresholdMBPerMinute ?? 0.5,
+      durationMs: config.durationMs ?? 60000,
     };
   }
 
@@ -128,7 +129,7 @@ export class LongSessionMemoryTestSuite {
   }
 
   public async runTest(): Promise<LongSessionMemoryResult> {
-    return this.createMemoryTest('Standard Memory Test', this.config.durationMs || 60000);
+    return this.createMemoryTest('Standard Memory Test', this.config.durationMs ?? 60000);
   }
 
   public async runMemoryLeakDetectionTest(
@@ -147,17 +148,17 @@ export class LongSessionMemoryTestSuite {
     // Run tests with different loads
     results.lightweight = await this.createMemoryTest(
       'Lightweight Test',
-      this.config.durationMs || 60000,
+      this.config.durationMs ?? 60000,
       0
     );
     results.moderate = await this.createMemoryTest(
       'Moderate Load Test',
-      this.config.durationMs || 60000,
+      this.config.durationMs ?? 60000,
       0.5
     );
     results.intensive = await this.createMemoryTest(
       'Intensive Load Test',
-      this.config.durationMs || 60000,
+      this.config.durationMs ?? 60000,
       2
     );
 
@@ -171,7 +172,7 @@ export class LongSessionMemoryTestSuite {
   ): Promise<LongSessionMemoryResult> {
     const startTime = Date.now();
     const snapshots: { timestamp: number; memoryUsage: number }[] = [];
-    const snapshotInterval = this.config.snapshotIntervalMs || 5000;
+    const snapshotInterval = this.config.snapshotIntervalMs ?? 5000;
     let testEndTime: number;
 
     // Initial memory snapshot
@@ -259,12 +260,12 @@ export class LongSessionMemoryTestSuite {
     const growthRate = timeDiffMinutes > 0 ? memoryDiff / timeDiffMinutes : 0;
 
     // Determine if a leak is detected
-    const isLeakDetected = growthRate > (this.config.leakThresholdMBPerMinute || 0.5);
+    const isLeakDetected = growthRate > (this.config.leakThresholdMBPerMinute ?? 0.5);
 
     // Calculate leak severity (1-5 scale)
     let leakSeverity: number | undefined;
     if (isLeakDetected) {
-      const baseThreshold = this.config.leakThresholdMBPerMinute || 0.5;
+      const baseThreshold = this.config.leakThresholdMBPerMinute ?? 0.5;
       leakSeverity = Math.min(5, Math.ceil(growthRate / baseThreshold));
     }
 
@@ -334,7 +335,7 @@ export class LongSessionMemoryTestSuite {
       report += this.formatSingleTestReport(result);
     } else {
       // Multiple test results
-      const testResults = results as Record<string, LongSessionMemoryResult>;
+      const testResults = results;
       report += '## Test Battery Results\n\n';
 
       for (const [testKey, result] of Object.entries(testResults)) {
@@ -466,7 +467,10 @@ export class LongSessionMemoryTestSuite {
       });
 
       // Do something with the object to prevent optimization
-      const sum = largeObject.reduce((acc, item) => acc + item.data.reduce((a, b) => a + b, 0), 0);
+      const sum: number = largeObject.reduce((acc: number, item) => {
+        const itemSum: number = item.data.reduce((a: number, b: number) => a + b, 0);
+        return acc + itemSum;
+      }, 0);
 
       // Report progress
       if (this.onProgressCallback) {
@@ -637,13 +641,31 @@ export class LongSessionMemoryTestSuite {
     const startTime = performance.now();
     const memoryBefore = this.getMemoryUsage();
 
+    // Define interfaces for test objects
+    interface TestParent {
+      name: string;
+      children: TestChild[];
+    }
+
+    interface TestChild {
+      name: string;
+      parent: TestParent | null;
+      sibling: TestChild | null;
+    }
+
+    interface DeepStructure {
+      level: number;
+      next?: DeepStructure | null;
+      previous?: DeepStructure | null;
+    }
+
     // Create objects with circular references
-    const objects: unknown[] = [];
+    const objects: (TestParent | DeepStructure)[] = [];
 
     for (let i = 0; i < this.config.iterations; i++) {
-      const parent: unknown = { name: `parent-${i}`, children: [] };
-      const child1: unknown = { name: `child1-${i}`, parent: parent };
-      const child2: unknown = { name: `child2-${i}`, parent: parent, sibling: child1 };
+      const parent: TestParent = { name: `parent-${i}`, children: [] };
+      const child1: TestChild = { name: `child1-${i}`, parent: parent, sibling: null };
+      const child2: TestChild = { name: `child2-${i}`, parent: parent, sibling: child1 };
 
       child1.sibling = child2;
       parent.children.push(child1, child2);
@@ -652,8 +674,8 @@ export class LongSessionMemoryTestSuite {
 
       // Create deeper circular structures
       if (i % 2 === 0) {
-        const deepStructure: unknown = { level: 0 };
-        let current = deepStructure;
+        const deepStructure: DeepStructure = { level: 0 };
+        let current: DeepStructure = deepStructure;
 
         for (let j = 1; j < 20; j++) {
           current.next = { level: j, previous: current };
@@ -681,21 +703,24 @@ export class LongSessionMemoryTestSuite {
     // Break circular references if configured to do so
     if (this.config.allowGC) {
       objects.forEach(obj => {
-        if (obj.children) {
-          obj.children.forEach((child: unknown) => {
+        if ('children' in obj) {
+          // Handle TestParent objects
+          const parent = obj;
+          parent.children.forEach(child => {
             child.parent = null;
             child.sibling = null;
           });
-          obj.children = null;
+          parent.children = [];
         }
 
         // Break deep circular references
-        if (obj.level !== undefined) {
-          let current = obj;
+        if ('level' in obj) {
+          // Handle DeepStructure objects
+          let current: DeepStructure | null = obj;
           let maxIterations = 100; // Safety to prevent infinite loops
 
-          while (current && current.next && maxIterations-- > 0) {
-            const next = current.next;
+          while (current?.next && maxIterations-- > 0) {
+            const next: DeepStructure | null = current.next;
             current.next = null;
             current.previous = null;
             current = next;
@@ -734,8 +759,10 @@ export class LongSessionMemoryTestSuite {
   }
 
   private getMemoryUsage(): number {
-    if (window.performance && window.performance.memory) {
-      return (window.performance as unknown).memory.usedJSHeapSize;
+    if (window.performance && 'memory' in window.performance) {
+      const performanceWithMemory = window.performance as unknown as { memory: { usedJSHeapSize: number } };
+      const heapSize = performanceWithMemory.memory?.usedJSHeapSize;
+      return typeof heapSize === 'number' ? heapSize : 0;
     }
     return 0;
   }

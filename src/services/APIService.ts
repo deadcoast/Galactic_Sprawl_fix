@@ -1,5 +1,8 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorType
+} from './logging/ErrorLoggingService';
 
 export interface PaginationParams {
   page: number;
@@ -30,8 +33,8 @@ export interface TimeSeriesAggregation {
 }
 
 class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
-  private activeStreams: Map<string, AbortController> = new Map();
-  private streamListeners: Map<string, Set<(data: unknown) => void>> = new Map();
+  private activeStreams = new Map<string, AbortController>();
+  private streamListeners = new Map<string, Set<(data: unknown) => void>>();
 
   private defaultStreamConfig: StreamConfig = {
     batchSize: 100,
@@ -45,9 +48,8 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_requests: 0,
       active_streams: 0,
@@ -82,7 +84,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
       // Make request
       const response = await fetch(`${endpoint}?${queryParams}`);
-      if (!response || !response.ok) {
+      if (!response?.ok) {
         throw new Error(`HTTP error! status: ${response?.status}`);
       }
 
@@ -123,12 +125,13 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     this.streamListeners.get(endpoint)!.add(onData);
 
     // Start streaming
-    this.streamData(endpoint, streamConfig, abortController.signal);
+    void this.streamData(endpoint, streamConfig, abortController.signal).catch(error => {
+      this.handleError(error);
+    });
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
@@ -146,9 +149,8 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     this.activeStreams.delete(streamId);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
@@ -172,7 +174,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
         // Fetch next batch
         const response = await fetch(`${endpoint}?${queryParams}`, { signal });
-        if (!response || !response.ok) {
+        if (!response?.ok) {
           throw new Error(`HTTP error! status: ${response?.status}`);
         }
 
@@ -237,7 +239,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
       });
 
       const response = await fetch(`${endpoint}/aggregate?${queryParams}`);
-      if (!response || !response.ok) {
+      if (!response?.ok) {
         throw new Error(`HTTP error! status: ${response?.status}`);
       }
 

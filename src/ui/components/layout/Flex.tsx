@@ -224,7 +224,7 @@ export const Flex = forwardRef<HTMLElement, FlexProps>(
 
     // Compute flex classes
     const flexClasses = useMemo(() => {
-      const classes = [
+      return [
         'gs-flex',
         `gs-flex--${isFlexDirection(direction) ? direction : FlexDirection.ROW}`,
         equalWidth ? 'gs-flex--equal-width' : '',
@@ -235,8 +235,6 @@ export const Flex = forwardRef<HTMLElement, FlexProps>(
       ]
         .filter(Boolean)
         .join(' ');
-
-      return classes;
     }, [direction, equalWidth, fullWidth, fullHeight, inline, className]);
 
     // Compute flex styles

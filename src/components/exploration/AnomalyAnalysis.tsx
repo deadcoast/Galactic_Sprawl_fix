@@ -1,15 +1,16 @@
-import {
-  AlertTriangle,
-  ArrowRight,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Database,
-  FileText,
-  MapIcon,
-  Microscope,
-  Zap,
-} from 'lucide-react';
+import
+  {
+    AlertTriangle,
+    ArrowRight,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Database,
+    FileText,
+    MapIcon,
+    Microscope,
+    Zap,
+  } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
 
@@ -86,7 +87,7 @@ export function AnomalyAnalysis({
 
   // Get the selected anomaly
   const selectedAnomaly = React.useMemo(() => {
-    return anomalies.find(a => a.id === selectedAnomalyId) || null;
+    return anomalies.find(a => a.id === selectedAnomalyId) ?? null;
   }, [anomalies, selectedAnomalyId]);
 
   // Handle sort change
@@ -353,14 +354,14 @@ export function AnomalyAnalysis({
                     <Microscope className="h-4 w-4 text-purple-400" />
                     <span className="text-sm font-medium text-white">Analysis</span>
                   </div>
-                  {expandedSections['analysis'] ? (
+                  {expandedSections.analysis ? (
                     <ChevronUp className="h-4 w-4 text-gray-400" />
                   ) : (
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   )}
                 </div>
 
-                {expandedSections['analysis'] && (
+                {expandedSections.analysis ? (
                   <div className="border-t border-gray-700 p-3 pt-0">
                     {selectedAnomaly.investigated ? (
                       <div className="space-y-3">
@@ -480,7 +481,7 @@ export function AnomalyAnalysis({
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Visuals section */}
@@ -493,14 +494,14 @@ export function AnomalyAnalysis({
                     <FileText className="h-4 w-4 text-green-400" />
                     <span className="text-sm font-medium text-white">Visual Data</span>
                   </div>
-                  {expandedSections['visuals'] ? (
+                  {expandedSections.visuals ? (
                     <ChevronUp className="h-4 w-4 text-gray-400" />
                   ) : (
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   )}
                 </div>
 
-                {expandedSections['visuals'] && (
+                {expandedSections.visuals ? (
                   <div className="border-t border-gray-700 p-3 pt-0">
                     {selectedAnomaly.images && selectedAnomaly.images.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2">
@@ -525,7 +526,7 @@ export function AnomalyAnalysis({
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Recommendations section */}
@@ -538,14 +539,14 @@ export function AnomalyAnalysis({
                     <ArrowRight className="h-4 w-4 text-yellow-400" />
                     <span className="text-sm font-medium text-white">Recommendations</span>
                   </div>
-                  {expandedSections['recommendations'] ? (
+                  {expandedSections.recommendations ? (
                     <ChevronUp className="h-4 w-4 text-gray-400" />
                   ) : (
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   )}
                 </div>
 
-                {expandedSections['recommendations'] && (
+                {expandedSections.recommendations ? (
                   <div className="border-t border-gray-700 p-3 pt-0">
                     {selectedAnomaly.investigated ? (
                       <div className="space-y-2">
@@ -617,7 +618,7 @@ export function AnomalyAnalysis({
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           ) : (

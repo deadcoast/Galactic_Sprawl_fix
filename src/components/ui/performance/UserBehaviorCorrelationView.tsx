@@ -5,7 +5,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { SessionPerformanceData } from '../../../services/telemetry/SessionPerformanceTracker';
 import {
   BehaviorPerformanceCorrelation,

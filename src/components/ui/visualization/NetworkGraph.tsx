@@ -217,7 +217,7 @@ export function NetworkGraph({
     let frameId: number;
 
     const runSimulation = () => {
-      if (!canvasRef.current || !canvasRef.current.getContext('2d')) {
+      if (!canvasRef.current?.getContext('2d')) {
         return;
       }
 
@@ -273,7 +273,7 @@ export function NetworkGraph({
         if (distance === 0) continue;
 
         // Attractive force proportional to distance
-        const force = (distance - 100) * 0.05 * (edge.weight || 1);
+        const force = (distance - 100) * 0.05 * (edge.weight ?? 1);
         const forceX = (dx / distance) * force;
         const forceY = (dy / distance) * force;
 
@@ -374,12 +374,12 @@ export function NetworkGraph({
       if (edge.id === hoveredEdge?.id) {
         ctx.strokeStyle = edgeColorMap.highlighted;
       } else if (edge.bidirectional) {
-        ctx.strokeStyle = edge.color || edgeColorMap.bidirectional;
+        ctx.strokeStyle = edge.color ?? edgeColorMap.bidirectional;
       } else {
-        ctx.strokeStyle = edge.color || edgeColorMap.default;
+        ctx.strokeStyle = edge.color ?? edgeColorMap.default;
       }
 
-      ctx.lineWidth = edge.width || defaultEdgeWidth;
+      ctx.lineWidth = edge.width ?? defaultEdgeWidth;
       ctx.stroke();
 
       // Draw arrow if directed
@@ -405,7 +405,7 @@ export function NetworkGraph({
           y - arrowSize * Math.sin(angle + Math.PI / 6)
         );
         ctx.closePath();
-        ctx.fillStyle = edge.color || edgeColorMap.default;
+        ctx.fillStyle = edge.color ?? edgeColorMap.default;
         ctx.fill();
       }
 
@@ -435,7 +435,7 @@ export function NetworkGraph({
 
       const x = node.position.x;
       const y = node.position.y;
-      const size = node.size || defaultNodeSize;
+      const size = node.size ?? defaultNodeSize;
 
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -513,7 +513,7 @@ export function NetworkGraph({
     for (const node of simulationNodes) {
       if (!node.position) continue;
 
-      const size = node.size || defaultNodeSize;
+      const size = node.size ?? defaultNodeSize;
       const dx = node.position.x - x;
       const dy = node.position.y - y;
       const distance = Math.sqrt(dx * dx + dy * dy);

@@ -1,29 +1,33 @@
-import {
-  DEFAULT_PRODUCTION_RATES,
-  PRODUCTION_INTERVALS,
-  RESOURCE_MANAGER_CONFIG,
-  RESOURCE_PRIORITIES,
-  RESOURCE_THRESHOLDS,
-  STORAGE_EFFICIENCY,
-  TRANSFER_CONFIG,
-} from '../../config/resource/ResourceConfig';
+import
+  {
+    DEFAULT_PRODUCTION_RATES,
+    PRODUCTION_INTERVALS,
+    RESOURCE_MANAGER_CONFIG,
+    RESOURCE_PRIORITIES,
+    RESOURCE_THRESHOLDS,
+    STORAGE_EFFICIENCY,
+    TRANSFER_CONFIG
+  } from '../../config/resource/ResourceConfig';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService
+  } from '../../services/logging/ErrorLoggingService';
 import { EventHandler } from '../../types/events/EventEmitterInterface';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import {
-  ResourceConsumption as ImportedResourceConsumption,
-  ResourceFlow as ImportedResourceFlow,
-  ResourceProduction as ImportedResourceProduction,
-  ResourceTransfer as ImportedResourceTransfer,
-  ResourceState,
-  ResourceThreshold,
-} from '../../types/resources/ResourceTypes';
-import {
-  ensureEnumResourceType,
-  ensureStringResourceType,
-  toEnumResourceType,
-} from '../../utils/resources/ResourceTypeConverter';
+import
+  {
+    ResourceConsumption as ImportedResourceConsumption,
+    ResourceFlow as ImportedResourceFlow,
+    ResourceProduction as ImportedResourceProduction, ResourceState,
+    ResourceThreshold, ResourceTransfer as ImportedResourceTransfer
+  } from '../../types/resources/ResourceTypes';
+import
+  {
+    ensureEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType
+  } from '../../utils/resources/ResourceTypeConverter';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -42,11 +46,11 @@ const TRANSFER_CONFIG_WITH_MIN = {
 /**
  * Resource operation error types
  */
-type ResourceError = {
+interface ResourceError {
   code: 'INVALID_RESOURCE' | 'INSUFFICIENT_RESOURCES' | 'INVALID_TRANSFER' | 'THRESHOLD_VIOLATION';
   message: string;
   details?: unknown;
-};
+}
 
 /**
  * Resource optimization strategies
@@ -79,8 +83,8 @@ export function isResourceManagerEvent(event: unknown): event is ResourceManager
     'type' in e &&
     'resourceType' in e &&
     typeof e.type === 'string' &&
-    Object.values(EventType).includes(e.type as EventType) &&
-    Object.values(ResourceType).includes(e.resourceType as ResourceType)
+    Object.values(EventType).includes(e.type) &&
+    Object.values(ResourceType).includes(e.resourceType)
   );
 }
 
@@ -100,11 +104,11 @@ interface ResourceConsumption extends Omit<ImportedResourceConsumption, 'type'> 
 
 // Update the ResourceFlow interface to properly use standardized resource types
 interface ResourceFlow extends Omit<ImportedResourceFlow, 'resources'> {
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     interval?: number;
-  }>;
+  }[];
 }
 
 // Update the ResourceTransfer interface to properly use standardized resource types
@@ -263,11 +267,23 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         const resourceType = ResourceType[type as keyof typeof ResourceType];
         if (limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
           this.initializeResource(resourceType, limits.min, limits.max);
+          errorLoggingService.logInfo(
+            `[ResourceManager] Initialized resource ${resourceType} with limits: min=${limits.min}, max=${limits.max}`,
+            {
+              service: 'ResourceManager',
+              method: 'onInitialize',
+              resourceType: resourceType,
+            }
+          );
         }
       });
     } else {
-      console.warn(
-        '[ResourceManager] Warning: defaultResourceLimits is null or undefined in config'
+      errorLoggingService.logWarn(
+        '[ResourceManager] warning: defaultResourceLimits is null or undefined in config',
+        {
+          service: 'ResourceManager',
+          method: 'onInitialize',
+        }
       );
     }
 
@@ -284,7 +300,13 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       data: { config: this.config },
     });
 
-    console.warn('[ResourceManager] Initialized with config:', this.config);
+    errorLoggingService.logInfo('[ResourceManager] Initialized with config', {
+      service: 'ResourceManager',
+      method: 'onInitialize',
+      configKeys: Object.keys(this.config),
+    });
+
+    await Promise.resolve();
   }
 
   /**
@@ -316,7 +338,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   protected async onDispose(): Promise<void> {
     // Stop all production intervals
-    for (const [_id, interval] of this.productionIntervals.entries()) {
+    for (const [id, interval] of this.productionIntervals.entries()) {
       clearInterval(interval);
     }
     this.productionIntervals.clear();
@@ -333,7 +355,12 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.errors.clear();
     this.optimizationStrategies.clear();
 
-    console.warn('[ResourceManager] Disposed');
+    errorLoggingService.logInfo('[ResourceManager] Disposed', {
+      service: 'ResourceManager',
+      method: 'onDispose',
+    });
+
+    await Promise.resolve();
   }
 
   /**
@@ -549,7 +576,9 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: error,
+      data: {
+        error,
+      },
     });
   }
 
@@ -1134,7 +1163,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
             type: consumption.type,
             amount,
             consumer: id,
-            priority: RESOURCE_PRIORITIES[consumption.type as ResourceType],
+            priority: RESOURCE_PRIORITIES[consumption.type],
           },
         });
       }
@@ -1151,7 +1180,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       // Process each resource in the flow
       flow.resources.forEach(resource => {
         // Calculate amount to transfer based on rate and time
-        const amount = (resource.amount * deltaTime) / (resource.interval || 1000);
+        const amount = (resource.amount * deltaTime) / (resource.interval ?? 1000);
         // Transfer resources using the enum type directly
         this.transferResources(resource.type, amount, flow.source, flow.target);
       });
@@ -1259,18 +1288,18 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       flow.resources.forEach(resource => {
         const interval = setInterval(() => {
           if (this.checkThresholds(flow.conditions)) {
-            const amount = resource.amount;
+            const {amount} = resource;
             // Transfer resources using the enum type directly
             this.transferResources(resource.type, amount, flow.source, flow.target);
           }
-        }, resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
+        }, resource.interval ?? TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
 
         this.productionIntervals.set(`${id}-${resource.type}`, interval);
 
         console.warn(
           `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${
             flow.target
-          } every ${resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
+          } every ${resource.interval ?? TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
         );
       });
 
@@ -1344,7 +1373,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Set rates for each resource type
     resourceTypes.forEach(typeKey => {
-      const type = typeKey as ResourceType;
+      const type = typeKey;
       const state = this.getResourceState(type);
       rates[type] = {
         production: state?.production ?? 0,

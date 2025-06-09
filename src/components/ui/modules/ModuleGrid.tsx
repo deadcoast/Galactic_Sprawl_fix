@@ -139,8 +139,8 @@ export function ModuleGrid({
         }
         case 'efficiency': {
           // Handle efficiency data which might not be available on all modules
-          const effA = a.efficiency || 0;
-          const effB = b.efficiency || 0;
+          const effA = a.efficiency ?? 0;
+          const effB = b.efficiency ?? 0;
           comparison = effA - effB;
           break;
         }

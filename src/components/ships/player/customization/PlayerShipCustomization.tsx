@@ -13,9 +13,7 @@ interface LoadoutOption {
   id: string;
   name: string;
   type: 'weapon' | 'shield' | 'engine';
-  stats: {
-    [key: string]: number;
-  };
+  stats: Record<string, number>;
   unlocked: boolean;
   equipped: boolean;
 }

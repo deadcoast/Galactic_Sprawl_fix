@@ -9,6 +9,7 @@ import { validateEventData } from '../utils/events/EventDataTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 import { ModuleProvider, useModule, useModuleActions, useModules } from './ModuleContext';
 
+
 // Mock ServiceProvider since we don't have direct access to the actual implementation
 const ServiceContext = React.createContext<Record<string, unknown>>({});
 const ServiceProvider = ServiceContext.Provider;
@@ -269,7 +270,7 @@ class ModuleManagerWrapper implements IModuleManager {
     return Object.values(this.modules);
   }
 
-  // For backward compatibility
+  // For backcombatd compatibility
   getAllModules() {
     return this.getModules();
   }
@@ -1176,7 +1177,7 @@ describe('ModuleContext', () => {
   it('handles event validation correctly', async () => {
     // Mock console.error to detect validation errors
     const originalConsoleError = console.error;
-    const mockConsoleError = jest.fn();
+    const mockConsoleError = vi.fn();
     console.error = mockConsoleError;
 
     try {

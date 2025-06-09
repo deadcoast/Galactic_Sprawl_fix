@@ -15,11 +15,11 @@ export interface SerializedResource {
   capacity: number;
   production: number;
   consumption: number;
-  history?: Array<{
+  history?: {
     timestamp: number;
     amount: number;
     type: 'production' | 'consumption' | 'transfer';
-  }>;
+  }[];
 }
 
 /**

@@ -80,7 +80,7 @@ export function createTypedErrorBoundary<P extends object>(
 
     // Custom fallback UI that includes the component name
     const fallback = (error: Error, reset: () => void) => {
-      const FallbackUI = FallbackComponent || TypedErrorFallback;
+      const FallbackUI = FallbackComponent ?? TypedErrorFallback;
 
       return (
         <FallbackUI
@@ -132,7 +132,7 @@ export function withErrorBoundary<P extends object>(
   options: WithErrorBoundaryOptions = {}
 ): React.FC<P> {
   const {
-    componentName = Component.displayName || Component.name || 'UnknownComponent',
+    componentName = Component.displayName ?? Component.name ?? 'UnknownComponent',
     ...errorBoundaryProps
   } = options;
 

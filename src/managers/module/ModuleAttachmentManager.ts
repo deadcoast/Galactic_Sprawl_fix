@@ -1,11 +1,12 @@
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import {
-  BaseModule,
-  ModularBuilding,
-  ModuleAttachmentPoint,
-  ModuleType,
-} from '../../types/buildings/ModuleTypes';
+import
+  {
+    BaseModule,
+    ModularBuilding,
+    ModuleAttachmentPoint,
+    ModuleType,
+  } from '../../types/buildings/ModuleTypes';
 import { moduleManager } from './ModuleManager';
 
 /**
@@ -72,8 +73,8 @@ export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentM
 
   private visualizationOptions: AttachmentVisualizationOptions;
   private previewModule: BaseModule | null = null;
-  private validAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
-  private incompatibleAttachmentPoints: Map<string, ModuleAttachmentPoint[]> = new Map();
+  private validAttachmentPoints = new Map<string, ModuleAttachmentPoint[]>();
+  private incompatibleAttachmentPoints = new Map<string, ModuleAttachmentPoint[]>();
   private unsubscribeModuleAttached: (() => void) | null = null;
   private unsubscribeModuleDetached: (() => void) | null = null;
 
@@ -105,9 +106,7 @@ export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentM
    * Get the singleton instance
    */
   public static getInstance(): ModuleAttachmentManager {
-    if (!ModuleAttachmentManager.instance) {
-      ModuleAttachmentManager.instance = new ModuleAttachmentManager();
-    }
+    ModuleAttachmentManager.instance ??= new ModuleAttachmentManager();
     return ModuleAttachmentManager.instance;
   }
 
@@ -124,7 +123,7 @@ export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentM
       this.unsubscribeModuleDetached = null;
     }
     // TypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners(); // Ensure TypedEventEmitter cleans up
+    this.removeAllListeners(); // Ensure TypedEventEmitter cleans up
 
     // Clear internal state
     this.previewModule = null;

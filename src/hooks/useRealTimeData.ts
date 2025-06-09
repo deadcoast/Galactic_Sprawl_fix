@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../services/logging/ErrorLoggingService';
 import { DataGenerator, realTimeDataService, StreamConfig } from '../services/RealTimeDataService';
 import { useService } from './services/useService';
 

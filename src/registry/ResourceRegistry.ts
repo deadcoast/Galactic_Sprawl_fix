@@ -1,5 +1,9 @@
 import { EventEmitter } from '../lib/events/EventEmitter';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import {
   ResourceCategory,
   ResourceType,
@@ -140,22 +144,22 @@ export class ResourceRegistry {
   private static _instance: ResourceRegistry | null = null;
 
   // Resource metadata storage
-  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> = new Map();
+  private resourceMetadata = new Map<ResourceType, ExtendedResourceMetadata>();
 
   // Resource category mappings
-  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> = new Map();
+  private resourcesByCategory = new Map<ResourceCategory, Set<ResourceType>>();
 
   // Resource tag mappings
-  private resourcesByTag: Map<string, Set<ResourceType>> = new Map();
+  private resourcesByTag = new Map<string, Set<ResourceType>>();
 
   // Resource quality mappings
-  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> = new Map();
+  private resourcesByQuality = new Map<ResourceQuality, Map<ResourceType, number>>();
 
   // Resource conversion mappings
-  private conversionRates: Map<ResourceType, Map<ResourceType, number>> = new Map();
+  private conversionRates = new Map<ResourceType, Map<ResourceType, number>>();
 
   // Event listeners
-  private listeners: Map<RegistryEventType, Set<(data: RegistryEventData) => void>> = new Map();
+  private listeners = new Map<RegistryEventType, Set<(data: RegistryEventData) => void>>();
 
   // Event emitter for typed events
   private eventEmitter: EventEmitter<ResourceRegistryEvent>;
@@ -164,9 +168,7 @@ export class ResourceRegistry {
    * Get the singleton instance of ResourceRegistry
    */
   public static getInstance(): ResourceRegistry {
-    if (!ResourceRegistry._instance) {
-      ResourceRegistry._instance = new ResourceRegistry();
-    }
+    ResourceRegistry._instance ??= new ResourceRegistry();
     return ResourceRegistry._instance;
   }
 
@@ -287,20 +289,20 @@ export class ResourceRegistry {
     this.resourceMetadata?.set(id, metadata);
 
     // Register category
-    const categorySet = this.resourcesByCategory.get(category) || new Set();
+    const categorySet = this.resourcesByCategory.get(category) ?? new Set();
     categorySet.add(id);
     this.resourcesByCategory.set(category, categorySet);
 
     // Register tags
     tags.forEach(tag => {
-      const tagSet = this.resourcesByTag.get(tag) || new Set();
+      const tagSet = this.resourcesByTag.get(tag) ?? new Set();
       tagSet.add(id);
       this.resourcesByTag.set(tag, tagSet);
     });
 
     // Register quality levels
     Object.entries(qualityLevels).forEach(([quality, value]) => {
-      const qualityMap = this.resourcesByQuality.get(quality as ResourceQuality) || new Map();
+      const qualityMap = this.resourcesByQuality.get(quality as ResourceQuality) ?? new Map();
       qualityMap.set(id, value);
       this.resourcesByQuality.set(quality as ResourceQuality, qualityMap);
     });
@@ -337,7 +339,7 @@ export class ResourceRegistry {
     this.resourceMetadata?.delete(resourceType);
 
     // Remove from category
-    const categorySet = this.resourcesByCategory.get(metadata?.category as ResourceCategory);
+    const categorySet = this.resourcesByCategory.get(metadata?.category ?? ResourceCategory.BASIC);
     if (categorySet) {
       categorySet.delete(resourceType);
     }
@@ -418,7 +420,7 @@ export class ResourceRegistry {
    * @returns Map of resource types to quality values
    */
   public getResourcesByQuality(quality: ResourceQuality): Map<ResourceType, number> {
-    return this.resourcesByQuality.get(quality) || new Map();
+    return this.resourcesByQuality.get(quality) ?? new Map();
   }
 
   /**
@@ -451,9 +453,7 @@ export class ResourceRegistry {
     // Update metadata
     const metadata = this.resourceMetadata?.get(sourceType);
     if (metadata) {
-      if (!metadata?.conversionRates) {
-        metadata.conversionRates = {};
-      }
+      metadata.conversionRates ??= {};
       metadata.conversionRates[targetType] = rate;
     }
 
@@ -468,7 +468,7 @@ export class ResourceRegistry {
    * @returns Map of target resource types to conversion rates
    */
   public getAllConversionRates(resourceType: ResourceType): Map<ResourceType, number> {
-    return this.conversionRates.get(resourceType) || new Map();
+    return this.conversionRates.get(resourceType) ?? new Map();
   }
 
   /**
@@ -595,7 +595,7 @@ export class ResourceRegistry {
       metadata?.tags.push(tag);
 
       // Update tag mapping
-      const tagSet = this.resourcesByTag.get(tag) || new Set();
+      const tagSet = this.resourcesByTag.get(tag) ?? new Set();
       tagSet.add(resourceType);
       this.resourcesByTag.set(tag, tagSet);
 
@@ -671,7 +671,7 @@ export class ResourceRegistry {
       }
 
       // Add to new category
-      const newCategorySet = this.resourcesByCategory.get(updates.category) || new Set();
+      const newCategorySet = this.resourcesByCategory.get(updates.category) ?? new Set();
       newCategorySet.add(resourceType);
       this.resourcesByCategory.set(updates.category, newCategorySet);
     }
@@ -715,7 +715,7 @@ export class ResourceRegistry {
     metadata.qualityLevels[quality] = value;
 
     // Update quality mapping
-    const qualityMap = this.resourcesByQuality.get(quality) || new Map();
+    const qualityMap = this.resourcesByQuality.get(quality) ?? new Map();
     qualityMap.set(resourceType, value);
     this.resourcesByQuality.set(quality, qualityMap);
 
@@ -845,7 +845,7 @@ export class ResourceRegistry {
       // Import resources
       Object.entries(data?.resources).forEach(([, metadata]) => {
         this.registerResource({
-          metadata: metadata as ExtendedResourceMetadata,
+          metadata: metadata,
           overrideExisting: true,
         });
       });

@@ -52,7 +52,7 @@ export interface CombatWeapon {
  * Combat manager class that uses standardized types and events
  */
 export class CombatManager extends TypedEventEmitter<CombatEvents> {
-  private units: Map<string, CombatUnit> = new Map();
+  private units = new Map<string, CombatUnit>();
 
   public constructor() {
     super();
@@ -418,7 +418,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
    */
   public loseTarget(unitId: string): boolean {
     const unit = this.units.get(unitId);
-    if (!unit || !unit.target) {
+    if (!unit?.target) {
       return false;
     }
 

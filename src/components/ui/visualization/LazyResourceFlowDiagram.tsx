@@ -6,7 +6,11 @@
  */
 
 import React from 'react';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/logging/ErrorLoggingService';
 import { FlowNodeType } from '../../../types/resources/FlowNodeTypes';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { useLazyComponent } from '../../../utils/performance/ComponentOptimizer';

@@ -13,7 +13,7 @@ import {
   WeaponVariant,
 } from '../weapons/WeaponTypes';
 
-// Re-export weapon types for backward compatibility
+// Re-export weapon types for backcombatd compatibility
 export type {
   WeaponCategory,
   WeaponConfig,
@@ -26,11 +26,11 @@ export type {
 };
 
 // Combat-specific types
-export type CombatUnitStatus = {
+export interface CombatUnitStatus {
   main: 'active' | 'disabled' | 'destroyed';
   secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting';
   effects: string[];
-};
+}
 
 export interface CombatUnit {
   id: string;

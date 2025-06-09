@@ -12,6 +12,7 @@ import {
   useFeatureFlag,
   useTypedConfig,
 } from '../../../types/config/TypeSafeConfig';
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../../services/logging/ErrorLoggingService';
 
 // Create schema definitions for our config items
 const themeSchema = z.enum(['light', 'dark', 'system']);
@@ -24,6 +25,12 @@ const notificationSchema = z.object({
   sound: z.boolean().optional(),
   desktop: z.boolean().optional(),
   frequency: z.enum(['immediately', 'batched', 'daily']).optional(),
+});
+
+// Schema for validating imported config JSON
+const importConfigSchema = z.object({
+  settings: z.record(z.unknown()).optional(),
+  features: z.record(z.boolean()).optional(),
 });
 
 // Define our config items with schemas
@@ -154,10 +161,17 @@ const configManager = createConfigManager({
   validateOnAccess: true,
   logErrors: true,
   onValidationError: errors => {
-    console.warn('Config validation errors:', errors);
+    errorLoggingService.logWarn('Config validation errors detected', {
+      component: 'TypeSafeConfigDemo',
+      errors: errors.map(e => e.message).join(', ')
+    });
   },
   onConfigChange: (key, newValue, oldValue) => {
-    console.warn(`Config changed: ${key}`, { oldValue, newValue });
+    errorLoggingService.logWarn(`Config changed: ${key}`, {
+      component: 'TypeSafeConfigDemo',
+      oldValue: String(oldValue),
+      newValue: String(newValue)
+    });
   },
 });
 
@@ -203,9 +217,17 @@ const TypeSafeConfigDemo: React.FC = () => {
   // Handle config item selection
   const handleSelectConfig = (item: ConfigItem) => {
     setSelectedConfig(item);
-    // Get current value and set as edit value
-    const value = configManager.get(item?.key);
-    setEditValue(typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value));
+    // Get current value and set as edit value - use type-safe access
+    const value: unknown = configManager.get(item?.key);
+    if (typeof value === 'object' && value !== null) {
+      setEditValue(JSON.stringify(value, null, 2));
+    } else if (value === null || value === undefined) {
+      setEditValue('');
+    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      setEditValue(String(value));
+    } else {
+      setEditValue(''); // Fallback for unknown types
+    }
   };
 
   // Handle value change
@@ -266,8 +288,21 @@ const TypeSafeConfigDemo: React.FC = () => {
     reader.onload = e => {
       try {
         const content = e.target?.result as string;
-        const config = JSON.parse(content);
+        const parsedData: unknown = JSON.parse(content);
+        
+        // Validate the parsed data structure
+        const validationResult = importConfigSchema.safeParse(parsedData);
+        if (!validationResult.success) {
+          setValidationErrors([
+            {
+              key: 'import',
+              message: 'Invalid config file format: Expected object with settings and/or features',
+            },
+          ]);
+          return;
+        }
 
+        const config = validationResult.data;
         if (config.settings) {
           const result = configManager.importConfig(config.settings);
           if (!result?.valid) {
@@ -560,8 +595,17 @@ const TypeSafeConfigDemo: React.FC = () => {
             <div className="modal-actions">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(exportedConfig);
-                  alert('Copied to clipboard!');
+                  void navigator.clipboard.writeText(exportedConfig).then(() => {
+                    alert('Copied to clipboard!');
+                  }).catch((error) => {
+                    errorLoggingService.logError(
+                      error instanceof Error ? error : new Error(String(error)),
+                      ErrorType.RUNTIME,
+                      ErrorSeverity.LOW,
+                      { component: 'TypeSafeConfigDemo', action: 'copyToClipboard' }
+                    );
+                    alert('Failed to copy to clipboard');
+                  });
                 }}
               >
                 Copy to Clipboard

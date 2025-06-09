@@ -5,7 +5,11 @@
  */
 
 import { useCallback, useRef } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 /**
  * A hook that provides an optimized version of useCallback with better dependency handling
@@ -30,7 +34,7 @@ import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/Er
 export function useOptimizedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  dependencies: ReadonlyArray<unknown>
+  dependencies: readonly unknown[]
 ): T {
   // Ref to store the latest callback
   const callbackRef = useRef<T>(callback);
@@ -59,11 +63,11 @@ export function useOptimizedCallback<T extends (...args: unknown[]) => unknown>(
  */
 export function useTrackedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  dependencies: ReadonlyArray<unknown>,
+  dependencies: readonly unknown[],
   debugName?: string
 ): T {
   // Store previous dependencies for comparison
-  const prevDepsRef = useRef<ReadonlyArray<unknown>>([]);
+  const prevDepsRef = useRef<readonly unknown[]>([]);
 
   // Flag to track if this is the initial render
   const isInitialRender = useRef(true);

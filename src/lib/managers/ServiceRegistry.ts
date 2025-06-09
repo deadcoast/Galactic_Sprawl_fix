@@ -98,7 +98,7 @@ export class ServiceRegistry {
    */
   async initialize(): Promise<void> {
     if (this.isInitializing) {
-      return this.initializationPromise as Promise<void>;
+      return this.initializationPromise!;
     }
 
     this.isInitializing = true;

@@ -12,15 +12,15 @@ interface WorkerMessage {
 }
 
 interface BatchedUpdate {
-  weaponFires: Array<{
+  weaponFires: {
     weaponId: string;
     targetId: string;
     weaponType: string;
-  }>;
-  unitMoves: Array<{
+  }[];
+  unitMoves: {
     unitId: string;
     position: Position;
-  }>;
+  }[];
 }
 
 /**
@@ -135,10 +135,10 @@ function processEngagingUnit(unit: CombatUnit, hazards: Hazard[]): void {
     height: 1000,
   };
 
-  const nearbyObjects = quadTree.retrieve(searchBounds) as Array<{
+  const nearbyObjects = quadTree.retrieve(searchBounds) as {
     id: string;
     position: Position;
-  }>;
+  }[];
 
   // Create a filtered array of hazards instead of using Set
   const nearbyHazards: Hazard[] = [];
@@ -160,8 +160,7 @@ function processEngagingUnit(unit: CombatUnit, hazards: Hazard[]): void {
   let nearestDistance = Infinity;
 
   // Iterate over the array directly
-  for (let i = 0; i < nearbyHazards.length; i++) {
-    const hazard = nearbyHazards[i];
+  for (const hazard of nearbyHazards) {
     const distance = calculateDistance(unit.position, hazard.position);
     if (distance < nearestDistance) {
       nearestDistance = distance;

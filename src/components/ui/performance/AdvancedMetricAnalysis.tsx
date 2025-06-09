@@ -16,7 +16,7 @@ interface AnomalyDetectionConfig {
   // Size of rolling window for calculations
   rollingWindowSize: number;
   // Metrics to analyze for anomalies
-  metricsToAnalyze: Array<keyof PerformanceMetrics>;
+  metricsToAnalyze: (keyof PerformanceMetrics)[];
 }
 
 /**
@@ -99,7 +99,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
 
   // Initialize and update charts when metrics change
   useEffect(() => {
-    if (metrics && Object.values(metrics).some(arr => arr.length > 0)) {
+    if (metrics && Object.values(metrics).some((arr: unknown) => Array.isArray(arr) && arr.length > 0)) {
       setupCharts();
       detectAnomalies();
       analyzeCorrelations();
@@ -151,8 +151,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
       const yScale = d3
         .scaleLinear()
         .domain([
-          (d3.min(metricData, d => d.value) as number) * 0.9,
-          (d3.max(metricData, d => d.value) as number) * 1.1,
+          (d3.min(metricData, d => d.value)!) * 0.9,
+          (d3.max(metricData, d => d.value)!) * 1.1,
         ])
         .range([chartHeight_i, 0]);
 
@@ -222,8 +222,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
 
       // Calculate mean and standard deviation
       const values = metricData.map(d => d.value);
-      const mean = d3.mean(values) as number;
-      const stdDev = d3.deviation(values) as number;
+      const mean = d3.mean(values)!;
+      const stdDev = d3.deviation(values)!;
 
       if (stdDev === 0) return; // Skip if no deviation
 
@@ -264,7 +264,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
   // Analyze correlations between metrics
   const analyzeCorrelations = () => {
     const newCorrelations: MetricCorrelation[] = [];
-    const metricsKeys = Object.keys(metrics) as Array<keyof PerformanceMetrics>;
+    const metricsKeys = Object.keys(metrics) as (keyof PerformanceMetrics)[];
 
     // For each pair of metrics
     for (let i = 0; i < metricsKeys.length; i++) {
@@ -284,7 +284,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
           continue;
 
         // Ensure we have matching timestamps
-        const pairedData: Array<[number, number]> = [];
+        const pairedData: [number, number][] = [];
 
         dataX.forEach(pointX => {
           const matchingY = dataY.find(pointY => pointY.timestamp === pointX.timestamp);
@@ -375,7 +375,9 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
         // Check for cyclic pattern using autocorrelation
         const autocorrelation = calculateAutocorrelation(values);
         const maxLag = Math.min(30, Math.floor(n / 3));
-        const peaks = findPeaks(autocorrelation.slice(1, maxLag + 1));
+        // Type-safe slice of autocorrelation array
+        const slicedAutocorrelation = autocorrelation.slice(1, maxLag + 1);
+        const peaks = findPeaks(slicedAutocorrelation.filter((val): val is number => typeof val === 'number'));
 
         if (peaks.length > 0) {
           pattern = 'cyclic';
@@ -413,12 +415,12 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
   };
 
   // Helper function to calculate autocorrelation
-  const calculateAutocorrelation = (values: number[]) => {
+  const calculateAutocorrelation = (values: number[]): number[] => {
     const n = values.length;
-    const mean = d3.mean(values) as number;
-    const variance = d3.variance(values) as number;
+    const mean = d3.mean(values)!;
+    const variance = d3.variance(values)!;
 
-    if (variance === 0) return Array(n).fill(0);
+    if (variance === 0) return Array(n).fill(0) as unknown as number[];
 
     const normalizedValues = values.map(v => (v - mean) / Math.sqrt(variance));
     const result: number[] = [];
@@ -430,7 +432,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
         sum += normalizedValues[i] * normalizedValues[i + lag];
       }
 
-      result?.push(sum / (n - lag));
+      result.push(sum / (n - lag));
     }
 
     return result;

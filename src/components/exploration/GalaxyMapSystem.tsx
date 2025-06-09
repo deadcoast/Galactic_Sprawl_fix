@@ -12,10 +12,10 @@ interface Sector {
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
-  resources?: Array<{
+  resources?: {
     type: ResourceType;
     amount: number;
-  }>;
+  }[];
   factionControl?: FactionControl;
 }
 
