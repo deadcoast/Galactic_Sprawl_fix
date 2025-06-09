@@ -1,6 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
  * System identifier type
@@ -158,12 +158,12 @@ export class EventCommunication {
         if (result instanceof Promise) {
           handlerPromises.push(
             result?.catch(error => {
-              errors.push(error);
+              errors.push(error instanceof Error ? error : new Error(String(error)));
             })
           );
         }
       } catch (error) {
-        errors.push(error as Error);
+        errors.push(error instanceof Error ? error : new Error(String(error)));
       }
     });
 
@@ -171,7 +171,7 @@ export class EventCommunication {
     if (message.requiresAck) {
       if (handlerPromises.length > 0) {
         // Wait for all promises to resolve
-        Promise.all(handlerPromises).then(() => {
+        void Promise.all(handlerPromises).then(() => {
           this.sendAcknowledgment(
             message.id,
             message.source,
@@ -207,7 +207,7 @@ export class EventCommunication {
       if (ack.success) {
         pending.resolve(ack);
       } else {
-        pending.reject(new Error(ack.error || 'Unknown error'));
+        pending.reject(new Error(ack.error ?? 'Unknown error'));
       }
     }
   }

@@ -104,19 +104,12 @@ export function ExplorationDataManager({
   const [filterType, setFilterType] = useState<'all' | 'sector' | 'anomaly' | 'resource'>('all');
   const [filterStarred, setFilterStarred] = useState(false);
   const [filterTags, setFilterTags] = useState<string[]>([]);
-  const [_editingRecord, _setEditingRecord] = useState<ExplorationRecord | null>(null);
+
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3b82f6'); // Default blue
   const [newCategoryParentId, setNewCategoryParentId] = useState<string | undefined>(undefined);
 
-  // Get all unique tags from records
-  const allTags = React.useMemo(() => {
-    const tags = new Set<string>();
-    records.forEach(record => {
-      record.tags.forEach(tag => tags.add(tag));
-    });
-    return Array.from(tags).sort();
-  }, [records]);
+
 
   // Filter and sort records
   const filteredRecords = React.useMemo(() => {
@@ -263,16 +256,7 @@ export function ExplorationDataManager({
     [records, onSaveRecord]
   );
 
-  // Handle tag toggle
-  const handleToggleTag = (tag: string) => {
-    setFilterTags(prev => {
-      if (prev.includes(tag)) {
-        return prev.filter(t => t !== tag);
-      } else {
-        return [...prev, tag];
-      }
-    });
-  };
+
 
   // Handle category toggle with standardized events
   const handleToggleCategory = useCallback((categoryId: string) => {

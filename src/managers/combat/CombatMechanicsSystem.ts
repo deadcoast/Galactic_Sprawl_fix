@@ -208,9 +208,7 @@ export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
    * Get the singleton instance of CombatMechanicsSystemImpl
    */
   public static getInstance(detectionSystem?: ObjectDetectionSystem): CombatMechanicsSystemImpl {
-    if (!CombatMechanicsSystemImpl.instance) {
-      CombatMechanicsSystemImpl.instance = new CombatMechanicsSystemImpl(detectionSystem);
-    }
+    CombatMechanicsSystemImpl.instance ??= new CombatMechanicsSystemImpl(detectionSystem);
     return CombatMechanicsSystemImpl.instance;
   }
 

@@ -108,7 +108,7 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
         moduleManager.publishEvent({
           type: EventType.MODULE_STATUS_CHANGED,
           moduleId,
-          moduleType: module?.type || ('unknown' as ModuleType),
+          moduleType: module?.type ?? ('unknown' as ModuleType),
           timestamp: Date.now(),
           data: {
             status,
@@ -221,10 +221,10 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
     isLoading,
     error,
     module,
-    currentStatus: statusDetails?.currentStatus || 'inactive',
+    currentStatus: statusDetails?.currentStatus ?? 'inactive',
     previousStatus: statusDetails?.previousStatus,
     history: statusDetails?.history ?? [],
-    metrics: statusDetails?.metrics || null,
+    metrics: statusDetails?.metrics ?? null,
     alerts: statusDetails?.alerts ?? [],
     updateStatus,
     acknowledgeAlert,

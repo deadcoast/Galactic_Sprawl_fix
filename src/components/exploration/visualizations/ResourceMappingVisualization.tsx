@@ -1,6 +1,5 @@
 import InfoIcon from '@mui/icons-material/Info';
-import
-  {
+import {
     Box,
     FormControl,
     FormControlLabel,
@@ -14,17 +13,16 @@ import
     Tabs,
     Tooltip,
     Typography
-  } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
+} from '@mui/material';
+
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import
-  {
+import {
     ChartDataRecord,
     ColorAccessorFn,
     ResourceGridCell,
     TooltipRenderer
-  } from '../../../types/exploration/AnalysisComponentTypes';
+} from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
 import { ResourceType, ResourceTypeString } from '../../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../../../utils/resources/ResourceTypeConverter';
@@ -220,13 +218,13 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
     return data?.resourcePoints.map((point: DataPoint) => {
       // Safely extract resource data from properties using helper functions
       const properties = point.properties ?? {};
-      const resourceType = safeGetProperty(properties, 'resourceType') || 
-                          safeGetProperty(properties, 'type') || 
+      const resourceType = safeGetProperty(properties, 'resourceType') ?? 
+                          safeGetProperty(properties, 'type') ?? 
                           'unknown';
       
       const valueMetric = data?.valueMetric || 'amount';
-      const rawValue = safeGetProperty(properties, valueMetric) || 
-                      safeGetProperty(properties, 'amount') || 
+      const rawValue = safeGetProperty(properties, valueMetric) ?? 
+                      safeGetProperty(properties, 'amount') ?? 
                       1;
       const value = safeGetNumber(rawValue, 1);
 
@@ -364,14 +362,14 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const renderInsights = () => {
     if (!data?.insights || data?.insights.length === 0) {
       return (
-        <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme) }}>
+        <Paper sx={{ p: 2, mt: 2, backgroundColor: getThemeBackgroundPaper() }}>
           <Typography variant="body2">No insights available for this analysis.</Typography>
         </Paper>
       );
     }
 
     return (
-      <Paper sx={{ p: 2, mt: 2, backgroundColor: (theme: Theme) => getThemeBackgroundPaper(theme) }}>
+      <Paper sx={{ p: 2, mt: 2, backgroundColor: getThemeBackgroundPaper() }}>
         <Typography variant="h6" sx={{ mb: 1 }}>
           Key Insights
         </Typography>

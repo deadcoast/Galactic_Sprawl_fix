@@ -22,9 +22,7 @@ let resourceIntegrationInstance: ResourceIntegration | null = null;
  * Initialize the resource integration if it hasn't been initialized yet
  */
 function getResourceIntegration(): ResourceIntegration {
-  if (!resourceIntegrationInstance) {
-    resourceIntegrationInstance = createResourceIntegration(resourceManager);
-  }
+  resourceIntegrationInstance ??= createResourceIntegration(resourceManager);
 
   if (!resourceIntegrationInstance) {
     throw new Error('Failed to create resource integration instance');
@@ -100,7 +98,7 @@ export function useResourceManagement() {
   // Get a resource state
   const getResourceState = (type: ResourceType | ResourceTypeString) => {
     const enumType = ensureEnumResourceType(type);
-    return resourceStates.get(enumType) || defaultResourceState;
+    return resourceStates.get(enumType) ?? defaultResourceState;
   };
 
   // Get all resource states
@@ -140,7 +138,7 @@ export function useResourceManagement() {
 
     setResourceStates(prev => {
       const newStates = new Map(prev);
-      const currentState = newStates.get(enumType) || { ...defaultResourceState };
+      const currentState = newStates.get(enumType) ?? { ...defaultResourceState };
       newStates.set(enumType, {
         ...currentState,
         current: currentAmount - amount,
@@ -159,7 +157,7 @@ export function useResourceManagement() {
       const newStates = new Map(prev);
       Object.entries(resources).forEach(([type, amount]) => {
         const enumType = ensureEnumResourceType(type);
-        const currentState = newStates.get(enumType) || { ...defaultResourceState };
+        const currentState = newStates.get(enumType) ?? { ...defaultResourceState };
         const currentAmount = currentState.current;
         newStates.set(enumType, {
           ...currentState,
@@ -176,7 +174,7 @@ export function useResourceManagement() {
     const enumType = ensureEnumResourceType(type);
     setResourceStates(prev => {
       const newStates = new Map(prev);
-      const currentState = newStates.get(enumType) || { ...defaultResourceState };
+      const currentState = newStates.get(enumType) ?? { ...defaultResourceState };
       newStates.set(enumType, {
         ...currentState,
         current: currentState.current + amount,
@@ -191,7 +189,7 @@ export function useResourceManagement() {
       const newStates = new Map(prev);
       Object.entries(resources).forEach(([type, amount]) => {
         const enumType = ensureEnumResourceType(type);
-        const currentState = newStates.get(enumType) || { ...defaultResourceState };
+        const currentState = newStates.get(enumType) ?? { ...defaultResourceState };
         newStates.set(enumType, {
           ...currentState,
           current: currentState.current + amount,

@@ -49,7 +49,7 @@ export function AsteroidMarauder({
   const [scrapShieldActive, setScrapShieldActive] = useState(false);
   const [riggedExplosivesActive, setRiggedExplosivesActive] = useState(false);
 
-  const tactics = createFactionBehavior('ambush');
+
 
   return (
     <div className="relative">

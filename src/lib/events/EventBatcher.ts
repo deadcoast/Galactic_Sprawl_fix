@@ -162,11 +162,9 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
     }
 
     // Schedule batch processing if not already scheduled
-    if (this.batchTimerId === null) {
-      this.batchTimerId = window.setTimeout(() => {
-        this.processBatch();
-      }, this.config.batchTimeWindow);
-    }
+    this.batchTimerId ??= window.setTimeout(() => {
+      this.processBatch();
+    }, this.config.batchTimeWindow);
   }
 
   /**

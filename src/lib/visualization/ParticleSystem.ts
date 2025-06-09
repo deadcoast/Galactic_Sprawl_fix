@@ -372,12 +372,12 @@ export class ParticleSystem {
     transitionId: string,
     config: ParticleTransitionConfig
   ): string {
-    const sourceColor = sourcePoint.color || '#ffffff';
-    const targetColor = targetPoint.color || '#ffffff';
-    const sourceSize = sourcePoint.size || 10;
-    const targetSize = targetPoint.size || 10;
-    const sourceOpacity = sourcePoint.opacity !== undefined ? sourcePoint.opacity : 1;
-    const targetOpacity = targetPoint.opacity !== undefined ? targetPoint.opacity : 1;
+    const sourceColor = sourcePoint.color ?? '#ffffff';
+    const targetColor = targetPoint.color ?? '#ffffff';
+    const sourceSize = sourcePoint.size ?? 10;
+    const targetSize = targetPoint.size ?? 10;
+    const sourceOpacity = sourcePoint.opacity ?? 1;
+    const targetOpacity = targetPoint.opacity ?? 1;
 
     return this.addParticle({
       position: { x: sourcePoint.x, y: sourcePoint.y },
@@ -398,8 +398,8 @@ export class ParticleSystem {
       life: 1,
       maxLife: 1,
       active: true,
-      path: config.path || ParticlePath.LINEAR,
-      easing: config.easing || this.getEasingFunction(EasingType.EASE_IN_OUT),
+      path: config.path ?? ParticlePath.LINEAR,
+      easing: config.easing ?? this.getEasingFunction(EasingType.EASE_IN_OUT),
       pathParams: config.pathParams,
       group: transitionId,
       data: {
@@ -465,7 +465,7 @@ export class ParticleSystem {
   private updateEmitters(deltaTime: number): void {
     this.emitters.forEach((config, id) => {
       // Calculate number of particles to emit
-      const emitCount = config.burstCount || Math.floor(config.rate * deltaTime);
+      const emitCount = config.burstCount ?? Math.floor(config.rate * deltaTime);
 
       // Emit particles
       for (let i = 0; i < emitCount; i++) {
@@ -526,7 +526,7 @@ export class ParticleSystem {
     return this.addParticle({
       position,
       velocity,
-      acceleration: config.gravity || { x: 0, y: 0 },
+      acceleration: config.gravity ?? { x: 0, y: 0 },
       size,
       color,
       opacity,
@@ -585,7 +585,7 @@ export class ParticleSystem {
     // Apply easing
     const easedProgress = this.applyEasing(
       transitionProgress,
-      particle.easing || this.getEasingFunction(EasingType.LINEAR)
+      particle.easing ?? this.getEasingFunction(EasingType.LINEAR)
     );
 
     // Update position based on path type
@@ -643,11 +643,11 @@ export class ParticleSystem {
    * Update particle position based on path type
    */
   private updateParticlePosition(particle: Particle, progress: number): void {
-    const start = particle.startPosition || { x: 0, y: 0 };
-    const end = particle.targetPosition || { x: 0, y: 0 };
+    const start = particle.startPosition ?? { x: 0, y: 0 };
+    const end = particle.targetPosition ?? { x: 0, y: 0 };
     let position: Position;
 
-    switch (particle.path || ParticlePath.LINEAR) {
+    switch (particle.path ?? ParticlePath.LINEAR) {
       case ParticlePath.CURVED:
         position = this.calculateCurvedPath(start, end, progress);
         break;
@@ -759,7 +759,7 @@ export class ParticleSystem {
     frequency = 3
   ): Position {
     const actualAmplitude =
-      amplitude || Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.1;
+      amplitude ?? Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.1;
     const waviness = Math.sin(progress * Math.PI * frequency) * actualAmplitude;
 
     // Calculate the normal vector to the path

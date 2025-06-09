@@ -126,8 +126,8 @@ const useFrame = ThreeUseFrame || mockUseFrame;
  * @param style - CSS styles for the canvas container
  */
 const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
-  const defaultCamera = camera || { position: [0, 0, 5], fov: 75 };
-  const defaultStyle = style || { width: '100%', height: '100%' };
+  const defaultCamera = camera ?? { position: [0, 0, 5], fov: 75 };
+  const defaultStyle = style ?? { width: '100%', height: '100%' };
 
   // Create a camera element using the defaultCamera
   const cameraElement = React.createElement('div', {

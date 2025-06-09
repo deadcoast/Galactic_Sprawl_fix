@@ -10,23 +10,24 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import {
-  AnalysisConfig,
-  AnalysisResult,
-  ClusteringAnalysisConfig,
-  ComparisonAnalysisConfig,
-  CorrelationAnalysisConfig,
-  DataPoint,
-  Dataset,
-  DistributionAnalysisConfig,
-  PredictionAnalysisConfig,
-  ResourceMappingAnalysisConfig,
-  SectorAnalysisConfig,
-  TrendAnalysisConfig,
-} from '../types/exploration/DataAnalysisTypes';
+import
+  {
+    AnalysisConfig,
+    AnalysisResult,
+    ClusteringAnalysisConfig,
+    ComparisonAnalysisConfig,
+    CorrelationAnalysisConfig,
+    DataPoint,
+    Dataset,
+    DistributionAnalysisConfig,
+    PredictionAnalysisConfig,
+    ResourceMappingAnalysisConfig,
+    SectorAnalysisConfig,
+    TrendAnalysisConfig
+  } from '../types/exploration/DataAnalysisTypes';
 import { ResourceType } from '../types/resources/ResourceTypes';
 import { isResourceType } from '../utils/typeGuards/resourceTypeGuards';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService'; // Added import
+import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService'; // Added import
 
 /**
  * Interface for algorithm options
@@ -44,6 +45,57 @@ interface AlgorithmOptions {
 
 // Type definition for property extraction and value memoization
 type PropertyExtractor = (point: DataPoint) => unknown;
+
+// Enhanced property extractor that returns typed values
+type TypedPropertyExtractor<T> = (point: DataPoint) => T | undefined;
+
+/**
+ * Matrix type definitions for mathematical operations
+ */
+type Matrix = number[][];
+type Vector = number[];
+
+/**
+ * Type-safe matrix operations interface
+ */
+interface MatrixOperations {
+  isValidMatrix(matrix: unknown): matrix is Matrix;
+  isValidVector(vector: unknown): vector is Vector;
+  safeMatrixMultiply(a: Matrix, b: Matrix): Matrix | null;
+  safeMatrixInverse(matrix: Matrix): Matrix | null;
+}
+
+/**
+ * Type guard for number arrays
+ */
+function isNumberArray(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'number' && !isNaN(item));
+}
+
+/**
+ * Type guard for matrix (array of number arrays)
+ */
+function isMatrix(value: unknown): value is Matrix {
+  return Array.isArray(value) && value.length > 0 && value.every(row => isNumberArray(row));
+}
+
+/**
+ * Safe array conversion utility
+ */
+function toNumberArray(value: unknown[]): number[] {
+  return value
+    .map(item => (typeof item === 'number' && !isNaN(item) ? item : null))
+    .filter((item): item is number => item !== null);
+}
+
+/**
+ * Safe matrix conversion utility
+ */
+function toMatrix(value: unknown[][]): Matrix {
+  return value
+    .map(row => (Array.isArray(row) ? toNumberArray(row) : []))
+    .filter(row => row.length > 0);
+}
 
 /**
  * Interface for distribution bins
@@ -199,7 +251,7 @@ export class AnalysisAlgorithmService {
             );
             break;
           case 'clustering':
-            result = await this.analyzeClustering(
+            result = this.analyzeClustering(
               config as ClusteringAnalysisConfig,
               dataToProcess,
               effectiveOptions
@@ -213,21 +265,21 @@ export class AnalysisAlgorithmService {
             );
             break;
           case 'comparison':
-            result = await this.analyzeComparison(
+            result = this.analyzeComparison(
               config as ComparisonAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'resourceMapping':
-            result = await this.analyzeResourceMapping(
+            result = this.analyzeResourceMapping(
               config as ResourceMappingAnalysisConfig,
               dataToProcess,
               effectiveOptions
             );
             break;
           case 'sectorAnalysis':
-            result = await this.analyzeSector(
+            result = this.analyzeSector(
               config as SectorAnalysisConfig,
               dataToProcess,
               effectiveOptions
@@ -291,14 +343,28 @@ export class AnalysisAlgorithmService {
 
       // Set up message handler
       const handleMessage = (event: MessageEvent) => {
-        if (event?.data?.messageId === messageId && event?.data?.result) {
+        // Type guard for message data
+        const isValidMessage = (data: unknown): data is {
+          messageId: string;
+          result?: AnalysisResult;
+          error?: string;
+        } => {
+          return (
+            typeof data === 'object' &&
+            data !== null &&
+            'messageId' in data &&
+            typeof (data as { messageId: unknown }).messageId === 'string'
+          );
+        };
+
+        if (isValidMessage(event.data) && event.data.messageId === messageId && event.data.result) {
           // Clean up message handler
           worker.removeEventListener('message', handleMessage);
 
-          if (event?.data?.error) {
-            reject(new Error(event?.data?.error as string));
+          if (event.data.error) {
+            reject(new Error(event.data.error));
           } else {
-            resolve(event?.data?.result as AnalysisResult);
+            resolve(event.data.result);
           }
         }
       };
@@ -404,7 +470,7 @@ export class AnalysisAlgorithmService {
 
       // Add selected points to result
       for (const index of selected) {
-        result?.push(typeDataPoints[index]);
+        result.push(typeDataPoints[index]);
       }
     }
 
@@ -434,7 +500,7 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze trend data
    */
-  private async analyzeTrend(
+  private analyzeTrend(
     config: TrendAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
@@ -527,7 +593,7 @@ export class AnalysisAlgorithmService {
       insights,
     };
 
-    return result;
+    return Promise.resolve(result);
   }
 
   /**
@@ -826,7 +892,7 @@ export class AnalysisAlgorithmService {
       insights,
     };
 
-    return result;
+    return Promise.resolve(result);
   }
 
   /**
@@ -1016,11 +1082,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze distribution of a variable
    */
-  private async analyzeDistribution(
+  private analyzeDistribution(
     config: DistributionAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters
@@ -1070,11 +1136,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze clustering patterns in the dataset using k-means algorithm
    */
-  private async analyzeClustering(
+  private analyzeClustering(
     config: ClusteringAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters from the config
@@ -1325,8 +1391,8 @@ export class AnalysisAlgorithmService {
     const centroids = this.initializeKMeansPlusPlusCentroids(vectors, k, distanceMetric);
 
     // Initialize cluster assignments
-    const clusters = new Array(n).fill(0);
-    let prevClusters = new Array(n).fill(-1);
+    const clusters = new Array<number>(n).fill(0);
+    let prevClusters = new Array<number>(n).fill(-1);
     let iteration = 0;
 
     // Repeat until convergence or max iterations reached
@@ -1352,14 +1418,14 @@ export class AnalysisAlgorithmService {
       }
 
       // Update centroids based on new cluster assignments
-      const newCentroids: number[][] = Array(k)
+      const newCentroids: number[][] = new Array(k)
         .fill(0)
-        .map(() => Array(dimensions).fill(0));
-      const counts = Array(k).fill(0);
+        .map(() => new Array(dimensions).fill(0));
+      const counts = new Array(k).fill(0);
 
       for (let i = 0; i < n; i++) {
         const cluster = clusters[i];
-        counts[cluster]++;
+        counts[cluster] += 1;
 
         for (let d = 0; d < dimensions; d++) {
           newCentroids[cluster][d] += vectors[i][d];
@@ -1613,7 +1679,18 @@ export class AnalysisAlgorithmService {
         return aValue - bValue;
       }
 
-      return String(aValue).localeCompare(String(bValue));
+      // Safe string conversion to avoid object stringification issues
+      const aString = typeof aValue === 'object' && aValue !== null 
+        ? JSON.stringify(aValue) 
+        : (aValue === null || aValue === undefined) 
+          ? String(aValue)
+          : String(aValue);
+      const bString = typeof bValue === 'object' && bValue !== null 
+        ? JSON.stringify(bValue) 
+        : (bValue === null || bValue === undefined) 
+          ? String(bValue)
+          : String(bValue);
+      return aString.localeCompare(bString);
     });
   }
 
@@ -1705,11 +1782,11 @@ export class AnalysisAlgorithmService {
           aggregatedValue = yValues.reduce((sum, value) => sum + value, 0);
       }
 
-      result?.push({ x, y: aggregatedValue });
+      result.push({ x, y: aggregatedValue });
     }
 
     // Sort by x value
-    return result?.sort((a, b) => {
+    return result.sort((a, b) => {
       if (typeof a.x === 'number' && typeof b.x === 'number') {
         return a.x - b.x;
       }
@@ -2152,7 +2229,7 @@ export class AnalysisAlgorithmService {
       return 'No valid statistics found for distribution analysis.';
     }
 
-    return `Distribution analysis of ${data?.variable} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
+    return `Distribution analysis of ${data?.variable ?? 'unknown variable'} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
   }
 
   /**
@@ -2505,9 +2582,9 @@ export class AnalysisAlgorithmService {
     const numFeatures = X[0].length;
 
     // Calculate X^T (transpose of X)
-    const X_T = Array(numFeatures)
+    const X_T: Matrix = Array(numFeatures)
       .fill(0)
-      .map(() => Array(numSamples).fill(0));
+      .map(() => new Array(numSamples).fill(0));
     for (let i = 0; i < numSamples; i++) {
       for (let j = 0; j < numFeatures; j++) {
         X_T[j][i] = X[i][j];
@@ -2515,9 +2592,9 @@ export class AnalysisAlgorithmService {
     }
 
     // Calculate X^T * X
-    const X_T_X = Array(numFeatures)
+    const X_T_X: Matrix = Array(numFeatures)
       .fill(0)
-      .map(() => Array(numFeatures).fill(0));
+      .map(() => new Array(numFeatures).fill(0));
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numFeatures; j++) {
         for (let k = 0; k < numSamples; k++) {
@@ -2559,7 +2636,7 @@ export class AnalysisAlgorithmService {
     // Create augmented matrix [A|I]
     const augMatrix: number[][] = [];
     for (let i = 0; i < n; i++) {
-      augMatrix.push([...matrix[i], ...Array(n).fill(0)]);
+      augMatrix.push([...matrix[i], ...new Array(n).fill(0)]);
       augMatrix[i][n + i] = 1;
     }
 
@@ -2584,10 +2661,10 @@ export class AnalysisAlgorithmService {
       // Skip singular matrix
       if (Math.abs(pivot) < 1e-10) {
         // Return identity matrix (fallback)
-        return Array(n)
+        return new Array(n)
           .fill(0)
           .map((_, i) =>
-            Array(n)
+            new Array(n)
               .fill(0)
               .map((_, j) => (i === j ? 1 : 0))
           );
@@ -2706,7 +2783,7 @@ export class AnalysisAlgorithmService {
     // Training loop
     for (let epoch = 0; epoch < epochs; epoch++) {
       // Shuffle training data
-      const indices = Array(normalizedTrainFeatures.length)
+      const indices = new Array(normalizedTrainFeatures.length)
         .fill(0)
         .map((_, i) => i);
       for (let i = indices.length - 1; i > 0; i--) {
@@ -2726,9 +2803,9 @@ export class AnalysisAlgorithmService {
         // Initialize gradients
         const gradWeights1 = Array(numFeatures)
           .fill(0)
-          .map(() => Array(hiddenSize).fill(0));
-        const gradBias1 = Array(hiddenSize).fill(0);
-        const gradWeights2 = Array(hiddenSize).fill(0);
+          .map(() => new Array(hiddenSize).fill(0));
+        const gradBias1 = new Array(hiddenSize).fill(0);
+        const gradWeights2 = new Array(hiddenSize).fill(0);
         let gradBias2 = 0; // Change from const to let
 
         let batchLoss = 0;
@@ -2740,7 +2817,7 @@ export class AnalysisAlgorithmService {
 
           // Forcombatd pass
           // Hidden layer with ReLU activation
-          const hidden = Array(hiddenSize).fill(0);
+          const hidden = new Array(hiddenSize).fill(0);
           for (let i = 0; i < hiddenSize; i++) {
             for (let j = 0; j < numFeatures; j++) {
               hidden[i] += x[j] * weights1[j][i];
@@ -2806,7 +2883,7 @@ export class AnalysisAlgorithmService {
       );
 
       // Forcombatd pass through the network
-      const hidden = Array(hiddenSize).fill(0);
+      const hidden = new Array(hiddenSize).fill(0);
       for (let i = 0; i < hiddenSize; i++) {
         for (let j = 0; j < numFeatures; j++) {
           hidden[i] += normalizedFeatures[j] * weights1[j][i];
@@ -2920,8 +2997,8 @@ export class AnalysisAlgorithmService {
     featureStdDevs: number[];
   } {
     const numFeatures = trainFeatures[0].length;
-    const featureMeans = Array(numFeatures).fill(0);
-    const featureStdDevs = Array(numFeatures).fill(0);
+    const featureMeans = new Array(numFeatures).fill(0);
+    const featureStdDevs = new Array(numFeatures).fill(0);
 
     // Calculate means
     for (const features of trainFeatures) {
@@ -3076,11 +3153,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze the spatial distribution of resources
    */
-  private async analyzeResourceMapping(
+  private analyzeResourceMapping(
     config: ResourceMappingAnalysisConfig,
     dataset: Dataset,
     options: AlgorithmOptions
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters
@@ -3249,7 +3326,7 @@ export class AnalysisAlgorithmService {
       // Calculate total value based on selected metric
       cell.resources.forEach(resource => {
         const metricValue =
-          resource[valueMetric] !== undefined ? (resource[valueMetric]) : resource.amount;
+          resource[valueMetric] ?? resource.amount;
 
         totalValue += metricValue;
       });
@@ -3354,7 +3431,7 @@ export class AnalysisAlgorithmService {
     const valueMetric = data.valueMetric as string;
 
     // Cast cells to the proper type, now using ResourceType
-    const typedCells = (data.cells || []) as {
+    const typedCells = (data.cells ?? []) as {
       x: number;
       y: number;
       resources: { type: ResourceType; amount: number }[];
@@ -3450,7 +3527,7 @@ export class AnalysisAlgorithmService {
    */
   private generateResourceMappingSummary(data: Record<string, unknown>): string {
     // Cast cells and density correctly
-    const typedCells = (data.cells || []) as {
+    const typedCells = (data.cells ?? []) as {
       x: number;
       y: number;
       resources: { type: ResourceType; amount: number }[];
@@ -3483,11 +3560,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze comparison between datasets or variables
    */
-  private async analyzeComparison(
+  private analyzeComparison(
     config: ComparisonAnalysisConfig,
     _dataset: Dataset, // Prefix unused parameter (stub)
     _options: AlgorithmOptions // Prefix unused parameter (stub)
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     // This is a stub implementation that will be fully implemented later
     const startTime = Date.now();
 
@@ -3523,11 +3600,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze sectors for various metrics
    */
-  private async analyzeSector(
+  private analyzeSector(
     config: SectorAnalysisConfig,
     _dataset: Dataset, // Prefix unused parameter (stub)
     _options: AlgorithmOptions // Prefix unused parameter (stub)
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     // This is a stub implementation that will be fully implemented later
     const startTime = Date.now();
 

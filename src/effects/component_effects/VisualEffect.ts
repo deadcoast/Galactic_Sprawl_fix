@@ -17,7 +17,7 @@ export abstract class VisualEffect {
   protected isComplete = false;
 
   constructor(config: VisualEffectConfig) {
-    this.id = config.id || Math.random().toString(36).substring(7);
+    this.id = config.id ?? Math.random().toString(36).substring(7);
     this.config = config;
     this.startTime = Date.now();
   }
@@ -31,7 +31,7 @@ export abstract class VisualEffect {
     if (this.isComplete) return;
 
     const elapsed = Date.now() - this.startTime;
-    const duration = this.config.duration || 1000;
+    const duration = this.config.duration ?? 1000;
     this.progress = Math.min(elapsed / duration, 1);
 
     this.onUpdate(this.progress);
@@ -42,9 +42,7 @@ export abstract class VisualEffect {
   }
 
   public render(batcher: RenderBatcher): void {
-    if (!this.batchId) {
-      this.batchId = batcher.createBatch(this.getEffectType());
-    }
+    this.batchId ??= batcher.createBatch(this.getEffectType());
     this.updateRendering(batcher);
   }
 

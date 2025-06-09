@@ -115,7 +115,7 @@ function generateNextTimePoint(
         lastDate.getTime() + interval * (index - existingTimePoints.length + 1)
       );
       return nextDate.toISOString().split('T')[0]; // Return as YYYY-MM-DD
-    } catch (e) {
+    } catch {
       // If date parsing fails, return string representation of index
       return `Point ${index}`;
     }
@@ -473,8 +473,8 @@ export function calculateClusterCentroids(
   for (const [clusterStr, points] of Object.entries(clusters)) {
     const cluster = parseInt(clusterStr, 10);
     const numFeatures = features.length;
-    const validCounts: number[] = Array(numFeatures).fill(0);
-    const sums: number[] = Array(numFeatures).fill(0);
+    const validCounts: number[] = Array(numFeatures).fill(0) as number[];
+    const sums: number[] = Array(numFeatures).fill(0) as number[];
 
     // Sum values by feature
     points.forEach(pointFeatures => {

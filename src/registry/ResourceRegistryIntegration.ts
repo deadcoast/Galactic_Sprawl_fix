@@ -36,9 +36,7 @@ export class ResourceRegistryIntegration {
    * Get the singleton instance of ResourceRegistryIntegration
    */
   public static getInstance(): ResourceRegistryIntegration {
-    if (!ResourceRegistryIntegration._instance) {
-      ResourceRegistryIntegration._instance = new ResourceRegistryIntegration();
-    }
+    ResourceRegistryIntegration._instance ??= new ResourceRegistryIntegration();
     return ResourceRegistryIntegration._instance;
   }
 

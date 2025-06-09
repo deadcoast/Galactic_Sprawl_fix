@@ -86,9 +86,7 @@ export class EventSystem {
    * @returns The singleton instance
    */
   public static getInstance(): EventSystem {
-    if (!EventSystem.instance) {
-      EventSystem.instance = new EventSystem();
-    }
+    EventSystem.instance ??= new EventSystem();
     return EventSystem.instance;
   }
 
@@ -140,9 +138,7 @@ export class EventSystem {
    */
   public publish<T extends BaseEvent>(event: T, options?: PublishOptions): void {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // If batching is active, add to batch queue and return
     if (this.isBatching) {
@@ -177,9 +173,7 @@ export class EventSystem {
     options: PublishOptions = {}
   ): Promise<void> {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // Merge options with defaults
     const mergedOptions = { ...this.defaultPublishOptions, ...options, async: true };

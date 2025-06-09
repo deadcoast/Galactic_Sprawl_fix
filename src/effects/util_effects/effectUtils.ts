@@ -207,7 +207,7 @@ export function modifyEffect(effect: BaseEffect, modifiers: Partial<BaseEffect>)
   return {
     ...effect,
     ...modifiers,
-    magnitude: effect.magnitude * (modifiers.magnitude || 1),
+    magnitude: effect.magnitude * (modifiers.magnitude ?? 1),
   };
 }
 

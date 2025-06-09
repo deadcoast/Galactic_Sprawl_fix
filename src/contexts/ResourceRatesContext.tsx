@@ -192,7 +192,7 @@ export const resourceRatesReducer = (
     case ResourceRatesActionType.SET_ERROR:
       return {
         ...state,
-        error: action.payload.error || null,
+        error: action.payload.error ?? null,
         isLoading: false,
       };
 

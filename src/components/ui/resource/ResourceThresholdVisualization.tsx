@@ -107,7 +107,7 @@ const getResourceStatus = (
     // Calculate time to next threshold
     const timeToThreshold =
       rate > 0
-        ? (maxValue * (thresholds.maximum || 1) - currentValue) / rate
+        ? (maxValue * (thresholds.maximum ?? 1) - currentValue) / rate
         : rate < 0
           ? (maxValue * (thresholds.target ?? 0) - currentValue) / rate
           : undefined;
@@ -139,7 +139,7 @@ const getResourceStatus = (
   const percentToNext =
     rate > 0
       ? ((currentValue - maxValue * (thresholds.low ?? 0)) /
-          (maxValue * ((thresholds.high || 1) - (thresholds.low ?? 0)))) *
+          (maxValue * ((thresholds.high ?? 1) - (thresholds.low ?? 0)))) *
         100
       : ((currentValue - maxValue * (thresholds.low ?? 0)) /
           (maxValue * ((thresholds.target ?? 0.5) - (thresholds.low ?? 0)))) *
@@ -148,7 +148,7 @@ const getResourceStatus = (
   // Calculate time to next threshold
   const timeToThreshold =
     rate > 0
-      ? (maxValue * (thresholds.high || 1) - currentValue) / rate
+      ? (maxValue * (thresholds.high ?? 1) - currentValue) / rate
       : rate < 0
         ? (maxValue * (thresholds.low ?? 0) - currentValue) / rate
         : undefined;

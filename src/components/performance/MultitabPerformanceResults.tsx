@@ -44,7 +44,7 @@ export const MultitabPerformanceResults: React.FC<MultitabPerformanceResultsProp
     const avgFPS =
       resultsArray.reduce((sum, result) => {
         // Some tabs might not have FPS data
-        return sum + (result.fps?.average || 0);
+        return sum + (result.fps?.average ?? 0);
       }, 0) / resultsArray.length;
 
     const maxMemory = Math.max(...resultsArray.map(r => r.memory.max));

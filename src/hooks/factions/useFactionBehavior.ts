@@ -2330,9 +2330,7 @@ function calculateThreatLevel(
 
   // Normalize threat level (e.g., based on expected density or max potential strength)
   const maxExpectedStrength = 10000; // Example normalization factor
-  const normalizedThreat = Math.min(1, enemyStrength / maxExpectedStrength);
-
-  return normalizedThreat; // Return the normalized threat
+  return Math.min(1, enemyStrength / maxExpectedStrength); // Return the normalized threat
 }
 
 // Helper function to normalize ship class safely
@@ -2589,9 +2587,7 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
         : 'neutral';
 
     // Initialize array if it doesn't exist
-    if (!unitsByFaction[factionId]) {
-      unitsByFaction[factionId] = [];
-    }
+    unitsByFaction[factionId] ??= [];
     // Add unit to the correct faction group
     unitsByFaction[factionId]?.push(unit); // Use optional chaining for safety
   });

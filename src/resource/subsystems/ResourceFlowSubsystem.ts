@@ -1,19 +1,21 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../services/logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
-import {
-  FlowConnection,
-  FlowNode,
-  FlowNodeType,
-  ResourcePriorityConfig,
-  ResourceState,
-  ResourceTransfer,
-  ResourceType,
-} from '../../types/resources/ResourceTypes';
+import
+  {
+    FlowConnection,
+    FlowNode,
+    FlowNodeType,
+    ResourcePriorityConfig,
+    ResourceState,
+    ResourceTransfer,
+    ResourceType
+  } from '../../types/resources/ResourceTypes';
 import { validateResourceTransfer } from '../../utils/typeGuards/resourceTypeGuards';
 import { ResourceFlowWorkerUtil } from '../../utils/workers/ResourceFlowWorkerUtil';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -130,7 +132,7 @@ export class ResourceFlowSubsystem {
   /**
    * Initialize the subsystem
    */
-  public async initialize(): Promise<void> {
+  public initialize(): void {
     if (this.isInitialized) {
       return;
     }
@@ -154,7 +156,7 @@ export class ResourceFlowSubsystem {
   /**
    * Dispose of the subsystem
    */
-  public async dispose(): Promise<void> {
+  public dispose(): void {
     if (!this.isInitialized) {
       return;
     }
@@ -251,7 +253,12 @@ export class ResourceFlowSubsystem {
    */
   public registerNode(node: FlowNode): boolean {
     if (!node.id || !node.resources || Object.keys(node.resources).length === 0) {
-      console.warn('Invalid flow node:', node);
+      errorLoggingService.logError(
+        new Error('Invalid flow node: ' + JSON.stringify(node)),
+        ErrorType.VALIDATION,
+        ErrorSeverity.LOW,
+        { componentName: 'ResourceFlowSubsystem', action: 'registerNode' }
+      );
       return false;
     }
 
@@ -260,16 +267,16 @@ export class ResourceFlowSubsystem {
 
     // Add to type-specific map
     switch (node.type) {
-      case 'producer':
+      case FlowNodeType.PRODUCER:
         this.producerNodes.set(node.id, node);
         break;
-      case 'consumer':
+      case FlowNodeType.CONSUMER:
         this.consumerNodes.set(node.id, node);
         break;
-      case 'storage':
+      case FlowNodeType.STORAGE:
         this.storageNodes.set(node.id, node);
         break;
-      case 'converter':
+      case FlowNodeType.CONVERTER:
         this.converterNodes.set(node.id, node);
         break;
     }
@@ -286,13 +293,13 @@ export class ResourceFlowSubsystem {
 
         // Add to the appropriate resource tracking maps
         switch (node.type) {
-          case 'producer':
+          case FlowNodeType.PRODUCER:
             this.addToArray(this.resourceProducers, resourceType, node.id);
             break;
-          case 'consumer':
+          case FlowNodeType.CONSUMER:
             this.addToArray(this.resourceConsumers, resourceType, node.id);
             break;
-          case 'storage':
+          case FlowNodeType.STORAGE:
             this.addToArray(this.resourceStorage, resourceType, node.id);
             break;
         }
@@ -330,16 +337,16 @@ export class ResourceFlowSubsystem {
 
     // Remove from type-specific map
     switch (node.type) {
-      case 'producer':
+      case FlowNodeType.PRODUCER:
         this.producerNodes.delete(id);
         break;
-      case 'consumer':
+      case FlowNodeType.CONSUMER:
         this.consumerNodes.delete(id);
         break;
-      case 'storage':
+      case FlowNodeType.STORAGE:
         this.storageNodes.delete(id);
         break;
-      case 'converter':
+      case FlowNodeType.CONVERTER:
         this.converterNodes.delete(id);
         break;
     }
@@ -356,13 +363,13 @@ export class ResourceFlowSubsystem {
 
         // Remove from the appropriate resource tracking maps
         switch (node.type) {
-          case 'producer':
+          case FlowNodeType.PRODUCER:
             this.removeFromArray(this.resourceProducers, resourceType, id);
             break;
-          case 'consumer':
+          case FlowNodeType.CONSUMER:
             this.removeFromArray(this.resourceConsumers, resourceType, id);
             break;
-          case 'storage':
+          case FlowNodeType.STORAGE:
             this.removeFromArray(this.resourceStorage, resourceType, id);
             break;
         }
@@ -410,18 +417,33 @@ export class ResourceFlowSubsystem {
       connection.resourceTypes.length === 0 ||
       (connection.maxRate ?? 0) <= 0
     ) {
-      console.warn('Invalid connection:', connection);
+      errorLoggingService.logError(
+        new Error('Invalid connection: ' + JSON.stringify(connection)),
+        ErrorType.VALIDATION,
+        ErrorSeverity.LOW,
+        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+      );
       return false;
     }
 
     // Ensure source and target nodes exist
     if (!this.nodes.has(connection.source)) {
-      console.warn(`Source node ${connection.source} does not exist`);
+      errorLoggingService.logError(
+        new Error(`Source node ${connection.source} does not exist`),
+        ErrorType.VALIDATION,
+        ErrorSeverity.LOW,
+        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+      );
       return false;
     }
 
     if (!this.nodes.has(connection.target)) {
-      console.warn(`Target node ${connection.target} does not exist`);
+      errorLoggingService.logError(
+        new Error(`Target node ${connection.target} does not exist`),
+        ErrorType.VALIDATION,
+        ErrorSeverity.LOW,
+        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+      );
       return false;
     }
 
@@ -589,7 +611,7 @@ export class ResourceFlowSubsystem {
     // Prevent concurrent optimization runs
     if (this.isOptimizing) {
       return (
-        this.lastOptimizationResult || {
+        this.lastOptimizationResult ?? {
           transfers: [],
           updatedConnections: [],
           bottlenecks: [],
@@ -628,7 +650,7 @@ export class ResourceFlowSubsystem {
                 id: node.id,
                 type: node.type,
                 name: node.id, // Use ID as name
-                capacity: node.capacity || 100, // Use node capacity or default
+                capacity: node.capacity ?? 100, // Use node capacity or default
                 currentLoad: 0, // Placeholder
                 // efficiency: node.efficiency || 1.0, // Remove efficiency
                 status: node.active ? 'active' : 'inactive',
@@ -665,34 +687,36 @@ export class ResourceFlowSubsystem {
           this.applyOptimizationResults(this.convertWorkerResult(result));
 
           // Add execution time to performance metrics
-          if (!result.performanceMetrics) {
-            result.performanceMetrics = {
+          result.performanceMetrics ??= {
               executionTimeMs: 0,
               nodesProcessed: activeNodes.length,
               connectionsProcessed: activeConnections.length,
-              transfersGenerated: result.transfers?.length || 0,
+              transfersGenerated: result.transfers?.length ?? 0,
             };
-          }
 
-          if (result.performanceMetrics) {
-            result.performanceMetrics.executionTimeMs = Date.now() - startTime;
-          }
+          result.performanceMetrics.executionTimeMs = Date.now() - startTime;
+
 
           const convertedResult = this.convertWorkerResult(result);
           this.lastOptimizationResult = convertedResult;
           this.lastOptimizationTime = Date.now();
           return convertedResult;
         } catch (error) {
-          console.warn('Web Worker optimization failed, falling back to main thread:', error);
+          errorLoggingService.logError(
+            new Error(`Web Worker optimization failed, falling back to main thread: ${String(error)}`),
+            ErrorType.WORKER,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'ResourceFlowSubsystem', action: 'optimizeFlows' }
+          );
           // Fall back to main thread optimization
         }
       }
 
       // Categorize nodes by type
-      const producers = activeNodes.filter(node => node.type === 'producer');
-      const consumers = activeNodes.filter(node => node.type === 'consumer');
-      const storages = activeNodes.filter(node => node.type === 'storage');
-      const converters = activeNodes.filter(node => node.type === 'converter');
+      const producers = activeNodes.filter(node => node.type === FlowNodeType.PRODUCER);
+      const consumers = activeNodes.filter(node => node.type === FlowNodeType.CONSUMER);
+      const storages = activeNodes.filter(node => node.type === FlowNodeType.STORAGE);
+      const converters = activeNodes.filter(node => node.type === FlowNodeType.CONVERTER);
 
       // Process converters
       this.processConverters(converters, activeConnections);
@@ -788,7 +812,12 @@ export class ResourceFlowSubsystem {
     _activeConnections: FlowConnection[]
   ): void {
     // Implementation of advanced converter logic will go here
-    console.warn(`Processing advanced converter: ${converter.id}`);
+    errorLoggingService.logError(
+      new Error(`Processing advanced converter: ${converter.id}`),
+      ErrorType.RUNTIME,
+      ErrorSeverity.MEDIUM,
+      { componentName: 'ResourceFlowSubsystem', action: 'processAdvancedConverter' }
+    );
   }
 
   /**
@@ -1076,7 +1105,7 @@ export class ResourceFlowSubsystem {
       resources: resourcesMap, // Use the created map
       // TODO: Determine appropriate priority based on module/resources
       priority: {
-        type: eventData.resources?.[0] || ResourceType.ENERGY, // Use first resource or default
+        type: eventData.resources?.[0] ?? ResourceType.ENERGY, // Use first resource or default
         priority: 1,
         consumers: [],
       },
@@ -1221,7 +1250,7 @@ export class ResourceFlowSubsystem {
           source: wc.source,
           target: wc.target,
           resourceTypes:
-            wc.resourceTypes || (wc.resourceType ? [wc.resourceType] : []),
+            wc.resourceTypes ?? (wc.resourceType ? [wc.resourceType] : []),
           maxRate: wc.maxRate ?? existingConn?.maxRate ?? 0,
           currentRate: wc.currentRate ?? existingConn?.currentRate ?? 0,
           priority:

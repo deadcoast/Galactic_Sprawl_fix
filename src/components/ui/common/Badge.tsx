@@ -28,8 +28,8 @@ export const Badge: React.FC<BadgeProps> = ({
     whiteSpace: 'nowrap',
     verticalAlign: 'baseline',
     borderRadius: '0.25rem',
-    color: color || '#fff',
-    backgroundColor: backgroundColor || color || '#6c757d',
+    color: color ?? '#fff',
+    backgroundColor: backgroundColor ?? color ?? '#6c757d',
     cursor: onClick ? 'pointer' : 'default',
   };
 

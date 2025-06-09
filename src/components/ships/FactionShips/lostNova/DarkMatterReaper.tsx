@@ -93,13 +93,7 @@ export function DarkMatterReaper({
       setEntropyCascadeActive(false);
     }
 
-    // Log weapon and shield scaling for debugging
-    console.warn('Dark Matter Reaper stats scaling:', {
-      healthScaling,
-      shieldScaling,
-      speedScaling,
-      weaponConfig,
-    });
+    // Track weapon and shield scaling for future debugging features
   }, [status, healthScaling, shieldScaling, speedScaling, weaponConfig]);
 
   // Create a proper FactionBehaviorConfig for tactics

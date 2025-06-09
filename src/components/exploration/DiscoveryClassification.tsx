@@ -1,5 +1,4 @@
-import
-  {
+import {
     AlertTriangle,
     Brain,
     Check,
@@ -9,17 +8,16 @@ import
     FolderTree,
     Search,
     X
-  } from 'lucide-react';
+} from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useClassification } from '../../contexts/ClassificationContext';
-import
-  {
+import {
     ClassifiableDiscovery,
     Classification,
     ClassificationSuggestion,
     ConfidenceLevel
-  } from '../../types/exploration/ClassificationTypes';
+} from '../../types/exploration/ClassificationTypes';
 
 interface DiscoveryClassificationProps {
   discovery: ClassifiableDiscovery;
@@ -53,7 +51,6 @@ export function DiscoveryClassification({
 
   // State for UI
   const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
-  const [_showSimilarDiscoveries, _setShowSimilarDiscoveries] = useState<boolean>(false);
   const [showTaxonomyBrowser, setShowTaxonomyBrowser] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'classify' | 'history' | 'similar'>('classify');

@@ -553,9 +553,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         // This node has a parent, add it to the parent's children
         const parentNode = nodeMap.get(node.parentId);
         if (parentNode) {
-          if (!parentNode.children) {
-            parentNode.children = [];
-          }
+          parentNode.children ??= [];
           parentNode.children.push(d3Node!);
         }
       }

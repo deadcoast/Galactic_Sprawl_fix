@@ -66,7 +66,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
 
       // Get parent module
       const parent = moduleManager.getModule(subModuleData.parentModuleId);
-      setParentModule(parent || null);
+      setParentModule(parent ?? null);
 
       // Get sub-module configuration
       const manager = subModuleManager;

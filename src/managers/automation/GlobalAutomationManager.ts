@@ -766,9 +766,7 @@ export class GlobalAutomationManager extends AbstractBaseManager<BaseEvent> {
   }
 
   public static getInstance(): GlobalAutomationManager {
-    if (!GlobalAutomationManager._instance) {
-      GlobalAutomationManager._instance = new GlobalAutomationManager();
-    }
+    GlobalAutomationManager._instance ??= new GlobalAutomationManager();
     return GlobalAutomationManager._instance;
   }
 }

@@ -1,19 +1,17 @@
-import
-  {
+import {
     Box,
     Button,
     Divider,
     Paper,
     Typography
-  } from '@mui/material';
+} from '@mui/material';
 import React, { ReactElement } from 'react';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { formatResourceAmount as formatNumber } from '../../../../types/resources/ResourceTypeUtils';
-import
-  {
+import {
     ShipCategory,
     ShipStatus
-  } from '../../../../types/ships/ShipTypes';
+} from '../../../../types/ships/ShipTypes';
 
 // --- Define the simplified data interface ---
 export interface SelectedShipDetailsData {
@@ -34,7 +32,6 @@ export interface SelectedShipDetailsData {
 
 // --- Internal Components for Specific Ship Types ---
 
-type CombatShipDetailsProps = Record<string, never>;
 const CombatShipDetails = (): ReactElement => {
   return React.createElement(
     Box,
@@ -43,7 +40,6 @@ const CombatShipDetails = (): ReactElement => {
   );
 };
 
-type MiningShipDetailsProps = Record<string, never>;
 const MiningShipDetails = (): ReactElement => {
   return React.createElement(
     Box,
@@ -52,7 +48,6 @@ const MiningShipDetails = (): ReactElement => {
   );
 };
 
-type ReconShipDetailsProps = Record<string, never>;
 const ReconShipDetails = (): ReactElement => {
   return React.createElement(
     Box,
@@ -61,7 +56,6 @@ const ReconShipDetails = (): ReactElement => {
   );
 };
 
-type TransportShipDetailsProps = Record<string, never>;
 const TransportShipDetails = (): ReactElement => {
   return React.createElement(
     Box,

@@ -73,7 +73,7 @@ export function ResourceDisplay({
             if (event.data.source) {
               setLastTransfer({
                 source: event.data.source,
-                target: event.data.target || 'current',
+                target: event.data.target ?? 'current',
               });
               setShowTransferInfo(true);
 
@@ -93,7 +93,7 @@ export function ResourceDisplay({
             // Track target information if available - following resource event pattern
             if (event.data.target) {
               setLastTransfer({
-                source: event.data.source || 'current',
+                source: event.data.source ?? 'current',
                 target: event.data.target,
               });
               setShowTransferInfo(true);

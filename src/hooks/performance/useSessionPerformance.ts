@@ -20,9 +20,7 @@ let globalTracker: SessionPerformanceTracker | null = null;
  * Initialize the global performance tracker
  */
 export function initializeSessionPerformanceTracker(options?: Partial<TelemetryOptions>): void {
-  if (!globalTracker) {
-    globalTracker = new SessionPerformanceTracker(options);
-  }
+  globalTracker ??= new SessionPerformanceTracker(options);
 }
 
 /**

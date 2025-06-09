@@ -28,7 +28,7 @@ export function useModuleUpgrade(moduleId?: string) {
 
     try {
       const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
-      setUpgradeStatus(status || null);
+      setUpgradeStatus(status ?? null);
       setIsLoading(false);
     } catch (err) {
       setError(`Error loading upgrade status: ${err}`);
@@ -46,7 +46,7 @@ export function useModuleUpgrade(moduleId?: string) {
       if (event?.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
-          setUpgradeStatus(status || null);
+          setUpgradeStatus(status ?? null);
         } catch (err) {
           setError(`Error updating upgrade status: ${err}`);
         }
@@ -75,7 +75,7 @@ export function useModuleUpgrade(moduleId?: string) {
       if (upgradeStatus?.upgradeProgress !== undefined) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
-          setUpgradeStatus(status || null);
+          setUpgradeStatus(status ?? null);
         } catch (_err) {
           // Silently ignore errors during progress updates
         }

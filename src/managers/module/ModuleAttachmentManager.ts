@@ -106,9 +106,7 @@ export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentM
    * Get the singleton instance
    */
   public static getInstance(): ModuleAttachmentManager {
-    if (!ModuleAttachmentManager.instance) {
-      ModuleAttachmentManager.instance = new ModuleAttachmentManager();
-    }
+    ModuleAttachmentManager.instance ??= new ModuleAttachmentManager();
     return ModuleAttachmentManager.instance;
   }
 

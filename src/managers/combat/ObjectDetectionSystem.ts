@@ -132,9 +132,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   public static getInstance(
     environmentalFactors: EnvironmentalFactors = {}
   ): ObjectDetectionSystemImpl {
-    if (!ObjectDetectionSystemImpl.instance) {
-      ObjectDetectionSystemImpl.instance = new ObjectDetectionSystemImpl(environmentalFactors);
-    }
+    ObjectDetectionSystemImpl.instance ??= new ObjectDetectionSystemImpl(environmentalFactors);
     return ObjectDetectionSystemImpl.instance;
   }
 
@@ -237,9 +235,9 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
       this.environmentalFactors
     );
 
-    const detectedObjectIds = this.detectedObjectsCache.get(detector.id) || new Set<string>();
+    const detectedObjectIds = this.detectedObjectsCache.get(detector.id) ?? new Set<string>();
     const confidenceMap =
-      this.detectionConfidenceCache.get(detector.id) || new Map<string, number>();
+      this.detectionConfidenceCache.get(detector.id) ?? new Map<string, number>();
 
     // Check all detectable objects
     for (const object of this.detectables.values()) {
@@ -366,12 +364,12 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
 
             // Update confidence to maximum for detected objects
             const confidenceMap =
-              this.detectionConfidenceCache.get(detector.id) || new Map<string, number>();
+              this.detectionConfidenceCache.get(detector.id) ?? new Map<string, number>();
             confidenceMap.set(object.id, 1.0);
             this.detectionConfidenceCache.set(detector.id, confidenceMap);
 
             // Add to detected set
-            const detectedSet = this.detectedObjectsCache.get(detector.id) || new Set<string>();
+            const detectedSet = this.detectedObjectsCache.get(detector.id) ?? new Set<string>();
             if (!detectedSet.has(object.id)) {
               detectedSet.add(object.id);
               this.detectedObjectsCache.set(detector.id, detectedSet);

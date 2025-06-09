@@ -445,7 +445,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
 
           return React.cloneElement(child, {
             style: {
-              ...(childProps.style || {}),
+              ...(childProps.style ?? {}),
               ...layoutStyles.itemStyles,
             },
           } as React.JSX.IntrinsicAttributes);

@@ -231,9 +231,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
    * Creates a new instance if it does not exist yet.
    */
   public static getInstance(): BehaviorTreeManager {
-    if (!BehaviorTreeManager._instance) {
-      BehaviorTreeManager._instance = new BehaviorTreeManager();
-    }
+    BehaviorTreeManager._instance ??= new BehaviorTreeManager();
     return BehaviorTreeManager._instance;
   }
 
@@ -276,7 +274,7 @@ export class BehaviorTreeManager extends AbstractBaseManager<BaseEvent> {
       case 'selector':
         return this.evaluateSelector(node, context);
       case 'condition':
-        return node.evaluate?.(context) || false;
+        return node.evaluate?.(context) ?? false;
       case 'action':
         if (node.execute) {
           node.execute(context);

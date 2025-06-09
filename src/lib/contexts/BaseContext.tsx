@@ -298,7 +298,7 @@ export function createStandardContext<
         const endTime = performance.now();
         const duration = endTime - startTime;
 
-        if (duration > (options?.performanceMonitoring.reducerThreshold || 5)) {
+        if (duration > (options?.performanceMonitoring.reducerThreshold ?? 5)) {
           console.warn(
             `[${options?.name}] Slow reducer for action ${action.type}: ${duration.toFixed(2)}ms`
           );
@@ -346,7 +346,7 @@ export function createStandardContext<
     // Event subscriptions effect
     useEffect(() => {
       if (options?.eventSubscriptions) {
-        const { eventBus, subscriptions } = options?.eventSubscriptions;
+        const { eventBus, subscriptions } = options.eventSubscriptions;
 
         // Subscribe to events
         const unsubscribers = Object.entries(subscriptions).map(([eventType, handler]) => {
@@ -414,7 +414,7 @@ export function createStandardContext<
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      if (duration > (options?.performanceMonitoring.selectorThreshold || 2)) {
+      if (duration > (options?.performanceMonitoring.selectorThreshold ?? 2)) {
         console.warn(`[${options?.name}] Slow selector: ${duration.toFixed(2)}ms`);
       }
     }

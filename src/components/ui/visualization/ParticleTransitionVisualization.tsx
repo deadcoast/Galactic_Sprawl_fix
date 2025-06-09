@@ -185,7 +185,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
     particleSystemRef.current.setupTransition(transitionId, {
       id: transitionId,
       sourceData: initialData,
-      targetData: targetData || initialData,
+      targetData: targetData ?? initialData,
       duration,
       easing,
       path,
@@ -213,7 +213,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
                 // Reverse the transition for ping-pong
                 ps.setupTransition(transitionId, {
                   id: transitionId,
-                  sourceData: targetData || initialData,
+                  sourceData: targetData ?? initialData,
                   targetData: initialData,
                   duration,
                   easing,
@@ -229,7 +229,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
                 ps.setupTransition(transitionId, {
                   id: transitionId,
                   sourceData: initialData,
-                  targetData: targetData || initialData,
+                  targetData: targetData ?? initialData,
                   duration,
                   easing,
                   path,
@@ -308,7 +308,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
       ps.setupTransition('main-transition', {
         id: 'main-transition',
         sourceData: initialData,
-        targetData: targetData || initialData,
+        targetData: targetData ?? initialData,
         duration,
         easing,
         path,

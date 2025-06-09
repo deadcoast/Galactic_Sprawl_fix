@@ -132,7 +132,7 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
           data: {
             movementCompleted: {
               shipId,
-              finalPosition: shipPositions.get(shipId) || { x: 0, y: 0 },
+              finalPosition: shipPositions.get(shipId) ?? { x: 0, y: 0 },
             },
           },
         });

@@ -132,7 +132,7 @@ export class ConditionChecker {
           currentAmount: event?.details?.current ?? 0,
           thresholds: {
             min: event?.details?.min ?? 0,
-            max: event?.details?.max || Infinity,
+            max: event?.details?.max ?? Infinity,
           },
         });
       }
@@ -143,7 +143,7 @@ export class ConditionChecker {
    * Get a unique key for a condition to track its state
    */
   private getConditionKey(condition: AutomationCondition): string {
-    return `${condition.type}-${condition.target || 'global'}-${JSON.stringify(condition.value)}`;
+    return `${condition.type}-${condition.target ?? 'global'}-${JSON.stringify(condition.value)}`;
   }
 
   /**

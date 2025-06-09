@@ -40,7 +40,7 @@ export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
         return () => {
           unsubscribe();
         };
-      } catch (_error) {
+      } catch {
         // Failed to connect ThresholdContext to ResourceManager
       }
     };

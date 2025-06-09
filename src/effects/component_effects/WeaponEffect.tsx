@@ -403,7 +403,7 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 4, height: 4 },
         rotation: 0,
         opacity,
-        color: this.config.color || '#ffff00',
+        color: this.config.color ?? '#ffff00',
         shader: 'additive',
       });
     });
@@ -429,8 +429,8 @@ export class WeaponEffectVisual extends VisualEffect {
       },
       size: { width: length, height: 4 },
       rotation: angle,
-      opacity: this.config.opacity || 1,
-      color: this.config.color || '#00ffff',
+      opacity: this.config.opacity ?? 1,
+      color: this.config.color ?? '#00ffff',
       shader: 'additive',
     });
 
@@ -443,8 +443,8 @@ export class WeaponEffectVisual extends VisualEffect {
       },
       size: { width: length, height: 12 },
       rotation: angle,
-      opacity: (this.config.opacity || 1) * 0.5,
-      color: this.config.color || '#00ffff',
+      opacity: (this.config.opacity ?? 1) * 0.5,
+      color: this.config.color ?? '#00ffff',
       shader: 'additive',
     });
   }
@@ -461,7 +461,7 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 6, height: 6 },
         rotation: 0,
         opacity: opacity * pulse,
-        color: this.config.color || '#ff00ff',
+        color: this.config.color ?? '#ff00ff',
         shader: 'additive',
       });
     });
@@ -490,7 +490,7 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 6, height: 6 },
         rotation: 0,
         opacity: opacity,
-        color: this.config.color || '#ff4400',
+        color: this.config.color ?? '#ff4400',
         shader: 'additive',
       });
     });
@@ -512,7 +512,7 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 8, height: 8 },
         rotation: wave * Math.PI,
         opacity: opacity,
-        color: this.config.color || '#00ff88',
+        color: this.config.color ?? '#00ff88',
         shader: 'additive',
       });
     });
@@ -536,7 +536,7 @@ export class WeaponEffectVisual extends VisualEffect {
           size: { width: 6 - i * 2, height: 6 - i * 2 },
           rotation: time + (i * Math.PI) / 3,
           opacity: opacity * (1 - i * 0.2),
-          color: this.config.color || '#8800ff',
+          color: this.config.color ?? '#8800ff',
           shader: 'additive',
         });
       }
@@ -563,7 +563,7 @@ export class WeaponEffectVisual extends VisualEffect {
           size: { width: 5, height: 5 },
           rotation: phase,
           opacity: opacity * Math.abs(Math.sin(phase)),
-          color: this.config.color || '#0088ff',
+          color: this.config.color ?? '#0088ff',
           shader: 'additive',
         });
       }
@@ -573,7 +573,7 @@ export class WeaponEffectVisual extends VisualEffect {
   private renderImpact(batcher: RenderBatcher): void {
     const impactProgress = Math.min(
       1,
-      (Date.now() - this.impactStartTime) / (this.config.duration || 1000)
+      (Date.now() - this.impactStartTime) / (this.config.duration ?? 1000)
     );
 
     // Update impact particles
@@ -587,12 +587,12 @@ export class WeaponEffectVisual extends VisualEffect {
         id: `${this.id}-impact-${index}`,
         position: particle,
         size: {
-          width: (this.config.impactSize || 20) * (1 - particleProgress),
-          height: (this.config.impactSize || 20) * (1 - particleProgress),
+          width: (this.config.impactSize ?? 20) * (1 - particleProgress),
+          height: (this.config.impactSize ?? 20) * (1 - particleProgress),
         },
         rotation: (index * Math.PI) / 4,
         opacity: 1 - particleProgress,
-        color: this.config.color || '#ffffff',
+        color: this.config.color ?? '#ffffff',
         shader: 'additive',
       });
     });
@@ -607,7 +607,7 @@ export class WeaponEffectVisual extends VisualEffect {
     const particleCount = 8;
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2;
-      const distance = (this.config.impactSize || 20) / 2;
+      const distance = (this.config.impactSize ?? 20) / 2;
 
       this.impactParticles.push({
         x: this.config.target.x + Math.cos(angle) * distance,

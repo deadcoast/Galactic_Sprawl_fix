@@ -137,7 +137,7 @@ export class EngineTrailEffect extends VisualEffect {
       size: { width: coreSize * 2, height: coreSize * 2 },
       rotation: 0,
       opacity: 0.8 * pulse,
-      color: this.config.color || '#00ffff',
+      color: this.config.color ?? '#00ffff',
       shader: 'additive',
     });
 
@@ -165,7 +165,7 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size, height: point.size },
         rotation: point.rotation + time,
         opacity: point.opacity * flicker,
-        color: this.config.color || '#00ffff',
+        color: this.config.color ?? '#00ffff',
         shader: 'additive',
       });
 
@@ -176,7 +176,7 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size * 2, height: point.size * 2 },
         rotation: -point.rotation + time,
         opacity: point.opacity * 0.5 * flicker,
-        color: this.config.color || '#00ffff',
+        color: this.config.color ?? '#00ffff',
         shader: 'additive',
       });
     });

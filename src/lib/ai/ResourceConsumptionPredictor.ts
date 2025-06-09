@@ -145,7 +145,7 @@ export class ResourceConsumptionPredictor {
       dp.sessionDuration,
       dp.userActions,
       dp.systemLoad,
-      dp.devicePerformanceScore || 1.0, // Default to 1.0 if not provided
+      dp.devicePerformanceScore ?? 1.0, // Default to 1.0 if not provided
       Math.sin(2 * Math.PI * (new Date(dp.timestamp).getHours() / 24)), // Time of day feature
       Math.cos(2 * Math.PI * (new Date(dp.timestamp).getHours() / 24)), // Time of day feature
     ]);
@@ -366,7 +366,7 @@ export class ResourceConsumptionPredictor {
       contextData.sessionDuration,
       contextData.userActions,
       contextData.systemLoad,
-      contextData.devicePerformanceScore || 1.0,
+      contextData.devicePerformanceScore ?? 1.0,
       Math.sin(2 * Math.PI * (new Date().getHours() / 24)), // Time of day feature
       Math.cos(2 * Math.PI * (new Date().getHours() / 24)), // Time of day feature
     ];

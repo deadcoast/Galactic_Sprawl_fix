@@ -55,7 +55,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
+    setModule(moduleData ?? null);
   }, [moduleId]);
 
   // Handle upgrade start
@@ -281,7 +281,7 @@ const ModuleUpgradeSummaryItem: React.FC<{
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
+    setModule(moduleData ?? null);
   }, [moduleId]);
 
   // Handle upgrade start

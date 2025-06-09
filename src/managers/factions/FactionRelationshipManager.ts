@@ -168,7 +168,7 @@ export class FactionRelationshipManager {
     targetId: FactionId
   ): RelationshipState['treatyStatus'] {
     const key = this.getRelationshipKey(factionId, targetId);
-    return this.relationships.get(key)?.treatyStatus || 'none';
+    return this.relationships.get(key)?.treatyStatus ?? 'none';
   }
 
   /**

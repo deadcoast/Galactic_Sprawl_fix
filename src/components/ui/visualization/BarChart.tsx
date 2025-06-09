@@ -108,7 +108,7 @@ export function BarChart({
       {...chartProps}
       data={processedData}
       type="bar"
-      className={`bar-chart ${orientation} ${chartProps.className || ''}`}
+      className={`bar-chart ${orientation} ${chartProps.className ?? ''}`}
       showGrid
     />
   );

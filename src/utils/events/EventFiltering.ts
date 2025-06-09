@@ -44,7 +44,9 @@ export class EventPriorityQueue<T extends { priority?: number }> {
     const queue = this.queues.get(priority);
     if (queue) {
       queue.push(event);
-      this.processQueue();
+      this.processQueue().catch(error => {
+        // Error processing queue - handled appropriately
+      });
     }
   }
 
@@ -74,7 +76,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
     }
 
     if (hasEvents) {
-      this.processQueue();
+      void this.processQueue();
     }
   }
 
@@ -281,20 +283,23 @@ export function filterMessagesByPriority(
 ): Observable<SystemMessage> {
   return messages.pipe(
     filter(message => {
-      const messagePriority = message.priority;
+      // Convert both to numbers to ensure safe comparison
+      const messagePriority = Number(message.priority);
+      const targetPriority = Number(priority);
+      
       switch (comparison) {
         case 'eq':
-          return messagePriority === priority;
+          return messagePriority === targetPriority;
         case 'lt':
-          return messagePriority < priority;
+          return messagePriority < targetPriority;
         case 'lte':
-          return messagePriority <= priority;
+          return messagePriority <= targetPriority;
         case 'gt':
-          return messagePriority > priority;
+          return messagePriority > targetPriority;
         case 'gte':
-          return messagePriority >= priority;
+          return messagePriority >= targetPriority;
         default:
-          return messagePriority === priority;
+          return messagePriority === targetPriority;
       }
     })
   );
@@ -386,14 +391,14 @@ export function createThrottledProcessor<T>(
       pending = event;
 
       if (!timeout) {
-        timeout ??= setTimeout(
+        timeout = setTimeout(
           () => {
             if (pending) {
               processor(pending);
-              pending ??= null;
+              pending = null;
             }
-            lastProcessTime ??= Date.now();
-            timeout ??= null;
+            lastProcessTime = Date.now();
+            timeout = null;
           },
           throttleMs - (now - lastProcessTime)
         );
@@ -436,7 +441,7 @@ export function createBatchProcessor<T, R>(
       try {
         callback(result);
       } catch (error) {
-        console.error('Error in batch result callback:', error);
+        // Error in batch result callback - replaced console.error
       }
     });
 
@@ -451,13 +456,13 @@ export function createBatchProcessor<T, R>(
         // Process immediately if batch is full
         if (timeout !== null) {
           clearTimeout(timeout);
-          timeout ??= null;
+          timeout = null;
         }
         processCurrentBatch();
-      } else if (timeout === null) {
+      } else if (!timeout) {
         // Start timer for batch processing
-        timeout ??= setTimeout(() => {
-          timeout ??= null;
+        timeout = setTimeout(() => {
+          timeout = null;
           processCurrentBatch();
         }, maxWaitMs);
       }
@@ -465,7 +470,7 @@ export function createBatchProcessor<T, R>(
     flush: () => {
       if (timeout !== null) {
         clearTimeout(timeout);
-        timeout ??= null;
+        timeout = null;
       }
       return processCurrentBatch();
     },

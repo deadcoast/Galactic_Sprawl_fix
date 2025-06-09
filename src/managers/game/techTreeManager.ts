@@ -83,9 +83,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
    * Get the singleton instance of TechTreeManager
    */
   public static getInstance(): TechTreeManager {
-    if (!TechTreeManager.instance) {
-      TechTreeManager.instance = new TechTreeManager();
-    }
+    TechTreeManager.instance ??= new TechTreeManager();
     return TechTreeManager.instance;
   }
 
@@ -181,9 +179,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
     }
 
     // Default research time if not specified
-    if (!node.researchTime) {
-      node.researchTime = 60 * (node.tier || 1); // Default to 60 seconds * tier
-    }
+    node.researchTime ??= 60 * (node.tier ?? 1); // Default to 60 seconds * tier
 
     // Initialize progress
     node.researchProgress = 0;
@@ -496,8 +492,8 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
       }
 
       // Then sort by synergy potential
-      const synergiesA = this.synergies.get(a)?.size || 0;
-      const synergiesB = this.synergies.get(b)?.size || 0;
+      const synergiesA = this.synergies.get(a)?.size ?? 0;
+      const synergiesB = this.synergies.get(b)?.size ?? 0;
 
       return synergiesB - synergiesA;
     });
@@ -509,7 +505,7 @@ export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
     nodeArray.forEach(nodeId => {
       const node = this.techNodes.get(nodeId);
       if (node) {
-        totalResearchTime += node.researchTime || 60 * (node.tier || 1);
+        totalResearchTime += node.researchTime ?? 60 * (node.tier ?? 1);
 
         // Check for potential synergies
         const nodeSynergies = this.synergies.get(nodeId);

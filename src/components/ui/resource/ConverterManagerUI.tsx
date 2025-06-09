@@ -282,7 +282,7 @@ export const ConverterManagerUI: React.FC /*<ConverterManagerUIProps>*/ = (/*{}*
           <Card key={converter.id} title={`Converter: ${converter.id}`}>
             <p>Status: {converter.status}</p>
             <p>Efficiency: {converter.efficiency?.toFixed(2) ?? 'N/A'}</p>
-            <p>Active Processes: {converter.activeProcessIds?.join(', ') || 'None'}</p>
+            <p>Active Processes: {converter.activeProcessIds?.join(', ') ?? 'None'}</p>
             {/* Display active processes with controls */}
             {converter.activeProcessIds && converter.activeProcessIds.length > 0 && (
               <div>

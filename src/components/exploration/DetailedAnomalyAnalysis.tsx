@@ -1,20 +1,20 @@
 import {
-  AlertTriangle,
-  ArrowRight,
-  BarChart2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Compass,
-  Database,
-  Download,
-  FileText,
-  Layers,
-  MapIcon,
-  Microscope,
-  Share2,
-  Shield,
-  Zap,
+    AlertTriangle,
+    ArrowRight,
+    BarChart2,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Compass,
+    Database,
+    Download,
+    FileText,
+    Layers,
+    MapIcon,
+    Microscope,
+    Share2,
+    Shield,
+    Zap
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -422,7 +422,7 @@ export function DetailedAnomalyAnalysis({
                 value={quality}
                 onChange={_e => {
                   // This would typically be handled by a parent component
-                  console.warn('Quality level change would be handled by parent component');
+                  // TODO: Implement quality level change handler
                 }}
                 className="mt-1 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-xs text-gray-300"
               >

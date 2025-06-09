@@ -3,9 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../../utils/resources/ResourceTypeConverter';
@@ -224,7 +224,6 @@ export function RealTimeMapUpdates({
 
     const handleResourceDiscovered = (event: ModuleEvent) => {
       if (!event?.data?.sectorId || !event?.data?.resource) {
-        console.log('handleResourceDiscovered', event);
         return;
       }
 

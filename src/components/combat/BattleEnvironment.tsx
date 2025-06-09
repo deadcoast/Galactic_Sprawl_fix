@@ -96,12 +96,7 @@ interface BattleEnvironmentProps {
   onThreatDetected?: (hazard: Hazard) => void;
 }
 
-interface FormationLines {
-  points: { x: number; y: number }[];
-  style: 'solid' | 'dashed';
-  color: string;
-  opacity: number;
-}
+
 
 interface RangeCircle {
   center: { x: number; y: number };
@@ -112,45 +107,7 @@ interface RangeCircle {
 
 // Interface for AI fleet behavior results - kept for future implementation of advanced fleet AI
 // Will be used when implementing the adaptive fleet behavior system
-interface __FleetAIResult {
-  formationPatterns: {
-    defensive: {
-      spacing: number;
-      facing: number;
-      pattern: 'defensive';
-      adaptiveSpacing: boolean;
-    };
-    offensive: {
-      spacing: number;
-      facing: number;
-      pattern: 'offensive';
-      adaptiveSpacing: boolean;
-    };
-    balanced: {
-      spacing: number;
-      facing: number;
-      pattern: 'balanced';
-      adaptiveSpacing: boolean;
-    };
-  };
-  adaptiveAI: {
-    experienceLevel: number;
-    performance: {
-      damageEfficiency: number;
-      survivalRate: number;
-    };
-  };
-  factionBehavior: {
-    aggressionLevel: number;
-    territorialControl: {
-      facing: number;
-    };
-  };
-  visualFeedback?: {
-    formationLines: FormationLines;
-    rangeCircles: RangeCircle[];
-  };
-}
+
 
 // Define enum for worker message types
 enum CombatWorkerMessageType {
@@ -233,59 +190,13 @@ export function BattleEnvironment({
 
   // Batch updates using requestAnimationFrame and implement advanced fleet AI
   const requestUpdate = useCallback(() => {
-    // Create a custom fleet AI result for advanced visualization
-    const customFleetAIResult: __FleetAIResult = {
-      formationPatterns: {
-        defensive: {
-          spacing: 50,
-          facing: 0,
-          pattern: 'defensive',
-          adaptiveSpacing: true,
-        },
-        offensive: {
-          spacing: 30,
-          facing: 90,
-          pattern: 'offensive',
-          adaptiveSpacing: false,
-        },
-        balanced: {
-          spacing: 40,
-          facing: 45,
-          pattern: 'balanced',
-          adaptiveSpacing: true,
-        },
-      },
-      adaptiveAI: {
-        experienceLevel: tier,
-        performance: {
-          damageEfficiency: 0.8,
-          survivalRate: 0.9,
-        },
-      },
-      factionBehavior: {
-        aggressionLevel: factionId === 'lost-nova' ? 0.8 : 0.5,
-        territorialControl: {
-          facing: 0,
-        },
-      },
-      visualFeedback: fleetAI.visualFeedback
-        ? {
-            formationLines: fleetAI.visualFeedback.formationLines,
-            rangeCircles: fleetAI.visualFeedback.rangeCircles,
-          }
-        : undefined,
-    };
-
-    // Log the fleet AI result for debugging
-    // console.warn('Advanced fleet AI result:', customFleetAIResult);
-
     // Update active hazards
     activeHazardsRef.current = hazards;
 
     requestAnimationFrame(() => {
       setImpactAnimations(prev => ({ ...prev }));
     });
-  }, [hazards, fleetAI.visualFeedback, tier, factionId]);
+  }, [hazards]);
 
   // Use the requestUpdate function in an effect to demonstrate its usage
   useEffect(() => {
@@ -690,37 +601,7 @@ export function BattleEnvironment({
     detectThreats();
   }, [hazards, __handleThreatDetection]);
 
-  // Update fleet AI result based on current battle state
-  useEffect(() => {
-    if (units.length > 0) {
-      // Update formation lines based on unit positions
-      const points = units.map(unit => ({ x: unit.position.x, y: unit.position.y }));
 
-      // Update range circles based on unit weapons
-      const rangeCircles = units.map(unit => {
-        const maxRange = Math.max(...unit.weapons.map(w => w.range));
-        return {
-          center: unit.position,
-          radius: maxRange,
-          type: 'engagement' as const,
-          opacity: 0.3,
-        };
-      });
-
-      // Use the existing fleetAIResult from useFleetAI hook
-      // This is just for demonstration - we're not actually modifying the fleetAIResult
-      // since it comes from a hook and we can't directly modify it
-      // console.warn('Fleet AI visualization updated with', {
-      //   formationLines: {
-      //     points,
-      //     style: 'solid' as const,
-      //     color: '#00ff00',
-      //     opacity: 0.5,
-      //   },
-      //   rangeCircles,
-      // });
-    }
-  }, [units]);
 
   // Add a log event helper to use GameEvent and GameEventType
   // const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {

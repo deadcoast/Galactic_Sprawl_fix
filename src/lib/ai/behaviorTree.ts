@@ -36,7 +36,7 @@ export abstract class Node {
   public id: string;
 
   constructor(id?: string) {
-    this.id = id || Math.random().toString(36).substring(2, 9); // Simple unique ID
+    this.id = id ?? Math.random().toString(36).substring(2, 9); // Simple unique ID
   }
 
   /**

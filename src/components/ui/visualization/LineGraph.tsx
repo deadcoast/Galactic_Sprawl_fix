@@ -83,7 +83,7 @@ export function LineGraph({
       {...chartProps}
       data={processedData}
       type={fillArea ? 'area' : 'line'}
-      className={`line-graph ${chartProps.className || ''}`}
+      className={`line-graph ${chartProps.className ?? ''}`}
       showGrid
     />
   );

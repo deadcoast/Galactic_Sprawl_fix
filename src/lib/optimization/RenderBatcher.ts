@@ -136,7 +136,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
       const byShader = new Map<string, RenderItem[]>();
 
       batch.items.forEach(item => {
-        const key = `${item?.shader || 'default'}-${item?.texture || 'none'}`;
+        const key = `${item?.shader ?? 'default'}-${item?.texture ?? 'none'}`;
         if (!byShader.has(key)) {
           byShader.set(key, []);
         }

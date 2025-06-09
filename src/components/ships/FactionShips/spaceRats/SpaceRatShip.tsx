@@ -1,11 +1,10 @@
-import { ReactNode, useCallback, useRef } from 'react';
-import * as THREE from 'three';
+import { ReactNode, useCallback } from 'react';
 import { BaseEffect } from '../../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../../hooks/ships/useShipEffects';
 import {
-  FactionShip,
-  FactionShipStats,
-  SpaceRatsShipClass,
+    FactionShip,
+    FactionShipStats,
+    SpaceRatsShipClass
 } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
@@ -70,7 +69,6 @@ export function SpaceRatShip({
   onFire,
   children,
 }: SpaceRatShipProps): JSX.Element {
-  const groupRef = useRef<THREE.Group>(null);
   const { addEffect, removeEffect, hasEffect } = useShipEffects();
 
   // Faction-specific effects

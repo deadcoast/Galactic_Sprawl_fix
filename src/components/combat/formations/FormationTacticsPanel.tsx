@@ -43,8 +43,7 @@ export function FormationTacticsPanel({
   onTacticChange,
 }: FormationTacticsPanelProps) {
   const fleetAI = useFleetAI(fleetId, factionId);
-  const [_activeSection, _setActiveSection] = useState<'presets' | 'editor' | 'bonuses'>('presets');
-  const [activeTactic, setActiveTactic] = useState<'flank' | 'charge' | 'kite' | 'hold'>('hold');
+  const [, setActiveTactic] = useState<'flank' | 'charge' | 'kite' | 'hold'>('hold');
   const [isCustomizing, setIsCustomizing] = useState(false);
 
   const defaultFormation: FleetFormation = {
@@ -69,7 +68,7 @@ export function FormationTacticsPanel({
 
   const [currentFormation, setCurrentFormation] = useState<FleetFormation>(initialFormation);
   const [showAdvancedStats, setShowAdvancedStats] = useState(false);
-  const [currentBehavior, _setCurrentBehavior] = useState('focused_fire');
+  const [currentBehavior] = useState('focused_fire');
 
   // Update local state if fleetAI data changes after initial load
   useEffect(() => {
@@ -171,7 +170,7 @@ export function FormationTacticsPanel({
   };
 
   const onRandomize = () => {
-    console.log('Randomize formation logic to be implemented');
+    // Randomize formation logic to be implemented
   };
 
   // Fix 2 & 3: Correct formationStats calculation based on available state
@@ -379,7 +378,6 @@ export function FormationTacticsPanel({
                 size="sm"
                 onClick={() => {
                   // Implementation of apply changes logic
-                  console.log('Applying settings...');
                   setShowSettingsPanel(false); // Close panel after applying
                 }}
               >
@@ -393,14 +391,4 @@ export function FormationTacticsPanel({
   );
 }
 
-/**
- * Calculate tactical bonuses based on formation pattern and tactic
- * NOTE: This function is currently unused as bonus data is not available.
- */
-function calculateTacticalBonuses(pattern: string, tactic: string): TacticalBonus[] {
-  // ... function implementation ...
-  console.warn(
-    'calculateTacticalBonuses is currently unused as bonus data is not available from the expected source.'
-  );
-  return []; // Placeholder
-}
+

@@ -4,23 +4,23 @@ import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../../services/logging/ErrorLoggingService';
 import { BaseEvent, EventType } from '../../../types/events/EventTypes';
 import {
-  FlowConnection,
-  FlowNode,
-  FlowNodeType as ResourceFlowNodeType,
-  ResourceType,
-  ResourceTypeInfo,
+    FlowConnection,
+    FlowNode,
+    FlowNodeType as ResourceFlowNodeType,
+    ResourceType,
+    ResourceTypeInfo
 } from '../../../types/resources/ResourceTypes';
 import { NetworkData } from '../../../types/visualization/CommonTypes';
 import { createSvgZoomBehavior, TypedZoomEvent } from '../../../types/visualizations/D3ZoomTypes';
 import { ResourceTypeConverter } from '../../../utils/resources/ResourceTypeConverter';
 import DataTransitionParticleSystem, {
-  DataPoint,
+    DataPoint
 } from '../../ui/visualization/DataTransitionParticleSystem';
 
 interface ResourceFlowDiagramProps {
@@ -69,9 +69,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     FlowConnection
   > | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const _connectionsContainer = useRef<SVGGElement | null>(null);
   const _particleContainer = useRef<SVGGElement | null>(null);
-  const _tooltipRef = useRef<HTMLDivElement | null>(null);
   const previousParticlesRef = useRef<Set<string> | null>(null);
 
   const componentId = 'ResourceFlowDiagram';
@@ -81,12 +79,12 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
   useComponentLifecycle({
     onMount: () => {
-      console.warn('ResourceFlowDiagram mounted');
+      // ResourceFlowDiagram mounted
       fetchResourceFlowData();
 
       // Define the handler function
       const handleResourceFlowUpdate = (event: BaseEvent) => {
-        console.warn(`Resource flow event received: ${event.type}`);
+        // Resource flow event received: {event.type}
         fetchResourceFlowData();
       };
 
@@ -109,7 +107,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       };
     },
     onUnmount: () => {
-      console.warn('ResourceFlowDiagram unmounted');
+      // ResourceFlowDiagram unmounted
       if (simulationRef.current) {
         simulationRef.current.stop();
       }
@@ -253,7 +251,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       .attr('stroke-opacity', d => (d.active ? 0.8 : 0.2))
       .attr('fill', 'none')
       .attr('marker-end', d => `url(#arrow-${d.resourceTypes[0]})`)
-      .on('click', function (event, d) {
+      .on('click', function (_event, d) {
         if (onConnectionClick) {
           onConnectionClick(d.id);
         }
@@ -476,25 +474,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     return networkData ? getParticleDataPoints(networkData) : [];
   }, [networkData, getParticleDataPoints]);
 
-  const _drawParticles = useCallback((particles: DataPoint[]) => {
-    // Store current particle IDs for the next render cycle
-    const currentParticleIds = new Set(particles.map(p => p.id));
-    previousParticlesRef.current = currentParticleIds;
 
-    // Clean up particles that no longer exist
-    const previousParticleIds = previousParticlesRef.current || new Set();
-    const particlesToRemove = Array.from(previousParticleIds).filter(
-      id => !currentParticleIds.has(id)
-    );
-
-    // Add back the particle removal logic
-    if (particlesToRemove.length > 0) {
-      d3.select(_particleContainer.current)
-        .selectAll('.particle')
-        .filter(p => particlesToRemove.includes((p as DataPoint).id))
-        .remove();
-    }
-  }, []);
 
   if (loading) {
     return <div>Loading Resource Flow...</div>;

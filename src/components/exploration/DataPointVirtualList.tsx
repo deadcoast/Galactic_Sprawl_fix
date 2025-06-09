@@ -4,10 +4,10 @@ import
     CircularProgress,
     Divider,
     IconButton,
-    Paper, styled, Tooltip,
+    Paper,
+    Tooltip,
     Typography
   } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
 import { Info, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -15,126 +15,93 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { DataPoint } from '../../types/exploration/DataAnalysisTypes';
 
-// Type-safe theme access helpers with proper error handling
-const getThemeValue = (theme: Theme, path: string, fallback = ''): string => {
-  try {
-    const parts = path.split('.');
-    let value: unknown = theme;
-    
-    for (const part of parts) {
-      if (value && typeof value === 'object' && part in value) {
-        value = (value as Record<string, unknown>)[part];
-      } else {
-        return fallback;
-      }
-    }
-    
-    return typeof value === 'string' ? value : fallback;
-  } catch {
-    // Return fallback on any error during theme access
-    return fallback;
-  }
-};
 
-// Safe spacing utility that doesn't use theme parameter
-const spacing = (multiplier: number): string => `${multiplier * 8}px`;
 
-// Create styled components to avoid complex sx props with proper typing
-const Container = styled('div')(() => ({
-  height: 400,
-  width: '100%',
-}));
+// Style objects to avoid styled component TypeScript issues
+const styles = {
+  container: {
+    height: 400,
+    width: '100%',
+  },
+  loadingContainer: {
+    height: 400,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    height: 400,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    border: '1px dashed #ccc',
+    borderRadius: '4px',
+  },
+  loadingText: {
+    marginLeft: '8px',
+  },
+  flexRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  flexRowGap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  expandedBox: {
+    marginTop: '12px',
+  },
+  divider: {
+    marginBottom: '12px',
+  },
+  captionBlock: {
+    display: 'block',
+    marginBottom: '8px',
+  },
+  captionBlockSmall: {
+    display: 'block',
+    marginBottom: '4px',
+  },
+  overlineText: {
+    marginTop: '12px',
+    marginBottom: '4px',
+  },
+  propertyRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '4px',
+  },
+  chip: {
+    height: 20,
+    fontSize: '0.7rem',
+  },
+} as const;
 
-const LoadingContainer = styled('div')(() => ({
-  height: 400,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
-
-const EmptyContainer = styled('div')(() => ({
-  height: 400,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  border: '1px dashed #ccc',
-  borderRadius: '4px',
-}));
-
-const LoadingText = styled(Typography)(() => ({
-  marginLeft: spacing(1),
-}));
-
-const FlexRow = styled('div')(() => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-}));
-
-const FlexRowGap = styled('div')(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: spacing(1),
-}));
-
-const StyledChip = styled(Chip)(() => ({
-  height: 20,
-  fontSize: '0.7rem',
-}));
-
-const ExpandedBox = styled('div')(() => ({
-  marginTop: spacing(1.5),
-}));
-
-const StyledDivider = styled(Divider)(() => ({
-  marginBottom: spacing(1.5),
-}));
-
-const CaptionBlock = styled(Typography)(() => ({
-  display: 'block',
-  marginBottom: spacing(1),
-}));
-
-const CaptionBlockSmall = styled(Typography)(() => ({
-  display: 'block',
-  marginBottom: spacing(0.5),
-}));
-
-const OverlineText = styled(Typography)(() => ({
-  marginTop: spacing(1.5),
-  marginBottom: spacing(0.5),
-}));
-
-const PropertyRow = styled('div')(() => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  marginBottom: spacing(0.5),
-}));
-
-// Type-safe styled Paper component with static color values
-const DataPointPaper = styled(Paper, {
-  shouldForwardProp: (prop: PropertyKey) => prop !== 'isSelected',
-})<{ isSelected?: boolean }>(({ isSelected }: { isSelected?: boolean }) => {
-  // Static color values to avoid theme access issues
-  const primaryLight = '#bbdefb';
-  const primaryMain = '#2196f3';
-  const backgroundPaper = '#ffffff';
-  const actionHover = 'rgba(0, 0, 0, 0.04)';
-  const dividerColor = 'rgba(0, 0, 0, 0.12)';
-  
-  return {
-    padding: spacing(1.5),
-    margin: spacing(0.5),
+// Paper component function with proper typing
+const DataPointPaper = ({ isSelected, children, ...props }: {
+  isSelected?: boolean;
+  children: React.ReactNode;
+  elevation?: number;
+  onClick?: () => void;
+}) => {
+  const paperStyles = {
+    padding: '12px',
+    margin: '4px',
     cursor: 'pointer',
     transition: 'all 0.2s',
-    backgroundColor: isSelected ? primaryLight : backgroundPaper,
-    border: isSelected ? '1px solid' : '1px solid transparent',
-    borderColor: isSelected ? primaryMain : dividerColor,
-    '&:hover': {
-      backgroundColor: isSelected ? primaryLight : actionHover,
-    },
+    backgroundColor: isSelected ? '#bbdefb' : '#ffffff',
+    border: isSelected ? '1px solid #2196f3' : '1px solid transparent',
+    borderColor: isSelected ? '#2196f3' : 'rgba(0, 0, 0, 0.12)',
   };
-});
+
+  return (
+    <Paper style={paperStyles} {...props}>
+      {children}
+    </Paper>
+  );
+};
 
 interface DataPointVirtualListProps {
   dataPoints: DataPoint[];
@@ -201,13 +168,14 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
             isSelected={isSelected}
             onClick={() => onSelectDataPoint && onSelectDataPoint(dataPoint)}
           >
-            <FlexRow>
-              <FlexRowGap>
+            <div style={styles.flexRow}>
+              <div style={styles.flexRowGap}>
                 {getTypeIcon(dataPoint.type)}
                 <Typography variant="subtitle2">{dataPoint.name}</Typography>
-                <StyledChip
+                <Chip
                   size="small"
                   label={dataPoint.type}
+                  style={styles.chip}
                   color={
                     dataPoint.type === 'sector'
                       ? 'primary'
@@ -216,7 +184,7 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
                         : 'success'
                   }
                 />
-              </FlexRowGap>
+              </div>
               <div>
                 <Tooltip title={isExpanded ? 'Show less' : 'Show details'}>
                   <IconButton
@@ -262,57 +230,57 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
                   </IconButton>
                 </Tooltip>
               </div>
-            </FlexRow>
+            </div>
 
             {isExpanded && (
-              <ExpandedBox>
-                <StyledDivider />
-                <CaptionBlock variant="caption" color="text.secondary">
+              <div style={styles.expandedBox}>
+                <Divider style={styles.divider} />
+                <Typography variant="caption" color="text.secondary" style={styles.captionBlock}>
                   ID: {dataPoint.id}
-                </CaptionBlock>
+                </Typography>
 
-                <CaptionBlockSmall variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" style={styles.captionBlockSmall}>
                   Coordinates: {`(${dataPoint.coordinates.x}, ${dataPoint.coordinates.y})`}
-                </CaptionBlockSmall>
+                </Typography>
 
-                <CaptionBlockSmall variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" style={styles.captionBlockSmall}>
                   Date: {new Date(dataPoint.date).toLocaleString()}
-                </CaptionBlockSmall>
+                </Typography>
 
-                <OverlineText variant="overline" display="block">
+                <Typography variant="overline" component="div" style={styles.overlineText}>
                   Properties
-                </OverlineText>
+                </Typography>
 
                 {Object.entries(dataPoint.properties).map(([key, value]) => (
-                  <PropertyRow key={key}>
+                  <div key={key} style={styles.propertyRow}>
                     <Typography variant="caption" color="text.secondary">
                       {key}:
                     </Typography>
                     <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                       {formatValue(value)}
                     </Typography>
-                  </PropertyRow>
+                  </div>
                 ))}
 
                 {dataPoint.metadata && Object.keys(dataPoint.metadata).length > 0 && (
                   <>
-                    <OverlineText variant="overline" display="block">
+                    <Typography variant="overline" component="div" style={styles.overlineText}>
                       Metadata
-                    </OverlineText>
+                    </Typography>
 
                     {Object.entries(dataPoint.metadata).map(([key, value]) => (
-                      <PropertyRow key={key}>
+                      <div key={key} style={styles.propertyRow}>
                         <Typography variant="caption" color="text.secondary">
                           {key}:
                         </Typography>
                         <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                           {formatValue(value)}
                         </Typography>
-                      </PropertyRow>
+                      </div>
                     ))}
                   </>
                 )}
-              </ExpandedBox>
+              </div>
             )}
           </DataPointPaper>
         </div>
@@ -325,25 +293,25 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
   const renderList = useMemo(() => {
     if (isLoading) {
       return (
-        <LoadingContainer>
+        <div style={styles.loadingContainer}>
           <CircularProgress size={24} />
-          <LoadingText variant="body2">Loading data points...</LoadingText>
-        </LoadingContainer>
+          <Typography variant="body2" style={styles.loadingText}>Loading data points...</Typography>
+        </div>
       );
     }
 
     if (!dataPoints.length) {
       return (
-        <EmptyContainer>
+        <div style={styles.emptyContainer}>
           <Typography variant="body2" color="text.secondary">
             No data points available
           </Typography>
-        </EmptyContainer>
+        </div>
       );
     }
 
     return (
-      <Container>
+      <div style={styles.container}>
         <AutoSizer>
           {({ height: autoHeight, width }: { height: number; width: number }) => (
             <FixedSizeList
@@ -357,7 +325,7 @@ export const DataPointVirtualList: React.FC<DataPointVirtualListProps> = ({
             </FixedSizeList>
           )}
         </AutoSizer>
-      </Container>
+      </div>
     );
   }, [dataPoints, isLoading, expandedDataPoint, Row]);
 

@@ -55,14 +55,12 @@ function isAttackData(data: unknown): data is AttackData {
  * Safely initializes combat stats for a ship if they don't exist
  */
 function initializeCombatStats(ship: CombatShip): void {
-  if (!ship.combatStats) {
-    ship.combatStats = {
+  ship.combatStats ??= {
       damageDealt: 0,
       damageReceived: 0,
       killCount: 0,
       assistCount: 0,
     };
-  }
 }
 
 export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
@@ -117,10 +115,8 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         if (mount.currentWeapon?.state.status === 'cooling') {
           const cooldownDuration = mount.currentWeapon?.config.baseStats.cooldown ?? 0;
           const lastFiredTime = mount.currentWeapon?.state.lastFiredTime ?? 0;
-          if (Date.now() - lastFiredTime >= cooldownDuration * 1000) {
-            if (mount.currentWeapon?.state) {
-              mount.currentWeapon.state.status = 'ready';
-            }
+          if (Date.now() - lastFiredTime >= cooldownDuration * 1000 && mount.currentWeapon?.state) {
+                mount.currentWeapon.state.status = 'ready';
           }
         }
       });
@@ -315,9 +311,13 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
 
   public registerShip(ship: CombatShip): void {
     if (!isCombatShip(ship)) {
+      const shipRecord = ship as Record<string, unknown>;
+      const shipId = typeof shipRecord.id === 'string' ? shipRecord.id : 'unknown';
+      const shipCategory = typeof shipRecord.category === 'string' ? shipRecord.category : 'unknown';
+      
       errorLoggingService.logWarn('[CombatShipManager] Attempted to register non-combat ship', {
-        shipId: (ship as any).id,
-        shipCategory: (ship as any).category,
+        shipId,
+        shipCategory,
         managerId: this.managerName,
       });
       return;
@@ -422,9 +422,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   ): void {
     const ship = this.ships.get(shipId);
     if (ship) {
-      if (!ship.techBonuses) {
-        ship.techBonuses = { weaponEfficiency: 1, shieldRegeneration: 1, energyEfficiency: 1 };
-      }
+      ship.techBonuses ??= { weaponEfficiency: 1, shieldRegeneration: 1, energyEfficiency: 1 };
       ship.techBonuses = bonuses;
     }
   }

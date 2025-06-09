@@ -339,14 +339,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
     for (let i = 0; i < 7; i++) {
       const values = featureArray.map(f => f[i]);
       mean.push(d3.mean(values) ?? 0);
-      std.push(d3.deviation(values) || 1);
+      std.push(d3.deviation(values) ?? 1);
     }
 
     return {
       mean,
       std,
       targetMean: d3.mean(targets) ?? 0,
-      targetStd: d3.deviation(targets) || 1,
+      targetStd: d3.deviation(targets) ?? 1,
     };
   };
 

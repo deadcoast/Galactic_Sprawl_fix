@@ -12,7 +12,7 @@
  * 5. Adaptive processing strategies
  */
 
-import { Subject, Subscription, from, of } from 'rxjs';
+import { from, of, Subject, Subscription } from 'rxjs';
 import { bufferTime, concatMap, delay, filter, mergeMap } from 'rxjs/operators';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { EventBatchConfig } from './EventBatcher';
@@ -250,14 +250,16 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.config = {
       ...DEFAULT_CONFIG,
       ...config,
-      batchConfigByPriority: new Map([
-        ...DEFAULT_CONFIG.batchConfigByPriority,
-        ...(config.batchConfigByPriority ?? new Map()),
+      batchConfigByPriority: new Map<EventPriority, EventBatchConfig>([
+        ...Array.from(DEFAULT_CONFIG.batchConfigByPriority.entries()),
+        ...Array.from(config.batchConfigByPriority?.entries() ?? []),
       ]),
-      priorityMap: new Map([...(config.priorityMap ?? new Map())]),
-      coalesceableEventTypes: new Set([
-        ...DEFAULT_CONFIG.coalesceableEventTypes,
-        ...(config.coalesceableEventTypes ?? new Set()),
+      priorityMap: new Map<EventType | string, EventPriority>([
+        ...Array.from(config.priorityMap?.entries() ?? [])
+      ]),
+      coalesceableEventTypes: new Set<EventType | string>([
+        ...Array.from(DEFAULT_CONFIG.coalesceableEventTypes),
+        ...Array.from(config.coalesceableEventTypes ?? []),
       ]),
     };
 
@@ -389,7 +391,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
   /**
    * Update metrics for adaptive throttling
    */
-  private async updateMetrics(): Promise<void> {
+  private updateMetrics(): Promise<void> {
     // Calculate events per second
     const now = Date.now();
 
@@ -408,6 +410,8 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.queues.forEach((queue, priority) => {
       this.metrics.queueDepthByPriority[priority] = queue.length;
     });
+    
+    return Promise.resolve();
   }
 
   /**

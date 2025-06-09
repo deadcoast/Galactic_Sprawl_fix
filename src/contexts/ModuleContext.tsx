@@ -225,7 +225,7 @@ export const moduleReducer = (state: ModuleState, action: ModuleAction): ModuleS
     case ModuleActionType.SET_LOADING:
       return {
         ...state,
-        isLoading: action.payload.isLoading || false,
+        isLoading: action.payload.isLoading ?? false,
       };
     case ModuleActionType.SET_ERROR:
       return {

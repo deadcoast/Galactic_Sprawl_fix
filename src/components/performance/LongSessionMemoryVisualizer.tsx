@@ -146,7 +146,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
     } else if (propSnapshots) {
       // Use data from props
       setSnapshots(propSnapshots);
-      setAnalysis(propAnalysis || null);
+      setAnalysis(propAnalysis ?? null);
       setSessionMarkers([]);
     }
   };

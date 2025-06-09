@@ -143,7 +143,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
 }) => {
   const allResourceRates = useAllResourceRates() as ResourceRates | null;
   const [selectedResources, setSelectedResources] = useState<ResourceType[]>(
-    initialSelectedResources ||
+    initialSelectedResources ??
       (allResourceRates ? (Object.keys(allResourceRates) as ResourceType[]) : [])
   );
   const [filterType, setFilterType] = useState<RateFilterType>(initialFilterType);

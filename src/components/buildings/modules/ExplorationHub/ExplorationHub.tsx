@@ -1,5 +1,4 @@
-import
-  {
+import {
     AlertTriangle,
     Filter,
     Flag,
@@ -10,8 +9,8 @@ import
     Search,
     Target,
     ZoomIn,
-    ZoomOut,
-  } from 'lucide-react';
+    ZoomOut
+} from 'lucide-react';
 import * as React from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
@@ -19,17 +18,15 @@ import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragA
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
 import { explorationRules } from '../../../../config/automation/explorationRules';
 import { StarSystem } from '../../../../managers/exploration/ExplorationManager';
-import
-  {
-    ReconShipManagerImpl,
-  } from '../../../../managers/exploration/ReconShipManager';
+import {
+    ReconShipManagerImpl
+} from '../../../../managers/exploration/ReconShipManager';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { Discovery, ExplorationTask, SectorType } from '../../../../types/exploration/ExplorationTypes';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
-import
-  {
+import {
     ReconShip as CoreReconShip
-  } from '../../../../types/ships/ShipTypes';
+} from '../../../../types/ships/ShipTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
@@ -47,8 +44,7 @@ interface Anomaly {
 // Update sector status type
 type SectorStatus = 'unmapped' | 'mapped' | 'scanning';
 
-// Update ship status type
-type ShipStatus = 'idle' | 'scanning' | 'returning' | 'assigned';
+
 
 interface Sector extends Omit<StarSystem, 'status'> {
   resourcePotential: number;
@@ -268,8 +264,8 @@ const SectorComponent = memo(
           label: 'Mark as Priority',
           icon: <Flag className="h-4 w-4" />,
           action: () => {
-            // Handle priority marking
-            console.warn(`Marking ${sector.name} as priority`);
+            // Handle priority marking - implementation pending
+            // TODO: Implement priority marking functionality
           },
         },
       ];

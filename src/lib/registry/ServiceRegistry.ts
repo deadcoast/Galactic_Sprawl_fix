@@ -45,7 +45,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
    * @param dependencies Optional array of dependency service names
    */
   public registerService(service: BaseService, name?: string, dependencies: string[] = []): void {
-    const serviceName = name || service.getMetadata().name;
+    const serviceName = name ?? service.getMetadata().name;
 
     if (this.services.has(serviceName)) {
       console.warn(`Service ${serviceName} is already registered. Skipping.`);
@@ -67,7 +67,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
    * @param dependencies Optional array of dependency service/manager names
    */
   public registerManager(manager: BaseManager, name?: string, dependencies: string[] = []): void {
-    const managerName = name || manager.getName();
+    const managerName = name ?? manager.getName();
 
     if (this.managers.has(managerName)) {
       console.warn(`Manager ${managerName} is already registered. Skipping.`);

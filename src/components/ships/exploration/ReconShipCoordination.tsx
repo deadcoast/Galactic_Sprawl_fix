@@ -319,30 +319,11 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
     [getFormationShips]
   );
 
-  // TODO: generate and implement this function
-  const _getFormationsByType = useCallback(
-    (type: string) => {
-      return formations.filter(f => f.type === type);
-    },
-    [formations]
-  );
 
-  // TODO: generate and implement this function
 
-  const _getShipsByType = useCallback(
-    (type: 'recon' | 'mining' | 'combat') => {
-      return ships.filter(ship => ship.type === type);
-    },
-    [ships]
-  );
 
-  // TODO: generate and implement this function
-  const _getShipsByStatus = useCallback(
-    (status: 'idle' | 'scanning' | 'investigating' | 'returning') => {
-      return ships.filter(ship => ship.status === status);
-    },
-    [ships]
-  );
+
+
 
   const renderFormationList = () => {
     return (
@@ -498,7 +479,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
   const handleAutoDistributeClick = () => {
     const highPrioritySectorIds = _getHighPrioritySectors().map(sector => sector.id);
     if (highPrioritySectorIds.length === 0) {
-      console.warn('No high priority sectors found for auto-distribution.');
+      // No high priority sectors found for auto-distribution
       return;
     }
     handleAutoDistributeTasks(highPrioritySectorIds, prioritizeFormations);

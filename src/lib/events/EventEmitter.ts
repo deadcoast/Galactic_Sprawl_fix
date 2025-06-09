@@ -263,7 +263,7 @@ export class EventEmitter<T = BaseEvent> {
    */
   public getPerformanceMetrics(eventType = 'all'): EventPerformanceMetrics {
     return (
-      this.metrics.get(eventType) || {
+      this.metrics.get(eventType) ?? {
         eventType,
         emitCount: 0,
         listenerCount: 0,

@@ -357,6 +357,33 @@ export function getInputTypeForOperator(
 //=============================================================================
 
 /**
+ * Safely converts a value to string for comparison
+ * @param value Value to convert
+ */
+function safeStringify(value: unknown): string {
+  if (value === null || value === undefined) {
+    return 'null';
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'symbol') {
+    return value.toString();
+  }
+  if (typeof value === 'function') {
+    return '[Function]';
+  }
+  // For any other types, convert to their type name
+  return `[${typeof value}]`;
+}
+
+/**
  * Applies a filter to a data item
  * @param item Data item to filter
  * @param filter Filter to apply
@@ -416,10 +443,10 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
       );
 
     case 'in':
-      return isArray<string>(value) && value.includes(String(fieldValue));
+      return isArray<string>(value) && value.includes(safeStringify(fieldValue));
 
     case 'notIn':
-      return isArray<string>(value) && !value.includes(String(fieldValue));
+      return isArray<string>(value) && !value.includes(safeStringify(fieldValue));
 
     case 'exists':
       return true; // We already checked existence above
