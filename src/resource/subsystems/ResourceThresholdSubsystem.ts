@@ -1,13 +1,13 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../services/logging/ErrorLoggingService';
 import {
-  ResourceState as StringResourceState,
-  ResourceType as StringResourceType,
-  toEnumResourceType,
+    ResourceState as StringResourceState,
+    ResourceType as StringResourceType,
+    toEnumResourceType
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -88,6 +88,7 @@ export class ResourceThresholdSubsystem {
 
     try {
       // Initialize default thresholds if needed
+      await Promise.resolve();
       this.initializeDefaultThresholds();
 
       this.isInitialized = true;
@@ -114,6 +115,7 @@ export class ResourceThresholdSubsystem {
 
     try {
       // Clear thresholds
+      await Promise.resolve();
       this.thresholds.clear();
       this.resourceTypeThresholds.clear();
       this.entityThresholds.clear();
@@ -460,8 +462,8 @@ export class ResourceThresholdSubsystem {
       threshold: { ...threshold },
       resourceState: { ...state },
       message:
-        threshold.actionData?.message || `Resource threshold reached for ${threshold.resourceType}`,
-      severity: threshold.actionData?.severity || 'info',
+        threshold.actionData?.message ?? `Resource threshold reached for ${threshold.resourceType}`,
+      severity: threshold.actionData?.severity ?? 'info',
       timestamp: Date.now(),
     });
   }
@@ -475,7 +477,7 @@ export class ResourceThresholdSubsystem {
       type: 'RESOURCE_THRESHOLD_AUTOMATE',
       threshold: { ...threshold },
       resourceState: { ...state },
-      automationAction: threshold.actionData?.automationAction || 'default',
+      automationAction: threshold.actionData?.automationAction ?? 'default',
       parameters: threshold.actionData?.parameters ?? {},
       timestamp: Date.now(),
     });

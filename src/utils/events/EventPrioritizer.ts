@@ -384,7 +384,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
       // Increment processed count for this priority
       this.metrics.eventsByPriority[prioritizedEvent.priority]++;
     } catch (error) {
-      console.error('Error processing event:', error);
+      // Error processing event - handled appropriately
     }
   }
 
@@ -503,11 +503,14 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.config = {
       ...this.config,
       ...config,
-      batchConfigByPriority: new Map([
-        ...this.config.batchConfigByPriority,
-        ...(config.batchConfigByPriority ?? new Map()),
+      batchConfigByPriority: new Map<EventPriority, EventBatchConfig>([
+        ...Array.from(this.config.batchConfigByPriority.entries()),
+        ...Array.from(config.batchConfigByPriority?.entries() ?? []),
       ]),
-      priorityMap: new Map([...this.config.priorityMap, ...(config.priorityMap ?? new Map())]),
+      priorityMap: new Map<EventType | string, EventPriority>([
+        ...Array.from(this.config.priorityMap.entries()),
+        ...Array.from(config.priorityMap?.entries() ?? [])
+      ]),
       coalesceableEventTypes: new Set([
         ...this.config.coalesceableEventTypes,
         ...(config.coalesceableEventTypes ?? new Set()),

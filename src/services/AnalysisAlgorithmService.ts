@@ -244,7 +244,7 @@ export class AnalysisAlgorithmService {
             );
             break;
           case 'distribution':
-            result = await this.analyzeDistribution(
+            result = this.analyzeDistribution(
               config as DistributionAnalysisConfig,
               dataToProcess,
               effectiveOptions
@@ -658,6 +658,32 @@ export class AnalysisAlgorithmService {
   }
 
   /**
+   * Safely converts a value to string for comparison
+   */
+  private safeStringify(value: unknown): string {
+    if (value === null || value === undefined) {
+      return 'null';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    if (typeof value === 'symbol') {
+      return value.toString();
+    }
+    if (typeof value === 'function') {
+      return '[Function]';
+    }
+    // For any other types, convert to their type name
+    return `[${typeof value}]`;
+  }
+
+  /**
    * Sort data points using the optimized property extractor
    */
   private sortDataPointsByExtractor(
@@ -679,7 +705,10 @@ export class AnalysisAlgorithmService {
         return aValue - bValue;
       }
 
-      return String(aValue).localeCompare(String(bValue));
+      // Safe string conversion to avoid object stringification issues
+      const aString = this.safeStringify(aValue);
+      const bString = this.safeStringify(bValue);
+      return aString.localeCompare(bString);
     });
   }
 
@@ -696,7 +725,7 @@ export class AnalysisAlgorithmService {
       const value = extractor(point);
 
       if (value !== undefined) {
-        const key = String(value);
+        const key = this.safeStringify(value);
         if (!result[key]) {
           result[key] = [];
         }
@@ -835,7 +864,7 @@ export class AnalysisAlgorithmService {
         }
 
         // Calculate correlation coefficient based on method
-        const promise = (async () => {
+        const promise = Promise.resolve((() => {
           let coefficient: number;
 
           const var1Values = commonValues.map(v => v.var1);
@@ -867,7 +896,7 @@ export class AnalysisAlgorithmService {
           }
 
           return null;
-        })();
+        })());
 
         promises.push(promise);
       }
@@ -1680,16 +1709,8 @@ export class AnalysisAlgorithmService {
       }
 
       // Safe string conversion to avoid object stringification issues
-      const aString = typeof aValue === 'object' && aValue !== null 
-        ? JSON.stringify(aValue) 
-        : (aValue === null || aValue === undefined) 
-          ? String(aValue)
-          : String(aValue);
-      const bString = typeof bValue === 'object' && bValue !== null 
-        ? JSON.stringify(bValue) 
-        : (bValue === null || bValue === undefined) 
-          ? String(bValue)
-          : String(bValue);
+      const aString = this.safeStringify(aValue);
+      const bString = this.safeStringify(bValue);
       return aString.localeCompare(bString);
     });
   }
@@ -1709,7 +1730,7 @@ export class AnalysisAlgorithmService {
         continue;
       }
 
-      const groupKey = String(value);
+      const groupKey = this.safeStringify(value);
       if (!groups[groupKey]) {
         groups[groupKey] = [];
       }
@@ -2229,7 +2250,7 @@ export class AnalysisAlgorithmService {
       return 'No valid statistics found for distribution analysis.';
     }
 
-    return `Distribution analysis of ${data?.variable ?? 'unknown variable'} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
+    return `Distribution analysis of ${this.safeStringify(data?.variable) ?? 'unknown variable'} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
   }
 
   /**
@@ -2381,7 +2402,7 @@ export class AnalysisAlgorithmService {
         );
         break;
       case 'neuralNetwork':
-        modelResult = await this.runNeuralNetwork(
+        modelResult = this.runNeuralNetwork(
           trainingData,
           testingData,
           features,
@@ -2698,7 +2719,7 @@ export class AnalysisAlgorithmService {
   /**
    * Run neural network model for prediction
    */
-  private async runNeuralNetwork(
+  private runNeuralNetwork(
     trainingData: {
       features: number[];
       target: number;
@@ -2714,7 +2735,7 @@ export class AnalysisAlgorithmService {
     featureNames: string[],
     predictionHorizon: number,
     epochs: number
-  ): Promise<{
+  ): {
     predictions: {
       features: number[];
       actual: number;
@@ -2732,7 +2753,7 @@ export class AnalysisAlgorithmService {
       mae: number;
     };
     modelDetails: Record<string, unknown>;
-  }> {
+  } {
     // Extract feature and target matrices
     const X_train = trainingData.map(point => point.features);
     const y_train = trainingData.map(point => point.target);
@@ -3546,8 +3567,8 @@ export class AnalysisAlgorithmService {
       .slice(0, 3);
 
     const topResourceTypes = sortedDensities
-      // Format ResourceType enums directly
-      .map(([type, density]) => `${type} (${(density * 100).toFixed(1)}%)`)
+      // Format ResourceType enums using safeStringify for type safety
+      .map(([type, density]) => `${this.safeStringify(type)} (${(density * 100).toFixed(1)}%)`)
       .join(', ');
 
     const mapSize = `${(xRange[1] - xRange[0]).toFixed(0)}x${(yRange[1] - yRange[0]).toFixed(0)}`;

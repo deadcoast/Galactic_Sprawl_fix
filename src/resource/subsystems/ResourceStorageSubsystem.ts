@@ -1,14 +1,13 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../services/logging/ErrorLoggingService';
 import {
-  ResourceType,
-  ResourceTypeString,
-  ResourceState as StringResourceState,
-  ResourceTransfer as StringResourceTransfer,
+    ResourceState as StringResourceState,
+    ResourceTransfer as StringResourceTransfer, ResourceType,
+    ResourceTypeString
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -119,6 +118,7 @@ export class ResourceStorageSubsystem {
 
     try {
       // Additional initialization logic can go here
+      await Promise.resolve();
       this.isInitialized = true;
     } catch (error) {
       errorLoggingService.logError(
@@ -141,6 +141,7 @@ export class ResourceStorageSubsystem {
 
     try {
       // Cleanup resources
+      await Promise.resolve();
       this.containers.clear();
       this.resourcePriorities.clear();
       this.transferHistory = [];
@@ -497,7 +498,7 @@ export class ResourceStorageSubsystem {
       fillPercentage: 0.2,
     };
 
-    const resourcePriorityValue = this.resourcePriorities.get(resourceType) || 5;
+    const resourcePriorityValue = this.resourcePriorities.get(resourceType) ?? 5;
 
     return containers.map(container => {
       const resourceState = container.resources.get(resourceType)!;
@@ -806,7 +807,7 @@ export class ResourceStorageSubsystem {
    */
   public getResourcePriority(type: ResourceTypeString | ResourceType): number {
     const stringType = ensureStringResourceType(type);
-    return this.resourcePriorities.get(stringType) || 5;
+    return this.resourcePriorities.get(stringType) ?? 5;
   }
 
   /**

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
-  ExtendedModuleStatus,
-  ModuleAlert,
-  moduleStatusManager,
-  StatusHistoryEntry,
+    ExtendedModuleStatus,
+    ModuleAlert,
+    moduleStatusManager,
+    StatusHistoryEntry
 } from '../../managers/module/ModuleStatusManager';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
@@ -51,7 +51,7 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
 
   // Fetch module status on mount
   useEffect(() => {
-    const fetchModuleStatus = async () => {
+    const fetchModuleStatus = () => {
       try {
         setIsLoading(true);
 
