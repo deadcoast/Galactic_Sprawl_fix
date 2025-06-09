@@ -11,11 +11,9 @@
 
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { apiService } from './APIService';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorType
 } from './logging/ErrorLoggingService';
 
 // Define missing type alias
@@ -62,10 +60,9 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
   }
 
   protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    await Promise.resolve();
     this.startDataPolling();
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       active_streams: 0,
       total_data_points: 0,
@@ -114,9 +111,7 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
       }
     }
 
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_data_points += newData.length;
     metrics.buffer_utilization = this.calculateBufferUtilization(buffer);
@@ -317,7 +312,7 @@ export class RealTimeDataService extends AbstractBaseService<RealTimeDataService
     }, interval);
 
     // Store interval ID for cleanup
-    this.streamIds.set(bufferId, intervalId.toString());
+    this.streamIds.set(bufferId, String(intervalId));
   }
 
   private notifyListeners(bufferId: string): void {

@@ -44,7 +44,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
     const queue = this.queues.get(priority);
     if (queue) {
       queue.push(event);
-      this.processQueue().catch(error => {
+      void this.processQueue().catch(error => {
         // Error processing queue - handled appropriately
       });
     }
@@ -153,7 +153,12 @@ export class EventPriorityQueue<T extends { priority?: number }> {
       while (queue.length > 0) {
         const event = queue.shift();
         if (event) {
-          this.processor(event);
+          const result = this.processor(event);
+          if (result instanceof Promise) {
+            void result.catch(error => {
+              console.error('Error in processAll processor:', error);
+            });
+          }
         }
       }
     }
@@ -283,24 +288,24 @@ export function filterMessagesByPriority(
 ): Observable<SystemMessage> {
   return messages.pipe(
     filter(message => {
-      // Convert both to numbers to ensure safe comparison
+      // Safely convert enum values to numbers for comparison
       const messagePriority = Number(message.priority);
       const targetPriority = Number(priority);
       
-      switch (comparison) {
+              switch (comparison) {
         case 'eq':
-          return messagePriority === targetPriority;
+          return Number(messagePriority) === Number(targetPriority);
         case 'lt':
-          return messagePriority < targetPriority;
+          return Number(messagePriority) < Number(targetPriority);
         case 'lte':
-          return messagePriority <= targetPriority;
+          return Number(messagePriority) <= Number(targetPriority);
         case 'gt':
-          return messagePriority > targetPriority;
+          return Number(messagePriority) > Number(targetPriority);
         case 'gte':
-          return messagePriority >= targetPriority;
+          return Number(messagePriority) >= Number(targetPriority);
         default:
-          return messagePriority === targetPriority;
-      }
+          return Number(messagePriority) === Number(targetPriority);
+        }
     })
   );
 }
@@ -390,8 +395,7 @@ export function createThrottledProcessor<T>(
       // Store for later processing
       pending = event;
 
-      if (!timeout) {
-        timeout = setTimeout(
+        timeout ??= setTimeout(
           () => {
             if (pending) {
               processor(pending);
@@ -402,7 +406,6 @@ export function createThrottledProcessor<T>(
           },
           throttleMs - (now - lastProcessTime)
         );
-      }
     }
   };
 }
@@ -459,13 +462,13 @@ export function createBatchProcessor<T, R>(
           timeout = null;
         }
         processCurrentBatch();
-      } else if (!timeout) {
-        // Start timer for batch processing
-        timeout = setTimeout(() => {
-          timeout = null;
-          processCurrentBatch();
-        }, maxWaitMs);
-      }
+              } else {
+          // Start timer for batch processing if none exists
+          timeout ??= setTimeout(() => {
+            timeout = null;
+            processCurrentBatch();
+          }, maxWaitMs);
+        }
     },
     flush: () => {
       if (timeout !== null) {

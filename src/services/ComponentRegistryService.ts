@@ -1,9 +1,6 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService, ErrorType
 } from './logging/ErrorLoggingService';
 
 /**
@@ -46,9 +43,8 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
 
   protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_components: 0,
       total_types: 0,
@@ -61,6 +57,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
 
   protected async onDispose(): Promise<void> {
     // Clear all registrations
+    await Promise.resolve();
     this.components.clear();
     this.typeIndex.clear();
     this.eventIndex.clear();
@@ -92,9 +89,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     }
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
@@ -128,9 +123,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     this.components.delete(id);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
@@ -174,9 +167,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     registration.renderCount = (registration.renderCount ?? 0) + 1;
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_renders = (metrics.total_renders ?? 0) + 1;
     metrics.last_render_timestamp = registration.lastRenderTime;
@@ -187,9 +178,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
     const components = this.getComponentsByEvent(eventType);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_notifications = (metrics.total_notifications ?? 0) + 1;
     metrics.last_notification_timestamp = Date.now();
@@ -206,9 +195,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistry
 
   public override handleError(error: Error, context?: Record<string, unknown>): void {
     // Update error metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();

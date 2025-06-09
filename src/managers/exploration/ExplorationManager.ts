@@ -197,12 +197,12 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
    */
   protected async onInitialize(): Promise<void> {
     // Initialization logic, e.g., loading data, setting up initial state
+    await Promise.resolve();
     this.publishEvent(
       this.createEvent(EventType.MODULE_ACTIVATED, {
         status: 'active',
       })
     );
-    await Promise.resolve();
   }
 
   /**
@@ -219,13 +219,13 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
    */
   protected async onDispose(): Promise<void> {
     // Cleanup logic, e.g., unsubscribing from events, saving state
+    await Promise.resolve();
     this.shipManager.off('STATUS_CHANGED', this.handleShipStatusChange);
     this.publishEvent(
       this.createEvent(EventType.MODULE_DEACTIVATED, {
         status: 'inactive',
       })
     );
-    await Promise.resolve();
   }
 
   /**

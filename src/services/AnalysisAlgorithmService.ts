@@ -258,7 +258,7 @@ export class AnalysisAlgorithmService {
             );
             break;
           case 'prediction':
-            result = await this.analyzePrediction(
+            result = this.analyzePrediction(
               config as PredictionAnalysisConfig,
               dataToProcess,
               effectiveOptions
@@ -1058,9 +1058,12 @@ export class AnalysisAlgorithmService {
       merged[k++] = right[j++];
     }
 
-    // Copy merged array back to original
-    for (let i = 0; i < merged.length; i++) {
-      arr[i] = merged[i];
+    // Copy merged array back to original with type safety
+    for (let i = 0; i < merged.length && i < arr.length; i++) {
+      const mergedValue = merged[i] as number;
+      if (typeof mergedValue === 'number') {
+        arr[i] = mergedValue;
+      }
     }
 
     return count;
@@ -1105,6 +1108,7 @@ export class AnalysisAlgorithmService {
       i = j;
     }
 
+    // Convert Float64Array to number[] safely
     return Array.from(ranks);
   }
 
@@ -1447,10 +1451,18 @@ export class AnalysisAlgorithmService {
       }
 
       // Update centroids based on new cluster assignments
-      const newCentroids: number[][] = new Array(k)
-        .fill(0)
-        .map(() => new Array(dimensions).fill(0));
-      const counts = new Array(k).fill(0);
+      const newCentroids: number[][] = [];
+      for (let i = 0; i < k; i++) {
+        const centroidVector: number[] = [];
+        for (let j = 0; j < dimensions; j++) {
+          centroidVector[j] = 0;
+        }
+        newCentroids[i] = centroidVector;
+      }
+      const counts: number[] = [];
+      for (let i = 0; i < k; i++) {
+        counts[i] = 0;
+      }
 
       for (let i = 0; i < n; i++) {
         const cluster = clusters[i];
@@ -1899,7 +1911,7 @@ export class AnalysisAlgorithmService {
       i = j;
     }
 
-    return ranks;
+    return Array.from(ranks) as number[];
   }
 
   /**
@@ -2271,11 +2283,11 @@ export class AnalysisAlgorithmService {
   /**
    * Analyze data to generate predictions using various models
    */
-  private async analyzePrediction(
+  private analyzePrediction(
     config: PredictionAnalysisConfig,
     dataset: Dataset,
     _options: AlgorithmOptions // Prefix unused parameter
-  ): Promise<AnalysisResult> {
+  ): AnalysisResult {
     const startTime = Date.now();
 
     // Extract parameters from config
@@ -2603,9 +2615,14 @@ export class AnalysisAlgorithmService {
     const numFeatures = X[0].length;
 
     // Calculate X^T (transpose of X)
-    const X_T: Matrix = Array(numFeatures)
-      .fill(0)
-      .map(() => new Array(numSamples).fill(0));
+    const X_T: Matrix = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const row: number[] = [];
+      for (let j = 0; j < numSamples; j++) {
+        row[j] = 0;
+      }
+      X_T[i] = row;
+    }
     for (let i = 0; i < numSamples; i++) {
       for (let j = 0; j < numFeatures; j++) {
         X_T[j][i] = X[i][j];
@@ -2613,9 +2630,14 @@ export class AnalysisAlgorithmService {
     }
 
     // Calculate X^T * X
-    const X_T_X: Matrix = Array(numFeatures)
-      .fill(0)
-      .map(() => new Array(numFeatures).fill(0));
+    const X_T_X: Matrix = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const row: number[] = [];
+      for (let j = 0; j < numFeatures; j++) {
+        row[j] = 0;
+      }
+      X_T_X[i] = row;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numFeatures; j++) {
         for (let k = 0; k < numSamples; k++) {
@@ -2628,7 +2650,10 @@ export class AnalysisAlgorithmService {
     const X_T_X_inv = this.calculateMatrixInverse(X_T_X);
 
     // Calculate X^T * y
-    const X_T_y = Array(numFeatures).fill(0);
+    const X_T_y: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      X_T_y[i] = 0;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numSamples; j++) {
         X_T_y[i] += X_T[i][j] * y[j];
@@ -2636,7 +2661,10 @@ export class AnalysisAlgorithmService {
     }
 
     // Calculate coefficients = (X^T * X)^(-1) * X^T * y
-    const coefficients = Array(numFeatures).fill(0);
+    const coefficients: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      coefficients[i] = 0;
+    }
     for (let i = 0; i < numFeatures; i++) {
       for (let j = 0; j < numFeatures; j++) {
         coefficients[i] += X_T_X_inv[i][j] * X_T_y[j];
@@ -2657,7 +2685,7 @@ export class AnalysisAlgorithmService {
     // Create augmented matrix [A|I]
     const augMatrix: number[][] = [];
     for (let i = 0; i < n; i++) {
-      augMatrix.push([...matrix[i], ...new Array(n).fill(0)]);
+      augMatrix.push([...matrix[i], ...(new Array(n).fill(0) as number[])]);
       augMatrix[i][n + i] = 1;
     }
 
@@ -2780,21 +2808,24 @@ export class AnalysisAlgorithmService {
     const hiddenSize = Math.max(5, Math.min(20, Math.floor(numFeatures * 2)));
 
     // Initialize weights randomly
-    const weights1 = Array(numFeatures)
-      .fill(0)
-      .map(() =>
-        Array(hiddenSize)
-          .fill(0)
-          .map(() => (Math.random() - 0.5) * 0.1)
-      );
+    const weights1: number[][] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      const featureWeights: number[] = [];
+      for (let j = 0; j < hiddenSize; j++) {
+        featureWeights[j] = (Math.random() - 0.5) * 0.1;
+      }
+      weights1[i] = featureWeights;
+    }
 
-    const bias1 = Array(hiddenSize)
-      .fill(0)
-      .map(() => (Math.random() - 0.5) * 0.1);
+    const bias1: number[] = [];
+    for (let i = 0; i < hiddenSize; i++) {
+      bias1[i] = (Math.random() - 0.5) * 0.1;
+    }
 
-    const weights2 = Array(hiddenSize)
-      .fill(0)
-      .map(() => (Math.random() - 0.5) * 0.1);
+    const weights2: number[] = [];
+    for (let i = 0; i < hiddenSize; i++) {
+      weights2[i] = (Math.random() - 0.5) * 0.1;
+    }
     let bias2 = (Math.random() - 0.5) * 0.1; // Change from const to let
 
     // Training parameters
@@ -2822,11 +2853,22 @@ export class AnalysisAlgorithmService {
         const batchIndices = indices.slice(batchStart, batchEnd);
 
         // Initialize gradients
-        const gradWeights1 = Array(numFeatures)
-          .fill(0)
-          .map(() => new Array(hiddenSize).fill(0));
-        const gradBias1 = new Array(hiddenSize).fill(0);
-        const gradWeights2 = new Array(hiddenSize).fill(0);
+        const gradWeights1: number[][] = [];
+        for (let i = 0; i < numFeatures; i++) {
+          const gradRow: number[] = [];
+          for (let j = 0; j < hiddenSize; j++) {
+            gradRow[j] = 0;
+          }
+          gradWeights1[i] = gradRow;
+        }
+        const gradBias1: number[] = [];
+        for (let i = 0; i < hiddenSize; i++) {
+          gradBias1[i] = 0;
+        }
+        const gradWeights2: number[] = [];
+        for (let i = 0; i < hiddenSize; i++) {
+          gradWeights2[i] = 0;
+        }
         let gradBias2 = 0; // Change from const to let
 
         let batchLoss = 0;
@@ -2836,9 +2878,12 @@ export class AnalysisAlgorithmService {
           const x = normalizedTrainFeatures[idx];
           const y = normalizedTrainTargets[idx];
 
-          // Forcombatd pass
+          // Forward pass
           // Hidden layer with ReLU activation
-          const hidden = new Array(hiddenSize).fill(0);
+          const hidden: number[] = [];
+          for (let i = 0; i < hiddenSize; i++) {
+            hidden[i] = 0;
+          }
           for (let i = 0; i < hiddenSize; i++) {
             for (let j = 0; j < numFeatures; j++) {
               hidden[i] += x[j] * weights1[j][i];
@@ -2903,8 +2948,11 @@ export class AnalysisAlgorithmService {
         (value, i) => (value - featureMeans[i]) / featureStdDevs[i]
       );
 
-      // Forcombatd pass through the network
-      const hidden = new Array(hiddenSize).fill(0);
+      // Forward pass through the network
+      const hidden: number[] = [];
+      for (let i = 0; i < hiddenSize; i++) {
+        hidden[i] = 0;
+      }
       for (let i = 0; i < hiddenSize; i++) {
         for (let j = 0; j < numFeatures; j++) {
           hidden[i] += normalizedFeatures[j] * weights1[j][i];
@@ -3018,8 +3066,14 @@ export class AnalysisAlgorithmService {
     featureStdDevs: number[];
   } {
     const numFeatures = trainFeatures[0].length;
-    const featureMeans = new Array(numFeatures).fill(0);
-    const featureStdDevs = new Array(numFeatures).fill(0);
+    const featureMeans: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      featureMeans[i] = 0;
+    }
+    const featureStdDevs: number[] = [];
+    for (let i = 0; i < numFeatures; i++) {
+      featureStdDevs[i] = 0;
+    }
 
     // Calculate means
     for (const features of trainFeatures) {
@@ -3282,7 +3336,7 @@ export class AnalysisAlgorithmService {
       } else {
         // Log or handle cases where the resource type is invalid
         errorLoggingService.logError(
-          new Error(`Invalid resource type found: ${resourceTypeRaw}`),
+          new Error(`Invalid resource type found: ${String(resourceTypeRaw)}`),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
           { pointId: point.id }
@@ -3567,8 +3621,11 @@ export class AnalysisAlgorithmService {
       .slice(0, 3);
 
     const topResourceTypes = sortedDensities
-      // Format ResourceType enums using safeStringify for type safety
-      .map(([type, density]) => `${this.safeStringify(type)} (${(density * 100).toFixed(1)}%)`)
+      // Format ResourceType enums safely without template literals
+      .map(([type, density]) => {
+        const typeString = typeof type === 'string' ? type : String(type);
+        return typeString + ' (' + (density * 100).toFixed(1) + '%)';
+      })
       .join(', ');
 
     const mapSize = `${(xRange[1] - xRange[0]).toFixed(0)}x${(yRange[1] - yRange[0]).toFixed(0)}`;

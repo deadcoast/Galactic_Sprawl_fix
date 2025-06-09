@@ -12,17 +12,19 @@ import { ResourceType } from './../types/resources/ResourceTypes';
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import {
+import
+  {
     Anomaly, ExplorationManager,
     Sector
-} from '../managers/exploration/ExplorationManager';
+  } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes';
-import {
+import
+  {
     errorLoggingService,
     ErrorSeverity,
     ErrorType
-} from './logging/ErrorLoggingService';
+  } from './logging/ErrorLoggingService';
 
 /**
  * Local constants for exploration event types
@@ -514,7 +516,7 @@ export class DataCollectionService {
     const metadata: Record<string, PropertyType> = {
       anomalyIds: sector.anomalies?.map(a => a.id) ?? [],
       resourceTypes: sector.resources?.map(r => r.type) ?? [],
-      lastUpdated: sector.lastScanned || Date.now(),
+      lastUpdated: sector.lastScanned ?? Date.now(),
     };
 
     // Add region information if available
@@ -535,7 +537,7 @@ export class DataCollectionService {
       id: sector.id,
       type: 'sector',
       name: sector.name,
-      date: sector.discoveredAt || Date.now(),
+      date: sector.discoveredAt ?? Date.now(),
       coordinates,
       properties: {
         status: sector.status,
@@ -569,7 +571,7 @@ export class DataCollectionService {
           metadata[key] = value as PropertyType;
         } else if (value !== undefined && value !== null) {
           // Convert non-matching types to string if possible
-          metadata[key] = String(value);
+          metadata[key] = this.safeStringify(value);
         }
       });
     }
@@ -633,9 +635,9 @@ export class DataCollectionService {
 
     // Create enhanced metadata
     const metadata: Record<string, PropertyType> = {
-      estimatedValue: resource.amount * (resource.quality || 1),
+      estimatedValue: resource.amount * (resource.quality ?? 1),
       accessibility,
-      harvestEfficiency: this.calculateHarvestEfficiency(accessibility, resource.quality || 1),
+      harvestEfficiency: this.calculateHarvestEfficiency(accessibility, resource.quality ?? 1),
     };
 
     // Add extraction difficulty if available
@@ -644,7 +646,7 @@ export class DataCollectionService {
     }
 
     // Add purity grade based on quality
-    metadata.purityGrade = this.calculatePurityGrade(resource.quality || 1);
+    metadata.purityGrade = this.calculatePurityGrade(resource.quality ?? 1);
 
     // Add resource density if available or calculate a default
     metadata.density =
@@ -653,7 +655,7 @@ export class DataCollectionService {
     // Calculate resource potential score
     const potentialScore = this.calculateResourcePotential(
       resource.amount,
-      resource.quality || 1,
+      resource.quality ?? 1,
       accessibility
     );
 
@@ -680,7 +682,7 @@ export class DataCollectionService {
       properties: {
         type: resource.type,
         amount: resource.amount,
-        quality: resource.quality || 1,
+        quality: resource.quality ?? 1,
         sectorId: resource.sectorId ?? '',
         potentialScore,
       },
@@ -961,8 +963,8 @@ export class DataCollectionService {
         ...dataPoint,
         ...transformed,
         // Ensure id and type are always preserved
-        id: transformed.id || dataPoint.id,
-        type: transformed.type || dataPoint.type,
+        id: transformed.id ?? dataPoint.id,
+        type: transformed.type ?? dataPoint.type,
       };
     });
   }
@@ -1059,6 +1061,34 @@ export class DataCollectionService {
       results.push(result);
     });
 
-    return results;
+          return results;
+    }
+
+  /**
+   * Safe string conversion utility for converting unknown values to strings
+   */
+  private safeStringify(value: unknown): string {
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if (value === null || value === undefined) {
+      return '';
+    }
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return '[Object]';
+      }
+    }
+    // For other types like functions, symbols, etc.
+    try {
+      return this.safeStringify(value);
+    } catch {
+      return '[Unknown]';
+    }
   }
 }

@@ -1,19 +1,18 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
 } from '../../services/logging/ErrorLoggingService';
 import {
-  ResourceTransfer as StringResourceTransfer,
-  ResourceType as StringResourceType,
+    ResourceTransfer as StringResourceTransfer,
+    ResourceType as StringResourceType
 } from '../../types/resources/ResourceTypes';
 import {
-  ensureStringResourceType,
-  toEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType
 } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
-import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * ResourceTransferSubsystem
@@ -44,6 +43,7 @@ export class ResourceTransferSubsystem {
 
     try {
       // Initialize event subscriptions
+      await Promise.resolve();
       this.initializeEventSubscriptions();
 
       this.isInitialized = true;
@@ -70,6 +70,7 @@ export class ResourceTransferSubsystem {
 
     try {
       // Unsubscribe from events
+      await Promise.resolve();
       eventSystem.clearSubscriptions(undefined, this.constructor.name);
 
       this.isInitialized = false;

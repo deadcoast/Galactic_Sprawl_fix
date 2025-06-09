@@ -31,6 +31,7 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
    */
   protected async onInitialize(): Promise<void> {
     // Initialize game state
+    await Promise.resolve();
     this.isRunning = false;
     this.isPaused = false;
     this.gameTime = 0;
@@ -60,6 +61,7 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
    * @inheritdoc
    */
   protected async onDispose(): Promise<void> {
+    await Promise.resolve();
     this.stop();
   }
 

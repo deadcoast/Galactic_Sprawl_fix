@@ -1,26 +1,23 @@
 import { v4 as uuidv4 } from 'uuid';
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager, ManagerStatus } from '../../lib/managers/BaseManager';
-import
-  {
+import {
     ExtendedResourceMetadata,
     ResourceQuality,
     ResourceRegistrationOptions,
-    ResourceRegistry,
-  } from '../../registry/ResourceRegistry';
+    ResourceRegistry
+} from '../../registry/ResourceRegistry';
 import { ResourceRegistryIntegration } from '../../registry/ResourceRegistryIntegration';
-import
-  {
+import {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
-  } from '../../services/logging/ErrorLoggingService';
+    ErrorType
+} from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { ProcessStatus } from '../../types/resources/ProductionChainTypes';
 import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
-import
-  {
+import {
     ChainExecutionStatus,
     ConversionChain,
     ConverterFlowNode,
@@ -37,20 +34,18 @@ import
     ResourceTransfer,
     ResourceType,
     ResourceTypeInfo,
-    ResourceTypeString,
-  } from '../../types/resources/ResourceTypes';
-import
-  {
+    ResourceTypeString
+} from '../../types/resources/ResourceTypes';
+import {
     ensureEnumResourceType,
     ensureStringResourceType,
-    stringToResourceType,
-  } from '../../utils/resources/ResourceTypeConverter';
+    stringToResourceType
+} from '../../utils/resources/ResourceTypeConverter';
 import { SpatialIndex, SpatialObject } from '../../utils/spatial/SpatialPartitioning';
-import
-  {
+import {
     FlowOptimizationResult,
-    ResourceFlowWorkerUtil,
-  } from '../../utils/workers/ResourceFlowWorkerUtil';
+    ResourceFlowWorkerUtil
+} from '../../utils/workers/ResourceFlowWorkerUtil';
 // Import TechTreeManager for tech checks
 import { TechTreeManager } from '../game/techTreeManager'; // Removed getTechTreeManager
 // Helper function to create a default ResourceState
@@ -320,8 +315,8 @@ export class ResourceFlowManager
    * Initialize the manager
    */
 
-  protected onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
-    // Removed async keyword as there's no await
+  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+    await Promise.resolve();
     errorLoggingService.logInfo('[RFM] ResourceFlowManager initializing...');
     if (dependencies?.techTreeManager) {
       // Use the provided TechTreeManager instance
@@ -375,7 +370,7 @@ export class ResourceFlowManager
       },
     });
     */
-    return Promise.resolve(); // Explicitly return resolved promise
+    // Method is now properly async
   }
 
   /**
@@ -464,8 +459,8 @@ export class ResourceFlowManager
    * Implementation of abstract method from AbstractBaseManager
    * Dispose of the manager's resources
    */
-  protected onDispose(): Promise<void> {
-    // Removed async keyword as there's no await
+  protected async onDispose(): Promise<void> {
+    await Promise.resolve();
     errorLoggingService.logInfo('Disposing ResourceFlowManager...');
     if (this.processingInterval !== null) {
       clearInterval(this.processingInterval);
@@ -509,7 +504,6 @@ export class ResourceFlowManager
     this.conversionRecipes.clear();
     this.conversionChains.clear();
     this.chainExecutions.clear();
-    return Promise.resolve();
   }
 
   /**

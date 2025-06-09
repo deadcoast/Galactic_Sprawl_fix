@@ -210,7 +210,7 @@ export class SessionPerformanceTracker {
     const nav = navigator as NavigatorExtended;
     let connectionType: string | undefined;
     if (nav.connection) {
-      connectionType = nav.connection.effectiveType || nav.connection.type;
+      connectionType = nav.connection.effectiveType ?? nav.connection.type;
     }
 
     // Estimate memory if available
@@ -223,12 +223,8 @@ export class SessionPerformanceTracker {
 
     // Optional geographic region if enabled (coarse-grained only)
     let geographicRegion: string | undefined;
-    if (this.options?.geolocationEnabled) {
-      // Only collect broad region data, not specific coordinates
-      if (navigator.language) {
-        // Just use language/region preference as a proxy
-        geographicRegion = navigator.language.split('-')[1] || navigator.language;
-      }
+    if (this.options?.geolocationEnabled && navigator.language) {
+          geographicRegion = navigator.language.split('-')[1] ?? navigator.language;
     }
 
     return {
@@ -279,15 +275,11 @@ export class SessionPerformanceTracker {
       this.trackEvent(event);
 
       // Track specific performance-related events
-      if (event?.moduleId === 'game-loop-manager') {
-        if (
-          event?.data &&
-          typeof event.data === 'object' &&
-          'type' in event.data &&
-          event.data.type === 'performance_snapshot'
-        ) {
-          this.trackPerformanceSnapshot(event.data);
-        }
+      if (event?.moduleId === 'game-loop-manager' && (event?.data &&
+                typeof event.data === 'object' &&
+                'type' in event.data &&
+                event.data.type === 'performance_snapshot')) {
+            this.trackPerformanceSnapshot(event.data);
       }
 
       // Track errors
@@ -319,7 +311,7 @@ export class SessionPerformanceTracker {
     // Track clicks
     const clickHandler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const componentId = target.getAttribute('data-component-id') || target.id || target.tagName;
+      const componentId = target.getAttribute('data-component-id') ?? target.id ?? target.tagName;
 
       const startTime = performance.now();
 
@@ -392,7 +384,7 @@ export class SessionPerformanceTracker {
     if (!this.isEnabled) return;
 
     // Increment event count
-    const eventType = `${event?.type}:${event?.data?.type || 'unknown'}`;
+    const eventType = `${event?.type}:${event?.data && typeof event.data.type === 'string' ? event.data.type : 'unknown'}`;
     this.accumulatedEventCounts[eventType] = (this.accumulatedEventCounts[eventType] ?? 0) + 1;
 
     // For detailed level, track event processing time

@@ -10,12 +10,12 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from './logging/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+  } from './logging/ErrorLoggingService';
 
 // Types of recovery strategies that can be applied
 export enum RecoveryStrategy {
@@ -62,15 +62,14 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
 
     // Load unknown existing snapshots from localStorage
     try {
       const savedSnapshots = localStorage.getItem('recovery_snapshots');
       if (savedSnapshots) {
-        this.snapshots = JSON.parse(savedSnapshots);
+        this.snapshots = JSON.parse(savedSnapshots) as StateSnapshot[];
       }
     } catch (error) {
       this.handleError(error as Error);
@@ -79,6 +78,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
 
   protected async onDispose(): Promise<void> {
     // Save snapshots to localStorage
+    await Promise.resolve();
     try {
       localStorage.setItem('recovery_snapshots', JSON.stringify(this.snapshots));
     } catch (error) {
@@ -105,9 +105,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     }
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_snapshots = this.snapshots.length;
     metrics.latest_snapshot_timestamp = snapshot.timestamp;
@@ -123,9 +121,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     }
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_restores = (metrics.total_restores ?? 0) + 1;
     metrics.last_restore_timestamp = Date.now();
@@ -141,9 +137,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
   public clearSnapshots(): void {
     this.snapshots = [];
 
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {};
   }
 
@@ -151,14 +145,12 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     errorType: ErrorType = ErrorType.UNKNOWN,
     metadata?: Record<string, unknown>
   ): RecoveryStrategy {
-    return this.config.strategyByErrorType[errorType] || this.config.defaultStrategy;
+    return this.config.strategyByErrorType[errorType] ?? this.config.defaultStrategy;
   }
 
   public override handleError(error: Error): void {
     // Update error metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
@@ -176,19 +168,21 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     );
   }
 
-   
   private logRecoveryAttempt(
     success: boolean,
     error?: Error,
     _metadata?: Record<string, unknown>
   ): void {
-    const logEntry = {
-      timestamp: Date.now(),
-      success: success,
-      error: error,
-    };
-
     // Implementation of logRecoveryAttempt method
+    errorLoggingService.logError(
+      error ?? new Error('Unknown error'),
+      ErrorType.RUNTIME, // Defaulting to RUNTIME as this is a general handler
+      ErrorSeverity.HIGH, // Defaulting to HIGH as it's a service-level error
+      {
+        service: 'RecoveryService', // Add service context
+        action: 'logRecoveryAttempt', // Indicate the action
+      }
+    );
   }
 }
 

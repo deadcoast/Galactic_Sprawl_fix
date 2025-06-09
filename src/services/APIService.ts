@@ -1,9 +1,7 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
+    errorLoggingService,
+    ErrorType
 } from './logging/ErrorLoggingService';
 
 export interface PaginationParams {
@@ -50,9 +48,8 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_requests: 0,
       active_streams: 0,
@@ -128,12 +125,13 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     this.streamListeners.get(endpoint)!.add(onData);
 
     // Start streaming
-    this.streamData(endpoint, streamConfig, abortController.signal);
+    void this.streamData(endpoint, streamConfig, abortController.signal).catch(error => {
+      this.handleError(error);
+    });
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
@@ -151,9 +149,8 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     this.activeStreams.delete(streamId);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;

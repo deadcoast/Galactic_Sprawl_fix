@@ -1,10 +1,11 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { componentRegistryService } from './ComponentRegistryService';
-import {
+import
+  {
     errorLoggingService,
     ErrorSeverity,
-    ErrorType,
-} from './logging/ErrorLoggingService';
+    ErrorType
+  } from './logging/ErrorLoggingService';
 
 export interface EventSubscription {
   eventType: string;
@@ -28,9 +29,8 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
   protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
     // Initialize metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    await Promise.resolve();
+    this.metadata.metrics ??= {};
     this.metadata.metrics = {
       total_subscriptions: 0,
       total_event_types: 0,
@@ -92,6 +92,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
   protected async onDispose(): Promise<void> {
     // Clear all subscriptions and queued events
+    await Promise.resolve();
     this.subscriptions.clear();
     this.eventQueue = [];
   }
@@ -110,9 +111,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     subscribers.sort((a, b) => b.priority - a.priority);
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
       (sum, subs) => sum + subs.length,
@@ -131,9 +130,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
         }
 
         // Update metrics
-        if (!this.metadata.metrics) {
-          this.metadata.metrics = {};
-        }
+        this.metadata.metrics ??= {};
         const { metrics } = this.metadata;
         metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
           (sum, subs) => sum + subs.length,
@@ -150,9 +147,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     this.eventQueue.push({ type: eventType, data: eventData });
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_events_emitted = (metrics.total_events_emitted ?? 0) + 1;
     metrics.last_event_timestamp = Date.now();
@@ -164,7 +159,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     }
   }
 
-  private async processEventQueue(): Promise<void> {
+  private processEventQueue(): void {
     if (this.isProcessing || this.eventQueue.length === 0) {
       return;
     }
@@ -174,7 +169,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     try {
       while (this.eventQueue.length > 0) {
         const event = this.eventQueue.shift()!;
-        await this.processEvent(event?.type, event?.data);
+        this.processEvent(event?.type, event?.data);
       }
     } catch (error) {
       this.handleError(error as Error);
@@ -183,7 +178,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     }
   }
 
-  private async processEvent(eventType: string, eventData: unknown): Promise<void> {
+  private processEvent(eventType: string, eventData: unknown): void {
     // Get subscribers for this event type
     const subscribers = this.subscriptions.get(eventType) ?? [];
 
@@ -193,16 +188,14 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     // Call subscribers in priority order
     for (const subscriber of subscribers) {
       try {
-        await subscriber.callback(eventData);
+        void subscriber.callback(eventData);
       } catch (error) {
         this.handleError(error as Error);
       }
     }
 
     // Update metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_events_processed = (metrics.total_events_processed ?? 0) + 1;
     metrics.last_processed_timestamp = Date.now();
@@ -211,9 +204,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
   public override handleError(error: Error, context?: Record<string, unknown>): void {
     // Update error metrics
-    if (!this.metadata.metrics) {
-      this.metadata.metrics = {};
-    }
+    this.metadata.metrics ??= {};
     const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();

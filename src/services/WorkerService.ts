@@ -10,11 +10,10 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import
-  {
+import {
     errorLoggingService,
     ErrorType
-  } from './logging/ErrorLoggingService';
+} from './logging/ErrorLoggingService';
 
 // Interface for worker response messages
 interface WorkerResponseMessage {
@@ -82,8 +81,9 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     super('WorkerService', '1.0.0');
   }
 
-  protected onInitialize(): Promise<void> {
+  protected async onInitialize(): Promise<void> {
     // Initialize worker pool
+    await Promise.resolve();
     for (let i = 0; i < this.config.maxWorkers; i++) {
       const worker = new Worker(new URL('../workers/worker.ts', import.meta.url), {
         type: 'module',
@@ -102,16 +102,16 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
       failed_tasks: 0,
       average_task_time: 0,
     };
-    
-    return Promise.resolve();
   }
 
-  protected onDispose(): Promise<void> {
+  protected async onDispose(): Promise<void> {
+    await Promise.resolve();
     return this.dispose();
   }
 
-  public dispose(): Promise<void> {
+  public async dispose(): Promise<void> {
     // Cancel all active tasks
+    await Promise.resolve();
     for (const task of this.activeTasks.values()) {
       this.cancelTask(task.id);
     }
@@ -125,8 +125,6 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     this.taskQueue = [];
     this.activeTasks.clear();
     this.workerPool.clear();
-    
-    return Promise.resolve();
   }
 
   private setupWorker(worker: Worker): void {
@@ -220,7 +218,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
       Object.assign(task, { onComplete, onError });
 
       // Try to process task immediately
-      void this.processNextTask();
+      this.processNextTask();
     });
   }
 
@@ -310,7 +308,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     typedTask.onComplete?.(result);
 
     // Process next task
-    void this.processNextTask();
+    this.processNextTask();
   }
 
   private failTask(taskId: string, error: Error): void {
@@ -336,7 +334,7 @@ class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
     typedTask.onError?.(error);
 
     // Process next task
-    void this.processNextTask(); 
+    this.processNextTask(); 
   }
 
   public override handleError(error: Error): void {
