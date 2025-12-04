@@ -88,7 +88,7 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
           // Resource batch completed
           setTotalResourcesMined(total => total + 1);
 
-          // Calculate and award experience
+          // Calculate and acombatd experience
           const experience = calculateExperience();
           onExperienceGained(experience);
           return 0;

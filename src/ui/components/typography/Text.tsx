@@ -121,7 +121,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
     const isMonospace = monospace ?? safeElement === TextElement.CODE;
 
     // Component to render (custom component or HTML element)
-    const Component = component || safeElement;
+    const Component = component ?? safeElement;
 
     // Compute text classes
     const textClasses = useMemo(() => {

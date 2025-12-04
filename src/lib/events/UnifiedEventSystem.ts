@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base event interface that all events should extend
@@ -82,9 +86,7 @@ export class EventSystem {
    * @returns The singleton instance
    */
   public static getInstance(): EventSystem {
-    if (!EventSystem.instance) {
-      EventSystem.instance = new EventSystem();
-    }
+    EventSystem.instance ??= new EventSystem();
     return EventSystem.instance;
   }
 
@@ -136,9 +138,7 @@ export class EventSystem {
    */
   public publish<T extends BaseEvent>(event: T, options?: PublishOptions): void {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // If batching is active, add to batch queue and return
     if (this.isBatching) {
@@ -173,9 +173,7 @@ export class EventSystem {
     options: PublishOptions = {}
   ): Promise<void> {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // Merge options with defaults
     const mergedOptions = { ...this.defaultPublishOptions, ...options, async: true };
@@ -267,7 +265,7 @@ export class EventSystem {
             }
 
             // Call handler
-            subscription.handler(event);
+            void subscription.handler(event);
           } catch (error) {
             if (options?.errorMode === 'throw') {
               throw error;
@@ -406,15 +404,13 @@ export class EventSystem {
       const [lastEvent, setLastEvent] = useState<T | null>(null);
 
       useEffect(() => {
-        const unsubscribe = this.subscribe<T>(
-          eventType,
-          event => {
-            setLastEvent(event);
-          },
-          options
-        );
-
-        return unsubscribe;
+        return this.subscribe<T>(
+                  eventType,
+                  event => {
+                    setLastEvent(event);
+                  },
+                  options
+                );
       }, [eventType, JSON.stringify(options)]);
 
       return lastEvent;

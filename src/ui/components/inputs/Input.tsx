@@ -136,7 +136,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     // Internal validation state
     const [isValidated, setIsValidated] = useState(false);
     const [validationError, setValidationError] = useState<string | undefined>(undefined);
-    const [localValue, setLocalValue] = useState(defaultValue || '');
+    const [localValue, setLocalValue] = useState(defaultValue ?? '');
     const [isFocused, setIsFocused] = useState(false);
 
     // Determine if we're in controlled or uncontrolled mode
@@ -218,7 +218,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     // Determine error state
     const showError = hasError || (isValidated && !!validationError);
-    const errorToShow = errorMessage || validationError;
+    const errorToShow = errorMessage ?? validationError;
 
     // Memoize input class names
     const inputContainerClassName = useMemo(() => {
@@ -276,7 +276,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ]);
 
     // Generate unique ID for the input if not provided
-    const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
+    const inputId = id ?? `input-${Math.random().toString(36).substring(2, 9)}`;
 
     // Determine hidden label for accessibility
     const ariaLabel = hideLabel && typeof label === 'string' ? label : undefined;
@@ -312,7 +312,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...rest}
           />
 
-          {(trailingIcon || (clearable && currentValue)) && (
+          {(trailingIcon ?? (clearable && currentValue)) && (
             <div className="ui-input-trailing-icon">
               {clearable && currentValue ? (
                 <button
@@ -331,7 +331,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
-        {(helperText || showError) && (
+        {(helperText ?? showError) && (
           <div
             className={`ui-input-helper-text ${showError ? 'ui-input-error-text' : ''}`}
             id={showError ? `${inputId}-error` : undefined}

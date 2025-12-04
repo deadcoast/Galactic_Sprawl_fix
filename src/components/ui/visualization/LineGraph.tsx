@@ -83,7 +83,7 @@ export function LineGraph({
       {...chartProps}
       data={processedData}
       type={fillArea ? 'area' : 'line'}
-      className={`line-graph ${chartProps.className || ''}`}
+      className={`line-graph ${chartProps.className ?? ''}`}
       showGrid
     />
   );
@@ -95,7 +95,7 @@ export function LineGraph({
 export function createTimeSeriesData(
   values: number[],
   timeLabels: string[],
-  datasetLabel: string = 'Time Series',
+  datasetLabel = 'Time Series',
   color?: string
 ): ChartProps['data'] {
   const data: DataPoint[] = values.map((value, index) => ({

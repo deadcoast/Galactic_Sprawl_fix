@@ -1,23 +1,24 @@
 /**
- * D3 Interpolation Cache
- * @context: visualization-system, performance-optimization
+ * Advanced D3 Interpolation Caching System
  *
- * This module provides utilities for memoizing D3 interpolation calculations
- * to improve animation performance. It includes:
- *
- * 1. Caching strategies for different interpolation types
- * 2. Time and space optimized memoization utilities
- * 3. Cache monitoring and performance tracking
- * 4. Integration with animation frame manager
+ * This module provides sophisticated caching mechanisms for D3 interpolators,
+ * improving performance by reusing calculated interpolation values.
+ * Features include:
+ * - LRU cache eviction
+ * - Customizable cache size and resolution
+ * - Performance stats tracking
+ * - Support for various interpolator types (number, color, object, array)
  */
 
 import * as d3 from 'd3';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
+import { ErrorSeverity, ErrorType } from '../../services/logging/ErrorTypes';
+import { logger } from '../../services/logging/loggerService';
 import { TypedInterpolator, typedInterpolators } from '../../types/visualizations/D3AnimationTypes';
 import { animationFrameManager } from './D3AnimationFrameManager';
 
 /**
- * Configuration for interpolation caching
+ * Configuration options for the interpolation cache.
  */
 export interface InterpolationCacheConfig {
   /** Maximum number of entries to cache */
@@ -204,7 +205,7 @@ export class InterpolationCache<T> {
       return 0;
     } else if (Array.isArray(value)) {
       return (value as unknown[]).reduce(
-        (size: number, item) => size + this.estimateSize(item as unknown as T),
+        (size: number, item) => size + this.estimateSize(item as T),
         0
       );
     } else if (typeof value === 'object') {
@@ -216,7 +217,7 @@ export class InterpolationCache<T> {
           // Add size of the key
           estimatedSize += key.length * 2;
           // Add size of the value (with type safety)
-          estimatedSize += this.estimateSize(propValue as unknown as T);
+          estimatedSize += this.estimateSize(propValue as T);
         }
       }
       return estimatedSize;
@@ -562,13 +563,14 @@ export const objectCacheConfig: InterpolationCacheConfig = {
  * Cache that spans across multiple animations
  */
 class GlobalInterpolationCache {
-  private caches: Map<string, InterpolationCache<unknown>> = new Map();
+  private caches: Map<string, InterpolationCache<unknown>> = new Map<string, InterpolationCache<unknown>>();
 
   /**
    * Get or create a cache for a specific animation ID
    */
   getCache<T>(animationId: string, config?: InterpolationCacheConfig): InterpolationCache<T> {
     if (!this.caches.has(animationId)) {
+      // Fix: Apply generic to constructor
       this.caches.set(animationId, new InterpolationCache<T>(config));
     }
     return this.caches.get(animationId) as InterpolationCache<T>;
@@ -630,100 +632,6 @@ class GlobalInterpolationCache {
  * Global cache instance for shared use
  */
 export const globalInterpolationCache = new GlobalInterpolationCache();
-
-/**
- * Integration with the animation frame manager to memoize animations automatically
- *
- * @param animationId Animation ID to enhance with memoization
- * @param memoizationFn Interpolation function to memoize
- * @param config Optional configuration settings for the cache
- * @returns Memoized interpolation function
- * @example
- * ```typescript
- * // Create a basic animation function
- * const animateOpacity = (t: number) => t; // Linear opacity from 0 to 1
- *
- * // Enable memoization to improve performance
- * const memoizedAnimation = createMemoizedAnimation(
- *   'fade-animation',
- *   animateOpacity,
- *   { maxCacheSize: 200, resolution: 0.01 }
- * );
- *
- * // Use the memoized animation in your render loop
- * const opacity = memoizedAnimation(progress);
- * element.style.opacity = String(opacity);
- * ```
- */
-export function createMemoizedAnimation<T>(
-  animationId: string,
-  memoizationFn: (t: number) => T,
-  config?: InterpolationCacheConfig
-): (t: number) => T {
-  try {
-    if (!animationId || typeof animationId !== 'string') {
-      throw new Error('Invalid animation ID provided');
-    }
-
-    if (typeof memoizationFn !== 'function') {
-      throw new Error('Invalid memoization function provided');
-    }
-
-    // Get or create a cache for this animation
-    const cache = globalInterpolationCache.getCache<T>(animationId, config);
-
-    // Memoize the function
-    return cache.memoize(memoizationFn);
-  } catch (error) {
-    errorLoggingService.logError(
-      error instanceof Error ? error : new Error(String(error)),
-      ErrorType.RUNTIME,
-      ErrorSeverity.MEDIUM,
-      {
-        component: 'createMemoizedAnimation',
-        animationId,
-      }
-    );
-
-    // Return the original function as a fallback
-    return memoizationFn;
-  }
-}
-
-/**
- * Utility to create a suite of memoized interpolators for a specific animation
- */
-export function createMemoizedInterpolators(
-  animationId: string,
-  config?: InterpolationCacheConfig
-) {
-  return {
-    number: (start: number, end: number): TypedInterpolator<number> => {
-      const interpolator = typedInterpolators.number(start, end);
-      return createMemoizedAnimation<number>(animationId, interpolator, config);
-    },
-
-    color: (start: string, end: string): TypedInterpolator<string> => {
-      const interpolator = typedInterpolators.color(start, end);
-      return createMemoizedAnimation<string>(animationId, interpolator, config);
-    },
-
-    date: (start: Date, end: Date): TypedInterpolator<Date> => {
-      const interpolator = typedInterpolators.date(start, end);
-      return createMemoizedAnimation<Date>(animationId, interpolator, config);
-    },
-
-    numberArray: (start: number[], end: number[]): TypedInterpolator<number[]> => {
-      const interpolator = typedInterpolators.numberArray(start, end);
-      return createMemoizedAnimation<number[]>(animationId, interpolator, config);
-    },
-
-    object: <T extends Record<string, number>>(start: T, end: T): TypedInterpolator<T> => {
-      const interpolator = typedInterpolators.object(start, end);
-      return createMemoizedAnimation<T>(animationId, interpolator, config);
-    },
-  };
-}
 
 /**
  * Helper to create a memoized D3 interpolator for unknown method
@@ -805,7 +713,7 @@ export function enhanceAnimationWithMemoization(
   const animation = animations.find(a => a.id === animationId);
 
   if (!animation) {
-    console.warn(`Animation ${animationId} not found in frame manager`);
+    logger.warn(`Animation ${animationId} not found in frame manager`);
     return;
   }
 
@@ -870,8 +778,8 @@ export function optimizeD3Transitions<
 
     const cacheId = 'd3-transition-' + Math.random().toString(36).substring(2);
 
-    // Store original transition method
-    const originalTransition = selection.transition;
+    // Store original transition method and bind 'this'
+    const originalTransition = selection.transition.bind(selection);
 
     // Override transition method
     type TransitionFn = typeof originalTransition;
@@ -883,8 +791,8 @@ export function optimizeD3Transitions<
         // Call original transition method
         const transition = originalTransition.apply(this, args);
 
-        // Store original tween method
-        const originalTween = transition.tween;
+        // Store original tween method and bind 'this'
+        const originalTween = transition.tween.bind(transition);
 
         // Define factory function types
         type TweenFactory =
@@ -898,7 +806,6 @@ export function optimizeD3Transitions<
 
         // Override tween method
         type TweenFn = typeof originalTween;
-        // Safe type casting for the D3 API
         type D3TweenValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => void>;
 
         (transition.tween as unknown) = function (
@@ -907,22 +814,26 @@ export function optimizeD3Transitions<
           factory: TweenFactory
         ): ReturnType<TweenFn> {
           if (factory === null) {
-            // Type assertion for null case to match D3's expected type
             return originalTween.call(this, name, null as unknown as D3TweenValueFn);
           }
 
           // Create memoized factory
           const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
             const originalInterpolator = factory.call(this, d, i, a);
-            return createMemoizedAnimation(cacheId + '-' + name, originalInterpolator, config);
+            const cacheInstance = globalInterpolationCache.getCache<void>(
+              cacheId + '-' + name,
+              config
+            );
+            const interpolatorForMemoize = (t: number): void => originalInterpolator.call(this, t);
+            return cacheInstance.memoize(interpolatorForMemoize);
           };
 
           // Call original tween with memoized factory
           return originalTween.call(this, name, memoizedFactory as unknown as D3TweenValueFn);
         };
 
-        // Store original styleTween method
-        const originalStyleTween = transition.styleTween;
+        // Store original styleTween method and bind 'this'
+        const originalStyleTween = transition.styleTween.bind(transition);
 
         // Define style factory function type
         type StyleFactory =
@@ -936,7 +847,6 @@ export function optimizeD3Transitions<
 
         // Override styleTween method
         type StyleTweenFn = typeof originalStyleTween;
-        // Safe type casting for the D3 API
         type D3StyleValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => string>;
 
         (transition.styleTween as unknown) = function (
@@ -946,18 +856,18 @@ export function optimizeD3Transitions<
           priority?: 'important' | null
         ): ReturnType<StyleTweenFn> {
           if (factory === null) {
-            // Type assertion for null case to match D3's expected type
             return originalStyleTween.call(this, name, null as unknown as D3StyleValueFn, priority);
           }
 
           // Create memoized factory
           const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
             const originalInterpolator = factory.call(this, d, i, a);
-            return createMemoizedAnimation(
-              cacheId + '-style-' + name + (priority || ''),
-              originalInterpolator as (t: number) => unknown,
+            const cacheInstance = globalInterpolationCache.getCache<string>(
+              cacheId + '-style-' + name + (priority ?? ''),
               config
             );
+            const interpolatorForMemoize = (t: number): string => originalInterpolator.call(this, t);
+            return cacheInstance.memoize(interpolatorForMemoize);
           };
 
           // Call original styleTween with memoized factory

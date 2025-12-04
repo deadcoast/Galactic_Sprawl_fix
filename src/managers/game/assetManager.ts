@@ -18,7 +18,7 @@ interface AssetBundle {
 
 export class AssetManager {
   private static instance: AssetManager;
-  private loadedAssets: Map<string, PIXI.Texture | PIXI.Spritesheet> = new Map();
+  private loadedAssets = new Map<string, PIXI.Texture | PIXI.Spritesheet>();
   private loadPromise: Promise<void> | null = null;
 
   // Asset bundles configuration
@@ -117,7 +117,7 @@ export class AssetManager {
             });
             resolve();
           } else {
-            console.warn('[AssetManager] Warning: loaded assets is null or undefined');
+            console.warn('[AssetManager] warning: loaded assets is null or undefined');
             resolve(); // Still resolve to avoid blocking game initialization
           }
         })

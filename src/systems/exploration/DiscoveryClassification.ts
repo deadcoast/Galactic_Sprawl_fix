@@ -1,12 +1,13 @@
 import { EventBus } from '../../lib/events/EventBus';
 import { Vector3D } from '../../types/common/VectorTypes';
 import { EventType } from '../../types/events/EventTypes';
-import {
-  Classification,
-  ClassificationResult,
-  Discovery,
-  DiscoveryType,
-} from '../../types/exploration/ExplorationTypes';
+import
+  {
+    Classification,
+    ClassificationResult,
+    Discovery,
+    DiscoveryType,
+  } from '../../types/exploration/ExplorationTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 export interface ClassificationConfig {
@@ -29,14 +30,14 @@ export class DiscoveryClassification {
     this.activeAnalysis = new Set();
   }
 
-  public async classifyDiscovery(discovery: Discovery): Promise<Classification> {
+    public classifyDiscovery(discovery: Discovery): Classification {
     if (this.activeAnalysis.has(discovery.id)) {
       throw new Error(`Analysis already in progress for discovery ${discovery.id}`);
     }
 
     try {
       this.activeAnalysis.add(discovery.id);
-      const result = await this.performClassification(discovery);
+      const result = this.performClassification(discovery);
       this.cacheResult(discovery.id, result);
       return this.createClassification(discovery, result);
     } finally {
@@ -44,24 +45,24 @@ export class DiscoveryClassification {
     }
   }
 
-  private async performClassification(discovery: Discovery): Promise<ClassificationResult> {
+  private performClassification(discovery: Discovery): ClassificationResult {
     const cachedResult = this.analysisCache.get(discovery.id);
     if (cachedResult && this.isResultValid(cachedResult)) {
       return cachedResult;
     }
 
     const analysisStart = performance.now();
-    const result = await this.analyzeDiscovery(discovery);
+    const result = this.analyzeDiscovery(discovery);
 
     if (result?.confidence < this.config.confidenceThreshold) {
-      await this.enhanceAnalysis(discovery, result);
+      this.enhanceAnalysis(discovery, result);
     }
 
     this.publishAnalysisMetrics(discovery, result, performance.now() - analysisStart);
     return result;
   }
 
-  private async analyzeDiscovery(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeDiscovery(discovery: Discovery): ClassificationResult {
     switch (discovery.type) {
       case DiscoveryType.RESOURCE_DEPOSIT:
         return this.analyzeResourceDeposit(discovery);
@@ -74,11 +75,11 @@ export class DiscoveryClassification {
       case DiscoveryType.SPATIAL_PHENOMENON:
         return this.analyzeSpatialPhenomenon(discovery);
       default:
-        throw new Error(`Unknown discovery type: ${discovery.type}`);
+        throw new Error(`Unknown discovery type: ${discovery.type as string}`);
     }
   }
 
-  private async analyzeResourceDeposit(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeResourceDeposit(discovery: Discovery): ClassificationResult {
     const analysis = {
       type: DiscoveryType.RESOURCE_DEPOSIT,
       confidence: 0,
@@ -97,7 +98,7 @@ export class DiscoveryClassification {
     return analysis;
   }
 
-  private async analyzeAlienArtifact(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeAlienArtifact(discovery: Discovery): ClassificationResult {
     return {
       type: DiscoveryType.ALIEN_ARTIFACT,
       confidence: 0.85,
@@ -111,13 +112,13 @@ export class DiscoveryClassification {
     };
   }
 
-  private async analyzeAnomaly(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeAnomaly(discovery: Discovery): ClassificationResult {
     return {
       type: DiscoveryType.ANOMALY,
       confidence: 0.75,
       details: {
         anomalyType: this.determineAnomalyType(discovery),
-        anomalyIntensity: this.measureAnomalyIntensity(discovery),
+        anomalyIntensity: this.measureAnomalyIntensity(discovery) as unknown as 'low' | 'medium' | 'high',
       },
       timestamp: Date.now(),
       analysisTime: 0,
@@ -125,7 +126,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private async analyzeDerelict(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeDerelict(discovery: Discovery): ClassificationResult {
     return {
       type: DiscoveryType.DERELICT,
       confidence: 0.9,
@@ -139,7 +140,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private async analyzeSpatialPhenomenon(discovery: Discovery): Promise<ClassificationResult> {
+  private analyzeSpatialPhenomenon(discovery: Discovery): ClassificationResult {
     return {
       type: DiscoveryType.SPATIAL_PHENOMENON,
       confidence: 0.8,
@@ -161,7 +162,7 @@ export class DiscoveryClassification {
 
   private estimateResourceQuantity(discovery: Discovery): number {
     const densityMapping =
-      discovery.metadata && discovery.metadata.scanData
+      discovery.metadata?.scanData
         ? discovery.metadata.scanData.densityMapping || []
         : [];
     return densityMapping.reduce((sum, density) => sum + density, 0) * 100;
@@ -169,7 +170,7 @@ export class DiscoveryClassification {
 
   private calculateExtractionDifficulty(discovery: Discovery): number {
     const structuralIntegrity =
-      discovery.metadata && discovery.metadata.scanData
+      discovery.metadata?.scanData
         ? discovery.metadata.scanData.structuralIntegrity || 0.5
         : 0.5;
     return 1 - structuralIntegrity;
@@ -177,11 +178,11 @@ export class DiscoveryClassification {
 
   private analyzeResourceQuality(discovery: Discovery): QualityIndicators {
     const scanData =
-      discovery.metadata && discovery.metadata.scanData
+      discovery.metadata?.scanData
         ? discovery.metadata.scanData
         : { elementalComposition: new Map(), structuralIntegrity: 0.5 };
     const initialReadings =
-      discovery.metadata && discovery.metadata.initialReadings
+      discovery.metadata?.initialReadings
         ? discovery.metadata.initialReadings
         : { pressure: 0, temperature: 0 };
 
@@ -199,8 +200,8 @@ export class DiscoveryClassification {
   }
 
   private reconcileResourceAnalysis(
-    signatureAnalysis: ResourceSignature,
-    compositionAnalysis: CompositionAnalysis
+    _signatureAnalysis: ResourceSignature,
+    _compositionAnalysis: CompositionAnalysis
   ): ResourceType {
     // Implement reconciliation logic
     return ResourceType.IRON; // Placeholder
@@ -286,15 +287,15 @@ export class DiscoveryClassification {
     };
   }
 
-  private validateAnalysisCompleteness(result: ClassificationResult): number {
+  private validateAnalysisCompleteness(_result: ClassificationResult): number {
     return 0.9; // Placeholder
   }
 
-  private validateDataQuality(result: ClassificationResult): number {
+  private validateDataQuality(_result: ClassificationResult): number {
     return 0.85; // Placeholder
   }
 
-  private validateConsistency(result: ClassificationResult): number {
+  private validateConsistency(_result: ClassificationResult): number {
     return 0.95; // Placeholder
   }
 
@@ -366,10 +367,10 @@ export class DiscoveryClassification {
     });
   }
 
-  private async enhanceAnalysis(
+  private enhanceAnalysis(
     discovery: Discovery,
     result: ClassificationResult
-  ): Promise<ClassificationResult> {
+  ): ClassificationResult {
     const enhancedResult = { ...result };
 
     let enhancementApplied = false;
@@ -423,7 +424,7 @@ export class DiscoveryClassification {
     const structure = this.analyzeStructure(discovery.metadata?.scanData || {});
 
     const purity =
-      discovery.metadata && discovery.metadata.scanData
+      discovery.metadata?.scanData
         ? this.calculatePurity(discovery.metadata.scanData.elementalComposition || new Map())
         : 0.5;
 
@@ -436,7 +437,7 @@ export class DiscoveryClassification {
 }
 
 interface EnhancementStrategy {
-  execute(discovery: Discovery, initialResult: ClassificationResult): Promise<ClassificationResult>;
+  execute(discovery: Discovery, initialResult: ClassificationResult): ClassificationResult;
 }
 
 interface ResourceSignature {

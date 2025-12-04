@@ -6,7 +6,11 @@
  */
 
 import React from 'react';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../../services/logging/ErrorLoggingService';
 import { useLazyComponent } from '../../../utils/performance/ComponentOptimizer';
 import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { MiniMapStar, ViewportConfig } from './MiniMap';

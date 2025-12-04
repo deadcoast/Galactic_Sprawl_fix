@@ -1,9 +1,10 @@
 import { BaseStatus, Position, Velocity } from '../../types/core/GameTypes';
 import {
-  CommonShip as Ship,
-  CommonShipDisplayStats as ShipDisplayStats,
-  CommonShipStats as ShipStats,
+    CommonShip as Ship,
+    CommonShipDisplayStats as ShipDisplayStats,
+    CommonShipStats as ShipStats
 } from '../../types/ships/CommonShipTypes';
+import { Ship as ShipUnion } from '../../types/ships/ShipTypes';
 import { WeaponCategory, WeaponInstance, WeaponState } from '../../types/weapons/WeaponTypes';
 
 // Status Conversions
@@ -158,4 +159,34 @@ export function calculateDamage(
   }
 
   return baseDamage * distanceMultiplier * armorReduction;
+}
+
+// --- Cargo Calculation ---
+
+// Interface for resource item within cargo
+interface CargoResource {
+  amount?: number;
+}
+
+/**
+ * Calculates the total amount of resources currently held in a ship's cargo.
+ * @param ship The ship object (can be any type from the Ship union or null).
+ * @returns The total cargo amount used, or 0 if no cargo/resources.
+ */
+export function calculateTotalCargoUsed(ship: ShipUnion | null): number {
+  // Use optional chaining as suggested by lint
+  if (!Array.isArray(ship?.cargo?.resources)) {
+    return 0;
+  }
+
+  // Directly use ship.cargo.resources, known to be an array here
+  // Cast explicitly within reduce to ensure correct type inference for 'resource'
+  return (ship?.cargo.resources as CargoResource[]).reduce(
+    (total: number, resource: CargoResource) => {
+      // Explicitly check if amount is a number before adding
+      const amount = resource?.amount;
+      return total + (typeof amount === 'number' ? amount : 0);
+    },
+    0 // Ensure initial value is 0
+  );
 }

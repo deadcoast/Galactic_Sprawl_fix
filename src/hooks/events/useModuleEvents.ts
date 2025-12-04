@@ -18,7 +18,7 @@ export function useModuleEvents() {
       console.warn(
         '[useModuleEvents] unsubscribe is deprecated. Use the function returned by subscribe instead.'
       );
-      // Get a new subscription and immediately unsubscribe it to maintain backward compatibility
+      // Get a new subscription and immediately unsubscribe it to maintain backcombatd compatibility
       const unsubscribeFn = moduleEventBus.subscribe(eventType, handler);
       unsubscribeFn();
     },

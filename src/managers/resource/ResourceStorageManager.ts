@@ -123,7 +123,6 @@ export class ResourceStorageManager {
    */
   public registerContainer(config: StorageContainerConfig): boolean {
     if (!config.id || !config.resourceTypes || config.resourceTypes.length === 0) {
-      console.error('Invalid storage container configuration:', config);
       return false;
     }
 
@@ -135,6 +134,7 @@ export class ResourceStorageManager {
         current: 0,
         min: 0,
         max: config.capacity / config.resourceTypes.length, // Divide capacity equally by default
+        capacity: config.capacity / config.resourceTypes.length, // Add missing capacity property
         production: 0,
         consumption: 0,
       });
@@ -277,7 +277,7 @@ export class ResourceStorageManager {
     let totalStored = 0;
 
     // Try to store in containers by score order
-    for (const { containerId, score: _ } of sortedContainers) {
+    for (const { containerId } of sortedContainers) {
       if (remainingAmount <= 0) {
         break;
       }
@@ -326,7 +326,7 @@ export class ResourceStorageManager {
     let totalRetrieved = 0;
 
     // Try to retrieve from containers by score order
-    for (const { containerId, score: _ } of sortedContainers) {
+    for (const { containerId } of sortedContainers) {
       if (remainingAmount <= 0) {
         break;
       }
@@ -346,9 +346,9 @@ export class ResourceStorageManager {
     containers: StorageContainerState[],
     resourceType: ResourceType,
     forRetrieval = false
-  ): Array<{ containerId: string; score: number }> {
+  ): { containerId: string; score: number }[] {
     const { containerPriority, resourcePriority, fillPercentage } = this.config.priorityWeights;
-    const resourcePriorityValue = this.resourcePriorities.get(resourceType) || 5;
+    const resourcePriorityValue = this.resourcePriorities.get(resourceType) ?? 5;
 
     return containers.map(container => {
       const resourceState = container.resources.get(resourceType)!;
@@ -638,7 +638,7 @@ export class ResourceStorageManager {
    * Get resource priority
    */
   public getResourcePriority(type: ResourceType): number {
-    return this.resourcePriorities.get(type) || 5;
+    return this.resourcePriorities.get(type) ?? 5;
   }
 
   /**

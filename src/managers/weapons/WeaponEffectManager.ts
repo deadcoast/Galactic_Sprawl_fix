@@ -280,7 +280,7 @@ export class WeaponEffectManager extends TypedEventEmitter<WeaponEffectEvents> {
     // Generate a unique ID
     const systemId = `explosion-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
 
-    // Define particle config - Explosions often burst outwards
+    // Define particle config - Explosions often burst outcombatds
     const particleConfig: ParticleSystemConfig = {
       maxParticles: adjustedParticleCount,
       spawnRate: adjustedParticleCount * 10,

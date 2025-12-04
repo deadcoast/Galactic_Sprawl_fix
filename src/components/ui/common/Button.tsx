@@ -9,7 +9,7 @@ interface LegacyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 /**
  * @deprecated Use the new Button component from ui/components/Button instead
- * This is an adapter component for backward compatibility.
+ * This is an adapter component for backcombatd compatibility.
  *
  * Button component
  *

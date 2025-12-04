@@ -152,7 +152,7 @@ class QuadTreeNode {
 export class QuadTree {
   private root: QuadTreeNode;
 
-  constructor(bounds: QuadTreeBounds, maxObjects: number = 10, maxLevels: number = 5) {
+  constructor(bounds: QuadTreeBounds, maxObjects = 10, maxLevels = 5) {
     this.root = new QuadTreeNode(bounds, 0, maxLevels, maxObjects);
   }
 

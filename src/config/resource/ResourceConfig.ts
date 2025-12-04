@@ -5,13 +5,13 @@ import { ResourceType, ResourceTypeInfo } from '../../types/resources/ResourceTy
  */
 export interface ResourceManagerConfig {
   maxTransferHistory: number;
-  defaultResourceLimits: { [key in ResourceType]: { min: number; max: number } };
+  defaultResourceLimits: Record<ResourceType, { min: number; max: number }>;
 }
 
 /**
  * Default resource limits configuration using standardized enum
  */
-const DEFAULT_RESOURCE_LIMITS: { [key in ResourceType]: { min: number; max: number } } = {
+const DEFAULT_RESOURCE_LIMITS: Record<ResourceType, { min: number; max: number }> = {
   [ResourceType.MINERALS]: { min: 0, max: 10000 },
   [ResourceType.ENERGY]: { min: 0, max: 5000 },
   [ResourceType.POPULATION]: { min: 0, max: 1000 },
@@ -70,7 +70,7 @@ export const RESOURCE_THRESHOLDS = {
 /**
  * Default resource production rates (units per interval)
  */
-export const DEFAULT_PRODUCTION_RATES: { [key in ResourceType]: number } = {
+export const DEFAULT_PRODUCTION_RATES: Record<ResourceType, number> = {
   [ResourceType.MINERALS]: 10,
   [ResourceType.ENERGY]: 5,
   [ResourceType.POPULATION]: 1,
@@ -96,7 +96,7 @@ export const DEFAULT_PRODUCTION_RATES: { [key in ResourceType]: number } = {
 /**
  * Default resource consumption rates (units per interval)
  */
-export const DEFAULT_CONSUMPTION_RATES: { [key in ResourceType]: number } = {
+export const DEFAULT_CONSUMPTION_RATES: Record<ResourceType, number> = {
   [ResourceType.MINERALS]: 5,
   [ResourceType.ENERGY]: 3,
   [ResourceType.POPULATION]: 0.5,
@@ -142,7 +142,7 @@ export const STORAGE_EFFICIENCY = {
 /**
  * Resource type priorities (higher = more important)
  */
-export const RESOURCE_PRIORITIES: { [key in ResourceType]: number } = {
+export const RESOURCE_PRIORITIES: Record<ResourceType, number> = {
   [ResourceType.ENERGY]: 100, // Critical resource
   [ResourceType.POPULATION]: 90,
   [ResourceType.MINERALS]: 80,

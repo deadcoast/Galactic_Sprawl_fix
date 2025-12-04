@@ -14,7 +14,7 @@ export type OfficerRole = 'Squad Leader' | 'Captain';
 /**
  * Officer specializations
  */
-export type OfficerSpecialization = 'War' | 'Recon' | 'Mining';
+export type OfficerSpecialization = 'combat' | 'Recon' | 'Mining';
 
 /**
  * Officer status

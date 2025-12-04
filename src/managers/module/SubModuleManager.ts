@@ -355,7 +355,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
     const parentModuleConfig = (
       moduleManager as unknown as { configs: Map<ModuleType, ModuleConfig> }
     ).configs.get(parentModule.type);
-    if (!parentModuleConfig || !parentModuleConfig.subModuleSupport) {
+    if (!parentModuleConfig?.subModuleSupport) {
       console.error(
         `[SubModuleManager] Parent module does not support sub-modules: ${parentModuleId}`
       );
@@ -441,7 +441,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
 
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
-      if (resourceManager.getResourceAmount(cost.type as ResourceType) < cost.amount) {
+      if (resourceManager.getResourceAmount(cost.type) < cost.amount) {
         return false;
       }
     }
@@ -482,7 +482,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
     const parentModuleConfig = (
       moduleManager as unknown as { configs: Map<ModuleType, ModuleConfig> }
     ).configs.get(parentModule.type);
-    if (!parentModuleConfig || !parentModuleConfig.subModuleSupport) {
+    if (!parentModuleConfig?.subModuleSupport) {
       return {
         success: false,
         error: `Parent module does not support sub-modules: ${parentModuleId}`,
@@ -585,7 +585,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
 
     // Check if parent module is active
     const parentModule = moduleManager.getModule(subModule.parentModuleId);
-    if (!parentModule || !parentModule.isActive) {
+    if (!parentModule?.isActive) {
       console.error(`[SubModuleManager] Parent module ${subModule.parentModuleId} is not active`);
       return false;
     }
@@ -640,7 +640,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
     moduleEventBus.emit({
       type: 'SUB_MODULE_DEACTIVATED' as ModuleEventType,
       moduleId: subModule.parentModuleId,
-      moduleType: moduleManager.getModule(subModule.parentModuleId)?.type as ModuleType,
+      moduleType: moduleManager.getModule(subModule.parentModuleId)?.type!,
       timestamp: Date.now(),
       data: { subModuleId, subModuleType: subModule.type },
     });
@@ -711,7 +711,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
     const levelMultiplier = Math.pow(1.5, subModule.level);
     for (const cost of config.requirements.resourceCosts) {
       const scaledAmount = Math.ceil(cost.amount * levelMultiplier);
-      if (resourceManager.getResourceAmount(cost.type as ResourceType) < scaledAmount) {
+      if (resourceManager.getResourceAmount(cost.type) < scaledAmount) {
         console.error(
           `[SubModuleManager] Insufficient resources for upgrade: ${cost.type} ${scaledAmount}`
         );
@@ -719,7 +719,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
       }
 
       // Consume resources
-      resourceManager.removeResource(cost.type as ResourceType, scaledAmount);
+      resourceManager.removeResource(cost.type, scaledAmount);
     }
 
     // Remove current effects
@@ -744,7 +744,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
     moduleEventBus.emit({
       type: 'SUB_MODULE_UPGRADED' as ModuleEventType,
       moduleId: subModule.parentModuleId,
-      moduleType: moduleManager.getModule(subModule.parentModuleId)?.type as ModuleType,
+      moduleType: moduleManager.getModule(subModule.parentModuleId)?.type!,
       timestamp: Date.now(),
       data: { subModuleId, subModuleType: subModule.type, newLevel: subModule.level },
     });
@@ -797,7 +797,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
-    if (!module || !module.subModules || module.subModules.length === 0) {
+    if (!module?.subModules || module.subModules.length === 0) {
       return;
     }
 
@@ -828,7 +828,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
-    if (!module || !module.subModules || module.subModules.length === 0) {
+    if (!module?.subModules || module.subModules.length === 0) {
       return;
     }
 
@@ -857,7 +857,7 @@ export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> 
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
-    if (!module || !module.subModules || module.subModules.length === 0) {
+    if (!module?.subModules || module.subModules.length === 0) {
       return;
     }
 

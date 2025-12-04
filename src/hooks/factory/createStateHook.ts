@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Action creator type
@@ -71,7 +76,7 @@ export function createStateHook<
         try {
           const savedState = localStorage.getItem(options?.persistKey);
           if (savedState) {
-            return { ...defaultState, ...JSON.parse(savedState) };
+            return { ...defaultState, ...JSON.parse(savedState) } as TState;
           }
         } catch (error) {
           errorLoggingService.logError(
@@ -110,7 +115,7 @@ export function createStateHook<
             const newState = { ...currentState, ...updates };
 
             // If custom equality function is provided, check if state actually changed
-            if (options?.areEqual && options?.areEqual(currentState, newState)) {
+            if (options?.areEqual?.(currentState, newState)) {
               return currentState;
             }
 
@@ -119,7 +124,16 @@ export function createStateHook<
               try {
                 localStorage.setItem(options?.persistKey, JSON.stringify(newState));
               } catch (error) {
-                console.error('Failed to persist state:', error);
+                errorLoggingService.logError(
+                  error instanceof Error ? error : new Error('Failed to persist state'),
+                  ErrorType.INITIALIZATION,
+                  ErrorSeverity.MEDIUM,
+                  {
+                    componentName: 'createStateHook',
+                    action: 'setState',
+                    persistKey: options?.persistKey,
+                  }
+                );
               }
             }
 
@@ -140,7 +154,16 @@ export function createStateHook<
         try {
           localStorage.removeItem(options?.persistKey);
         } catch (error) {
-          console.error('Failed to clear persisted state:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Failed to clear persisted state'),
+            ErrorType.INITIALIZATION,
+            ErrorSeverity.MEDIUM,
+            {
+              componentName: 'createStateHook',
+              action: 'reset',
+              persistKey: options?.persistKey,
+            }
+          );
         }
       }
     }, [getInitialState]);

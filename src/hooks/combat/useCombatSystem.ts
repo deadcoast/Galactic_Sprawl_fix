@@ -225,7 +225,7 @@ export function useUnitCombat(unitId: string) {
   }, [unitId]);
 
   return {
-    status: unitStatus?.status || 'idle',
+    status: unitStatus?.status ?? 'idle',
     health: unitStatus?.stats?.health ?? 0,
     shield: unitStatus?.stats?.shield ?? 0,
     target: unitStatus?.target,

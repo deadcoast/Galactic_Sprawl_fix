@@ -131,6 +131,6 @@ export interface EffectStack {
   }[];
 }
 
-// Re-export from core types for backward compatibility
+// Re-export from core types for backcombatd compatibility
 export type { Effect } from '../../types/core/GameTypes';
 export type { WeaponEffect, WeaponEffectType } from './WeaponEffects';

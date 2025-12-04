@@ -23,11 +23,11 @@ export class OfficerManager
   extends TypedEventEmitter<OfficerManagerEvents>
   implements IOfficerManager
 {
-  private officers: Map<string, Officer> = new Map();
-  private squads: Map<string, Squad> = new Map();
-  private trainingPrograms: Map<string, TrainingProgram> = new Map();
+  private officers = new Map<string, Officer>();
+  private squads = new Map<string, Squad>();
+  private trainingPrograms = new Map<string, TrainingProgram>();
   private currentTier: OfficerTier = 1;
-  private moduleId: string = 'academy'; // Default module ID for academy
+  private moduleId = 'academy'; // Default module ID for academy
 
   constructor() {
     super();
@@ -91,7 +91,7 @@ export class OfficerManager
 
     // Adjust based on specialization
     switch (specialization) {
-      case 'War':
+      case 'combat':
         baseStats.combat += 2;
         break;
       case 'Recon':
@@ -212,7 +212,7 @@ export class OfficerManager
 
     // Specialization-based improvements
     switch (officer.specialization) {
-      case 'War':
+      case 'combat':
         improvements.combat += 2;
         improvements.leadership += 1;
         break;
@@ -447,7 +447,7 @@ export class OfficerManager
 
     // Add skill contributions
     switch (officer.specialization) {
-      case 'War':
+      case 'combat':
         bonus += officer.skills.combat * 0.5;
         break;
       case 'Recon':
@@ -569,7 +569,7 @@ export class OfficerManager
     );
 
     switch (program.specialization) {
-      case 'War':
+      case 'combat':
         officer.skills.combat += skillImprovement;
         break;
       case 'Recon':

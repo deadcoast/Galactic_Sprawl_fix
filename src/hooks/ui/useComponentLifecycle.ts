@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { ModuleEvent, moduleEventBus } from '../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 
 /**
@@ -20,7 +24,7 @@ export interface ComponentLifecycleOptions {
   /**
    * Array of event subscriptions
    */
-  eventSubscriptions?: Array<{
+  eventSubscriptions?: {
     /**
      * Type of the event to subscribe to
      */
@@ -30,7 +34,7 @@ export interface ComponentLifecycleOptions {
      * Handler function for the event
      */
     handler: (event: ModuleEvent) => void;
-  }>;
+  }[];
 }
 
 /**
@@ -76,21 +80,20 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
 
     // Call onMount callback if provided
     if (options?.onMount) {
-      try {
-        options?.onMount();
-      } catch (error) {
-        errorLoggingService.logError(
-          error instanceof Error ? error : new Error('Error in onMount callback'),
-          ErrorType.RUNTIME,
-          ErrorSeverity.MEDIUM,
-          { componentName: 'useComponentLifecycle', action: 'onMount' }
-        );
-      }
-    }
+          try {
+            options?.onMount();
+          } catch (error) {
+            errorLoggingService.logError(
+              error instanceof Error ? error : new Error('Error in onMount callback'),
+              ErrorType.RUNTIME,
+              ErrorSeverity.MEDIUM,
+              { componentName: 'useComponentLifecycle', action: 'onMount' }
+            );
+          }
+        }
 
     // Set up event subscriptions
-    const unsubscribers: Array<() => void> = [];
-
+    const unsubscribers: (() => void)[] = [];
     if (options?.eventSubscriptions) {
       options?.eventSubscriptions.forEach(subscription => {
         // Subscribe to the event
@@ -238,7 +241,7 @@ export function useDynamicComponentLifecycle(
     }
 
     // Set up event subscriptions
-    const unsubscribers: Array<() => void> = [];
+    const unsubscribers: (() => void)[] = [];
 
     if (options?.eventSubscriptions) {
       options?.eventSubscriptions.forEach(subscription => {

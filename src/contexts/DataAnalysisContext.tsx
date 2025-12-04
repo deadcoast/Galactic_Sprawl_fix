@@ -1,32 +1,34 @@
 import * as React from 'react';
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import
+  {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+  } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  Anomaly,
-  EXPLORATION_EVENTS,
-  explorationManager,
-  Sector,
-} from '../managers/exploration/ExplorationManager';
+import
+  {
+    Anomaly,
+    explorationManager,
+    Sector,
+  } from '../managers/exploration/ExplorationManager';
 import { AnalysisAlgorithmService } from '../services/AnalysisAlgorithmService';
 import { DataCollectionService } from '../services/DataCollectionService';
 import { DataProcessingService } from '../services/DataProcessingService';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
-import {
-  AnalysisConfig,
-  AnalysisResult,
-  DataAnalysisContextType,
-  DataPoint,
-  Dataset,
-  ResourceData,
-} from '../types/exploration/DataAnalysisTypes';
+import
+  {
+    AnalysisConfig,
+    AnalysisResult,
+    DataAnalysisContextType,
+    DataPoint,
+    Dataset,
+    ResourceData,
+  } from '../types/exploration/DataAnalysisTypes';
 
 // Create the context with a default undefined value
 const DataAnalysisContext = createContext<DataAnalysisContextType | undefined>(undefined);
@@ -229,7 +231,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       }
 
       // Create a new dataset if one doesn't exist
-      const newDatasetName = name || `${source.charAt(0).toUpperCase() + source.slice(1)} Dataset`;
+      const newDatasetName = name ?? `${source.charAt(0).toUpperCase() + source.slice(1)} Dataset`;
       return createDataset({
         name: newDatasetName,
         description: `Automatically generated dataset for ${source}`,
@@ -243,24 +245,24 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Convert a sector to a data point
   const sectorToDataPoint = useCallback((sector: Sector): DataPoint => {
     return {
-      id: sector.id,
+      id: typeof sector.id === 'string' ? sector.id : uuidv4(),
       type: 'sector',
-      name: sector.name,
-      date: sector.discoveredAt || Date.now(),
+      name: typeof sector.name === 'string' ? sector.name : 'Unknown Sector',
+      date: sector.discoveredAt ?? Date.now(),
       coordinates: {
         x: Number(
           typeof sector.coordinates === 'object' && sector.coordinates
-            ? (sector.coordinates as { x?: number })?.x || 0
+            ? (sector.coordinates as { x?: number })?.x ?? 0
             : 0
         ),
         y: Number(
           typeof sector.coordinates === 'object' && sector.coordinates
-            ? (sector.coordinates as { y?: number })?.y || 0
+            ? (sector.coordinates as { y?: number })?.y ?? 0
             : 0
         ),
       },
       properties: {
-        status: sector.status,
+        status: typeof sector.status === 'string' ? sector.status : 'unknown',
         resourcePotential: sector.resourcePotential,
         habitabilityScore: sector.habitabilityScore,
         anomalyCount: sector.anomalies?.length ?? 0,
@@ -273,27 +275,27 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Convert an anomaly to a data point
   const anomalyToDataPoint = useCallback((anomaly: Anomaly): DataPoint => {
     return {
-      id: anomaly.id,
+      id: typeof anomaly.id === 'string' ? anomaly.id : uuidv4(),
       type: 'anomaly',
-      name: `${anomaly.type} Anomaly`,
+      name: `${typeof anomaly.type === 'string' ? anomaly.type : 'Unknown'} Anomaly`,
       date: anomaly.discoveredAt,
       coordinates: {
         x: Number(
           typeof anomaly.position === 'object' && anomaly.position
-            ? (anomaly.position as { x?: number })?.x || 0
+            ? (anomaly.position as { x?: number })?.x ?? 0
             : 0
         ),
         y: Number(
           typeof anomaly.position === 'object' && anomaly.position
-            ? (anomaly.position as { y?: number })?.y || 0
+            ? (anomaly.position as { y?: number })?.y ?? 0
             : 0
         ),
       },
       properties: {
-        type: anomaly.type,
-        severity: anomaly.severity,
-        description: anomaly.description,
-        sectorId: anomaly.sectorId,
+        type: typeof anomaly.type === 'string' ? anomaly.type : 'unknown',
+        severity: typeof anomaly.severity === 'string' ? anomaly.severity : 'low',
+        description: typeof anomaly.description === 'string' ? anomaly.description : '',
+        sectorId: typeof anomaly.sectorId === 'string' ? anomaly.sectorId : 'unknown',
         investigated: anomaly.investigatedAt !== undefined,
       },
     };
@@ -307,13 +309,13 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       coordinates: { x: number; y: number }
     ): DataPoint => {
       return {
-        id: `${sectorId}-${resource.type}-${Date.now()}`,
+        id: `${sectorId}-${(typeof resource.type === 'string' ? resource.type : 'unknown')}-${Date.now()}`,
         type: 'resource',
-        name: `${resource.type} Resource`,
+        name: `${typeof resource.type === 'string' ? resource.type : 'Unknown'} Resource`,
         date: Date.now(),
         coordinates,
         properties: {
-          type: resource.type,
+          type: typeof resource.type === 'string' ? resource.type : 'unknown',
           amount: resource.amount,
           quality: resource.quality ?? 0,
           sectorId,
@@ -394,7 +396,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           name: sectorInfo.name,
           coordinateX: sectorInfo.coordinates.x,
           coordinateY: sectorInfo.coordinates.y,
-          discoveredAt: sectorInfo.discoveredAt || 0,
+          discoveredAt: sectorInfo.discoveredAt ?? 0,
         };
 
         // Use the serializable format for metadata to ensure proper data storage
@@ -404,7 +406,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           sectorName: sectorInfo.name,
           sectorCoordinateX: sectorInfo.coordinates.x,
           sectorCoordinateY: sectorInfo.coordinates.y,
-          sectorDiscoveredAt: sectorInfo.discoveredAt || 0,
+          sectorDiscoveredAt: sectorInfo.discoveredAt ?? 0,
         };
 
         // Store the serialized sector info in the anomaly's linked data for cross-reference
@@ -442,30 +444,19 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       addDataPointToDataset(resourcesDatasetId, dataPoint);
     };
 
-    // Helper function to convert ExplorationEvents to EventType
-    const _asEventType = (event: keyof typeof EXPLORATION_EVENTS): EventType => {
-      return EventType[`EXPLORATION_${event}`] as EventType;
-    };
-
-    // Subscribe to exploration events including custom exploration events that may be added in the future
-    const subscribeToExplorationEvent = (
-      eventKey: keyof typeof EXPLORATION_EVENTS,
-      handler: (event: BaseEvent) => void
-    ) => {
-      return explorationManager.subscribeToEvent(_asEventType(eventKey), handler);
-    };
-
-    // Subscribe to common exploration events
-    const unsubscribeSector = subscribeToExplorationEvent(
-      'SECTOR_DISCOVERED',
+    // Subscribe to exploration events using EventType enums
+    const unsubscribeSector = explorationManager.subscribeToEvent(
+      EventType.EXPLORATION_SECTOR_DISCOVERED,
       handleSectorDiscovered
     );
-    const unsubscribeAnomaly = subscribeToExplorationEvent(
-      'ANOMALY_DETECTED',
+
+    const unsubscribeAnomaly = explorationManager.subscribeToEvent(
+      EventType.EXPLORATION_ANOMALY_DETECTED,
       handleAnomalyDetected
     );
-    const unsubscribeResource = subscribeToExplorationEvent(
-      'RESOURCE_DETECTED',
+
+    const unsubscribeResource = explorationManager.subscribeToEvent(
+      EventType.EXPLORATION_RESOURCE_DETECTED,
       handleResourceDetected
     );
 
@@ -670,7 +661,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   };
 
   // Refresh data with worker-based filtering and sorting
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(() => {
     if (!dataCollectionServiceRef.current) return;
     setIsProcessingData(true);
 
@@ -689,15 +680,15 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       if (dataProcessingServiceRef.current) {
         // Process data in batches using the worker
         if (sectorDatasetId && sectorData.length > 0) {
-          await addDataPointsBatch(sectorDatasetId, sectorData);
+          void addDataPointsBatch(sectorDatasetId, sectorData);
         }
 
         if (anomalyDatasetId && anomalyData.length > 0) {
-          await addDataPointsBatch(anomalyDatasetId, anomalyData);
+          void addDataPointsBatch(anomalyDatasetId, anomalyData);
         }
 
         if (resourceDatasetId && resourceData.length > 0) {
-          await addDataPointsBatch(resourceDatasetId, resourceData);
+          void addDataPointsBatch(resourceDatasetId, resourceData);
         }
       } else {
         // Fallback to standard processing
@@ -725,7 +716,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   }, [getOrCreateDatasetBySource, addDataPointToDataset]);
 
   // Helper function to add data points in batches using the worker
-  const addDataPointsBatch = async (datasetId: string, dataPoints: DataPoint[]): Promise<void> => {
+  const addDataPointsBatch = (datasetId: string, dataPoints: DataPoint[]): void => {
     if (!dataProcessingServiceRef.current || dataPoints.length === 0) return;
 
     try {
@@ -755,7 +746,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   const filterDataset = useCallback(
     async (
       datasetId: string,
-      filters: Array<{
+      filters: {
         field: string;
         operator:
           | 'equals'
@@ -766,7 +757,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           | 'notContains'
           | 'between';
         value: string | number | boolean | string[] | [number, number];
-      }>
+        }[]
     ): Promise<DataPoint[]> => {
       const dataset = datasets.find(ds => ds.id === datasetId);
       if (!dataset) return [];
@@ -787,7 +778,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
               }))
             );
             setIsProcessingData(false);
-            return filteredData as DataPoint[];
+            return filteredData as unknown as DataPoint[];
           } catch (error) {
             console.error('Worker filtering error:', error);
             // Continue to fallback
@@ -1019,29 +1010,26 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       }
 
       return {
-        id: String(sector.id || uuidv4()),
+        id: typeof sector.id === 'string' ? sector.id : uuidv4(),
         type: 'sector',
-        name: String(sector.name || 'Unknown Sector'),
-        date: Number(sector.discoveredAt || Date.now()),
+        name: typeof sector.name === 'string' ? sector.name : 'Unknown Sector',
+        date: Number(sector.discoveredAt ?? Date.now()),
         coordinates: {
           x: Number(
             typeof sector.coordinates === 'object' && sector.coordinates
-              ? (sector.coordinates as { x?: number })?.x || 0
+              ? (sector.coordinates as { x?: number })?.x ?? 0
               : 0
           ),
           y: Number(
             typeof sector.coordinates === 'object' && sector.coordinates
-              ? (sector.coordinates as { y?: number })?.y || 0
+              ? (sector.coordinates as { y?: number })?.y ?? 0
               : 0
           ),
         },
         properties: {
-          status: String(sector.status || 'unknown'),
-          resourcePotential: Number(sector.resourcePotential || 0),
-          habitabilityScore: Number(sector.habitabilityScore || 0),
-          anomalyCount: Number((sector.anomalies as unknown[])?.length || 0),
-          resourceCount: Number((sector.resources as unknown[])?.length || 0),
-          lastScanned: Number(sector.lastScanned || 0),
+          status: typeof sector.status === 'string' ? sector.status : 'unknown',
+          resourceCount: Number((sector.resources as unknown[])?.length ?? 0),
+          lastScanned: Number(sector.lastScanned ?? 0),
         },
       };
     },
@@ -1052,27 +1040,27 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       }
 
       return {
-        id: String(anomaly.id || uuidv4()),
+        id: typeof anomaly.id === 'string' ? anomaly.id : uuidv4(),
         type: 'anomaly',
-        name: `${String(anomaly.type || 'Unknown')} Anomaly`,
-        date: Number(anomaly.discoveredAt || Date.now()),
+        name: `${typeof anomaly.type === 'string' ? anomaly.type : 'Unknown'} Anomaly`,
+        date: Number(anomaly.discoveredAt ?? Date.now()),
         coordinates: {
           x: Number(
             typeof anomaly.position === 'object' && anomaly.position
-              ? (anomaly.position as { x?: number })?.x || 0
+              ? (anomaly.position as { x?: number })?.x ?? 0
               : 0
           ),
           y: Number(
             typeof anomaly.position === 'object' && anomaly.position
-              ? (anomaly.position as { y?: number })?.y || 0
+              ? (anomaly.position as { y?: number })?.y ?? 0
               : 0
           ),
         },
         properties: {
-          type: String(anomaly.type || 'unknown'),
-          severity: String(anomaly.severity || 'low'),
-          description: String(anomaly.description || ''),
-          sectorId: String(anomaly.sectorId || 'unknown'),
+          type: typeof anomaly.type === 'string' ? anomaly.type : 'unknown',
+          severity: typeof anomaly.severity === 'string' ? anomaly.severity : 'low',
+          description: typeof anomaly.description === 'string' ? anomaly.description : '',
+          sectorId: typeof anomaly.sectorId === 'string' ? anomaly.sectorId : 'unknown',
           investigated: Boolean(anomaly.investigatedAt),
         },
       };
@@ -1087,19 +1075,19 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
         throw new Error('Invalid resource data');
       }
 
-      const safeCoordinates = coordinates || { x: 0, y: 0 };
-      const safeSectorId = sectorId || 'unknown';
+      const safeCoordinates = coordinates ?? { x: 0, y: 0 };
+      const safeSectorId = sectorId ?? 'unknown';
 
       return {
-        id: `${safeSectorId}-${String(resource.type || 'unknown')}-${Date.now()}`,
+        id: `${safeSectorId}-${(typeof resource.type === 'string' ? resource.type : 'unknown')}-${Date.now()}`,
         type: 'resource',
-        name: `${String(resource.type || 'Unknown')} Resource`,
+        name: `${typeof resource.type === 'string' ? resource.type : 'Unknown'} Resource`,
         date: Date.now(),
         coordinates: safeCoordinates,
         properties: {
-          type: String(resource.type || 'unknown'),
-          amount: Number(resource.amount || 0),
-          quality: Number(resource.quality || 0),
+          type: typeof resource.type === 'string' ? resource.type : 'unknown',
+          amount: Number(resource.amount ?? 0),
+          quality: Number(resource.quality ?? 0),
           sectorId: safeSectorId,
         },
       };
@@ -1110,7 +1098,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     // Fix filterDataset to have proper typings
     filterDataset: (
       datasetId: string,
-      filters: Array<{
+      filters: {
         field: string;
         operator:
           | 'equals'
@@ -1121,7 +1109,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           | 'notContains'
           | 'between';
         value: string | number | boolean | string[] | [number, number];
-      }>
+      }[]
     ) => {
       // This is a workaround to convert the async function to a sync one
       // In a real application, you would refactor the interface to be async

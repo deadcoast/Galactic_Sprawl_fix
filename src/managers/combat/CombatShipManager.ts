@@ -1,9 +1,10 @@
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { Position } from '../../types/core/GameTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
-import { CombatShip, isCombatShip, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes';
+import { CombatShip, isCombatShip, UnifiedShipStatus } from '../../types/ships/ShipTypes';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 import { getCombatManager } from '../ManagerRegistry';
 
@@ -50,9 +51,21 @@ function isAttackData(data: unknown): data is AttackData {
   return typeof data === 'object' && data !== null && 'targetId' in data;
 }
 
+/**
+ * Safely initializes combat stats for a ship if they don't exist
+ */
+function initializeCombatStats(ship: CombatShip): void {
+  ship.combatStats ??= {
+      damageDealt: 0,
+      damageReceived: 0,
+      killCount: 0,
+      assistCount: 0,
+    };
+}
+
 export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
-  private ships: Map<string, CombatShip> = new Map();
-  private tasks: Map<string, CombatTask> = new Map();
+  private ships: Map<string, CombatShip> = new Map<string, CombatShip>();
+  private tasks: Map<string, CombatTask> = new Map<string, CombatTask>();
   private formations: Map<
     string,
     {
@@ -62,7 +75,13 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
       spacing: number;
       facing: number;
     }
-  > = new Map();
+  > = new Map<string, {
+    type: 'offensive' | 'defensive' | 'balanced';
+    ships: string[];
+    leader?: string;
+    spacing: number;
+    facing: number;
+  }>();
 
   protected constructor() {
     super('CombatShipManager');
@@ -87,43 +106,17 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   }
 
   protected onUpdate(deltaTime: number): void {
-    this.formations.forEach(formation => {
-      if (formation.ships.length > 0) {
-        const leader = this.ships.get(formation.leader!);
-        if (leader) {
-          const task = this.tasks.get(leader.id);
-          if (task?.target) {
-            const dx = task.target.position.x - leader.position.x;
-            const dy = task.target.position.y - leader.position.y;
-            formation.facing = Math.atan2(dy, dx);
-          }
-
-          formation.ships.forEach((shipId, index) => {
-            if (shipId !== formation.leader) {
-              const ship = this.ships.get(shipId);
-              if (ship) {
-                const angle = formation.facing + index * (Math.PI / 4);
-                const targetPos = {
-                  x: leader.position.x + Math.cos(angle) * formation.spacing,
-                  y: leader.position.y + Math.sin(angle) * formation.spacing,
-                };
-                getCombatManager().moveUnit(shipId, targetPos);
-              }
-            }
-          });
-        }
-      }
-    });
+    if (this.ships.size === 0) {
+      return;
+    }
 
     this.ships.forEach(ship => {
       ship.stats.weapons.forEach(mount => {
         if (mount.currentWeapon?.state.status === 'cooling') {
           const cooldownDuration = mount.currentWeapon?.config.baseStats.cooldown ?? 0;
           const lastFiredTime = mount.currentWeapon?.state.lastFiredTime ?? 0;
-          if (Date.now() - lastFiredTime >= cooldownDuration * 1000) {
-            if (mount.currentWeapon?.state) {
-              mount.currentWeapon.state.status = 'ready';
-            }
+          if (Date.now() - lastFiredTime >= cooldownDuration * 1000 && mount.currentWeapon?.state) {
+                mount.currentWeapon.state.status = 'ready';
           }
         }
       });
@@ -159,17 +152,10 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
             const energyEfficiency = ship.techBonuses?.energyEfficiency ?? 1;
             ship.stats.energy = Math.max(0, ship.stats.energy - energyCost * energyEfficiency);
 
-            if (!ship.combatStats) {
-              ship.combatStats = {
-                damageDealt: 0,
-                damageReceived: 0,
-                killCount: 0,
-                assistCount: 0,
-              };
-            }
+            initializeCombatStats(ship);
             const damageDealt = weaponInstance.config.baseStats.damage ?? 0;
             const weaponEfficiency = ship.techBonuses?.weaponEfficiency ?? 1;
-            ship.combatStats.damageDealt += damageDealt * weaponEfficiency;
+            ship.combatStats!.damageDealt += damageDealt * weaponEfficiency;
           }
         }
       }
@@ -306,12 +292,10 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         const energyEfficiency = ship.techBonuses?.energyEfficiency ?? 1;
         ship.stats.energy = Math.max(0, ship.stats.energy - energyCost * energyEfficiency);
 
-        if (!ship.combatStats) {
-          ship.combatStats = { damageDealt: 0, damageReceived: 0, killCount: 0, assistCount: 0 };
-        }
+        initializeCombatStats(ship);
         const damageDealt = weaponInstance.config.baseStats.damage ?? 0;
         const weaponEfficiency = ship.techBonuses?.weaponEfficiency ?? 1;
-        ship.combatStats.damageDealt += damageDealt * weaponEfficiency;
+        ship.combatStats!.damageDealt += damageDealt * weaponEfficiency;
       }
     }
   }
@@ -327,9 +311,15 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
 
   public registerShip(ship: CombatShip): void {
     if (!isCombatShip(ship)) {
-      console.warn(
-        `[CombatShipManager] Attempted to register non-combat ship: ${ship.id} (${ship.category})`
-      );
+      const shipRecord = ship as Record<string, unknown>;
+      const shipId = typeof shipRecord.id === 'string' ? shipRecord.id : 'unknown';
+      const shipCategory = typeof shipRecord.category === 'string' ? shipRecord.category : 'unknown';
+      
+      errorLoggingService.logWarn('[CombatShipManager] Attempted to register non-combat ship', {
+        shipId,
+        shipCategory,
+        managerId: this.managerName,
+      });
       return;
     }
     this.ships.set(ship.id, ship);
@@ -338,7 +328,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
       managerId: this.managerName,
       moduleId: ship.id,
       timestamp: Date.now(),
-      data: { ship: ship as CombatShip, moduleType: 'war' },
+      data: { ship: ship, moduleType: 'combat' },
     });
   }
 
@@ -363,7 +353,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         managerId: this.managerName,
         moduleId: shipId,
         timestamp: Date.now(),
-        data: { moduleType: 'war' },
+        data: { moduleType: 'combat' },
       });
     }
   }
@@ -404,7 +394,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
       managerId: this.managerName,
       moduleId: shipId,
       timestamp: Date.now(),
-      data: { task, moduleType: 'war' },
+      data: { task, moduleType: 'combat' },
     });
   }
 
@@ -421,7 +411,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
         managerId: this.managerName,
         moduleId: shipId,
         timestamp: Date.now(),
-        data: { task, combatStats: ship.combatStats ?? {}, moduleType: 'war' },
+        data: { task, combatStats: ship.combatStats ?? {}, moduleType: 'combat' },
       });
     }
   }
@@ -432,9 +422,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   ): void {
     const ship = this.ships.get(shipId);
     if (ship) {
-      if (!ship.techBonuses) {
-        ship.techBonuses = { weaponEfficiency: 1, shieldRegeneration: 1, energyEfficiency: 1 };
-      }
+      ship.techBonuses ??= { weaponEfficiency: 1, shieldRegeneration: 1, energyEfficiency: 1 };
       ship.techBonuses = bonuses;
     }
   }
@@ -442,7 +430,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
   public createFormation(
     type: 'offensive' | 'defensive' | 'balanced',
     shipIds: string[],
-    spacing: number = 100
+    spacing = 100
   ): string {
     const formationId = `formation-${Date.now()}`;
     const validShips = shipIds.filter(id => this.ships.has(id));
@@ -501,7 +489,7 @@ export class CombatShipManagerImpl extends AbstractBaseManager<BaseEvent> {
           managerId: this.managerName,
           moduleId: shipId,
           timestamp: Date.now(),
-          data: { status: ship.status, previousStatus: previousSimpleStatus, moduleType: 'war' },
+          data: { status: ship.status, previousStatus: previousSimpleStatus, moduleType: 'combat' },
         });
       }
     }

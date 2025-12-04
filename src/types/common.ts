@@ -23,6 +23,4 @@ export enum Status {
 /**
  * Generic type for key-value pairs, useful for configurations or metadata.
  */
-export type KeyValuePair<T = unknown> = {
-  [key: string]: T;
-};
+export type KeyValuePair<T = unknown> = Record<string, T>;

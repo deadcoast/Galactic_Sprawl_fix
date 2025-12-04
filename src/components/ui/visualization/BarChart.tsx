@@ -108,7 +108,7 @@ export function BarChart({
       {...chartProps}
       data={processedData}
       type="bar"
-      className={`bar-chart ${orientation} ${chartProps.className || ''}`}
+      className={`bar-chart ${orientation} ${chartProps.className ?? ''}`}
       showGrid
     />
   );
@@ -120,7 +120,7 @@ export function BarChart({
 export function createCategoryData(
   values: number[],
   categories: string[],
-  datasetLabel: string = 'Categories',
+  datasetLabel = 'Categories',
   color?: string
 ): ChartProps['data'] {
   const data: DataPoint[] = values.map((value, index) => ({
@@ -143,11 +143,11 @@ export function createCategoryData(
  * Helper to create comparison data for BarChart
  */
 export function createComparisonData(
-  datasets: Array<{
+  datasets: {
     label: string;
     values: number[];
     color?: string;
-  }>,
+  }[],
   categories: string[]
 ): ChartProps['data'] {
   return {

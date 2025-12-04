@@ -56,7 +56,7 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
           <Form.Item label="Number of Tabs" help="How munknown tabs to open (1-10)">
             <InputNumber
               value={config.tabCount}
-              onChange={(value: number | null) => handleChange('tabCount', value || 1)}
+              onChange={(value: number | null) => handleChange('tabCount', value ?? 1)}
               min={1}
               max={10}
               disabled={isRunning}
@@ -84,7 +84,7 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
           >
             <InputNumber
               value={config.duration}
-              onChange={(value: number | null) => handleChange('duration', value || 10)}
+              onChange={(value: number | null) => handleChange('duration', value ?? 10)}
               min={5}
               max={300}
               disabled={isRunning}
@@ -98,7 +98,7 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
           >
             <InputNumber
               value={config.delayBetweenTabs}
-              onChange={(value: number | null) => handleChange('delayBetweenTabs', value || 0)}
+              onChange={(value: number | null) => handleChange('delayBetweenTabs', value ?? 0)}
               min={0}
               max={5000}
               step={100}
@@ -113,7 +113,7 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
           >
             <InputNumber
               value={config.reportFrequency}
-              onChange={(value: number | null) => handleChange('reportFrequency', value || 500)}
+              onChange={(value: number | null) => handleChange('reportFrequency', value ?? 500)}
               min={500}
               max={10000}
               step={100}

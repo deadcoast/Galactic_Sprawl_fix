@@ -200,7 +200,7 @@ export function Dialog({
         return (
           <button
             key={`dialog-action-${index}`}
-            className={`dialog-action ${action.className || ''}`}
+            className={`dialog-action ${action.className ?? ''}`}
             onClick={handleClick}
             style={buttonStyle}
             disabled={action.disabled}

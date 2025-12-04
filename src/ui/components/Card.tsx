@@ -162,7 +162,7 @@ const CardComponent = forwardRef<HTMLDivElement, CardProps>(
         role={interactive ? 'button' : undefined}
         tabIndex={interactive && !disabled ? 0 : undefined}
       >
-        {(title || subtitle) && (
+        {(title ?? subtitle) && (
           <div className="gs-card__header">
             {title && <div className="gs-card__title">{title}</div>}
             {subtitle && <div className="gs-card__subtitle">{subtitle}</div>}

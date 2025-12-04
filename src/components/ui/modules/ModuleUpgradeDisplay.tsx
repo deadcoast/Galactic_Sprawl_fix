@@ -55,7 +55,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
+    setModule(moduleData ?? null);
   }, [moduleId]);
 
   // Handle upgrade start
@@ -170,8 +170,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
             <div className="module-upgrade-display__requirements-met">All requirements met</div>
           ) : (
             <ul className="module-upgrade-display__requirement-list">
-              {missingRequirements &&
-                missingRequirements.map((requirement, index) => (
+              {missingRequirements?.map((requirement, index) => (
                   <li
                     key={index}
                     className="module-upgrade-display__requirement module-upgrade-display__requirement--missing"
@@ -282,7 +281,7 @@ const ModuleUpgradeSummaryItem: React.FC<{
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
+    setModule(moduleData ?? null);
   }, [moduleId]);
 
   // Handle upgrade start

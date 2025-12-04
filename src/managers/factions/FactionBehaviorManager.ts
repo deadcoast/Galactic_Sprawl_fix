@@ -18,7 +18,7 @@ import { FactionBehaviorType, FactionId } from '../../types/ships/FactionTypes';
  * Faction behavior manager class that uses standardized types and events
  */
 export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
-  private factions: Map<FactionId, FactionState> = new Map();
+  private factions = new Map<FactionId, FactionState>();
 
   /**
    * Constructor

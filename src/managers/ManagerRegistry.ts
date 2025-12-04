@@ -7,17 +7,18 @@
  */
 
 import { GlobalAutomationManager } from './automation/GlobalAutomationManager';
-import { CombatManager } from './combat/CombatManager';
+import { CombatManager } from './combat/combatManager';
 import { CombatMechanicsSystem, CombatMechanicsSystemImpl } from './combat/CombatMechanicsSystem';
 import { ObjectDetectionSystem, ObjectDetectionSystemImpl } from './combat/ObjectDetectionSystem';
 import {
-  ThreatAssessmentManager,
-  ThreatAssessmentManagerImpl,
+    ThreatAssessmentManager,
+    ThreatAssessmentManagerImpl,
 } from './combat/ThreatAssessmentManager';
 import { effectLifecycleManager, EffectLifecycleManager } from './effects/EffectLifecycleManager';
 import { FactionBehaviorManager } from './factions/FactionBehaviorManager';
 import { AsteroidFieldManager } from './game/AsteroidFieldManager';
 import { AutomationManager } from './game/AutomationManager';
+import { GameManager, gameManager as gameManagerSingleton } from './game/gameManager';
 import { ResourceManager } from './game/ResourceManager';
 import { TechTreeManager } from './game/techTreeManager';
 import { MiningShipManager } from './mining/MiningShipManager';
@@ -38,16 +39,15 @@ let asteroidFieldManagerInstance: AsteroidFieldManager | null = null;
 let resourceFlowManagerInstance: ResourceFlowManager | null = null;
 let resourceConversionManagerInstance: ResourceConversionManager | null = null;
 let miningShipManagerInstance: MiningShipManager | null = null;
+let gameManagerInstance: GameManager | null = null;
 
 /**
  * Get the singleton instance of CombatManager
  * @returns The CombatManager instance
  */
 export function getCombatManager(): CombatManager {
-  if (!combatManagerInstance) {
-    combatManagerInstance = new CombatManager();
-  }
-  return combatManagerInstance!;
+  combatManagerInstance ??= new CombatManager();
+  return combatManagerInstance;
 }
 
 /**
@@ -55,9 +55,7 @@ export function getCombatManager(): CombatManager {
  * @returns The ObjectDetectionSystem instance
  */
 export function getObjectDetectionSystem(): ObjectDetectionSystem {
-  if (!objectDetectionSystemInstance) {
-    objectDetectionSystemInstance = ObjectDetectionSystemImpl.getInstance();
-  }
+  objectDetectionSystemInstance ??= ObjectDetectionSystemImpl.getInstance();
   return objectDetectionSystemInstance;
 }
 
@@ -66,12 +64,9 @@ export function getObjectDetectionSystem(): ObjectDetectionSystem {
  * @returns The ThreatAssessmentManager instance
  */
 export function getThreatAssessmentManager(): ThreatAssessmentManager {
-  if (!threatAssessmentManagerInstance) {
-    // Use public constructor
-    threatAssessmentManagerInstance = new ThreatAssessmentManagerImpl();
-  }
+  threatAssessmentManagerInstance ??= new ThreatAssessmentManagerImpl();
   // Add non-null assertion
-  return threatAssessmentManagerInstance!;
+  return threatAssessmentManagerInstance;
 }
 
 /**
@@ -79,11 +74,7 @@ export function getThreatAssessmentManager(): ThreatAssessmentManager {
  * @returns The CombatMechanicsSystem instance
  */
 export function getCombatMechanicsSystem(): CombatMechanicsSystem {
-  if (!combatMechanicsSystemInstance) {
-    // Pass the object detection system as a dependency
-    const objectDetectionSystem = getObjectDetectionSystem();
-    combatMechanicsSystemInstance = CombatMechanicsSystemImpl.getInstance(objectDetectionSystem);
-  }
+  combatMechanicsSystemInstance ??= CombatMechanicsSystemImpl.getInstance(getObjectDetectionSystem());
   return combatMechanicsSystemInstance;
 }
 
@@ -92,9 +83,7 @@ export function getCombatMechanicsSystem(): CombatMechanicsSystem {
  * @returns The TechTreeManager instance
  */
 export function getTechTreeManager(): TechTreeManager {
-  if (!techTreeManagerInstance) {
-    techTreeManagerInstance = TechTreeManager.getInstance();
-  }
+  techTreeManagerInstance ??= TechTreeManager.getInstance();
   return techTreeManagerInstance;
 }
 
@@ -103,10 +92,8 @@ export function getTechTreeManager(): TechTreeManager {
  * @returns The ResourceManager instance
  */
 export function getResourceManager(): ResourceManager {
-  if (!resourceManagerInstance) {
-    resourceManagerInstance = ResourceManager.getInstance();
-  }
-  return resourceManagerInstance!;
+  resourceManagerInstance ??= ResourceManager.getInstance();
+  return resourceManagerInstance;
 }
 
 /**
@@ -114,9 +101,7 @@ export function getResourceManager(): ResourceManager {
  * @returns The AutomationManager instance
  */
 export function getAutomationManager(): AutomationManager {
-  if (!automationManagerInstance) {
-    automationManagerInstance = new AutomationManager();
-  }
+  automationManagerInstance ??= new AutomationManager();
   return automationManagerInstance;
 }
 
@@ -125,11 +110,8 @@ export function getAutomationManager(): AutomationManager {
  * @returns The GlobalAutomationManager instance
  */
 export function getGlobalAutomationManager(): GlobalAutomationManager {
-  if (!globalAutomationManagerInstance) {
-    // Use getInstance() directly
-    globalAutomationManagerInstance = GlobalAutomationManager.getInstance();
-  }
-  return globalAutomationManagerInstance!;
+  globalAutomationManagerInstance ??= GlobalAutomationManager.getInstance();
+  return globalAutomationManagerInstance;
 }
 
 /**
@@ -137,9 +119,7 @@ export function getGlobalAutomationManager(): GlobalAutomationManager {
  * @returns The FactionBehaviorManager instance
  */
 export function getFactionBehaviorManager(): FactionBehaviorManager {
-  if (!factionBehaviorManagerInstance) {
-    factionBehaviorManagerInstance = new FactionBehaviorManager();
-  }
+  factionBehaviorManagerInstance ??= new FactionBehaviorManager();
   return factionBehaviorManagerInstance;
 }
 
@@ -148,9 +128,7 @@ export function getFactionBehaviorManager(): FactionBehaviorManager {
  * @returns The AsteroidFieldManager instance
  */
 export function getAsteroidFieldManager(): AsteroidFieldManager {
-  if (!asteroidFieldManagerInstance) {
-    asteroidFieldManagerInstance = new AsteroidFieldManager();
-  }
+  asteroidFieldManagerInstance ??= new AsteroidFieldManager();
   return asteroidFieldManagerInstance;
 }
 
@@ -159,12 +137,7 @@ export function getAsteroidFieldManager(): AsteroidFieldManager {
  * @returns The ResourceFlowManager instance
  */
 export function getResourceFlowManager(): ResourceFlowManager {
-  if (!resourceFlowManagerInstance) {
-    // Assuming ResourceFlowManager uses getInstance pattern or has a public constructor
-    // Need to verify the actual instantiation method of ResourceFlowManager
-    // For now, assuming getInstance() like other managers
-    resourceFlowManagerInstance = ResourceFlowManager.getInstance();
-  }
+  resourceFlowManagerInstance ??= ResourceFlowManager.getInstance();
   return resourceFlowManagerInstance;
 }
 
@@ -173,11 +146,8 @@ export function getResourceFlowManager(): ResourceFlowManager {
  * @returns The MiningShipManagerImpl instance
  */
 export function getMiningShipManager(): MiningShipManager {
-  if (!miningShipManagerInstance) {
-    // Use getInstance() directly
-    miningShipManagerInstance = MiningShipManager.getInstance();
-  }
-  return miningShipManagerInstance!;
+  miningShipManagerInstance ??= MiningShipManager.getInstance();
+  return miningShipManagerInstance;
 }
 
 /**
@@ -185,9 +155,7 @@ export function getMiningShipManager(): MiningShipManager {
  * @returns The ResourceConversionManager instance
  */
 export function getResourceConversionManager(): ResourceConversionManager {
-  if (!resourceConversionManagerInstance) {
-    resourceConversionManagerInstance = ResourceConversionManager.getInstance();
-  }
+  resourceConversionManagerInstance ??= ResourceConversionManager.getInstance();
   return resourceConversionManagerInstance;
 }
 
@@ -198,6 +166,15 @@ export function getResourceConversionManager(): ResourceConversionManager {
 export function getEffectLifecycleManager(): EffectLifecycleManager {
   // Return the imported singleton instance directly
   return effectLifecycleManager;
+}
+
+/**
+ * Get the singleton instance of GameManager
+ * @returns The GameManager instance
+ */
+export function getGameManager(): GameManager {
+  gameManagerInstance ??= gameManagerSingleton;
+  return gameManagerInstance;
 }
 
 /**
@@ -216,25 +193,27 @@ export function resetManagers(): void {
   asteroidFieldManagerInstance = null;
   resourceFlowManagerInstance = null;
   resourceConversionManagerInstance = null;
+  gameManagerInstance = null;
   // Reset mining ship manager instance
   miningShipManagerInstance = null;
-  // Resetting the imported instance isn't straightforward from here.
+  // Resetting the imported instance isn't straightforcombatd from here.
   // The original file might need its own reset logic if required for testing.
 }
 
 // Export manager classes for type usage
-export { CombatManager, ResourceManager };
+export { CombatManager, GameManager, ResourceManager };
 export type {
-  AsteroidFieldManager,
-  AutomationManager,
-  CombatMechanicsSystem,
-  EffectLifecycleManager,
-  FactionBehaviorManager,
-  GlobalAutomationManager,
-  MiningShipManager,
-  ObjectDetectionSystem,
-  ResourceConversionManager,
-  ResourceFlowManager,
-  TechTreeManager,
-  ThreatAssessmentManager,
+    AsteroidFieldManager,
+    AutomationManager,
+    CombatMechanicsSystem,
+    EffectLifecycleManager,
+    FactionBehaviorManager,
+    GlobalAutomationManager,
+    MiningShipManager,
+    ObjectDetectionSystem,
+    ResourceConversionManager,
+    ResourceFlowManager,
+    TechTreeManager,
+    ThreatAssessmentManager
 };
+

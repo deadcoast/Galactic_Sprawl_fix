@@ -19,35 +19,35 @@ export interface ShipBlueprint {
   };
   requirements: {
     tier: Tier;
-    resourceCost: Array<{
+    resourceCost: {
       type: ResourceType;
       amount: number;
-    }>;
+    }[];
     buildTime: number;
     prerequisites?: {
       technology?: string[];
-      resources?: Array<{
+      resources?: {
         type: ResourceType;
         amount: number;
-      }>;
+      }[];
       officers?: {
         minLevel: number;
         specialization: string;
       };
     };
   };
-  weapons?: Array<{
+  weapons?: {
     name: string;
     damage: number;
     range: number;
     cooldown: number;
-  }>;
-  abilities?: Array<{
+  }[];
+  abilities?: {
     name: string;
     description: string;
     cooldown: number;
     duration: number;
-  }>;
+  }[];
 }
 
 export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
@@ -56,7 +56,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     shipClass: PlayerShipClass.SPITFLARE,
     name: 'Spitflare',
     description: 'Fast and agile combat ship, perfect for early game skirmishes',
-    category: 'war',
+    category: 'combat',
     tier: 1,
     baseStats: {
       hull: 100,
@@ -170,7 +170,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     shipClass: PlayerShipClass.ORION_FRIGATE,
     name: 'Orion Frigate',
     description: 'Versatile combat vessel with balanced offensive and defensive capabilities',
-    category: 'war',
+    category: 'combat',
     tier: 2,
     baseStats: {
       hull: 200,
@@ -190,7 +190,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
         technology: ['advanced-weapons', 'shield-harmonics'],
         officers: {
           minLevel: 2,
-          specialization: 'war',
+          specialization: 'combat',
         },
       },
     },
@@ -214,8 +214,8 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
   {
     shipClass: PlayerShipClass.HARBRINGER_GALLEON,
     name: 'Harbringer Galleon',
-    description: 'Massive warship with devastating firepower',
-    category: 'war',
+    description: 'Massive CombatShip with devastating firepower',
+    category: 'combat',
     tier: 3,
     baseStats: {
       hull: 400,
@@ -236,7 +236,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
         technology: ['capital-ship-construction', 'advanced-weapon-systems'],
         officers: {
           minLevel: 3,
-          specialization: 'war',
+          specialization: 'combat',
         },
       },
     },
@@ -267,7 +267,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     shipClass: PlayerShipClass.MIDWAY_CARRIER,
     name: 'Midway Carrier',
     description: 'Capital ship capable of deploying fighter squadrons',
-    category: 'war',
+    category: 'combat',
     tier: 3,
     baseStats: {
       hull: 500,
@@ -288,7 +288,7 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
         technology: ['carrier-operations', 'fighter-production'],
         officers: {
           minLevel: 3,
-          specialization: 'war',
+          specialization: 'combat',
         },
       },
     },

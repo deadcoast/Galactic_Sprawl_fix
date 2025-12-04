@@ -8,6 +8,8 @@
  * 3. Threshold-based warnings for slow operations
  */
 
+import { logger } from '../../services/logging/loggerService';
+
 /**
  * Configuration for hook performance monitoring
  */
@@ -132,12 +134,12 @@ export function measureSelectorTime<T>(
   }
 
   // Log warning if execution time exceeds threshold
-  if (duration > (config.selectorThreshold || 2)) {
-    console.warn(
+  if (duration > (config.selectorThreshold ?? 2)) {
+    logger.warn(
       `[${config.hookName}] Slow selector '${selectorName}': ${duration.toFixed(2)}ms (threshold: ${config.selectorThreshold}ms)`
     );
   } else if (config.verbose) {
-    console.warn(`[${config.hookName}] Selector '${selectorName}': ${duration.toFixed(2)}ms`);
+    logger.warn(`[${config.hookName}] Selector '${selectorName}': ${duration.toFixed(2)}ms`);
   }
 
   return result;
@@ -192,12 +194,12 @@ export function measureComputationTime<T>(
   }
 
   // Log warning if execution time exceeds threshold
-  if (duration > (config.computationThreshold || 5)) {
-    console.warn(
+  if (duration > (config.computationThreshold ?? 5)) {
+    logger.warn(
       `[${config.hookName}] Slow computation '${computationName}': ${duration.toFixed(2)}ms (threshold: ${config.computationThreshold}ms)`
     );
   } else if (config.verbose) {
-    console.warn(`[${config.hookName}] Computation '${computationName}': ${duration.toFixed(2)}ms`);
+    logger.warn(`[${config.hookName}] Computation '${computationName}': ${duration.toFixed(2)}ms`);
   }
 
   return result;
@@ -235,7 +237,7 @@ export function trackHookRender(config: HookPerformanceConfig): void {
 
   // Log if verbose
   if (config.verbose) {
-    console.warn(
+    logger.warn(
       `[${config.hookName}] Render #${hookData.renderCount} (${timeSinceLastRender}ms since last render)`
     );
   }
@@ -269,11 +271,7 @@ export function getAllHooksPerformanceData(): Record<string, HookPerformanceData
  */
 export function getAverageSelectorTime(hookName: string, selectorName: string): number {
   const hookData = hooksPerformanceData[hookName];
-  if (
-    !hookData ||
-    !hookData.selectorTimes[selectorName] ||
-    hookData.selectorTimes[selectorName].length === 0
-  ) {
+  if (!hookData?.selectorTimes[selectorName] || hookData.selectorTimes[selectorName].length === 0) {
     return 0;
   }
 
@@ -291,8 +289,7 @@ export function getAverageSelectorTime(hookName: string, selectorName: string): 
 export function getAverageComputationTime(hookName: string, computationName: string): number {
   const hookData = hooksPerformanceData[hookName];
   if (
-    !hookData ||
-    !hookData.computationTimes[computationName] ||
+    !hookData?.computationTimes[computationName] ||
     hookData.computationTimes[computationName].length === 0
   ) {
     return 0;

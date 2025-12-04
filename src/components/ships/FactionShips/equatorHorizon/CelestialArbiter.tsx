@@ -1,9 +1,9 @@
 import { Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
+import { EquatorHorizonShip } from './EquatorHorizonShip';
 
 interface CelestialArbiterProps {
   id: string;

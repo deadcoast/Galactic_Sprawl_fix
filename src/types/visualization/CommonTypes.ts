@@ -33,8 +33,8 @@ export interface ChartDataRecord extends BaseDataRecord {
   [key: string]:
     | VisualizationValue
     | Record<string, VisualizationValue>
-    | Array<VisualizationValue | Record<string, VisualizationValue>>
-    | { [key: string]: VisualizationValue | Record<string, VisualizationValue> };
+    | (VisualizationValue | Record<string, VisualizationValue>)[]
+    | Record<string, VisualizationValue | Record<string, VisualizationValue>>;
 }
 
 /**
@@ -103,12 +103,12 @@ export interface BaseChartComponentProps {
  */
 export interface VisualizationTooltipProps {
   active?: boolean;
-  payload?: Array<{
+  payload?: {
     value: VisualizationValue;
     name?: string;
     dataKey?: string;
     payload?: Record<string, VisualizationValue>;
-  }>;
+  }[];
   label?: string;
 }
 
@@ -264,9 +264,7 @@ export interface TransitionState<T = unknown> {
 /**
  * Interpolator function for transitioning between values
  */
-export interface TypedInterpolator<T> {
-  (t: number): T;
-}
+export type TypedInterpolator<T> = (t: number) => T;
 
 // =========================================
 // Memory Management Types
@@ -377,13 +375,13 @@ export interface PredictionPoint {
 export interface ResourceGridCell {
   x: number;
   y: number;
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     quality?: number;
     accessibility?: number;
     estimatedValue?: number;
-  }>;
+  }[];
   totalValue: number;
   dominantResource?: ResourceType;
   dominantPercentage?: number;

@@ -1,18 +1,28 @@
 import { ResourceType } from '../resources/ResourceTypes';
 
 /**
+ * Standard difficulty levels
+ */
+export type StandardDifficulty = 'easy' | 'normal' | 'hard';
+
+/**
+ * Difficulty type that allows both standard and custom difficulty levels
+ */
+export type DifficultyLevel = StandardDifficulty | (string & {});
+
+/**
  * Defines the structure for the main game configuration.
  */
 export interface GameConfig {
   initialResources: Record<ResourceType | string, number>; // Allow string for now, ideally migrate to ResourceType
-  initialShips: Array<{ type: string; count: number }>; // Replace string with ShipType enum if available
+  initialShips: { type: string; count: number }[]; // Replace string with ShipType enum if available
   worldSize: {
     width: number;
     height: number;
   };
   sectorCount: number;
   asteroidDensity: number;
-  difficulty: 'easy' | 'normal' | 'hard' | string; // Allow custom string difficulties
+  difficulty: DifficultyLevel; // Allows standard difficulties and custom string values
   gameSpeedMultiplier: number;
   tickRate: number;
   saveInterval: number; // in seconds

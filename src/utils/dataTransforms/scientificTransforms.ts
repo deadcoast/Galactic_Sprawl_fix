@@ -24,19 +24,19 @@ export function transformTimeSeriesData(
   actualValues: number[],
   predictedValues?: number[],
   forecastValues?: number[]
-): Array<{
+): {
   time: number | string;
   actual?: number;
   predicted?: number;
   forecast?: number;
-}> {
+}[] {
   // Create time series data points
-  const timeSeriesData: Array<{
+  const timeSeriesData: {
     time: number | string;
     actual?: number;
     predicted?: number;
     forecast?: number;
-  }> = [];
+  }[] = [];
 
   // Add actual and predicted values
   const maxActualLength = Math.min(timePoints.length, actualValues.length);
@@ -86,7 +86,7 @@ export function transformTimeSeriesData(
  * @param index Index of the new time point
  */
 function generateNextTimePoint(
-  existingTimePoints: Array<number | string>,
+  existingTimePoints: (number | string)[],
   index: number
 ): number | string {
   if (existingTimePoints.length < 2) {
@@ -95,7 +95,7 @@ function generateNextTimePoint(
 
   // Check if time points are numeric and follow a pattern
   if (typeof existingTimePoints[0] === 'number' && typeof existingTimePoints[1] === 'number') {
-    const firstPoint = existingTimePoints[0] as number;
+    const firstPoint = existingTimePoints[0];
     const lastPoint = existingTimePoints[existingTimePoints.length - 1] as number;
     const interval = (lastPoint - firstPoint) / (existingTimePoints.length - 1);
     return lastPoint + interval * (index - existingTimePoints.length + 1);
@@ -115,7 +115,7 @@ function generateNextTimePoint(
         lastDate.getTime() + interval * (index - existingTimePoints.length + 1)
       );
       return nextDate.toISOString().split('T')[0]; // Return as YYYY-MM-DD
-    } catch (e) {
+    } catch {
       // If date parsing fails, return string representation of index
       return `Point ${index}`;
     }
@@ -152,9 +152,9 @@ export function calculateResiduals(actualValues: number[], predictedValues: numb
  * @param variables Array of variable names to correlate
  */
 export function calculateCorrelationMatrix(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   variables: string[]
-): Array<Array<number>> {
+): number[][] {
   if (!data || data?.length === 0 || !variables || variables.length === 0) {
     return [];
   }
@@ -210,7 +210,7 @@ export function calculateCorrelationMatrix(
  */
 function calculatePearsonCorrelation(values1: number[], values2: number[]): number {
   // Calculate valid data points (where both values exist)
-  const validPairs: Array<[number, number]> = [];
+  const validPairs: [number, number][] = [];
 
   const minLength = Math.min(values1.length, values2.length);
   for (let i = 0; i < minLength; i++) {
@@ -261,7 +261,7 @@ function calculatePearsonCorrelation(values1: number[], values2: number[]): numb
  * @param variable Variable name to analyze
  */
 export function calculateStatistics(
-  data: Array<Record<string, unknown>>,
+  data: Record<string, unknown>[],
   variable: string
 ): {
   min: number;
@@ -357,7 +357,7 @@ export function calculateStatistics(
 export function extractFeatureImportance(
   modelDetails: Record<string, unknown>,
   features: string[]
-): Array<{ feature: string; importance: number }> {
+): { feature: string; importance: number }[] {
   // Try to extract explicit feature importance
   const explicitImportance = safelyExtractArray<{ feature: string; importance: number }>(
     modelDetails,
@@ -436,22 +436,22 @@ export function isNeuralNetworkModel(modelDetails: Record<string, unknown>): boo
  * @param features Array of feature names
  */
 export function calculateClusterCentroids(
-  clusterPoints: Array<{
+  clusterPoints: {
     cluster: number;
-    features: Array<number | null>;
-  }>,
+    features: (number | null)[];
+  }[],
   features: string[]
-): Array<{
+): {
   cluster: number;
   centroid: number[];
   size: number;
-}> {
+}[] {
   if (!clusterPoints || clusterPoints.length === 0 || !features || features.length === 0) {
     return [];
   }
 
   // Group points by cluster
-  const clusters: Record<number, Array<Array<number | null>>> = {};
+  const clusters: Record<number, (number | null)[][]> = {};
 
   clusterPoints.forEach(point => {
     const { cluster, features: pointFeatures } = point;
@@ -464,17 +464,17 @@ export function calculateClusterCentroids(
   });
 
   // Calculate centroids
-  const centroids: Array<{
+  const centroids: {
     cluster: number;
     centroid: number[];
     size: number;
-  }> = [];
+  }[] = [];
 
   for (const [clusterStr, points] of Object.entries(clusters)) {
     const cluster = parseInt(clusterStr, 10);
     const numFeatures = features.length;
-    const validCounts: number[] = Array(numFeatures).fill(0);
-    const sums: number[] = Array(numFeatures).fill(0);
+    const validCounts: number[] = Array(numFeatures).fill(0) as number[];
+    const sums: number[] = Array(numFeatures).fill(0) as number[];
 
     // Sum values by feature
     points.forEach(pointFeatures => {
@@ -505,18 +505,18 @@ export function calculateClusterCentroids(
  * @param centroids Array of cluster centroids
  */
 export function calculateDistancesToCentroids(
-  clusterPoints: Array<{
+  clusterPoints: {
     cluster: number;
-    features: Array<number | null>;
-  }>,
-  centroids: Array<{
+    features: (number | null)[];
+  }[],
+  centroids: {
     cluster: number;
     centroid: number[];
-  }>
-): Array<{
+  }[]
+): {
   pointIndex: number;
   distance: number;
-}> {
+}[] {
   if (!clusterPoints || clusterPoints.length === 0 || !centroids || centroids.length === 0) {
     return [];
   }

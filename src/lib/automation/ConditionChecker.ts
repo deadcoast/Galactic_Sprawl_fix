@@ -109,8 +109,8 @@ interface MiningEvent {
  * Checks conditions for automation rules.
  */
 export class ConditionChecker {
-  private lastCheckedTimes: Map<string, number> = new Map();
-  private checkIntervals: Map<string, number> = new Map();
+  private lastCheckedTimes = new Map<string, number>();
+  private checkIntervals = new Map<string, number>();
 
   // Removed type annotations
   private resourceThresholdManager: /* ResourceThresholdManager */ unknown;
@@ -132,7 +132,7 @@ export class ConditionChecker {
           currentAmount: event?.details?.current ?? 0,
           thresholds: {
             min: event?.details?.min ?? 0,
-            max: event?.details?.max || Infinity,
+            max: event?.details?.max ?? Infinity,
           },
         });
       }
@@ -143,7 +143,7 @@ export class ConditionChecker {
    * Get a unique key for a condition to track its state
    */
   private getConditionKey(condition: AutomationCondition): string {
-    return `${condition.type}-${condition.target || 'global'}-${JSON.stringify(condition.value)}`;
+    return `${condition.type}-${condition.target ?? 'global'}-${JSON.stringify(condition.value)}`;
   }
 
   /**

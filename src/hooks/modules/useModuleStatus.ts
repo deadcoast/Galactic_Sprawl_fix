@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
-  ExtendedModuleStatus,
-  ModuleAlert,
-  moduleStatusManager,
-  StatusHistoryEntry,
+    ExtendedModuleStatus,
+    ModuleAlert,
+    moduleStatusManager,
+    StatusHistoryEntry
 } from '../../managers/module/ModuleStatusManager';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
@@ -51,7 +51,7 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
 
   // Fetch module status on mount
   useEffect(() => {
-    const fetchModuleStatus = async () => {
+    const fetchModuleStatus = () => {
       try {
         setIsLoading(true);
 
@@ -108,7 +108,7 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
         moduleManager.publishEvent({
           type: EventType.MODULE_STATUS_CHANGED,
           moduleId,
-          moduleType: module?.type || ('unknown' as ModuleType),
+          moduleType: module?.type ?? ('unknown' as ModuleType),
           timestamp: Date.now(),
           data: {
             status,
@@ -221,10 +221,10 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
     isLoading,
     error,
     module,
-    currentStatus: statusDetails?.currentStatus || 'inactive',
+    currentStatus: statusDetails?.currentStatus ?? 'inactive',
     previousStatus: statusDetails?.previousStatus,
     history: statusDetails?.history ?? [],
-    metrics: statusDetails?.metrics || null,
+    metrics: statusDetails?.metrics ?? null,
     alerts: statusDetails?.alerts ?? [],
     updateStatus,
     acknowledgeAlert,

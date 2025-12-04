@@ -7,20 +7,21 @@ import React, {
   useState,
 } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  Anomaly,
-  EXPLORATION_EVENTS,
-  explorationManager,
-  Sector,
-} from '../managers/exploration/ExplorationManager';
+import
+  {
+    Anomaly,
+    explorationManager,
+    Sector
+  } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
-import {
-  ClassifiableDiscovery,
-  Classification,
-  ClassificationContextType,
-  ClassificationSuggestion,
-  TaxonomyCategory,
-} from '../types/exploration/ClassificationTypes';
+import
+  {
+    ClassifiableDiscovery,
+    Classification,
+    ClassificationContextType,
+    ClassificationSuggestion,
+    TaxonomyCategory,
+  } from '../types/exploration/ClassificationTypes';
 import { ResourceData } from '../types/exploration/DataAnalysisTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -204,7 +205,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   const anomalyToDiscovery = useCallback(
     (anomaly: Anomaly, sector?: Sector): ClassifiableDiscovery => {
       const anomalyType = determineAnomalyType(anomaly.type);
-      const sectorName = sector?.name || 'Unknown Sector';
+      const sectorName = sector?.name ?? 'Unknown Sector';
 
       return {
         id: anomaly.id,
@@ -546,12 +547,12 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
 
     // Subscribe to exploration events
     const unsubscribeAnomaly = explorationManager.subscribeToEvent(
-      asEventType(EXPLORATION_EVENTS.ANOMALY_DETECTED),
+      EventType.EXPLORATION_ANOMALY_DETECTED,
       handleAnomalyDetected
     );
 
     const unsubscribeResource = explorationManager.subscribeToEvent(
-      asEventType(EXPLORATION_EVENTS.RESOURCE_DETECTED),
+      EventType.EXPLORATION_RESOURCE_DETECTED,
       handleResourceDetected
     );
 

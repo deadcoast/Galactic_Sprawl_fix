@@ -32,7 +32,7 @@ const useFrame = (callback: (state: FrameState, delta: number) => void): void =>
 };
 
 // Define custom element types for Three.js components
-type ThreeJSElementProps = {
+interface ThreeJSElementProps {
   ref?: React.RefObject<THREE.Object3D | THREE.BufferGeometry | THREE.Material>;
   size?: number;
   transparent?: boolean;
@@ -41,7 +41,7 @@ type ThreeJSElementProps = {
   depthWrite?: boolean;
   intensity?: number;
   [key: string]: unknown;
-};
+}
 
 // src/components/effects/ExplosionEffect.tsx
 interface ExplosionEffectProps {
@@ -135,7 +135,7 @@ function ExplosionParticles({
     const timeScale = Math.sin(time * 0.5) * 0.1 + 0.9; // Creates a pulsing effect
 
     for (let i = 0; i < particleCount; i++) {
-      // Expand particles outward
+      // Expand particles outcombatd
       const idx = i * 3;
       const x = positions[idx];
       const y = positions[idx + 1];

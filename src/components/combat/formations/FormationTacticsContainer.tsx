@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useCombatSystem } from '../../../hooks/combat/useCombatSystem';
+import { errorLoggingService } from '../../../services/logging/ErrorLoggingService';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
-import { FactionId } from '../../../types/ships/FactionTypes';
+import { FactionId } from '../../../types/ships/FactionShipTypes';
 import { FormationTacticsPanel } from './FormationTacticsPanel';
 
 interface FormationTacticsContainerProps {
@@ -48,7 +49,12 @@ export function FormationTacticsContainer({ fleetIds, factionId }: FormationTact
     ) {
       combatSystem.updateFleetTactic(fleetId, tacticId);
     } else {
-      console.warn(`Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`);
+      errorLoggingService.logWarn(`Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`, {
+        component: 'FormationTacticsContainer',
+        fleetId,
+        tacticId,
+        validTactics: ['flank', 'charge', 'kite', 'hold']
+      });
     }
   };
 

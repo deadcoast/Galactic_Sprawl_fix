@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Component, ReactNode } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 import { recoveryService } from '../../services/RecoveryService';
 
 // Simple FallbackProps interface for our error boundary
@@ -86,7 +86,7 @@ export class IntegrationErrorHandler extends Component<
     }
 
     // Log the error to our service
-    errorLoggingService.logError(error, ErrorType.INTEGRATION, severity, {
+    errorLoggingService.logError(error, ErrorType.RUNTIME, severity, {
       componentName,
       errorInfo: info,
       errorCount: this.errorCount,
@@ -134,12 +134,10 @@ export class IntegrationErrorHandler extends Component<
   resetErrorBoundary = () => {
     const { componentName } = this.props;
 
-    console.warn(`Recovering ${componentName} from error state`);
-
     // Log the recovery attempt
     errorLoggingService.logError(
       new Error(`Recovery attempt for ${componentName}`),
-      ErrorType.INTEGRATION,
+      ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
       {
         componentName,

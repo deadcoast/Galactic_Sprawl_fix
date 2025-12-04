@@ -39,7 +39,7 @@ const originalOnChange = HTMLInputElement.prototype.onchange;
 if (originalOnChange) {
   HTMLInputElement.prototype.onchange = function (event: Event) {
     (this as HTMLInputElement).focus();
-    return originalOnChange.call(this, event);
+    return originalOnChange.call(this, event) as void;
   };
 }
 

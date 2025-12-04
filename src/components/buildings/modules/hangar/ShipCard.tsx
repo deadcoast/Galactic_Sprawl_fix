@@ -1,74 +1,84 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import { Eye, Shield, Spade, Zap } from 'lucide-react';
-import React from 'react';
-import {
-  ShipCategory,
-  UnifiedShip,
-  UnifiedShipStatus,
-} from '../../../../types/ships/UnifiedShipTypes';
+import { ShipCategory, ShipStatus } from '../../../../types/ships/ShipTypes';
 
-const getStatusColor = (status: UnifiedShipStatus): string => {
-  switch (status) {
-    case UnifiedShipStatus.READY:
-      return '#4caf50';
-    case UnifiedShipStatus.ENGAGING:
-    case UnifiedShipStatus.ATTACKING:
-      return '#f44336';
-    case UnifiedShipStatus.PATROLLING:
-      return '#2196f3';
-    case UnifiedShipStatus.RETREATING:
-    case UnifiedShipStatus.RETURNING:
-    case UnifiedShipStatus.WITHDRAWING:
-      return '#ff9800';
-    case UnifiedShipStatus.DISABLED:
-      return '#9e9e9e';
-    case UnifiedShipStatus.DAMAGED:
-      return '#f44336';
-    case UnifiedShipStatus.REPAIRING:
-      return '#ffeb3b';
-    case UnifiedShipStatus.UPGRADING:
-      return '#9c27b0';
-    case UnifiedShipStatus.IDLE:
-      return '#2196f3';
-    case UnifiedShipStatus.MAINTENANCE:
-      return '#607d8b';
-    case UnifiedShipStatus.MINING:
-      return '#795548';
-    case UnifiedShipStatus.SCANNING:
-    case UnifiedShipStatus.INVESTIGATING:
-      return '#00bcd4';
-    default:
-      console.warn(`[ShipCard] Unexpected status: ${status}`);
-      return '#607d8b';
-  }
+const statusColors: Record<ShipStatus, string> = {
+  [ShipStatus.READY]: 'success.main',
+  [ShipStatus.IDLE]: 'grey.500',
+  [ShipStatus.MOVING]: 'info.main',
+  [ShipStatus.ENGAGING]: 'warning.main',
+  [ShipStatus.ATTACKING]: 'error.main',
+  [ShipStatus.MINING]: 'info.dark',
+  [ShipStatus.RETURNING]: 'info.light',
+  [ShipStatus.WITHDRAWING]: 'warning.dark',
+  [ShipStatus.DISABLED]: 'error.dark',
+  [ShipStatus.SCANNING]: 'info.main',
+  [ShipStatus.DAMAGED]: 'error.light',
+  [ShipStatus.REPAIRING]: 'secondary.main',
+  [ShipStatus.UPGRADING]: 'secondary.light',
+  [ShipStatus.DESTROYED]: 'error.dark',
+  [ShipStatus.ASSIGNED]: 'primary.main',
+  [ShipStatus.MAINTENANCE]: 'secondary.main',
+  [ShipStatus.INVESTIGATING]: 'info.main',
+  [ShipStatus.PATROLLING]: 'info.main',
+  [ShipStatus.RETREATING]: 'warning.dark',
+  [ShipStatus.COMBAT]: 'warning.main',
+  [ShipStatus.ACTIVE]: 'success.light',
+  [ShipStatus.INACTIVE]: 'grey.600',
 };
 
-const getCategoryIcon = (category: ShipCategory): React.ReactNode => {
+// Define the simplified data structure for ShipCard
+export interface ShipCardData {
+  id: string;
+  name: string | null; // Allow null for unnamed ships
+  status: ShipStatus;
+  category: ShipCategory;
+  stats: {
+    maxHealth?: number;
+    health?: number;
+    maxShield?: number;
+    shield?: number;
+    speed?: number;
+    defense?: {
+      armor?: number;
+    };
+  } | null; // Allow stats to be potentially null/undefined
+}
+
+interface ShipCardProps {
+  ship: ShipCardData; // Use the simplified data type
+  isSelected?: boolean;
+  onClick?: (shipId: string) => void;
+}
+
+const getStatusColor = (status: ShipStatus): string => {
+  const color = statusColors[status];
+  if (!color) {
+    return 'grey.600'; // Default color
+  }
+  return color;
+};
+
+const getCategoryIcon = (category: ShipCategory): JSX.Element => {
+  const iconProps = { size: 18, className: 'mr-2' };
   switch (category) {
-    case ShipCategory.WAR:
+    case ShipCategory.COMBAT:
     case ShipCategory.FIGHTER:
     case ShipCategory.CRUISER:
     case ShipCategory.BATTLESHIP:
     case ShipCategory.CARRIER:
-      return <Shield size={18} />;
+      return <Zap {...iconProps} />; // Combat icon
+    case ShipCategory.MINING:
+      return <Spade {...iconProps} />; // Mining icon
     case ShipCategory.RECON:
     case ShipCategory.SCOUT:
-      return <Eye size={18} />;
-    case ShipCategory.MINING:
-      return <Spade size={18} />;
+      return <Eye {...iconProps} />; // Recon icon
     case ShipCategory.TRANSPORT:
-      return <Zap size={18} />;
+      return <Shield {...iconProps} />; // Use Shield as placeholder for Transport
     default:
-      console.warn(`[ShipCard] Unexpected category: ${category}`);
-      return <Zap size={18} />;
+      return <Zap {...iconProps} />; // Default icon
   }
 };
-
-interface ShipCardProps {
-  ship: UnifiedShip;
-  isSelected?: boolean;
-  onClick?: (shipId: string) => void;
-}
 
 export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) => {
   const statusColor = getStatusColor(ship.status);
@@ -76,7 +86,7 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
 
   const handleCardClick = () => {
     if (onClick) {
-      onClick(ship.id);
+      onClick(ship.id); // ID is directly on ShipCardData
     }
   };
 
@@ -101,9 +111,9 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
             variant="h6"
             component="div"
             className="mx-2 flex-grow truncate"
-            title={ship.name || 'Unnamed Ship'}
+            title={ship.name ?? 'Unnamed Ship'}
           >
-            {ship.name || 'Unnamed Ship'}
+            {ship.name ?? 'Unnamed Ship'}
           </Typography>
           <Typography
             variant="caption"
@@ -125,19 +135,19 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
 
         <div className="mt-3 flex justify-around gap-2" style={{ fontSize: '0.8rem' }}>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Speed
             </Typography>
             <Typography variant="body2">{ship.stats?.speed?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Shield
             </Typography>
             <Typography variant="body2">{ship.stats?.maxShield?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" display="block" sx={{ color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
               Armor
             </Typography>
             <Typography variant="body2">

@@ -74,7 +74,7 @@ export interface RenderingBenchmarkResult extends BenchmarkResult {
  */
 export interface BenchmarkOptions {
   iterations?: number;
-  warmupIterations?: number;
+  combatmupIterations?: number;
   setupFn?: () => void;
   teardownFn?: () => void;
   memoryMeasurement?: boolean;
@@ -143,18 +143,18 @@ export function measureMemoryUsage(fn: () => void): MemoryMeasurement {
 export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): BenchmarkResult {
   const {
     iterations = 100,
-    warmupIterations = 10,
+    combatmupIterations = 10,
     setupFn,
     teardownFn,
     memoryMeasurement = false,
   } = options;
 
-  // Run warmup iterations
-  for (let i = 0; i < warmupIterations; i++) {
+  // Run combatmup iterations
+  for (let i = 0; i < combatmupIterations; i++) {
     if (setupFn) {
       setupFn();
     }
-    fn();
+    void fn();
     if (teardownFn) {
       teardownFn();
     }
@@ -222,7 +222,7 @@ export async function runAsyncBenchmark<T>(
 ): Promise<BenchmarkResult> {
   const {
     iterations = 100,
-    warmupIterations = 10,
+    combatmupIterations = 10,
     setupFn,
     teardownFn,
     memoryMeasurement = false,
@@ -236,8 +236,8 @@ export async function runAsyncBenchmark<T>(
     }, timeout);
   });
 
-  // Run warmup iterations
-  for (let i = 0; i < warmupIterations; i++) {
+  // Run combatmup iterations
+  for (let i = 0; i < combatmupIterations; i++) {
     if (setupFn) {
       setupFn();
     }
@@ -464,7 +464,7 @@ export function runResourceFlowBenchmark(
     // Run the benchmark
     const basicResult = runBenchmark(benchmarkFn, {
       iterations,
-      warmupIterations: 2,
+      combatmupIterations: 2,
       memoryMeasurement: true,
     });
 
@@ -681,8 +681,8 @@ export function generateBenchmarkReport(results: BenchmarkResult[]): string {
             <tr>
               <td>${r.name}</td>
               <td>${r.executionTimeMs.toFixed(2)}</td>
-              <td>${r.operationsPerSecond?.toFixed(2) || 'N/A'}</td>
-              <td>${r.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
+              <td>${r.operationsPerSecond?.toFixed(2) ?? 'N/A'}</td>
+              <td>${r.memoryUsageMB?.toFixed(2) ?? 'N/A'}</td>
               <td>${r.description ?? ''}</td>
             </tr>
           `
@@ -743,18 +743,18 @@ export function detectPerformanceRegressions(
   baselineResults: BenchmarkResult[],
   threshold = 5
 ): {
-  regressions: Array<{
+  regressions: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }>;
-  improvements: Array<{
+  }[];
+  improvements: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }>;
+  }[];
   summary: {
     totalTests: number;
     regressionCount: number;
@@ -762,19 +762,19 @@ export function detectPerformanceRegressions(
     unchangedCount: number;
   };
 } {
-  const regressions: Array<{
+  const regressions: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }> = [];
+  }[] = [];
 
-  const improvements: Array<{
+  const improvements: {
     name: string;
     baselineTime: number;
     newTime: number;
     percentChange: number;
-  }> = [];
+  }[] = [];
 
   // Create a map of baseline results for easy lookup
   const baselineMap = new Map(baselineResults.map(result => [result?.name, result]));
@@ -840,7 +840,7 @@ export function loadBenchmarkResults(key: string): BenchmarkResult[] {
     const stored = localStorage.getItem(key);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        return JSON.parse(stored) as unknown as BenchmarkResult[];
       } catch (e) {
         console.error('Failed to parse stored benchmark results', e);
       }
@@ -869,8 +869,8 @@ export interface BenchmarkJob {
  * Manages scheduling and execution of benchmark jobs
  */
 export class PerformanceBenchmarkManager {
-  private jobs: Map<string, BenchmarkJob> = new Map();
-  private results: Map<string, BenchmarkResult[]> = new Map();
+  private jobs = new Map<string, BenchmarkJob>();
+  private results = new Map<string, BenchmarkResult[]>();
 
   /**
    * Registers a benchmark job

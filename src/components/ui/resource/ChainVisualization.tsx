@@ -195,7 +195,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
             d3.select(this).classed('node-clicked', false);
           }, 300);
 
-          onNodeClick!(d.id, d.type as 'converter' | 'recipe'); // Assert type for handler
+          onNodeClick(d.id, d.type as 'converter' | 'recipe'); // Assert type for handler
         }
       })
       .call(

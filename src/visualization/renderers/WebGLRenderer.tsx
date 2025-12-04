@@ -91,7 +91,7 @@ export class WebGLRenderer implements ChartRenderer {
   private isInitialized = false;
   private lastRenderTime = 0;
   private tooltipElement: HTMLDivElement | null = null;
-  private shaders: Map<string, ShaderProgram> = new Map();
+  private shaders: Map<string, ShaderProgram> = new Map<string, ShaderProgram>();
   private svgCanvas: SVGSVGElement | null = null; // SVG layer for text and axes
   private lastOptions: ExtendedChartOptions | null = null;
 
@@ -206,7 +206,7 @@ export class WebGLRenderer implements ChartRenderer {
           this.renderFallbackChart(data, options, type, chartArea);
           break;
         default:
-          throw new Error(`Unsupported chart type: ${type}`);
+          throw new Error(`Unsupported chart type: ${type as string}`);
       }
 
       // Render axes and other SVG elements
@@ -241,11 +241,11 @@ export class WebGLRenderer implements ChartRenderer {
   public destroy(): void {
     try {
       // Remove DOM elements
-      if (this.canvas && this.canvas.parentElement) {
+      if (this.canvas?.parentElement) {
         this.canvas.parentElement.removeChild(this.canvas);
       }
 
-      if (this.svgCanvas && this.svgCanvas.parentElement) {
+      if (this.svgCanvas?.parentElement) {
         this.svgCanvas.parentElement.removeChild(this.svgCanvas);
       }
 
@@ -391,7 +391,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Initialize the WebGL renderer
    */
   private initialize(container: HTMLElement, options: ExtendedChartOptions): void {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      return;
+    }
 
     // Create canvas
     this.canvas = document.createElement('canvas');
@@ -452,7 +454,7 @@ export class WebGLRenderer implements ChartRenderer {
    */
   private handleContextRestored(): void {
     // Reinitialize WebGL resources
-    if (this.canvas && this.canvas.parentElement) {
+    if (this.canvas?.parentElement) {
       this.initialize(this.canvas.parentElement, this.lastOptions!);
     }
   }
@@ -461,7 +463,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Update canvas dimensions based on container size
    */
   private updateDimensions(container: HTMLElement): void {
-    if (!this.canvas || !this.gl || !this.svgCanvas) return;
+    if (!this.canvas || !this.gl || !this.svgCanvas) {
+      return;
+    }
 
     const rect = container.getBoundingClientRect();
     this.containerWidth = rect.width;
@@ -484,7 +488,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Initialize WebGL shaders
    */
   private initShaders(): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     // Point shader program
     const pointVsSource = `
@@ -526,7 +532,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const pointProgram = this.createShaderProgram(pointVsSource, pointFsSource);
-    if (!pointProgram) return;
+    if (!pointProgram) {
+      return;
+    }
 
     const pointAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const positionInfo = this.getShaderAttributeInfo(pointProgram, 'a_position');
@@ -596,7 +604,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const lineProgram = this.createShaderProgram(lineVsSource, lineFsSource);
-    if (!lineProgram) return;
+    if (!lineProgram) {
+      return;
+    }
 
     const lineAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const linePositionInfo = this.getShaderAttributeInfo(lineProgram, 'a_position');
@@ -673,7 +683,9 @@ export class WebGLRenderer implements ChartRenderer {
     `;
 
     const areaProgram = this.createShaderProgram(areaVsSource, areaFsSource);
-    if (!areaProgram) return;
+    if (!areaProgram) {
+      return;
+    }
 
     const areaAttributes = new Map<ShaderAttributeName, ShaderAttributeInfo>();
     const areaPositionInfo = this.getShaderAttributeInfo(areaProgram, 'a_position');
@@ -717,12 +729,16 @@ export class WebGLRenderer implements ChartRenderer {
    * Creates and initializes a WebGL shader program
    */
   private createShaderProgram(vertexSource: string, fragmentSource: string): WebGLProgram | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     try {
       // Create shaders
       const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-      if (!vertexShader) throw new Error('Failed to create vertex shader');
+      if (!vertexShader) {
+        throw new Error('Failed to create vertex shader');
+      }
 
       const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
       if (!fragmentShader) {
@@ -783,14 +799,20 @@ export class WebGLRenderer implements ChartRenderer {
     program: WebGLProgram,
     name: ShaderAttributeName
   ): ShaderAttributeInfo | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const location = this.gl.getAttribLocation(program, name);
-    if (location === -1) return null;
+    if (location === -1) {
+      return null;
+    }
 
     // Get attribute information
     const info = this.gl.getActiveAttrib(program, location);
-    if (!info) return null;
+    if (!info) {
+      return null;
+    }
 
     return {
       location,
@@ -809,13 +831,17 @@ export class WebGLRenderer implements ChartRenderer {
     program: WebGLProgram,
     name: ShaderUniformName
   ): ShaderUniformInfo | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const location = this.gl.getUniformLocation(program, name);
-    if (!location) return null;
+    if (!location) {
+      return null;
+    }
 
     // First get the number of active uniforms
-    const numUniforms = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
+    const numUniforms = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS) as unknown as number;
 
     // Find the index of our uniform by name
     let uniformInfo = null;
@@ -827,7 +853,9 @@ export class WebGLRenderer implements ChartRenderer {
       }
     }
 
-    if (!uniformInfo) return null;
+    if (!uniformInfo) {
+      return null;
+    }
 
     return {
       location,
@@ -840,7 +868,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Compile a WebGL shader
    */
   private compileShader(type: number, source: string): WebGLShader | null {
-    if (!this.gl) return null;
+    if (!this.gl) {
+      return null;
+    }
 
     const shader = this.gl.createShader(type);
     if (!shader) {
@@ -851,7 +881,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.compileShader(shader);
 
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-      console.error('Error compiling shader:', this.gl.getShaderInfoLog(shader));
+      
       this.gl.deleteShader(shader);
       return null;
     }
@@ -867,7 +897,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -890,10 +922,12 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length === 0) return;
+      if (dataset.data?.length === 0) {
+        return;
+      }
 
       // Parse color
-      const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
+      const colorStr = dataset.color ?? this.getDefaultColor(datasetIndex);
       const color = this.parseColor(colorStr);
 
       // Process and validate points
@@ -992,7 +1026,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -1010,10 +1046,12 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length === 0) return;
+      if (dataset.data?.length === 0) {
+        return;
+      }
 
       // Parse color
-      const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
+      const colorStr = dataset.color ?? this.getDefaultColor(datasetIndex);
       const color = this.parseColor(colorStr);
 
       // Process and validate points
@@ -1075,7 +1113,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.gl) return;
+    if (!this.gl) {
+      return;
+    }
 
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
@@ -1104,10 +1144,12 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data?.length < 2) return;
+      if (dataset.data?.length < 2) {
+        return;
+      }
 
       // Parse color
-      const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
+      const colorStr = dataset.color ?? this.getDefaultColor(datasetIndex);
       const color = this.parseColor(colorStr);
 
       // Process and validate points
@@ -1298,10 +1340,14 @@ export class WebGLRenderer implements ChartRenderer {
    * Draw lines using the line shader
    */
   private drawLines(): void {
-    if (!this.gl || !this.buffers.lines) return;
+    if (!this.gl || !this.buffers.lines) {
+      return;
+    }
 
     const lineShader = this.shaders.get('line');
-    if (!lineShader) return;
+    if (!lineShader) {
+      return;
+    }
 
     this.gl.useProgram(lineShader.program);
 
@@ -1314,7 +1360,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Set vertex attributes
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.position!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.position);
     this.gl.vertexAttribPointer(
       lineShader.attributes.get('a_position')!.location,
       2, // size (x, y)
@@ -1325,7 +1371,7 @@ export class WebGLRenderer implements ChartRenderer {
     );
     this.gl.enableVertexAttribArray(lineShader.attributes.get('a_position')!.location);
 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.color!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.lines.color);
     this.gl.vertexAttribPointer(
       lineShader.attributes.get('a_color')!.location,
       4, // size (r, g, b, a)
@@ -1337,7 +1383,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.enableVertexAttribArray(lineShader.attributes.get('a_color')!.location);
 
     // Draw lines
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.lines.indices!);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.lines.indices);
     this.gl.drawElements(this.gl.LINES, this.buffers.lines.count, this.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -1345,10 +1391,14 @@ export class WebGLRenderer implements ChartRenderer {
    * Draw points using the point shader
    */
   private drawPoints(pointSize = 3.0): void {
-    if (!this.gl || !this.buffers.points) return;
+    if (!this.gl || !this.buffers.points) {
+      return;
+    }
 
     const pointShader = this.shaders.get('point');
-    if (!pointShader) return;
+    if (!pointShader) {
+      return;
+    }
 
     this.gl.useProgram(pointShader.program);
 
@@ -1368,7 +1418,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Set vertex attributes
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.position!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.position);
     this.gl.vertexAttribPointer(
       pointShader.attributes.get('a_position')!.location,
       2, // size (x, y)
@@ -1379,7 +1429,7 @@ export class WebGLRenderer implements ChartRenderer {
     );
     this.gl.enableVertexAttribArray(pointShader.attributes.get('a_position')!.location);
 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.color!);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.points.color);
     this.gl.vertexAttribPointer(
       pointShader.attributes.get('a_color')!.location,
       4, // size (r, g, b, a)
@@ -1391,7 +1441,7 @@ export class WebGLRenderer implements ChartRenderer {
     this.gl.enableVertexAttribArray(pointShader.attributes.get('a_color')!.location);
 
     // Draw points
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.points.indices!);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.points.indices);
     this.gl.drawElements(this.gl.POINTS, this.buffers.points.count, this.gl.UNSIGNED_SHORT, 0);
   }
 
@@ -1404,7 +1454,9 @@ export class WebGLRenderer implements ChartRenderer {
     type: ChartType,
     chartArea: ChartArea
   ): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     // Create SVG renderer instance from imported SVGRenderer
     const svgRenderer = new SVGFallbackRenderer(this.svgCanvas);
@@ -1415,7 +1467,9 @@ export class WebGLRenderer implements ChartRenderer {
    * Render axes for charts
    */
   private renderAxes(data: ChartData, options: ExtendedChartOptions, chartArea: ChartArea): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     const xAxis = options?.axes?.x || { type: 'linear' };
     const yAxis = options?.axes?.y || { type: 'linear' };
@@ -1453,7 +1507,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Draw x-axis ticks and labels
-    const xTickCount = xAxis.tickCount || 5;
+    const xTickCount = xAxis.tickCount ?? 5;
     const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
     for (let i = 0; i < xTickCount; i++) {
@@ -1491,7 +1545,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Draw y-axis ticks and labels
-    const yTickCount = yAxis.tickCount || 5;
+    const yTickCount = yAxis.tickCount ?? 5;
     const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
     for (let i = 0; i < yTickCount; i++) {
@@ -1580,7 +1634,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Draw x-axis grid lines
     if (yAxis.grid) {
-      const xTickCount = xAxis.tickCount || 5;
+      const xTickCount = xAxis.tickCount ?? 5;
       const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
       for (let i = 0; i < xTickCount; i++) {
@@ -1601,7 +1655,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Draw y-axis grid lines
     if (xAxis.grid) {
-      const yTickCount = yAxis.tickCount || 5;
+      const yTickCount = yAxis.tickCount ?? 5;
       const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 
       for (let i = 0; i < yTickCount; i++) {
@@ -1625,12 +1679,16 @@ export class WebGLRenderer implements ChartRenderer {
    * Render legend
    */
   private renderLegend(data: ChartData, options: ExtendedChartOptions, chartArea: ChartArea): void {
-    if (!this.svgCanvas) return;
+    if (!this.svgCanvas) {
+      return;
+    }
 
     const { datasets } = data;
-    const legendOptions = options?.legend || { visible: true, position: 'top' };
+    const legendOptions = options?.legend ?? { visible: true, position: 'top' };
 
-    if (!legendOptions.visible || datasets.length === 0) return;
+    if (!legendOptions.visible || datasets.length === 0) {
+      return;
+    }
 
     const padding = 10;
     const itemHeight = 20;
@@ -1641,7 +1699,8 @@ export class WebGLRenderer implements ChartRenderer {
     const legendWidth = Math.min(datasets.length, itemsPerRow) * itemWidth;
     const legendHeight = rows * itemHeight;
 
-    let startX, startY;
+    let startX: number | undefined;
+    let startY: number | undefined;
 
     switch (legendOptions.position) {
       case 'top':
@@ -1680,8 +1739,8 @@ export class WebGLRenderer implements ChartRenderer {
     datasets.forEach((dataset, i) => {
       const row = Math.floor(i / itemsPerRow);
       const col = i % itemsPerRow;
-      const x = startX + col * itemWidth;
-      const y = startY + row * itemHeight;
+      const x = (startX ?? 0) + col * itemWidth;
+      const y = (startY ?? 0) + row * itemHeight;
 
       // Draw color box
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -1689,7 +1748,7 @@ export class WebGLRenderer implements ChartRenderer {
       rect.setAttribute('y', (y + 4).toString());
       rect.setAttribute('width', '12');
       rect.setAttribute('height', '12');
-      rect.setAttribute('fill', dataset.color || this.getDefaultColor(i));
+      rect.setAttribute('fill', dataset.color ?? this.getDefaultColor(i));
       rect.setAttribute('stroke', themeColors.axisColor);
       rect.setAttribute('stroke-width', '1');
 
@@ -1717,7 +1776,9 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     chartArea: ChartArea
   ): void {
-    if (!this.canvas) return;
+    if (!this.canvas) {
+      return;
+    }
 
     // Remove existing tooltip if unknown
     if (this.tooltipElement) {
@@ -1777,7 +1838,7 @@ export class WebGLRenderer implements ChartRenderer {
         } else {
           tooltipContent += `
             <div style="margin-bottom: 4px">
-              <span style="font-weight: bold; color: ${dataset.color || this.getDefaultColor(datasetIndex)}">${dataset.label || `Series ${datasetIndex + 1}`}:</span>
+              <span style="font-weight: bold; color: ${dataset.color ?? this.getDefaultColor(datasetIndex)}">${dataset.label || `Series ${datasetIndex + 1}`}:</span>
               <span>${formattedX}, ${formattedY}</span>
             </div>
           `;
@@ -1823,16 +1884,16 @@ export class WebGLRenderer implements ChartRenderer {
     data: ChartData,
     options: ExtendedChartOptions,
     chartArea: ChartArea
-  ): Array<{
+  ): {
     dataset: ChartData['datasets'][0];
     point: ChartData['datasets'][0]['data'][0];
     datasetIndex: number;
-  }> {
+  }[] {
     const { datasets } = data;
     const xAxis = options?.axes?.x || { type: 'linear' };
     const yAxis = options?.axes?.y || { type: 'linear' };
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
-    const tooltipMode = options?.tooltip?.mode || 'nearest';
+    const tooltipMode = options?.tooltip?.mode ?? 'nearest';
     const intersect = options?.tooltip?.intersect !== false;
 
     interface NearestPoint {
@@ -1876,10 +1937,8 @@ export class WebGLRenderer implements ChartRenderer {
 
     if (tooltipMode === 'nearest') {
       // Only include the nearest point
-      if (nearestPoints.length > 0) {
-        if (!intersect || nearestPoints[0].distance < 20) {
-          result = [nearestPoints[0]];
-        }
+      if (nearestPoints.length > 0 && (!intersect || nearestPoints[0].distance < 20)) {
+            result = [nearestPoints[0]];
       }
     } else if (tooltipMode === 'point') {
       // Include all points within a threshold distance
@@ -1922,11 +1981,11 @@ export class WebGLRenderer implements ChartRenderer {
     let xMax = xAxis?.max !== undefined ? Number(xAxis.max) : -Infinity;
 
     // Find min and max y values
-    let yMin = yAxis?.min !== undefined ? yAxis.min : Infinity;
-    let yMax = yAxis?.max !== undefined ? yAxis.max : -Infinity;
+    let yMin = yAxis?.min !== undefined ? Number(yAxis.min) : Infinity;
+    let yMax = yAxis?.max !== undefined ? Number(yAxis.max) : -Infinity;
 
     datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point: { x: number | string | Date; y: number }) => {
         // Handle x values
         let xValue = point.x;
         if (typeof xValue === 'string' && xAxis?.type === 'category') {
@@ -2078,7 +2137,7 @@ export class WebGLRenderer implements ChartRenderer {
   private parseColor(color: string): { r: number; g: number; b: number; a: number } {
     // Handle shorthand hex
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    color = color.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    color = color.replace(shorthandRegex, (m: string, r: string, g: string, b: string) => r + r + g + g + b + b);
 
     // Handle hex
     const hexRegex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i;

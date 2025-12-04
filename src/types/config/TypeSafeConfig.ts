@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/logging/ErrorLoggingService';
 
 /**
  * Base configuration value types that can be represented in JSON
@@ -109,10 +110,10 @@ export interface ConfigManagerOptions {
  * Type-safe configuration manager class
  */
 export class TypeSafeConfigManager {
-  private configItems: Map<string, ConfigItem> = new Map();
-  private featureFlags: Map<string, FeatureFlag> = new Map();
-  private configValues: Map<string, unknown> = new Map();
-  private categories: Map<string, ConfigCategory> = new Map();
+  private configItems = new Map<string, ConfigItem>();
+  private featureFlags = new Map<string, FeatureFlag>();
+  private configValues = new Map<string, unknown>();
+  private categories = new Map<string, ConfigCategory>();
   private options: ConfigManagerOptions;
   private userContext: Record<string, unknown> = {};
 
@@ -203,13 +204,22 @@ export class TypeSafeConfigManager {
     // Validate if required
     if (this.options?.validateOnAccess) {
       try {
-        return config.schema.parse(value) as z.infer<T>;
+        return config.schema.parse(value) as unknown as z.infer<T>;
       } catch (error) {
         const zodError = error as z.ZodError;
         const validationErrors = this.formatZodErrors(key, zodError);
 
         if (this.options?.logErrors) {
-          console.error(`Validation failed for config "${key}":`, validationErrors);
+          errorLoggingService.logError(
+            new Error(`Config validation failed for "${key}"`),
+            ErrorType.VALIDATION,
+            ErrorSeverity.MEDIUM,
+            { 
+              key, 
+              validationErrors,
+              value 
+            }
+          );
         }
 
         if (this.options?.onValidationError) {
@@ -220,7 +230,7 @@ export class TypeSafeConfigManager {
           throw new Error(`Validation failed for config "${key}": ${validationErrors[0]?.message}`);
         }
 
-        return config.defaultValue as z.infer<T>;
+        return config.defaultValue as unknown as z.infer<T>;
       }
     }
 
@@ -244,7 +254,7 @@ export class TypeSafeConfigManager {
 
     // Validate the value
     try {
-      const validValue = config.schema.parse(value);
+      const validValue = config.schema.parse(value) as z.infer<T>;
       const oldValue = this.configValues.get(key);
       this.configValues.set(key, validValue);
 
@@ -259,7 +269,16 @@ export class TypeSafeConfigManager {
       const validationErrors = this.formatZodErrors(key, zodError);
 
       if (this.options?.logErrors) {
-        console.error(`Validation failed for config "${key}":`, validationErrors);
+        errorLoggingService.logError(
+          new Error(`Config validation failed for "${key}"`),
+          ErrorType.VALIDATION,
+          ErrorSeverity.MEDIUM,
+          { 
+            key, 
+            validationErrors,
+            value 
+          }
+        );
       }
 
       if (this.options?.onValidationError) {
@@ -294,25 +313,17 @@ export class TypeSafeConfigManager {
     // Check targeting rules if present
     if (feature.targeting) {
       // Check user roles
-      if (
-        feature.targeting.userRoles &&
-        feature.targeting.userRoles.length > 0 &&
-        this.userContext.role
-      ) {
-        if (!feature.targeting.userRoles.includes(this.userContext.role as string)) {
-          return false;
-        }
+      if (feature.targeting.userRoles &&
+              feature.targeting.userRoles.length > 0 &&
+              this.userContext.role && !feature.targeting.userRoles.includes(this.userContext.role as string)) {
+            return false;
       }
 
       // Check environments
-      if (
-        feature.targeting.environments &&
-        feature.targeting.environments.length > 0 &&
-        this.userContext.environment
-      ) {
-        if (!feature.targeting.environments.includes(this.userContext.environment as string)) {
-          return false;
-        }
+      if (feature.targeting.environments &&
+              feature.targeting.environments.length > 0 &&
+              this.userContext.environment && !feature.targeting.environments.includes(this.userContext.environment as string)) {
+            return false;
       }
 
       // Check percentage rollout
@@ -411,7 +422,7 @@ export class TypeSafeConfigManager {
       }
 
       try {
-        const validatedValue = configItem.schema.parse(value);
+        const validatedValue = configItem.schema.parse(value) as unknown;
         this.configValues.set(key, validatedValue);
       } catch (error) {
         const zodError = error as z.ZodError;
@@ -469,7 +480,7 @@ export class TypeSafeConfigManager {
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash &= hash; // Convert to 32bit integer
     }
     return Math.abs(hash);
   }
@@ -495,10 +506,10 @@ export function createConfigItem<T extends z.ZodType>(
     key,
     schema,
     defaultValue,
-    name: options?.name || key,
-    description: options?.description || '',
+    name: options?.name ?? key,
+    description: options?.description ?? '',
     category: options?.category,
-    tags: options?.tags || [],
+    tags: options?.tags ?? [],
     metadata: options?.metadata,
     isSecret: options?.isSecret,
     isRequired: options?.isRequired,
@@ -517,9 +528,9 @@ export function createFeatureFlag(
   return {
     key,
     defaultValue,
-    name: options?.name || key,
-    description: options?.description || '',
-    status: options?.status || FeatureStatus.DISABLED,
+    name: options?.name ?? key,
+    description: options?.description ?? '',
+    status: options?.status ?? FeatureStatus.DISABLED,
     targeting: options?.targeting,
     metadata: options?.metadata,
   };
@@ -534,7 +545,7 @@ export function useTypedConfig<T extends z.ZodType>(
   defaultValue?: z.infer<T>
 ): z.infer<T> {
   const value = configManager.get<T>(key);
-  return value !== undefined ? value : (defaultValue as z.infer<T>);
+  return value ?? defaultValue!;
 }
 
 /**
@@ -546,5 +557,5 @@ export function useFeatureFlag(
   defaultValue = false
 ): boolean {
   const isEnabled = configManager.isFeatureEnabled(key);
-  return isEnabled !== undefined ? isEnabled : defaultValue;
+  return isEnabled ?? defaultValue;
 }

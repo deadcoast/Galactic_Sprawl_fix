@@ -7,7 +7,11 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../../../components/ui/errors/ErrorBoundary';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../../services/logging/ErrorLoggingService';
 import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
@@ -29,9 +33,6 @@ vi.mock('../../../services/ErrorLoggingService', () => ({
     getErrors: vi.fn(),
   },
 }));
-
-// Get the mocked service
-import { errorLoggingService } from '../../../services/ErrorLoggingService';
 
 // Component that throws an error
 const BuggyComponent = ({ shouldThrow = true }) => {
@@ -96,7 +97,7 @@ describe('ErrorBoundary Component', () => {
     // Check that error was logged
     expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
     expect(errorLoggingService.logError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+      expect.any(Error),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
       expect.objectContaining({
@@ -125,9 +126,9 @@ describe('ErrorBoundary Component', () => {
     // Check that onError was called
     expect(handleError).toHaveBeenCalledTimes(1);
     expect(handleError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+      expect.any(Error),
       expect.objectContaining({
-        componentStack: expect.unknown(String),
+        componentStack: expect.any(String),
       })
     );
 

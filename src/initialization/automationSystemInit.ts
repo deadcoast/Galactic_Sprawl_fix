@@ -1,5 +1,5 @@
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { globalAutomationManager } from '../managers/automation/GlobalAutomationManager';
+import { GlobalAutomationManager } from '../managers/automation/GlobalAutomationManager';
 import { MessagePriority } from '../utils/events/EventCommunication';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -14,7 +14,9 @@ export function initializeAutomationSystem(): () => void {
   // globalAutomationManager.setAutomationManager(automationManager); // No longer needed
 
   // Initialize the global automation manager
-  globalAutomationManager.initialize();
+  GlobalAutomationManager.getInstance().initialize().catch(error => {
+    console.error('Failed to initialize automation system:', error);
+  });
 
   // Register default routines
   registerDefaultRoutines();
@@ -27,7 +29,7 @@ export function initializeAutomationSystem(): () => void {
     timestamp: Date.now(),
     data: {
       status: 'initialized',
-      routineCount: globalAutomationManager.getAllRoutines().length,
+      routineCount: GlobalAutomationManager.getInstance().getAllRoutines().length,
     },
   });
 
@@ -36,7 +38,9 @@ export function initializeAutomationSystem(): () => void {
     console.warn('Cleaning up Automation System...');
 
     // Clean up global automation manager
-    globalAutomationManager.cleanup();
+    GlobalAutomationManager.getInstance().dispose().catch(error => {
+      console.error('Failed to dispose automation system:', error);
+    });
   };
 }
 
@@ -45,7 +49,7 @@ export function initializeAutomationSystem(): () => void {
  */
 function registerDefaultRoutines(): void {
   // Register resource balancing routine
-  globalAutomationManager.registerRoutine({
+  GlobalAutomationManager.getInstance().registerRoutine({
     id: 'default-resource-balancing',
     name: 'Resource Balancing',
     type: 'resource-balancing',
@@ -77,7 +81,7 @@ function registerDefaultRoutines(): void {
   });
 
   // Register performance optimization routine
-  globalAutomationManager.registerRoutine({
+  GlobalAutomationManager.getInstance().registerRoutine({
     id: 'default-performance-optimization',
     name: 'Performance Optimization',
     type: 'performance-optimization',
@@ -106,7 +110,7 @@ function registerDefaultRoutines(): void {
   });
 
   // Register emergency response routine
-  globalAutomationManager.registerRoutine({
+  GlobalAutomationManager.getInstance().registerRoutine({
     id: 'default-emergency-response',
     name: 'Error Recovery',
     type: 'emergency-response',
@@ -135,7 +139,7 @@ function registerDefaultRoutines(): void {
   });
 
   // Register system maintenance routine
-  globalAutomationManager.registerRoutine({
+  GlobalAutomationManager.getInstance().registerRoutine({
     id: 'default-system-maintenance',
     name: 'System Maintenance',
     type: 'system-maintenance',

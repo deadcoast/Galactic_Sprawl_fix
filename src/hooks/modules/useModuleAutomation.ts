@@ -2,7 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { getResourceManager } from '../../managers/ManagerRegistry';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -363,13 +368,13 @@ export function useModuleAutomation(
     (rule: AutomationRuleUnion): boolean => {
       switch (rule.type) {
         case 'resource-threshold':
-          return checkResourceThresholdRule(rule as ResourceThresholdRule);
+          return checkResourceThresholdRule(rule);
         case 'time-based':
-          return checkTimeBasedRule(rule as TimeBasedRule);
+          return checkTimeBasedRule(rule);
         case 'status-based':
-          return checkStatusBasedRule(rule as StatusBasedRule);
+          return checkStatusBasedRule(rule);
         case 'custom':
-          return checkCustomRule(rule as CustomRule);
+          return checkCustomRule(rule);
         default:
           return false;
       }
@@ -508,14 +513,14 @@ export function useModuleAutomation(
     ): ResourceThresholdRule => {
       return {
         id: `resource-${moduleId}-${resourceType}-${Date.now()}`,
-        name: options?.name || `${resourceType} ${comparison} ${threshold}`,
+        name: options?.name ?? `${resourceType} ${comparison} ${threshold}`,
         type: 'resource-threshold',
         moduleId,
         resourceType,
         threshold,
         comparison,
         action,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        enabled: options?.enabled ?? true,
         cooldown: options?.cooldown,
         customAction: options?.customAction,
       };
@@ -542,12 +547,12 @@ export function useModuleAutomation(
     ): TimeBasedRule => {
       return {
         id: `time-${moduleId}-${interval}-${Date.now()}`,
-        name: options?.name || `Every ${interval / 1000} seconds`,
+        name: options?.name ?? `Every ${interval / 1000} seconds`,
         type: 'time-based',
         moduleId,
         interval,
         action,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        enabled: options?.enabled ?? true,
         cooldown: options?.cooldown,
         startTime: options?.startTime,
         endTime: options?.endTime,
@@ -576,13 +581,13 @@ export function useModuleAutomation(
     ): StatusBasedRule => {
       return {
         id: `status-${moduleId}-${targetStatus}-${Date.now()}`,
-        name: options?.name || `When ${triggerStatus}, set to ${targetStatus}`,
+        name: options?.name ?? `When ${triggerStatus}, set to ${targetStatus}`,
         type: 'status-based',
         moduleId,
         targetStatus,
         triggerStatus,
         action,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        enabled: options?.enabled ?? true,
         cooldown: options?.cooldown,
         targetModuleId: options?.targetModuleId,
         customAction: options?.customAction,
@@ -609,12 +614,12 @@ export function useModuleAutomation(
     ): EventBasedRule => {
       return {
         id: `event-${moduleId}-${eventType}-${Date.now()}`,
-        name: options?.name || `On ${eventType}`,
+        name: options?.name ?? `On ${eventType}`,
         type: 'event-based',
         moduleId,
         eventType,
         action,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        enabled: options?.enabled ?? true,
         cooldown: options?.cooldown,
         eventFilter: options?.eventFilter,
         customAction: options?.customAction,
@@ -640,12 +645,12 @@ export function useModuleAutomation(
     ): CustomRule => {
       return {
         id: `custom-${moduleId}-${Date.now()}`,
-        name: options?.name || 'Custom rule',
+        name: options?.name ?? 'Custom rule',
         type: 'custom',
         moduleId,
         condition,
         action,
-        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        enabled: options?.enabled ?? true,
         cooldown: options?.cooldown,
         customAction: options?.customAction,
       };

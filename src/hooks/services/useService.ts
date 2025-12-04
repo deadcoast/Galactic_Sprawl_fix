@@ -35,7 +35,13 @@ export function useService<T extends BaseService>(serviceName: string) {
       }
     };
 
-    loadService();
+    loadService().catch(err => {
+      // Error is already handled inside loadService, but this prevents floating promise warning
+      if (mounted) {
+        setError(err as Error);
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       mounted = false;

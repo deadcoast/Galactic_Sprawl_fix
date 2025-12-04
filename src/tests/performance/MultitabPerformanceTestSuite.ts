@@ -18,11 +18,11 @@ export interface MultitabPerformanceResult {
   memory: PerformanceMetric;
   cpu: PerformanceMetric;
   fps?: PerformanceMetric;
-  errors: Array<{
+  errors: {
     type: string;
     message: string;
     timestamp: number;
-  }>;
+  }[];
   startTime: number;
   endTime?: number;
   status: 'initializing' | 'running' | 'completed' | 'error';
@@ -279,8 +279,9 @@ export class MultitabPerformanceTestSuite {
       let fps = 0;
 
       // Memory usage (if available)
-      if ((tabWindow.performance as unknown).memory) {
-        memoryUsage = (tabWindow.performance as unknown).memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
+      const performanceWithMemory = tabWindow.performance as unknown as Performance;
+      if (performanceWithMemory.memory && 'usedJSHeapSize' in performanceWithMemory.memory) {
+        memoryUsage = (performanceWithMemory.memory as { usedJSHeapSize: number }).usedJSHeapSize / (1024 * 1024); // Convert to MB
         this.updateMetric(tabId, 'memory', memoryUsage);
       }
 

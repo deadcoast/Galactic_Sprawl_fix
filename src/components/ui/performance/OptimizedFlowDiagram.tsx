@@ -119,8 +119,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
     // Prepare node data with D3 simulation properties
     const nodes = data?.nodes.map(node => ({
       ...node,
-      x: node.x || Math.random() * width,
-      y: node.y || Math.random() * height,
+      x: node.x ?? Math.random() * width,
+      y: node.y ?? Math.random() * height,
       fx: node.type === 'source' ? 50 : undefined,
       fy: node.type === 'source' ? height / 2 : undefined,
     }));
@@ -144,8 +144,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
 
       return {
         ...link,
-        source: sourceNode || link.source,
-        target: targetNode || link.target,
+        source: sourceNode ?? link.source,
+        target: targetNode ?? link.target,
       };
     });
 
@@ -244,10 +244,10 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
 
       // Update link positions
       link
-        .attr('x1', d => memoizedD3Accessors.getX(d.source))
-        .attr('y1', d => memoizedD3Accessors.getY(d.source))
-        .attr('x2', d => memoizedD3Accessors.getX(d.target))
-        .attr('y2', d => memoizedD3Accessors.getY(d.target));
+        .attr('x1', d => memoizedD3Accessors.getX(d.source as unknown as object))
+        .attr('y1', d => memoizedD3Accessors.getY(d.source as unknown as object))
+        .attr('x2', d => memoizedD3Accessors.getX(d.target as unknown as object))
+        .attr('y2', d => memoizedD3Accessors.getY(d.target as unknown as object));
 
       // Update node positions
       node.attr(

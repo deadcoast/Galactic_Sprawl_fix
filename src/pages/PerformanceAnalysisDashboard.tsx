@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
-import { ErrorSeverity, ErrorType, errorLoggingService } from '../services/ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../services/logging/ErrorLoggingService';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -17,14 +21,14 @@ const PerformanceAnalysisDashboard: React.FC = () => {
 
   // Fetch performance data when component mounts
   useEffect(() => {
-    const fetchPerformanceData = async () => {
+    const fetchPerformanceData = () => {
       try {
         // In a real application, this would be fetched from an API or service
         // For now, we'll use mock data from localStorage if available
         const storedData = localStorage.getItem('performance_telemetry_data');
 
         if (storedData) {
-          setPerformanceData(JSON.parse(storedData));
+          setPerformanceData(JSON.parse(storedData) as SessionPerformanceData[]);
         } else {
           // Generate mock data if none exists
           const mockData = generateMockPerformanceData();

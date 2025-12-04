@@ -1,14 +1,15 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
 import { getTechTreeManager } from '../../managers/ManagerRegistry';
 import { Salvage } from '../../types/combat/SalvageTypes';
-import {
-  CommonShip,
-  CommonShipCapabilities,
-  getDefaultCapabilities,
-  getShipCategory,
-  ShipCategory,
-  type ShipType,
-} from '../../types/ships/CommonShipTypes';
+import
+  {
+    CommonShip,
+    CommonShipCapabilities,
+    getDefaultCapabilities,
+    getShipCategory,
+    ShipCategory,
+    type ShipType,
+  } from '../../types/ships/CommonShipTypes';
 
 interface Position {
   x: number;
@@ -51,9 +52,9 @@ interface ShipBehaviorEvents {
 }
 
 class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
-  private tasks: Map<string, ShipTask> = new Map();
-  private ships: Map<string, ShipWithPosition> = new Map();
-  private salvageTargets: Map<string, string> = new Map(); // salvageId -> shipId
+  private tasks: Map<string, ShipTask> = new Map<string, ShipTask>();
+  private ships: Map<string, ShipWithPosition> = new Map<string, ShipWithPosition>();
+  private salvageTargets: Map<string, string> = new Map<string, string>(); // salvageId -> shipId
 
   constructor() {
     super();
@@ -62,7 +63,7 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
   private setupEventListeners(): void {
     window.addEventListener('salvageGenerated', ((event: CustomEvent) => {
-      const { items, position } = event?.detail;
+      const { items, position } = event?.detail as { items: Salvage[]; position: Position };
       this.handleNewSalvage(items, position);
     }) as EventListener);
   }
@@ -79,10 +80,15 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         // Check if ship can salvage
         const category = getShipCategory(ship.type);
         const capabilities = getDefaultCapabilities(category);
+        const { canSalvage } = capabilities;
 
-        // War ships can salvage if they have the cutting laser
+        // combat ships can salvage if they have the cutting laser
         const techTreeManager = getTechTreeManager();
-        if (category === 'war' && techTreeManager && techTreeManager.isUnlocked('cutting_laser')) {
+        if (
+          category === ShipCategory.COMBAT &&
+          techTreeManager?.isUnlocked('cutting_laser') &&
+          canSalvage
+        ) {
           capabilities.canSalvage = true;
         }
 
@@ -103,8 +109,8 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
     items.forEach(salvage => {
       const ship = nearbyShips[0]; // Get closest ship
       if (ship) {
-        this.assignSalvageTask(ship.id!, salvage.id, position);
-        this.salvageTargets.set(salvage.id, ship.id!);
+        this.assignSalvageTask(ship.id, salvage.id, position);
+        this.salvageTargets.set(salvage.id, ship.id);
       }
     });
   }
@@ -139,7 +145,7 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
       assignedAt: Date.now(),
     };
 
-    this.tasks.set(shipId, task);
+    this.tasks.set(task.id, task);
     this.emit({
       type: 'taskAssigned',
       data: {
@@ -198,9 +204,16 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
   execute(ship: CommonShip, dt: number): unknown /* State */ {
     const techTreeManager = getTechTreeManager();
-    const hasAdvancedMining = techTreeManager.isUnlocked('advanced_mining_lasers');
+    const hasAdvancedMining = techTreeManager.isUnlocked( 'advanced_mining_lasers' );
+
+    if (hasAdvancedMining) {
+      // TODO: Implement advanced mining logic
+    } else {
+      // TODO: Implement basic mining logic
+    }
 
     // ... rest of the execution logic ...
+    return ship;
   }
 }
 

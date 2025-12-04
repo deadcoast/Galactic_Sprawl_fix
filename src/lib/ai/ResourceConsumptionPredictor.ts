@@ -50,15 +50,15 @@ interface ModelData {
  * Uses a linear regression approach with support for online learning
  */
 export class ResourceConsumptionPredictor {
-  private models: Map<ResourceType, ModelData> = new Map();
-  private historicalData: Map<ResourceType, ConsumptionDataPoint[]> = new Map();
-  private predictionCache: Map<ResourceType, ConsumptionPrediction> = new Map();
+  private models = new Map<ResourceType, ModelData>();
+  private historicalData = new Map<ResourceType, ConsumptionDataPoint[]>();
+  private predictionCache = new Map<ResourceType, ConsumptionPrediction>();
 
   // Configuration
   private maxHistoricalDataPoints = 1000;
   private predictionUpdateIntervalMs = 60000; // 1 minute
   private minDataPointsForTraining = 30;
-  private lastPredictionTime: number = 0;
+  private lastPredictionTime = 0;
 
   constructor() {
     this.lastPredictionTime = Date.now();
@@ -145,7 +145,7 @@ export class ResourceConsumptionPredictor {
       dp.sessionDuration,
       dp.userActions,
       dp.systemLoad,
-      dp.devicePerformanceScore || 1.0, // Default to 1.0 if not provided
+      dp.devicePerformanceScore ?? 1.0, // Default to 1.0 if not provided
       Math.sin(2 * Math.PI * (new Date(dp.timestamp).getHours() / 24)), // Time of day feature
       Math.cos(2 * Math.PI * (new Date(dp.timestamp).getHours() / 24)), // Time of day feature
     ]);
@@ -366,7 +366,7 @@ export class ResourceConsumptionPredictor {
       contextData.sessionDuration,
       contextData.userActions,
       contextData.systemLoad,
-      contextData.devicePerformanceScore || 1.0,
+      contextData.devicePerformanceScore ?? 1.0,
       Math.sin(2 * Math.PI * (new Date().getHours() / 24)), // Time of day feature
       Math.cos(2 * Math.PI * (new Date().getHours() / 24)), // Time of day feature
     ];

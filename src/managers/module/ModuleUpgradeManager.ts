@@ -272,7 +272,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
-      const available = resourceManager.getResourceAmount(cost.type as ResourceType);
+      const available = resourceManager.getResourceAmount(cost.type);
       if (available < cost.amount) {
         return false;
       }
@@ -340,7 +340,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
-      const available = resourceManager.getResourceAmount(cost.type as ResourceType);
+      const available = resourceManager.getResourceAmount(cost.type);
       if (available < cost.amount) {
         missingRequirements.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
       }
@@ -463,7 +463,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Consume resources
     for (const cost of nextLevel.requirements.resourceCosts) {
-      resourceManager.removeResource(cost.type as ResourceType, cost.amount);
+      resourceManager.removeResource(cost.type, cost.amount);
     }
 
     // Calculate upgrade time (1 minute per level)
@@ -631,7 +631,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
     this.unsubscribeHandles = [];
 
     // TypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners();
+    this.removeAllListeners();
 
     console.warn('[ModuleUpgradeManager] Disposed and cleaned up subscriptions/timers.');
   }

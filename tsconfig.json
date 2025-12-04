@@ -4,8 +4,8 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "incremental": false,
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -22,8 +22,9 @@
     "paths": {
       "src/*": ["./src/*"]
     },
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src"],
+  "include": ["src", "json-to-ajef.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

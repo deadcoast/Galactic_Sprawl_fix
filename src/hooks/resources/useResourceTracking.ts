@@ -1,20 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
-import {
-  isSerializedResourceState,
-  ResourceTotals,
-  SerializedResource,
-  SerializedResourceState,
-  SerializedThreshold,
-  serializeResourceMap,
-  validateResourceState,
-} from '../../types/resources/ResourceSerializationTypes';
-import {
-  ResourceState,
-  ResourceThreshold,
-  ResourceTransfer,
-  ResourceType,
-} from '../../types/resources/ResourceTypes';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
+import
+  {
+    isSerializedResourceState,
+    ResourceTotals,
+    SerializedResource,
+    SerializedResourceState,
+    SerializedThreshold,
+    serializeResourceMap,
+    validateResourceState,
+  } from '../../types/resources/ResourceSerializationTypes';
+import
+  {
+    ResourceState,
+    ResourceThreshold,
+    ResourceTransfer,
+    ResourceType,
+  } from '../../types/resources/ResourceTypes';
 
 /**
  * Resource alert interface
@@ -57,7 +64,7 @@ export interface ResourceTrackingState {
 export interface ResourceTrackingResult {
   // Resource states
   resources: Map<ResourceType, ResourceState>;
-  resourceList: Array<{ type: ResourceType; state: ResourceState }>;
+  resourceList: { type: ResourceType; state: ResourceState }[];
   getResource: (type: ResourceType) => ResourceState | undefined;
 
   // Resource history
@@ -118,7 +125,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     ],
     updateInterval = 1000,
     historyLimit = 100,
-    enableAlerts: _enableAlerts = true,
+    enableAlerts: enableAlertsFlag = true,
     enableThresholds = true,
   } = options;
 
@@ -155,7 +162,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     try {
       const savedResources = localStorage.getItem('resources');
       if (savedResources) {
-        const parsed = JSON.parse(savedResources);
+        const parsed: unknown = JSON.parse(savedResources);
 
         // Validate the parsed data
         if (isSerializedResourceState(parsed) && validateResourceState(parsed)) {
@@ -163,13 +170,14 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
           const resourceMap = new Map<ResourceType, ResourceState>();
 
           // Process each resource entry with proper conversion
-          for (const [key, value] of Object.entries(parsed.resources)) {
+          const resourcesRecord = (parsed).resources;
+          for (const [key, value] of Object.entries(resourcesRecord)) {
             if (types.includes(key as ResourceType)) {
-              const serializedResource = value as SerializedResource;
+              const serializedResource: SerializedResource = value;
               resourceMap.set(key as ResourceType, {
                 current: serializedResource.current,
                 min: 0, // Default value
-                max: serializedResource.capacity || 100, // Use capacity or default
+                max: serializedResource.capacity ?? 100, // Use capacity or default
                 production: serializedResource.production,
                 consumption: serializedResource.consumption,
               });
@@ -178,7 +186,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
 
           // Convert serialized thresholds to Map
           const thresholdMap = new Map<ResourceType, ResourceThreshold[]>();
-          for (const [key, thresholds] of Object.entries(parsed.thresholds)) {
+          for (const [key, thresholds] of Object.entries((parsed).thresholds)) {
             if (types.includes(key as ResourceType)) {
               thresholdMap.set(key as ResourceType, thresholds as ResourceThreshold[]);
             }
@@ -188,11 +196,14 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
             ...prev,
             resources: resourceMap,
             thresholds: thresholdMap,
-            alerts: parsed.alerts ?? [],
-            lastUpdated: parsed.timestamp || Date.now(),
+            alerts: (parsed).alerts ?? [],
+            lastUpdated: (parsed).timestamp ?? Date.now(),
           }));
         } else {
-          console.warn('Invalid resource data in localStorage, using defaults');
+          errorLoggingService.logWarn('Invalid resource data in localStorage, using defaults', {
+            componentName: 'useResourceTracking',
+            action: 'initializeResources'
+          });
           setState(prev => ({
             ...prev,
             resources: initialResources,
@@ -330,7 +341,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
   const updateResource = useCallback((type: ResourceType, update: Partial<ResourceState>) => {
     setState(prev => {
       const resources = new Map(prev.resources);
-      const current = resources.get(type) || {
+      const current = resources.get(type) ?? {
         current: 0,
         min: 0,
         max: 100,
@@ -360,7 +371,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
 
       setState(prev => {
         const resources = new Map(prev.resources);
-        const current = resources.get(type) || {
+        const current = resources.get(type) ?? {
           current: 0,
           min: 0,
           max: 100,
@@ -406,7 +417,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
 
       setState(prev => {
         const resources = new Map(prev.resources);
-        const current = resources.get(type) || {
+        const current = resources.get(type) ?? {
           current: 0,
           min: 0,
           max: 100,
@@ -701,6 +712,11 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
         .map(([type]) => type as ResourceType),
     };
   }, [state.resources, _calculateTotals, _calculatePercentages]);
+
+  // Reference enableAlertsFlag to avoid unused variable warning
+  if (enableAlertsFlag && state.alerts.length > 0) {
+    /* alerts are enabled */
+  }
 
   return {
     // Resource states

@@ -44,6 +44,7 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
           relationshipWithPlayer: behavior.relationships[behavior.id as FactionIdType],
           lastActivity: Date.now(),
           isActive: true,
+          fleets: behavior.fleets,
         };
         onFactionUpdate(behavior.id as FactionIdType, state);
       }
@@ -123,7 +124,8 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
           }
 
           const { totalShips } = behavior.stats;
-          const maxShips = config.spawnConditions.maxShipsPerFleet * 3; // Assuming 3 fleets max
+          const maxShipsPerFleet = config.spawnConditions?.maxShipsPerFleet ?? 0;
+          const maxShips = maxShipsPerFleet * 3;
           const fleetStrength = behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0);
           const isAggressive = behavior.behaviorState.aggression > 0.7;
           const isExpanding = behavior.behaviorState.expansion > 0.5;
@@ -146,11 +148,11 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
                 </div>
                 <div
                   className="flex h-10 w-10 items-center justify-center rounded-full"
-                  style={{ backgroundColor: config.banner.primaryColor }}
+                  style={{ backgroundColor: config.banner?.primaryColor }}
                 >
-                  {config.banner.sigil === 'rat-skull' && <Crown className="h-6 w-6" />}
-                  {config.banner.sigil === 'broken-star' && <AlertTriangle className="h-6 w-6" />}
-                  {config.banner.sigil === 'ancient-wheel' && <Shield className="h-6 w-6" />}
+                  {config.banner?.sigil === 'rat-skull' && <Crown className="h-6 w-6" />}
+                  {config.banner?.sigil === 'broken-star' && <AlertTriangle className="h-6 w-6" />}
+                  {config.banner?.sigil === 'ancient-wheel' && <Shield className="h-6 w-6" />}
                 </div>
               </div>
 
@@ -262,7 +264,9 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
                 ?.fleets.reduce((total, fleet) => total + fleet.strength, 0) ?? 0
             }
             threatLevel={0.5}
-            onUpdateBehavior={() => {}}
+            onUpdateBehavior={() => {
+              // TODO: Implement behavior update
+            }}
           />
         </div>
       )}
@@ -282,7 +286,10 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
           faction={{
             id: selectedFaction,
             name: factionConfigs[selectedFaction]?.name ?? '',
-            type: selectedFaction.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as
+            type: selectedFaction.replace(
+              /-([a-z])/g,
+              (_, c: string) => c.toUpperCase()
+            ) as
               | 'spaceRats'
               | 'lostNova'
               | 'equatorHorizon',
@@ -303,7 +310,9 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
               available: true,
             },
           ]}
-          onAction={() => {}}
+          onAction={() => {
+            // TODO: Implement diplomacy action
+          }}
           onClose={() => setSelectedFaction(null)}
         />
       )}

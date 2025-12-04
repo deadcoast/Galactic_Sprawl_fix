@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { CanvasRenderer } from './renderers/CanvasRenderer';
 import { SVGRenderer } from './renderers/SVGRenderer';
 import { WebGLRenderer } from './renderers/WebGLRenderer';
@@ -231,12 +234,12 @@ export const Chart: React.FC<ChartProps> = ({
     // Auto-select based on data size and optimization settings
     if (
       mergedOptions.memoryOptimized ||
-      totalDataPoints > (mergedOptions.optimizationThreshold || 1000)
+      totalDataPoints > (mergedOptions.optimizationThreshold ?? 1000)
     ) {
       // Check if WebGL is available
       try {
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const gl = canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl');
         if (gl) {
           return 'webgl';
         }
@@ -265,7 +268,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Initialize renderer
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     try {
       // Destroy previous renderer if it exists
@@ -331,7 +336,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Update chart when data or options change
   useEffect(() => {
-    if (!containerRef.current || !rendererRef.current) return;
+    if (!containerRef.current || !rendererRef.current) {
+      return;
+    }
 
     try {
       rendererRef.current.update(containerRef.current, data, mergedOptions, type);
@@ -364,7 +371,9 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Handle container resize
   useEffect(() => {
-    if (!containerRef.current || !rendererRef.current || !mergedOptions.responsive) return;
+    if (!containerRef.current || !rendererRef.current || !mergedOptions.responsive) {
+      return;
+    }
 
     const resizeObserver = new ResizeObserver(() => {
       if (containerRef.current && rendererRef.current) {

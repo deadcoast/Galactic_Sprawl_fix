@@ -63,7 +63,7 @@ interface GameState extends BaseState {
   missions: {
     completed: number;
     inProgress: number;
-    history: Array<{
+    history: {
       id: string;
       type: 'discovery' | 'anomaly' | 'completion';
       timestamp: number;
@@ -71,13 +71,13 @@ interface GameState extends BaseState {
       sector: string;
       importance: 'low' | 'medium' | 'high';
       xpGained?: number;
-      resourcesFound?: Array<{ type: string; amount: number }>;
+      resourcesFound?: { type: string; amount: number }[];
       anomalyDetails?: {
         type: ResourceType;
         severity: string;
         investigated: boolean;
       };
-    }>;
+    }[];
     statistics: {
       totalXP: number;
       discoveries: number;
@@ -308,12 +308,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case GameActionType.ADD_EVENT:
       return {
         ...state,
-        events: [...state.events, action.payload as GameEvent],
+        events: [...state.events, action.payload],
         lastUpdated: Date.now(),
       };
 
     case GameActionType.UPDATE_RESOURCES: {
-      const resourceUpdates = action.payload as Partial<Record<ResourceType, number>>;
+      const resourceUpdates = action.payload;
       const newResources = { ...state.resources };
       for (const key in resourceUpdates) {
         if (Object.prototype.hasOwnProperty.call(resourceUpdates, key)) {
@@ -332,7 +332,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
 
     case GameActionType.UPDATE_RESOURCE_RATES: {
-      const rateUpdates = action.payload as Partial<Record<ResourceType, number>>;
+      const rateUpdates = action.payload;
       const newRates = { ...state.resourceRates };
       for (const key in rateUpdates) {
         if (Object.prototype.hasOwnProperty.call(rateUpdates, key)) {
@@ -350,14 +350,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case GameActionType.UPDATE_SYSTEMS:
       return {
         ...state,
-        systems: { ...state.systems, ...(action.payload as Partial<GameState['systems']>) },
+        systems: { ...state.systems, ...action.payload },
         lastUpdated: Date.now(),
       };
 
     case GameActionType.UPDATE_GAME_TIME:
       return {
         ...state,
-        gameTime: action.payload as number,
+        gameTime: action.payload,
         lastUpdated: Date.now(),
       };
 
@@ -366,10 +366,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         missions: {
           ...state.missions,
-          history: [
-            ...state.missions.history,
-            action.payload as GameState['missions']['history'][0],
-          ],
+          history: [...state.missions.history, action.payload],
         },
         lastUpdated: Date.now(),
       };
@@ -381,7 +378,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           ...state.missions,
           statistics: {
             ...state.missions.statistics,
-            ...(action.payload as Partial<GameState['missions']['statistics']>),
+            ...action.payload,
           },
         },
         lastUpdated: Date.now(),
@@ -485,11 +482,11 @@ const handleTimeUpdated = (event: GameManagerEvent, dispatch: React.Dispatch<Gam
 };
 
 // Create context
-type GameContextType = {
+interface GameContextType {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
   manager?: GameManager;
-};
+}
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -560,42 +557,47 @@ export const GameProvider: React.FC<GameProviderProps> = ({
 
       // Subscribe to individual event types - this approach works with the test mocks
       const unsubStarted = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-        startedEventType as unknown,
+        startedEventType as unknown as EventType,
         createSafeHandler(event => handleGameStarted(event, dispatch))
       );
 
       const unsubPaused = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-        pausedEventType as unknown,
+        pausedEventType as unknown as EventType,
         createSafeHandler(event => handleGamePaused(event, dispatch))
       );
 
       const unsubResumed = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-        resumedEventType as unknown,
+        resumedEventType as unknown as EventType,
         createSafeHandler(event => handleGameResumed(event, dispatch))
       );
 
       const unsubStopped = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-        stoppedEventType as unknown,
+        stoppedEventType as unknown as EventType,
         createSafeHandler(event => handleGameStopped(event, dispatch))
       );
 
       const unsubTimeUpdated = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-        timeUpdatedEventType as unknown,
+        timeUpdatedEventType as unknown as EventType,
         createSafeHandler(event => handleTimeUpdated(event, dispatch))
       );
 
       // Clean up subscriptions
       return () => {
-        if (typeof unsubStarted === 'function') unsubStarted();
-        if (typeof unsubPaused === 'function') unsubPaused();
-        if (typeof unsubResumed === 'function') unsubResumed();
-        if (typeof unsubStopped === 'function') unsubStopped();
-        if (typeof unsubTimeUpdated === 'function') unsubTimeUpdated();
+        if (typeof unsubStarted === 'function') {
+          unsubStarted();
+        }
+        if (typeof unsubPaused === 'function') {
+          unsubPaused();
+        }
+        if (typeof unsubResumed === 'function') {
+          unsubResumed();
+        }
+        if (typeof unsubStopped === 'function') {
+          unsubStopped();
+        }
+        if (typeof unsubTimeUpdated === 'function') {
+          unsubTimeUpdated();
+        }
       };
     }
     return undefined;
@@ -654,8 +656,7 @@ export const useGameActions = () => {
      * with discriminated union types. We know the context has a manager property but
      * TypeScript cannot infer this properly from the union type.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
-    return (context as unknown).manager || gameManager;
+    return (context as unknown as { manager: GameManager }).manager || gameManager;
   }, [context]);
 
   return {

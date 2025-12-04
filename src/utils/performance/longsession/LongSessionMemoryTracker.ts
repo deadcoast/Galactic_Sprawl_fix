@@ -235,7 +235,7 @@ export class LongSessionMemoryTracker {
       console.warn('[LongSessionMemoryTracker] Browser support detected:', this.browserSupport);
     }
 
-    // Warn if memory API not available
+    // warn if memory API not available
     if (
       !this.browserSupport.memoryAPI &&
       this.options?.loggingLevel &&

@@ -104,10 +104,10 @@ export interface ObjectDetectionSystem {
 export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   private static instance: ObjectDetectionSystemImpl | null = null;
 
-  private detectors: Map<string, DetectorUnit> = new Map();
-  private detectables: Map<string, DetectableObject> = new Map();
-  private detectedObjectsCache: Map<string, Set<string>> = new Map();
-  private detectionConfidenceCache: Map<string, Map<string, number>> = new Map();
+  private detectors = new Map<string, DetectorUnit>();
+  private detectables = new Map<string, DetectableObject>();
+  private detectedObjectsCache = new Map<string, Set<string>>();
+  private detectionConfidenceCache = new Map<string, Map<string, number>>();
   private environmentalFactors: EnvironmentalFactors = {};
   private eventEmitter = new EventEmitter<ObjectDetectionEventMap>();
   private scanLoopActive = false;
@@ -132,9 +132,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   public static getInstance(
     environmentalFactors: EnvironmentalFactors = {}
   ): ObjectDetectionSystemImpl {
-    if (!ObjectDetectionSystemImpl.instance) {
-      ObjectDetectionSystemImpl.instance = new ObjectDetectionSystemImpl(environmentalFactors);
-    }
+    ObjectDetectionSystemImpl.instance ??= new ObjectDetectionSystemImpl(environmentalFactors);
     return ObjectDetectionSystemImpl.instance;
   }
 
@@ -237,9 +235,9 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
       this.environmentalFactors
     );
 
-    const detectedObjectIds = this.detectedObjectsCache.get(detector.id) || new Set<string>();
+    const detectedObjectIds = this.detectedObjectsCache.get(detector.id) ?? new Set<string>();
     const confidenceMap =
-      this.detectionConfidenceCache.get(detector.id) || new Map<string, number>();
+      this.detectionConfidenceCache.get(detector.id) ?? new Map<string, number>();
 
     // Check all detectable objects
     for (const object of this.detectables.values()) {
@@ -321,7 +319,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
     return new Promise(resolve => {
       const detector = this.detectors.get(detectorId);
 
-      if (!detector || !detector.isActive) {
+      if (!detector?.isActive) {
         resolve([]);
         return;
       }
@@ -366,12 +364,12 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
 
             // Update confidence to maximum for detected objects
             const confidenceMap =
-              this.detectionConfidenceCache.get(detector.id) || new Map<string, number>();
+              this.detectionConfidenceCache.get(detector.id) ?? new Map<string, number>();
             confidenceMap.set(object.id, 1.0);
             this.detectionConfidenceCache.set(detector.id, confidenceMap);
 
             // Add to detected set
-            const detectedSet = this.detectedObjectsCache.get(detector.id) || new Set<string>();
+            const detectedSet = this.detectedObjectsCache.get(detector.id) ?? new Set<string>();
             if (!detectedSet.has(object.id)) {
               detectedSet.add(object.id);
               this.detectedObjectsCache.set(detector.id, detectedSet);

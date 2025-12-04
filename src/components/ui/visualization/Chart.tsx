@@ -195,7 +195,7 @@ export function Chart({
     // Calculate scales
     const maxValue = Math.max(
       ...data.datasets.flatMap(dataset => dataset.data.map(d => d.value)),
-      threshold || 0
+      threshold ?? 0
     );
 
     // Draw grid if enabled
@@ -205,7 +205,7 @@ export function Chart({
 
     // Draw datasets
     data.datasets.forEach((dataset, datasetIndex) => {
-      const color = dataset.color || colors[datasetIndex % colors.length];
+      const color = dataset.color ?? colors[datasetIndex % colors.length];
 
       // Draw based on chart type
       switch (type) {
@@ -230,7 +230,7 @@ export function Chart({
           drawDoughnutChart(ctx, dataset.data, chartArea, colors);
           break;
         case 'area':
-          drawAreaChart(ctx, dataset.data, chartArea, maxValue, color);
+          dracombateaChart(ctx, dataset.data, chartArea, maxValue, color);
           break;
       }
     });
@@ -445,7 +445,7 @@ function drawLegend(
     const x = area.x + col * legendItemWidth;
     const y = area.y + row * legendItemHeight;
 
-    const color = dataset.color || colors[index % colors.length];
+    const color = dataset.color ?? colors[index % colors.length];
 
     // Draw color box
     ctx.fillStyle = color;
@@ -519,7 +519,7 @@ function drawBarChart(
     const barHeight = (point.value / maxValue) * chartArea.height;
     const y = chartArea.y + chartArea.height - barHeight;
 
-    ctx.fillStyle = point.color || color;
+    ctx.fillStyle = point.color ?? color;
     ctx.fillRect(x, y, individualBarWidth, barHeight);
 
     // Draw label below the bar
@@ -561,7 +561,7 @@ function drawPieChart(
     ctx.arc(centerX, centerY, radius, startAngle, endAngle);
     ctx.closePath();
 
-    ctx.fillStyle = point.color || colors[index % colors.length];
+      ctx.fillStyle = point.color ?? colors[index % colors.length];
     ctx.fill();
 
     // Draw label if slice is large enough
@@ -608,14 +608,14 @@ function drawDoughnutChart(
     ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
     ctx.closePath();
 
-    ctx.fillStyle = point.color || colors[index % colors.length];
+    ctx.fillStyle = point.color ?? colors[index % colors.length];
     ctx.fill();
 
     startAngle = endAngle;
   });
 }
 
-function drawAreaChart(
+function dracombateaChart(
   ctx: CanvasRenderingContext2D,
   data: DataPoint[],
   chartArea: { x: number; y: number; width: number; height: number },

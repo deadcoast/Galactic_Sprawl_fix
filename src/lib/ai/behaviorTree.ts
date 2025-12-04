@@ -36,7 +36,7 @@ export abstract class Node {
   public id: string;
 
   constructor(id?: string) {
-    this.id = id || Math.random().toString(36).substring(2, 9); // Simple unique ID
+    this.id = id ?? Math.random().toString(36).substring(2, 9); // Simple unique ID
   }
 
   /**
@@ -221,14 +221,14 @@ export class Failer extends DecoratorNode {
  */
 export class Repeater extends DecoratorNode {
   private repeatCount: number;
-  private currentCount: number = 0;
+  private currentCount = 0;
 
   /**
    * @param child The node to repeat.
    * @param repeatCount The number of times to repeat. Set to -1 for infinite repetitions.
    * @param id Optional node ID.
    */
-  constructor(child: Node, repeatCount: number = -1, id?: string) {
+  constructor(child: Node, repeatCount = -1, id?: string) {
     super(child, id);
     this.repeatCount = repeatCount;
   }

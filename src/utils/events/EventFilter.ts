@@ -100,7 +100,7 @@ export class EventFilter {
     }
 
     // Use batch processing for large event arrays
-    if (events.length > (this.config.batchSize || 1)) {
+    if (events.length > (this.config.batchSize ?? 1)) {
       return this.filterEventsInBatches(events, criteria);
     }
 
@@ -146,7 +146,7 @@ export class EventFilter {
     events: ModuleEvent[],
     criteria: EventFilterCriteria
   ): ModuleEvent[] {
-    const batchSize = this.config.batchSize || 1000;
+    const batchSize = this.config.batchSize ?? 1000;
     const result: ModuleEvent[] = [];
 
     // Process in batches to avoid blocking the main thread

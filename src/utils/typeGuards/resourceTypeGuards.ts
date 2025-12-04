@@ -1,15 +1,16 @@
-import {
-  ResourceConsumption,
-  ResourceCost,
-  ResourceFlow,
-  ResourceProduction,
-  ResourceState,
-  ResourceThreshold,
-  ResourceTransfer,
-  ResourceType,
-  ResourceTypeString,
-} from '../../types/resources/ResourceTypes';
-import { ResourceTypeConverter, STRING_TO_ENUM_MAP } from '../ResourceTypeConverter';
+import
+  {
+    ResourceConsumption,
+    ResourceCost,
+    ResourceFlow,
+    ResourceProduction,
+    ResourceState,
+    ResourceThreshold,
+    ResourceTransfer,
+    ResourceType,
+    ResourceTypeString,
+  } from '../../types/resources/ResourceTypes';
+import { ResourceTypeConverter } from '../ResourceTypeConverter';
 
 // Re-export converter for use elsewhere
 export { ResourceTypeConverter };
@@ -56,7 +57,7 @@ export interface ResourceStorage {
  * Check if a value is a valid string resource type representation (key of the enum)
  */
 function isValidStringType(value: unknown): value is ResourceTypeString {
-  return typeof value === 'string' && value in STRING_TO_ENUM_MAP;
+  return typeof value === 'string' && value in ResourceType;
 }
 
 /**
