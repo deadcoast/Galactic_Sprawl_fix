@@ -211,8 +211,16 @@ export class ModuleManagerWrapper implements IModuleManager {
           ErrorSeverity.LOW,
           { component: 'ModuleManagerWrapper', method: 'subscribe', eventType }
         );
+        // Track failed subscription for cleanup purposes
+        const failedSubscriptionId = `failed_${eventType}_${Date.now()}`;
+        this.trackFailedSubscription(failedSubscriptionId, eventType, handler);
         return () => {
-          // TODO: Implement proper cleanup if subscription failed
+          // Cleanup handler for failed subscription
+          this.cleanupFailedSubscription(failedSubscriptionId);
+          errorLoggingService.logWarn(
+            `Cleaned up failed subscription for event type: ${eventType}`,
+            { component: 'ModuleManagerWrapper', subscriptionId: failedSubscriptionId }
+          );
         };
       }
     } else {
@@ -220,10 +228,60 @@ export class ModuleManagerWrapper implements IModuleManager {
         'Underlying manager does not support protected subscribe. Subscription might fail.',
         { component: 'ModuleManagerWrapper', eventType }
       );
-      return () => {
-        // TODO: Implement fallback subscription mechanism
-      };
+      // Use fallback subscription via moduleEventBus if available
+      return this.createFallbackSubscription(eventType, handler);
     }
+  }
+
+  /**
+   * Track failed subscriptions for cleanup and debugging purposes
+   */
+  private failedSubscriptions = new Map<string, { eventType: string; handler: unknown; timestamp: number }>();
+
+  private trackFailedSubscription(id: string, eventType: string, handler: unknown): void {
+    this.failedSubscriptions.set(id, {
+      eventType,
+      handler,
+      timestamp: Date.now(),
+    });
+  }
+
+  private cleanupFailedSubscription(id: string): void {
+    this.failedSubscriptions.delete(id);
+  }
+
+  /**
+   * Create a fallback subscription using the moduleEventBus
+   * This provides a backup mechanism when the underlying manager doesn't support subscribe
+   */
+  private createFallbackSubscription<E extends BaseEvent>(
+    eventType: string,
+    handler: (event: E) => void
+  ): () => void {
+    try {
+      // Try to use moduleEventBus as fallback
+      const { moduleEventBus } = require('../../lib/modules/ModuleEvents');
+      if (moduleEventBus && typeof moduleEventBus.subscribe === 'function') {
+        const unsubscribe = moduleEventBus.subscribe(eventType, (event: unknown) => {
+          // Wrap handler to convert event format if needed
+          handler(event as E);
+        });
+        return unsubscribe;
+      }
+    } catch (fallbackError) {
+      errorLoggingService.logWarn(
+        'Fallback subscription via moduleEventBus also failed',
+        { component: 'ModuleManagerWrapper', eventType, error: String(fallbackError) }
+      );
+    }
+
+    // Return no-op cleanup if all subscription methods failed
+    return () => {
+      errorLoggingService.logWarn(
+        `No-op cleanup called for unsubscribed event type: ${eventType}`,
+        { component: 'ModuleManagerWrapper' }
+      );
+    };
   }
 
   /**

@@ -1,3 +1,31 @@
+/**
+ * @file ServiceRegistry.ts (lib/registry)
+ *
+ * RECOMMENDED: Unified service and manager registry with proper dependency handling.
+ *
+ * This is the most comprehensive ServiceRegistry implementation, supporting both:
+ * - Services (via registerService)
+ * - Managers (via registerManager)
+ *
+ * Other implementations exist for backward compatibility:
+ * - lib/managers/ServiceRegistry.ts - Manager-only, simpler API
+ * - lib/services/ServiceRegistry.ts - Service-only with factory pattern
+ *
+ * Usage:
+ * ```typescript
+ * import { serviceRegistry } from '../lib/registry/ServiceRegistry';
+ *
+ * // Register a service
+ * serviceRegistry.registerService(myService, 'myServiceName', ['dependency1']);
+ *
+ * // Register a manager
+ * serviceRegistry.registerManager(myManager, 'myManagerName', ['dependency1']);
+ *
+ * // Initialize all
+ * await serviceRegistry.initialize();
+ * ```
+ */
+
 import {
   errorLoggingService,
   ErrorSeverity,

@@ -1,9 +1,77 @@
+/**
+ * @file ModuleEvents.ts
+ *
+ * Legacy ModuleEventBus implementation maintained for backward compatibility.
+ * This file provides a bridge to the canonical ModuleEventBus in ../events/ModuleEventBus.ts
+ *
+ * For new code, consider importing from '../events/ModuleEventBus' directly for
+ * additional features like event validation and advanced filtering.
+ *
+ * @see ../events/ModuleEventBus.ts - Canonical implementation with validation
+ */
+
 import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
 } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventType } from '../../types/events/EventTypes';
+
+// Import canonical event bus for bridging
+// Note: Using dynamic import pattern to avoid circular dependency
+let canonicalEventBus: {
+  emit: (event: unknown) => void;
+} | null = null;
+
+// Lazy load the canonical event bus to avoid circular dependencies
+const getCanonicalEventBus = async () => {
+  if (!canonicalEventBus) {
+    try {
+      const module = await import('../events/ModuleEventBus');
+      canonicalEventBus = module.moduleEventBus;
+    } catch {
+      // Silently fail - canonical bus may not be available during initialization
+    }
+  }
+  return canonicalEventBus;
+};
+
+/**
+ * Maps legacy string event types to the canonical EventType enum.
+ * This enables interoperability between the legacy and canonical systems.
+ */
+const EVENT_TYPE_MAP: Record<string, EventType | undefined> = {
+  MODULE_CREATED: EventType.MODULE_CREATED,
+  MODULE_ATTACHED: EventType.ATTACHMENT_COMPLETED,
+  MODULE_DETACHED: EventType.MODULE_REMOVED,
+  MODULE_UPGRADED: EventType.MODULE_UPDATED,
+  MODULE_ACTIVATED: EventType.MODULE_ACTIVATED,
+  MODULE_DEACTIVATED: EventType.MODULE_DEACTIVATED,
+  MODULE_UPDATED: EventType.MODULE_UPDATED,
+  ATTACHMENT_STARTED: EventType.ATTACHMENT_STARTED,
+  ATTACHMENT_CANCELLED: EventType.ATTACHMENT_CANCELLED,
+  ATTACHMENT_COMPLETED: EventType.ATTACHMENT_COMPLETED,
+  ATTACHMENT_PREVIEW_SHOWN: EventType.ATTACHMENT_PREVIEW_SHOWN,
+  RESOURCE_PRODUCED: EventType.RESOURCE_PRODUCED,
+  RESOURCE_CONSUMED: EventType.RESOURCE_CONSUMED,
+  RESOURCE_TRANSFERRED: EventType.RESOURCE_TRANSFERRED,
+  RESOURCE_SHORTAGE: EventType.RESOURCE_SHORTAGE,
+  RESOURCE_UPDATED: EventType.RESOURCE_UPDATED,
+  AUTOMATION_STARTED: EventType.AUTOMATION_STARTED,
+  AUTOMATION_STOPPED: EventType.AUTOMATION_STOPPED,
+  AUTOMATION_CYCLE_COMPLETE: EventType.AUTOMATION_CYCLE_COMPLETE,
+  STATUS_CHANGED: EventType.STATUS_CHANGED,
+  ERROR_OCCURRED: EventType.ERROR_OCCURRED,
+  SUB_MODULE_CREATED: EventType.SUB_MODULE_CREATED,
+  SUB_MODULE_ATTACHED: EventType.SUB_MODULE_ATTACHED,
+  SUB_MODULE_DETACHED: EventType.SUB_MODULE_DETACHED,
+  SUB_MODULE_UPGRADED: EventType.SUB_MODULE_UPGRADED,
+  SUB_MODULE_ACTIVATED: EventType.SUB_MODULE_ACTIVATED,
+  SUB_MODULE_DEACTIVATED: EventType.SUB_MODULE_DEACTIVATED,
+  SUB_MODULE_EFFECT_APPLIED: EventType.SUB_MODULE_EFFECT_APPLIED,
+  SUB_MODULE_EFFECT_REMOVED: EventType.SUB_MODULE_EFFECT_REMOVED,
+};
 
 /**
  * Represents all possible event types that can be emitted by modules in the system.
@@ -247,6 +315,48 @@ export class ModuleEventBus {
         }
       });
     }
+
+    // Bridge to canonical event bus for system-wide event propagation
+    // This ensures events from legacy code reach the new unified system
+    this.bridgeToCanonicalBus(event);
+  }
+
+  /**
+   * Bridges events to the canonical ModuleEventBus for system-wide propagation.
+   * This enables legacy code to communicate with new code using the unified event system.
+   * @private
+   */
+  private bridgeToCanonicalBus(event: ModuleEvent): void {
+    // Map legacy event type to canonical EventType
+    const canonicalType = EVENT_TYPE_MAP[event.type];
+    if (!canonicalType) {
+      // Event type not mapped - skip bridging for legacy-only events
+      return;
+    }
+
+    // Asynchronously forward to canonical bus to avoid circular dependency issues
+    getCanonicalEventBus().then(bus => {
+      if (bus) {
+        try {
+          // Create canonical event format
+          const canonicalEvent = {
+            id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: canonicalType,
+            name: canonicalType,
+            description: canonicalType,
+            category: canonicalType,
+            subCategory: canonicalType,
+            timestamp: event.timestamp,
+            moduleId: event.moduleId,
+            moduleType: event.moduleType,
+            data: event.data ?? {},
+          };
+          bus.emit(canonicalEvent);
+        } catch {
+          // Silently fail bridging - don't disrupt legacy event flow
+        }
+      }
+    });
   }
 
   /**

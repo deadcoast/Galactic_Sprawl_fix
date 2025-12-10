@@ -1,4 +1,23 @@
+/**
+ * @file ServiceRegistry.ts (lib/managers)
+ *
+ * Manager-focused service registry with dependency management and lifecycle control.
+ *
+ * NOTE: Multiple ServiceRegistry implementations exist in this codebase:
+ * - lib/managers/ServiceRegistry.ts - This file, manager-focused
+ * - lib/registry/ServiceRegistry.ts - Unified registry for both services and managers
+ * - lib/services/ServiceRegistry.ts - Service-focused with factory pattern
+ *
+ * For unified service/manager registration, consider using lib/registry/ServiceRegistry.ts
+ *
+ * @see ../registry/ServiceRegistry.ts - Unified implementation
+ * @see ../services/ServiceRegistry.ts - Service-focused implementation
+ */
+
 import { BaseManager, ManagerMetadata } from './BaseManager';
+
+// Re-export unified registry for convenience
+export { serviceRegistry as unifiedServiceRegistry } from '../registry/ServiceRegistry';
 
 /**
  * Error thrown when service initialization fails
