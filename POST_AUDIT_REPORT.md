@@ -13,6 +13,7 @@ This audit successfully reconciled integration debt accumulated over approximate
 - 2 duplicate ModuleEventBus implementations
 - 2 duplicate useModuleEvents hook implementations
 - 3 TODO placeholder implementations
+- 3 HIGH-severity circular dependency chains (ErrorLoggingService ↔ UnifiedEventSystem ↔ BaseManager)
 
 ## Phase Completion Status
 
@@ -25,6 +26,7 @@ This audit successfully reconciled integration debt accumulated over approximate
 | Phase 3.3: ServiceRegistry | ✅ Complete | Added cross-references and re-exports |
 | Phase 3.4: useModuleEvents | ✅ Complete | Added deprecation notice and re-exports |
 | Phase 3.5: TODO Placeholders | ✅ Complete | Implemented 3 placeholder functions |
+| Phase 3.6: Circular Deps | ✅ Complete | Mitigated 3 HIGH-severity circular dependencies |
 | Phase 4: Verification | ✅ Complete | TypeScript compilation passes |
 
 ## Files Created (New)
@@ -81,6 +83,13 @@ This audit successfully reconciled integration debt accumulated over approximate
 | `src/managers/module/ModuleUpgradeManager.ts` | Implemented tech requirement checking via TechTreeManager integration |
 | `src/managers/module/OfficerManager.ts` | Implemented portrait generation with deterministic ID generation |
 | `src/managers/module/ModuleManagerWrapper.ts` | Implemented subscription cleanup and fallback mechanism |
+
+### Circular Dependency Mitigation
+| File | Changes |
+|------|---------|
+| `src/services/logging/ErrorLoggingService.ts` | Changed to type-only import for BaseEvent |
+| `src/lib/events/UnifiedEventSystem.ts` | Added lazy loading for errorLoggingService to break circular dependency |
+| `src/lib/managers/BaseManager.ts` | Added lazy loading for errorLoggingService to break circular dependency |
 
 ## Technical Details
 
@@ -150,6 +159,49 @@ private createFallbackSubscription<E extends BaseEvent>(eventType: string, handl
 }
 ```
 
+### 5. Circular Dependency Mitigation
+
+Fixed 3 HIGH-severity circular dependencies between core services:
+
+**The Problem:**
+```
+ErrorLoggingService → UnifiedEventSystem → ErrorLoggingService
+ErrorLoggingService → BaseManager → ErrorLoggingService
+BaseManager → UnifiedEventSystem → ErrorLoggingService → BaseManager
+```
+
+**The Solution - Lazy Loading Pattern:**
+
+In `UnifiedEventSystem.ts` and `BaseManager.ts`:
+```typescript
+// Type-only import (erased at compile time)
+import type { ErrorType as ErrorTypeEnum } from '../../services/logging/ErrorLoggingService';
+
+// Lazy-loaded at runtime to break circular dependency
+let _errorLoggingService: typeof import('../../services/logging/ErrorLoggingService').errorLoggingService | null = null;
+let _ErrorType: typeof import('../../services/logging/ErrorLoggingService').ErrorType | null = null;
+
+function getErrorLoggingService() {
+  if (!_errorLoggingService) {
+    const module = require('../../services/logging/ErrorLoggingService');
+    _errorLoggingService = module.errorLoggingService;
+    _ErrorType = module.ErrorType;
+  }
+  return { errorLoggingService: _errorLoggingService!, ErrorType: _ErrorType! };
+}
+```
+
+In `ErrorLoggingService.ts`:
+```typescript
+// Type-only import breaks runtime circular dependency
+import type { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+```
+
+**Why This Works:**
+- `import type` is erased during TypeScript compilation - no runtime dependency
+- Lazy loading with `require()` defers the import until first use
+- By the time error logging is needed, all modules are fully loaded
+
 ## Verification Results
 
 ### TypeScript Compilation
@@ -170,9 +222,9 @@ private createFallbackSubscription<E extends BaseEvent>(eventType: string, handl
 
 ## Remaining Technical Debt
 
-These items were identified but not addressed (out of scope for this audit):
+These items were identified but not fully addressed (scope limitations):
 
-1. **Circular dependency chains** - 19 identified, require deeper refactoring
+1. **Remaining circular dependency chains** - 16 remaining (3 HIGH-severity chains fixed, 16 LOW/MEDIUM remain)
 2. **FactionShipTypes duplicate** - `types/ships/FactionShipTypes.ts` and `types/factions/FactionShipTypes.ts`
 3. **Test type definitions** - Missing `@testing-library/jest-dom` and `vitest/globals`
 4. **Placeholder components** - Alert, Spinner, Progress, etc. need full implementation

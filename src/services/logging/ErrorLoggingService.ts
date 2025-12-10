@@ -9,7 +9,9 @@
  * - Deduplicating similar errors to prevent log spam
  */
 
-import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+// Use type-only import to break circular dependency with UnifiedEventSystem
+// BaseEvent is only used as a type (for ErrorLoggingServiceEvents), not at runtime
+import type { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ErrorDetails, ErrorSeverity, ErrorType, IErrorLog } from './ErrorTypes'; // Re-enabled import
 import { LogContext, logger } from './loggerService';
