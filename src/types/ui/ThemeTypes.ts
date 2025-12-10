@@ -330,7 +330,18 @@ export interface ThemeConfiguration {
   components?: Record<string, unknown>; // Allow any component overrides
 }
 
-import { defaultTheme } from '../../ui/theme/defaultTheme';
+// CIRCULAR DEPENDENCY MITIGATION:
+// defaultTheme imports Theme type from this file, creating a circular dependency.
+// We use lazy loading to defer the import until runtime.
+let _defaultTheme: Theme | null = null;
+
+function getDefaultTheme(): Theme {
+  if (!_defaultTheme) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    _defaultTheme = require('../../ui/theme/defaultTheme').defaultTheme;
+  }
+  return _defaultTheme!;
+}
 
 // Update deepMergePalette signature and logic with proper typing
 function deepMergePalette(
@@ -370,7 +381,7 @@ function deepMergePalette(
 
 // Update createTheme signature and logic
 export function createTheme(config: Partial<Theme> = {}): Theme {
-  const baseTheme = defaultTheme; // Use imported default theme constant (type Theme)
+  const baseTheme = getDefaultTheme(); // Use lazy-loaded default theme to avoid circular dependency
 
   // Deep merge palettes
   const mergedPalette = deepMergePalette(baseTheme.colors, config.colors ?? {});

@@ -8,8 +8,9 @@ import
     ShipCategory,
     ShipStatus,
   } from './CommonShipTypes';
-import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
-import { PlayerShipClass } from './PlayerShipTypes';
+// Use type-only imports to complete circular dependency fix
+import type { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes';
+import type { PlayerShipClass } from './PlayerShipTypes';
 
 export { ShipCategory, ShipStatus };
 // Alias used by UI components expecting UnifiedShipStatus

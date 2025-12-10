@@ -1,4 +1,5 @@
-import { ResourceType } from './ResourceTypes';
+// Use type-only import to break circular dependency
+import type { ResourceType } from './ResourceTypes';
 
 export enum ProcessStatus {
   PENDING = 'pending',

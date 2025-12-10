@@ -51,13 +51,9 @@ export interface Fleet {
   direction: number;
 }
 
-// Module augmentation removed - methods are now implemented in combatManager.ts
-// Import types from the combat manager
-import type {
-  Fleet as CombatFleet,
-  Threat as CombatThreat,
-  FleetCombatUnit,
-} from '../../managers/combat/combatManager';
+// FleetCombatUnit from combatManager matches the local CombatUnit interface structure
+// getFleetStatus and getThreatsInRange methods are implemented in CombatManager
+import type { FleetCombatUnit } from '../../managers/combat/combatManager';
 
 interface FleetFormation {
   type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';
@@ -211,6 +207,7 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
 
   useEffect(() => {
     const updateInterval = setInterval(() => {
+      // getFleetStatus returns Fleet with FleetCombatUnit[] which matches local CombatUnit
       const fleet = getCombatManager().getFleetStatus(fleetId);
       const faction = factionManager.getFactionState(factionId);
 

@@ -25,7 +25,18 @@ import
     MiningShip as UnifiedMiningShip, // Keep the alias for clarity within this file
     UnifiedShipStatus,
   } from '../../types/ships/ShipTypes';
-import { getAsteroidFieldManager } from '../ManagerRegistry'; // Import the registry function
+// CIRCULAR DEPENDENCY MITIGATION:
+// ManagerRegistry imports MiningShipManager, creating a circular dependency.
+// We use lazy loading to defer the import until runtime.
+let _getAsteroidFieldManager: typeof import('../ManagerRegistry').getAsteroidFieldManager | null = null;
+
+function getAsteroidFieldManagerLazy() {
+  if (!_getAsteroidFieldManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    _getAsteroidFieldManager = require('../ManagerRegistry').getAsteroidFieldManager;
+  }
+  return _getAsteroidFieldManager!();
+}
 
 // Define the expected structure for event data passed to publish
 interface PublishEventData {
@@ -133,10 +144,10 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     if (dependencies?.asteroidFieldManager) {
       this.asteroidFieldManager = dependencies.asteroidFieldManager;
     } else {
-      // Retrieve from ManagerRegistry
+      // Retrieve from ManagerRegistry using lazy loading to break circular dependency
       try {
         // Cast via unknown as suggested by linter
-        this.asteroidFieldManager = getAsteroidFieldManager() as unknown as IAsteroidFieldManager;
+        this.asteroidFieldManager = getAsteroidFieldManagerLazy() as unknown as IAsteroidFieldManager;
         if (!this.asteroidFieldManager) {
           throw new Error('AsteroidFieldManager instance not found in registry.');
         }

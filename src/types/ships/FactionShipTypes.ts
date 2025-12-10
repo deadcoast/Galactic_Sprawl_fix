@@ -1,13 +1,14 @@
 import { Position, Tier } from '../core/GameTypes';
 import { ResourceType } from '../resources/ResourceTypes';
 import { CombatWeaponStats, WeaponInstance } from '../weapons/WeaponTypes';
+// Import ShipStatus from CommonShipTypes to break circular dependency with ShipTypes
 import {
     CommonShipAbility,
     CommonShipDisplayStats,
     CommonShipStats,
+    ShipStatus,
     ShipType,
 } from './CommonShipTypes';
-import { ShipStatus } from './ShipTypes';
 
 // Define core Faction types here
 export type FactionId =

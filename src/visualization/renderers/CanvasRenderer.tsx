@@ -1,5 +1,5 @@
-import
-  {
+// Use type-only import to break circular dependency with Chart.tsx
+import type {
     ChartAxes,
     ChartData,
     ChartDataPoint,

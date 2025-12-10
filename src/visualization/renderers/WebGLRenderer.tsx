@@ -1,5 +1,6 @@
 import React from 'react';
-import {
+// Use type-only import to break circular dependency with Chart.tsx
+import type {
   ChartOptions as BaseChartOptions,
   ChartAxes,
   ChartData,

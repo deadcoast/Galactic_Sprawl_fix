@@ -4,8 +4,9 @@
  * This file contains types and interfaces for resource conversion functionality.
  */
 
-import { ProcessStatus } from './ProductionChainTypes';
-import { FlowNode, ResourceState, ResourceType } from './ResourceTypes';
+// Use type-only imports to break circular dependency chain
+import type { ProcessStatus } from './ProductionChainTypes';
+import type { FlowNode, ResourceState, ResourceType } from './ResourceTypes';
 
 /**
  * Status of a conversion chain execution

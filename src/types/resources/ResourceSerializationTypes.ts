@@ -3,8 +3,9 @@
  * @description: Types for serializing and deserializing resource data
  * @file: src/types/resources/ResourceSerializationTypes.ts
  */
-import { ResourceAlert } from '../../hooks/resources/useResourceTracking';
-import { ResourceType } from './ResourceTypes';
+// Use type-only import to break circular dependency with useResourceTracking
+import type { ResourceAlert } from '../../hooks/resources/useResourceTracking';
+import type { ResourceType } from './ResourceTypes';
 
 /**
  * Interface for serialized resource data

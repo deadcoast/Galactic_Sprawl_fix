@@ -10,7 +10,8 @@ import {
     toEnumResourceType
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
-import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+// Use type-only import to break circular dependency with ResourceSystem
+import type { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**

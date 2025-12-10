@@ -1,6 +1,18 @@
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { moduleManager } from './ModuleManager';
+
+// CIRCULAR DEPENDENCY MITIGATION:
+// ModuleManager imports ModuleStatusManager, creating a circular dependency.
+// We use lazy loading to defer the import until runtime.
+let _moduleManager: typeof import('./ModuleManager').moduleManager | null = null;
+
+function getModuleManager() {
+  if (!_moduleManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    _moduleManager = require('./ModuleManager').moduleManager;
+  }
+  return _moduleManager!;
+}
 
 /**
  * Extended module status types beyond the basic 'active', 'constructing', 'inactive'
@@ -194,7 +206,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
    * Update metrics for all modules
    */
   private updateAllModuleMetrics(): void {
-    const modules = Array.from(moduleManager.getActiveModules());
+    const modules = Array.from(getModuleManager().getActiveModules());
 
     for (const module of modules) {
       this.updateModuleMetrics(module.id);
@@ -210,7 +222,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
       return;
     }
 
-    const module = moduleManager.getModule(moduleId);
+    const module = getModuleManager().getModule(moduleId);
     if (!module) {
       return;
     }
@@ -308,7 +320,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
    * Initialize status tracking for a module
    */
   public initializeModuleStatus(moduleId: string): void {
-    const module = moduleManager.getModule(moduleId);
+    const module = getModuleManager().getModule(moduleId);
     if (!module) {
       console.error(`[ModuleStatusManager] Module ${moduleId} not found`);
       return;
@@ -344,7 +356,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
     status: ExtendedModuleStatus,
     reason?: string
   ): boolean {
-    const module = moduleManager.getModule(moduleId);
+    const module = getModuleManager().getModule(moduleId);
     if (!module) {
       console.error(`[ModuleStatusManager] Module ${moduleId} not found`);
       return false;
@@ -418,7 +430,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
       this.addAlert(moduleId, 'info', `Module performance enhanced${reason ? ': ' + reason : ''}`);
     }
 
-    const moduleData = moduleManager.getModule(moduleId);
+    const moduleData = getModuleManager().getModule(moduleId);
     if (moduleData) {
       // Emit alert event using this.emit
       this.emit(ModuleStatusManagerEventType.ALERT_ADDED, {
@@ -458,7 +470,7 @@ export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEv
     statusDetails.alerts.push(alert);
 
     // Emit alert event
-    const moduleData2 = moduleManager.getModule(moduleId);
+    const moduleData2 = getModuleManager().getModule(moduleId);
     if (moduleData2) {
       // Emit alert event using this.emit
       this.emit(ModuleStatusManagerEventType.ALERT_ADDED, {

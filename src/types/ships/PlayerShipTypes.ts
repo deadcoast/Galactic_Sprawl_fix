@@ -1,6 +1,6 @@
 import { Tier } from '../core/GameTypes';
-import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats } from './CommonShipTypes';
-import { ShipStatus } from './ShipTypes';
+// Import ShipStatus from CommonShipTypes to break circular dependency with ShipTypes
+import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats, ShipStatus } from './CommonShipTypes';
 
 // Player Ship Classes - Changed from type alias to enum
 export enum PlayerShipClass {

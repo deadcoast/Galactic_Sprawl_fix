@@ -1,4 +1,5 @@
-import { ChartAxes, ChartData, ChartOptions, ChartRenderer, ChartType } from '../Chart';
+// Use type-only import to break circular dependency with Chart.tsx
+import type { ChartAxes, ChartData, ChartOptions, ChartRenderer, ChartType } from '../Chart';
 
 interface ChartArea {
   top: number;

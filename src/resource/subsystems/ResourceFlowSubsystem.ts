@@ -18,7 +18,8 @@ import
   } from '../../types/resources/ResourceTypes';
 import { validateResourceTransfer } from '../../utils/typeGuards/resourceTypeGuards';
 import { ResourceFlowWorkerUtil } from '../../utils/workers/ResourceFlowWorkerUtil';
-import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+// Use type-only import to break circular dependency with ResourceSystem
+import type { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 
 /**
  * Flow optimization result
