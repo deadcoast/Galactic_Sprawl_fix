@@ -1,6 +1,154 @@
-# Error-Correction Tasklist (updated 2025-01-27)
+# unfinished-tasks.md
 
-_Following ERROR_CORRECTION.md guidelines:_
+> If a task seems complete, validate its integration in the source code before the task is marked complete.
+
+## TASKLIST
+
+HIGH PRIORITY
+- [ ] Fix SelectedShipDetails.tsx TypeScript union complexity errors (TS2590 at lines 37–40 & 147)
+  - [ ] Refactor expression(s) to reduce union type complexity (e.g., explicit type assertions, helper functions).
+- [ ] Fix ShipCard.tsx Record<ShipStatus,string> type mismatch (TS2739)
+  - [ ] Add missing keys (combat, active, inactive) or adjust type.
+- [ ] Fix useManagerRegistryIntegration.ts runtime-unsafe call & missing method (TS2339, ESLint no-unsafe-call)
+  - [ ] Add proper generic constraint for T or use type guard ensuring getName exists.
+
+MEDIUM PRIORITY
+- [x] Fix eslint @typescript-eslint/no-base-to-string in useFactionBehavior.ts (object stringification)
+- [ ] Remove console statements & replace with errorLoggingService in useManagerRegistryIntegration.ts (no-console x2)
+- [ ] Unused variable 'e' in useManagerRegistryIntegration.ts (no-unused-vars)
+
+LOW PRIORITY
+- [ ] Review any remaining TypeScript & ESLint warnings after above fixes and update types / guards as needed.
+
+---
+NOTE: Complete each sub-task and tick when fully implemented & passing tsc plus lint.
+
+## FUTURE TASKLIST TODOs
+
+- [ ] Task 2: Implement Proper Type Definitions
+
+  - [ ] Defer `any`/`unknown` refinement in `src/hooks/ui/useComponentRegistration.ts` (Blocked by missing Context/Types)
+  - [ ] Create concrete type definitions to replace all 'any' types (Remaining: Primarily D3 files under Task 10, and potentially others found later)
+  - [ ] Implement strict type checking across all components
+  - [ ] Add proper generic implementations for container classes
+  - [ ] Create type utilities for complex type relationships
+
+  Primary Files with Any Types:
+
+  - [ ] `src/utils/performance/D3BatchedUpdates.ts`: (Deferred to Task 10)
+  - [ ] `src/types/visualizations/D3SelectionTypes.ts`: (Deferred to Task 10)
+
+- [ ] Task 3: Implement Proper Null Checking
+
+  - [ ] Implement proper error handlers for null conditions
+  - [ ] Add validation functions to ensure data structures are complete before access
+
+- [ ] Task 4: Implement Structured Logging System
+
+  - [ ] Implement environment-specific logging configuration
+  - [ ] Add context information to all log messages
+
+- [ ] Task 5: Implement Proper Type Definitions for Ignored Cases
+
+  - [ ] Create proper interfaces for all @ts-ignore cases
+  - [ ] Implement type utilities for complex type scenarios
+  - [ ] Refactor code to properly handle edge cases with type safety
+  - [ ] Create unit tests validating type correctness
+
+- [ ] Task 7: Complete System Integration
+  - [x] Connect all implemented components to their respective systems (GameManager via ManagerRegistry)
+  - [ ] Implement all missing functionality in resource flow system
+  - [ ] Complete event system implementation with proper type safety
+  - [ ] Ensure full integration between worker system and main application
+
+Key Integration Files:
+`src/workers/ResourceFlowWorker.ts`
+
+- [x] No robust retry mechanism for failed operations
+
+`src/workers/worker.ts`
+
+- [x] Missing proper task scheduling and prioritization
+- [x] Insufficient task cancellation implementation
+
+Additional Integration Required:
+
+- [ ] Complete entirely the event system implementation in src/lib/events/
+- [ ] Complete the Missing connections between resource system components
+- [ ] Complete Unfinished worker communication protocol
+- [ ] Replace Incomplete error propagation across system boundaries with robust solution
+
+- [ ] Task 8: Global Type Safety & Validation:
+
+  - [x] Replaced undefined NodeType references with strongly-typed `FlowNodeType` enum in `ResourceFlowWorker.ts` and added missing import to reduce implicit any usage.
+
+- [ ] Task 9: Logging Strategy Implementation:
+
+  - [ ] Decide whether to extend `errorLoggingService` for `info`/`warn`/`debug` or adopt a different library/strategy.
+  - [ ] Replace all remaining `console.error` calls with `errorLoggingService.logError`.
+  - [ ] Ensure consistent logging context (service/module name, action) across the application.
+
+- [ ] Task 10: D3 Refactoring & Typing:
+
+  - [ ] Replace `any` types in `src/utils/performance/D3BatchedUpdates.ts` with proper types.
+  - [ ] Replace `any` types in `src/types/visualizations/D3SelectionTypes.ts` with stricter interfaces.
+  - [ ] Address `@ts-ignore` comments in D3-related files by implementing correct types or refactoring.
+  - [ ] Fix `Font` / `FontFaceSet` issues in `src/types/declarations.d.ts`.
+
+- [ ] Task 12: Event System Consolidation:
+
+  - [ ] Analyze the different event buses/emitters (`moduleEventBus`, `systemCommunications`, potentially others).
+  - [ ] Design a unified event bus strategy (e.g., using `EventPropagationService` more broadly or a dedicated global bus).
+  - [x] Refactor code to use the chosen unified event system. -> _(Partially: ShipManagerImpl refactored)_
+  - [x] Ensure consistent event type definitions (`EventType`, `ModuleEventType`) and address string literal usage (partially in `ResourceFlowDiagram.tsx`, `ResourceFlowSubsystem.ts`, `ShipHangar.tsx`).
+
+- [ ] Task 13: Worker System Enhancement:
+
+  - [x] Implement structured error reporting from workers (using `errorLoggingService` or similar) -> _Changed to use postMessage for consistency_.
+  - [x] Add robust type checking/guards for `postMessage` data in `worker.ts` and `ResourceFlowManager.ts` -> _Input validation added in workers_.
+  - [x] Implement retry mechanisms for failed worker operations in `ResourceFlowWorkerUtil.ts` (exponential backoff, 3 attempts).
+    - [x] Implement task scheduling/prioritization and cancellation logic in `worker.ts`.  -> _Implemented new protocol & cancellation support_
+
+- [ ] Task 14: Rule System Review:
+  - [ ] Clarify the contradiction between Service Implementation Anti-Pattern Rule #4 (`getInstance` override) and #5 (direct export). Update rules if necessary.
+  - [x] Review Resource Types Rule and Event Types Rule for violations (addressed in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`, `ShipHangar.tsx`).
+
+Task 15: Type System Standardization:
+
+- [ ] Consolidate ResourceType definitions into a single source of truth
+- [ ] Create migration utilities for string-to-enum type conversion
+- [ ] Document type system best practices in a central location
+- [ ] Create type guard utilities for runtime validation
+- [ ] Add safe extraction utilities for working with potentially undefined objects
+- [x] Replace all `any` types with proper type definitions or `unknown` -> _(Progress made, excluding deferred/blocked)_
+- [ ] Implement proper error handling with typed error objects
+      Task 16: Update Resource Type Usage:
+- [ ] Update all components and code currently using string-based resource types to use the standardized `ResourceType` enum.
+
+Task 17: Standardize Event Handling in Managers
+
+- [ ] `Standardizing Event Handling`: Updating managers to use the TypedEventEmitter standard (Task 1.3).
+- [ ] `Consolodating Managers`: Consolodate overlapping functions from managers and remove legacy files.
+- [ ] `Improving Type Safety`: Replacing any types, adding type guards, fixing implicit any errors, and ensuring correct payload types in managers and related components (Task 1.4, Task 8).
+- [ ] `Resource Type Standardization`: Migrating managers away from string-based resource types to use the ResourceType enum (Task 1.2).
+- [ ] `Integrating Logging`: Replacing console statements with the structured logging service (Task 4, Task 9).
+- [ ] `Worker Communication`: Improving type checking and error handling in managers interacting with workers like ResourceFlowManager.ts (Task 13).
+- [ ] `Eliminate`any`Type Usage:`
+- [ ] Replace `any` with specific types, `unknown`, or generics, prioritizing visualization components, chart renderers, UI components, and type utilities. -> _(Progress made)_
+- [ ] Create/use proper interfaces for complex data structures currently typed as `any`. -> _(Partial progress)_
+- [ ] Implement type guards where necessary for runtime validation
+
+Task 18: Shared Types & Validation:
+
+- [ ] Create/consolidate shared type definitions (e.g., for D3 selections, event handlers). -> _(ShipManagerEvents created)_
+- [ ] Create/consolidate type guard utilities for runtime validation.
+- [ ] Define or identify a standardized `EventEmitter` base class/interface (`TypedEventEmitter` confirmed standard for manager-specific events).
+- [ ] Update all manager classes to implement/use this standard interface.
+- [ ] Add any missing standard event methods to manager classes. -> _(Likely relates to foundational managers)_
+- [ ] Update components and hooks to use the standardized event methods type-safe keys/payloads.
+
+- [x] Task 19: GameManager Legacy API Compatibility
+  - [x] Implement legacy wrapper methods (`dispatchEvent`, `subscribeToGameTime`, `addEventListener`) on `GameManager` to satisfy hook dependencies and eliminate TypeScript errors in `useGameState.ts`.
 
 ## CURRENT STATUS: 3,397 ESLint violations across 142 files
 
@@ -78,32 +226,6 @@ _Following ERROR_CORRECTION.md guidelines:_
 - **Test Verification**: Core functionality maintained
 
 ---
-
-## 2025-01-27 SESSION LOG
-
-### STARTING ERRORS: 3,397 total violations
-
-- [x] ✅ **AutomationVisualization.tsx** (6 violations) - COMPLETED
-
-  - [x] @typescript-eslint/no-empty-function (2) - Fixed with proper TODO comments
-  - [x] @typescript-eslint/no-unsafe-enum-comparison (4) - Fixed by using GlobalRoutineType
-
-- [x] ✅ **TypeSafeConfigDemo.tsx** (12 violations) - COMPLETED
-
-  - [x] @typescript-eslint/no-unsafe-assignment (3) - Fixed with type assertions and schema validation
-  - [x] @typescript-eslint/no-unsafe-member-access (2) - Fixed with schema validation for JSON parsing
-  - [x] @typescript-eslint/no-unsafe-argument (1) - Fixed with validated data types
-  - [x] @typescript-eslint/no-floating-promises (1) - Fixed with void operator and proper error handling
-  - [x] no-console (2) - Replaced with errorLoggingService.logWarn calls
-
-- [x] ✅ **ModuleManagerWrapper.ts** (19 violations) - COMPLETED
-  - [x] @typescript-eslint/no-unsafe-assignment (2) - Fixed with ProtectedEventMethods interface and type guards
-  - [x] @typescript-eslint/no-explicit-any (2) - Removed any casts, used proper type interfaces
-  - [x] @typescript-eslint/no-unsafe-member-access (6) - Fixed with hasProtectedEventMethods type guard
-  - [x] @typescript-eslint/no-unsafe-call (2) - Fixed with type-safe method access
-  - [x] @typescript-eslint/no-unsafe-return (1) - Fixed with proper return types
-  - [x] @typescript-eslint/no-empty-function (2) - Fixed with proper TODO comments
-  - [x] no-console (5) - Replaced with errorLoggingService.logError/logWarn calls
 
 ### CURRENT TARGET: APIService.ts (13 violations)
 

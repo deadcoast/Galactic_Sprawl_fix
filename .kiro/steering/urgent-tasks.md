@@ -1,3 +1,9 @@
+---
+inclusion: keyPhrase
+description: Urgent Tasks, Priority
+globs: **/*urgent-tasks
+---
+
 # Post-Audit Report: Codebase Reconciliation
 
 **Date:** 2025-12-10
@@ -18,14 +24,14 @@ This audit successfully reconciled integration debt accumulated over approximate
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 1: Reconnaissance | ✅ Complete | Full codebase inventory and gap analysis |
-| Phase 2: Reconciliation Plan | ✅ Complete | Created detailed fix roadmap |
-| Phase 3.1: UI Exports | ✅ Complete | Fixed 28 broken component exports |
-| Phase 3.2: ModuleEventBus | ✅ Complete | Added bridge to canonical implementation |
-| Phase 3.3: ServiceRegistry | ✅ Complete | Added cross-references and re-exports |
-| Phase 3.4: useModuleEvents | ✅ Complete | Added deprecation notice and re-exports |
-| Phase 3.5: TODO Placeholders | ✅ Complete | Implemented 3 placeholder functions |
-| Phase 4: Verification | ✅ Complete | TypeScript compilation passes |
+| Phase 1: Reconnaissance | ✅ | Full codebase inventory and gap analysis |
+| Phase 2: Reconciliation Plan | ✅ | Created detailed fix roadmap |
+| Phase 3.1: UI Exports | ✅ | Fixed 28 broken component exports |
+| Phase 3.2: ModuleEventBus | ✅ | Added bridge to canonical implementation |
+| Phase 3.3: ServiceRegistry | ✅ | Added cross-references and re-exports |
+| Phase 3.4: useModuleEvents | ✅ | Added deprecation notice and re-exports |
+| Phase 3.5: TODO Placeholders | ✅ | Implemented 3 placeholder functions |
+| Phase 4: Verification | ✅ | TypeScript compilation passes |
 
 ## Files Created (New)
 
@@ -168,6 +174,8 @@ private createFallbackSubscription<E extends BaseEvent>(eventType: string, handl
 | ServiceRegistry | `lib/registry/ServiceRegistry.ts` | Other registries re-export as `unifiedServiceRegistry` |
 | useModuleEvents | `hooks/modules/useModuleEvents.ts` | Simple version re-exports enhanced hooks |
 
+## Next Tasks
+
 ## Remaining Technical Debt
 
 These items were identified but not addressed (out of scope for this audit):
@@ -177,22 +185,13 @@ These items were identified but not addressed (out of scope for this audit):
 3. **Test type definitions** - Missing `@testing-library/jest-dom` and `vitest/globals`
 4. **Placeholder components** - Alert, Spinner, Progress, etc. need full implementation
 
-## Recommendations
-
-1. **Short-term**: Install missing test type definitions
-2. **Medium-term**: Resolve circular dependencies using barrel files
-3. **Long-term**: Migrate all code to use canonical implementations, then deprecate wrappers
-
-## Compliance Verification
-
-- [x] No code deleted
-- [x] No code removed
-- [x] No code commented out
-- [x] All changes additive only
-- [x] All duplicate files preserved
-- [x] Bridge/wrapper pattern used for consolidation
-- [x] TypeScript compilation passes
-
 ---
 
-*Generated as part of STRICT PRESERVATION MODE codebase audit*
+## Goal
+
+- [ ] Migrate all code to use canonical implementations, then deprecate wrappers
+
+### Requirements
+
+- [ ] Install missing test type definitions
+- [ ] Resolve circular dependencies using barrel files
