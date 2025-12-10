@@ -6,7 +6,7 @@ import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { getResourceDisplayName } from '../../../utils/resources/resourceUtils';
 import { ResourceIcon } from './ResourceIcon';
 
-interface ResourceDisplayProps {
+export interface ResourceDisplayProps {
   /**
    * Type of resource to display
    */

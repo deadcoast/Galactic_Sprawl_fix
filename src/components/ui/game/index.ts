@@ -14,8 +14,8 @@ export { ShipDisplay } from './ShipDisplay';
 // Export types
 export type { MiniMapStar, ViewportConfig } from './MiniMap';
 
-// Re-export TechTree from parent directory
-export { TechTree } from '../TechTree';
+// Re-export TechTree from parent directory (default export)
+export { default as TechTree } from '../TechTree';
 
 // Placeholder AlertPanel Component
 // TODO: Implement full AlertPanel functionality

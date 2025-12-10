@@ -51,14 +51,13 @@ export interface Fleet {
   direction: number;
 }
 
-declare module '../../managers/combat/CombatManager' {
-  export interface CombatManager {
-    getFleetStatus: (fleetId: string) => Fleet | undefined;
-    getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
-    getThreatsInRange: (position: { x: number; y: number }, range: number) => Threat[];
-    moveUnit: (unitId: string, position: { x: number; y: number }) => boolean;
-  }
-}
+// Module augmentation removed - methods are now implemented in combatManager.ts
+// Import types from the combat manager
+import type {
+  Fleet as CombatFleet,
+  Threat as CombatThreat,
+  FleetCombatUnit,
+} from '../../managers/combat/combatManager';
 
 interface FleetFormation {
   type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';

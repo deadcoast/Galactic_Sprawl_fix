@@ -47,6 +47,65 @@ export interface CombatWeapon {
   lastFired?: number;
 }
 
+// ====================================================================
+// Fleet and Threat Types for useFleetAI Integration
+// ====================================================================
+
+/**
+ * Fleet-compatible combat unit interface
+ * Used by useFleetAI for fleet-based operations
+ */
+export interface FleetCombatUnit {
+  id: string;
+  faction: string;
+  type:
+    | 'spitflare'
+    | 'starSchooner'
+    | 'orionFrigate'
+    | 'harbringerGalleon'
+    | 'midwayCarrier'
+    | 'motherEarthRevenge';
+  tier: 1 | 2 | 3;
+  position: { x: number; y: number };
+  status: 'idle' | 'patrolling' | 'engaging' | 'returning' | 'damaged' | 'retreating' | 'disabled';
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  weapons: {
+    id: string;
+    type: 'machineGun' | 'gaussCannon' | 'railGun' | 'mgss' | 'rockets';
+    range: number;
+    damage: number;
+    cooldown: number;
+    status: 'ready' | 'charging' | 'cooling';
+  }[];
+  specialAbilities?: {
+    name: string;
+    description: string;
+    cooldown: number;
+    active: boolean;
+  }[];
+}
+
+/**
+ * Threat interface for useFleetAI
+ */
+export interface Threat {
+  id: string;
+  position: { x: number; y: number };
+  severity: 'low' | 'medium' | 'high';
+}
+
+/**
+ * Fleet interface for useFleetAI
+ */
+export interface Fleet {
+  id: string;
+  units: FleetCombatUnit[];
+  direction: number;
+}
+
 /**
  * @context: combat-system, manager-registry
  * Combat manager class that uses standardized types and events
@@ -409,6 +468,194 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     });
 
     return true;
+  }
+
+  // ====================================================================
+  // Fleet and Threat Management Methods for useFleetAI Integration
+  // ====================================================================
+
+  /**
+   * Fleet storage for fleet-based operations
+   */
+  private fleets = new Map<string, Fleet>();
+
+  /**
+   * Get the status of a fleet
+   * @param fleetId The ID of the fleet
+   * @returns The fleet object or undefined if not found
+   */
+  public getFleetStatus(fleetId: string): Fleet | undefined {
+    // First check if fleet exists in fleet storage
+    if (this.fleets.has(fleetId)) {
+      return this.fleets.get(fleetId);
+    }
+
+    // If not, try to construct a fleet from units with matching faction
+    const units = this.getAllUnits().filter(unit => unit.faction === fleetId);
+    if (units.length > 0) {
+      // Calculate average direction from unit positions
+      let avgDirection = 0;
+      if (units.length > 1) {
+        const center = this.calculateCenter(units.map(u => u.position));
+        avgDirection = Math.atan2(
+          units[0].position.y - center.y,
+          units[0].position.x - center.x
+        ) * (180 / Math.PI);
+      }
+
+      return {
+        id: fleetId,
+        units: units.map(u => this.convertToFleetCombatUnit(u)),
+        direction: avgDirection,
+      };
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Get threats within range of a position
+   * Threats are enemy units that could pose danger to a fleet
+   * @param position The position to check from
+   * @param range The range to check
+   * @returns Array of threats within range
+   */
+  public getThreatsInRange(position: Position, range: number): Threat[] {
+    const threats: Threat[] = [];
+    const units = this.getUnitsInRange(position, range);
+
+    for (const unit of units) {
+      // Skip friendly units (player faction)
+      if (unit.faction === 'player' || unit.faction === 'ally') {
+        continue;
+      }
+
+      // Calculate distance for threat severity
+      const distance = Math.sqrt(
+        Math.pow(unit.position.x - position.x, 2) +
+        Math.pow(unit.position.y - position.y, 2)
+      );
+
+      // Calculate threat severity based on distance and unit health
+      let severity: 'low' | 'medium' | 'high' = 'low';
+      const healthPercent = unit.stats.health / unit.stats.maxHealth;
+
+      if (distance < range * 0.3 && healthPercent > 0.5) {
+        severity = 'high';
+      } else if (distance < range * 0.6 || healthPercent > 0.7) {
+        severity = 'medium';
+      }
+
+      threats.push({
+        id: unit.id,
+        position: { x: unit.position.x, y: unit.position.y },
+        severity,
+      });
+    }
+
+    return threats;
+  }
+
+  /**
+   * Register a fleet
+   * @param fleet The fleet to register
+   */
+  public registerFleet(fleet: Fleet): void {
+    this.fleets.set(fleet.id, fleet);
+  }
+
+  /**
+   * Unregister a fleet
+   * @param fleetId The ID of the fleet to unregister
+   */
+  public unregisterFleet(fleetId: string): void {
+    this.fleets.delete(fleetId);
+  }
+
+  /**
+   * Calculate the center position of a set of positions
+   */
+  private calculateCenter(positions: Position[]): Position {
+    if (positions.length === 0) {
+      return { x: 0, y: 0 };
+    }
+    const sum = positions.reduce(
+      (acc, pos) => ({ x: acc.x + pos.x, y: acc.y + pos.y }),
+      { x: 0, y: 0 }
+    );
+    return {
+      x: sum.x / positions.length,
+      y: sum.y / positions.length,
+    };
+  }
+
+  /**
+   * Convert internal CombatUnit to Fleet-compatible CombatUnit
+   */
+  private convertToFleetCombatUnit(unit: CombatUnit): FleetCombatUnit {
+    return {
+      id: unit.id,
+      faction: unit.faction,
+      type: this.mapUnitType(unit.type),
+      tier: this.determineTier(unit),
+      position: { x: unit.position.x, y: unit.position.y },
+      status: this.mapUnitStatus(unit.status),
+      health: unit.stats.health,
+      maxHealth: unit.stats.maxHealth,
+      shield: unit.stats.shield,
+      maxShield: unit.stats.maxShield,
+      weapons: unit.weapons.map(w => ({
+        id: w.id,
+        type: this.mapWeaponType(w.type),
+        range: w.range,
+        damage: w.damage,
+        cooldown: w.cooldown,
+        status: w.status,
+      })),
+    };
+  }
+
+  private mapUnitType(type: string): FleetCombatUnit['type'] {
+    const typeMap: Record<string, FleetCombatUnit['type']> = {
+      'fighter': 'spitflare',
+      'frigate': 'orionFrigate',
+      'galleon': 'harbringerGalleon',
+      'carrier': 'midwayCarrier',
+      'schooner': 'starSchooner',
+    };
+    return typeMap[type] || 'spitflare';
+  }
+
+  private mapUnitStatus(status: CombatUnitStatus): FleetCombatUnit['status'] {
+    const statusMap: Record<CombatUnitStatus, FleetCombatUnit['status']> = {
+      'idle': 'idle',
+      'moving': 'patrolling',
+      'attacking': 'engaging',
+      'defending': 'patrolling',
+      'retreating': 'retreating',
+      'disabled': 'disabled',
+      'destroyed': 'disabled',
+      'damaged': 'damaged',
+    };
+    return statusMap[status] || 'idle';
+  }
+
+  private mapWeaponType(type: string): FleetCombatUnit['weapons'][0]['type'] {
+    const weaponMap: Record<string, FleetCombatUnit['weapons'][0]['type']> = {
+      'laser': 'gaussCannon',
+      'missile': 'rockets',
+      'cannon': 'railGun',
+      'machinegun': 'machineGun',
+    };
+    return weaponMap[type.toLowerCase()] || 'machineGun';
+  }
+
+  private determineTier(unit: CombatUnit): 1 | 2 | 3 {
+    // Determine tier based on unit stats
+    const totalStats = unit.stats.maxHealth + unit.stats.maxShield;
+    if (totalStats > 400) return 3;
+    if (totalStats > 200) return 2;
+    return 1;
   }
 
   /**

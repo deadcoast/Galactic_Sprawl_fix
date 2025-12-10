@@ -20,9 +20,8 @@ import { EventType } from '../../types/events/EventTypes';
 
 // Import canonical event bus for bridging
 // Note: Using dynamic import pattern to avoid circular dependency
-let canonicalEventBus: {
-  emit: (event: unknown) => void;
-} | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let canonicalEventBus: { emit: (event: any) => void } | null = null;
 
 // Lazy load the canonical event bus to avoid circular dependencies
 const getCanonicalEventBus = async () => {
