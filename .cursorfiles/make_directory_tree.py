@@ -10,8 +10,8 @@ Author: Space Muck Team (simplified by ChatGPT)
 """
 
 import sys
-from pathlib import Path
 from fnmatch import fnmatch
+from pathlib import Path
 
 # ---------- optional dependency handling ----------
 try:
@@ -38,9 +38,7 @@ OUTPUT_FILENAME = "directory_tree.txt"
 def should_ignore(path: Path) -> bool:
     """Return True if *path* should be skipped."""
     name = path.name
-    return any(
-        pattern == name or fnmatch(name, pattern) for pattern in DEFAULT_IGNORE
-    )
+    return any(pattern == name or fnmatch(name, pattern) for pattern in DEFAULT_IGNORE)
 
 
 def add_entries(directory: Path, branch: Tree) -> None:

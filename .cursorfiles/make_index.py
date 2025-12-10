@@ -22,8 +22,8 @@ at the top – edit as needed.
 Author: Space Muck Team  (updated by ChatGPT 2025-06-05)
 """
 
-from pathlib import Path
 from fnmatch import fnmatch
+from pathlib import Path
 
 # ── CONFIG ─────────────────────────────────────────────────────────────────────
 IGNORE_DIRS = {"__pycache__", ".git", ".hg", ".svn"}
@@ -61,11 +61,19 @@ def build_index(parent: Path, depth: int, lines: list[str]) -> None:
     # 1️⃣ Collect children, skipping ignored names
     try:
         dirs = sorted(
-            [p for p in parent.iterdir() if p.is_dir() and not should_skip(p.name, IGNORE_DIRS)],
+            [
+                p
+                for p in parent.iterdir()
+                if p.is_dir() and not should_skip(p.name, IGNORE_DIRS)
+            ],
             key=lambda p: p.name.lower(),
         )
         files = sorted(
-            [p for p in parent.iterdir() if p.is_file() and not should_skip(p.name, IGNORE_FILES)],
+            [
+                p
+                for p in parent.iterdir()
+                if p.is_file() and not should_skip(p.name, IGNORE_FILES)
+            ],
             key=lambda p: p.name.lower(),
         )
     except PermissionError:
@@ -83,9 +91,9 @@ def build_index(parent: Path, depth: int, lines: list[str]) -> None:
 
 def main() -> None:
     root = Path(__file__).resolve().parent  # never wander outside this folder
-    lines = [f"[{root.name}]"]             # root line, no dash
+    lines = [f"[{root.name}]"]  # root line, no dash
 
-    build_index(root, 0, lines)            # depth 0 = root itself
+    build_index(root, 0, lines)  # depth 0 = root itself
 
     out_path = root / OUTPUT_NAME
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
