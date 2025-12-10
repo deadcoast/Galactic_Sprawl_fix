@@ -127,6 +127,41 @@ export class OfficerManager
   }
 
   /**
+   * Generate a deterministic portrait identifier for an officer
+   * The portrait ID encodes role, specialization, and a unique variant for visual diversity
+   * Format: portrait_{role}_{specialization}_{variant}
+   *
+   * This can be used by the UI layer to map to actual portrait assets or generate
+   * procedural portraits based on these parameters.
+   *
+   * @param officerId Unique officer ID for deterministic variant selection
+   * @param role The officer's role
+   * @param specialization The officer's specialization
+   * @returns A portrait identifier string
+   */
+  private generatePortrait(
+    officerId: string,
+    role: OfficerRole,
+    specialization: OfficerSpecialization
+  ): string {
+    // Generate a deterministic variant number from the officer ID
+    // This ensures the same officer always gets the same portrait
+    let hash = 0;
+    for (let i = 0; i < officerId.length; i++) {
+      const char = officerId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    const variant = Math.abs(hash % 10) + 1; // Variants 1-10
+
+    // Normalize role and specialization for portrait ID
+    const normalizedRole = role.toLowerCase().replace(/\s+/g, '_');
+    const normalizedSpec = specialization.toLowerCase().replace(/\s+/g, '_');
+
+    return `portrait_${normalizedRole}_${normalizedSpec}_v${variant}`;
+  }
+
+  /**
    * Apply trait effects to an officer's stats
    */
   private applyTraitEffects(officer: Officer): void {
@@ -252,7 +287,7 @@ export class OfficerManager
     const officer: Officer = {
       id,
       name: `Officer-${id.substring(0, 4)}`, // Temporary name generation
-      portrait: '', // TODO: Implement portrait generation
+      portrait: this.generatePortrait(id, role, specialization), // Generated portrait identifier
       level: 1,
       xp: 0,
       nextLevelXp: 100,

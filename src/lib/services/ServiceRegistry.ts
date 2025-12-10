@@ -1,4 +1,24 @@
+/**
+ * @file ServiceRegistry.ts (lib/services)
+ *
+ * Service-focused registry with factory pattern for dependency injection.
+ *
+ * NOTE: Multiple ServiceRegistry implementations exist in this codebase:
+ * - lib/managers/ServiceRegistry.ts - Manager-focused, exports serviceRegistry singleton
+ * - lib/registry/ServiceRegistry.ts - Unified registry for both services and managers
+ * - lib/services/ServiceRegistry.ts - This file, service-focused with factory pattern
+ *
+ * Consider using the unified registry in lib/registry/ServiceRegistry.ts for new code
+ * as it supports both services and managers with proper dependency ordering.
+ *
+ * @see ../registry/ServiceRegistry.ts - Unified implementation
+ * @see ../managers/ServiceRegistry.ts - Manager-focused implementation
+ */
+
 import { BaseService, ServiceMetadata } from './BaseService';
+
+// Re-export unified registry for convenience
+export { serviceRegistry as unifiedServiceRegistry } from '../registry/ServiceRegistry';
 
 /**
  * Configuration for a service registration
