@@ -1,5 +1,11 @@
 // Use type-only import to break circular dependency with Chart.tsx
-import type { ChartAxes, ChartData, ChartOptions, ChartRenderer, ChartType } from '../Chart';
+import type {
+  ChartAxes,
+  ChartData,
+  ChartOptions,
+  ChartRenderer,
+  ChartType,
+} from "../Chart";
 
 interface ChartArea {
   top: number;
@@ -11,7 +17,7 @@ interface ChartArea {
 interface Scale {
   min: number;
   max: number;
-  type?: 'linear' | 'time';
+  type?: "linear" | "time";
 }
 
 interface ChartScales {
@@ -25,16 +31,16 @@ export class SVGRenderer implements ChartRenderer {
   private interactiveElements: SVGElement[] = [];
   private theme = {
     light: {
-      backgroundColor: '#ffffff',
-      textColor: '#333333',
-      axisColor: '#cccccc',
-      gridColor: '#eeeeee',
+      backgroundColor: "#ffffff",
+      textColor: "#333333",
+      axisColor: "#cccccc",
+      gridColor: "#eeeeee",
     },
     dark: {
-      backgroundColor: '#333333',
-      textColor: '#ffffff',
-      axisColor: '#666666',
-      gridColor: '#444444',
+      backgroundColor: "#333333",
+      textColor: "#ffffff",
+      axisColor: "#666666",
+      gridColor: "#444444",
     },
   };
 
@@ -47,37 +53,46 @@ export class SVGRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     // Convert theme 'auto' to 'light' for SVG renderer
     const svgOptions = {
       ...options,
-      theme: options?.theme === 'auto' ? 'light' : options?.theme ?? 'light',
+      theme: options?.theme === "auto" ? "light" : (options?.theme ?? "light"),
     };
 
-    this.containerWidth = typeof svgOptions.width === 'number' ? svgOptions.width : 300;
-    this.containerHeight = typeof svgOptions.height === 'number' ? svgOptions.height : 200;
+    this.containerWidth =
+      typeof svgOptions.width === "number" ? svgOptions.width : 300;
+    this.containerHeight =
+      typeof svgOptions.height === "number" ? svgOptions.height : 200;
 
     // Clear existing content
-    container.innerHTML = '';
+    container.innerHTML = "";
     this.interactiveElements = [];
 
     // Create SVG element
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', this.containerWidth.toString());
-    svg.setAttribute('height', this.containerHeight.toString());
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", this.containerWidth.toString());
+    svg.setAttribute("height", this.containerHeight.toString());
     container.appendChild(svg);
 
     // Create chart group
-    const chartGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const chartGroup = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "g",
+    );
     svg.appendChild(chartGroup);
 
     // Set background color
-    const themeColors = svgOptions.theme === 'dark' ? this.theme.dark : this.theme.light;
-    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    background.setAttribute('width', this.containerWidth.toString());
-    background.setAttribute('height', this.containerHeight.toString());
-    background.setAttribute('fill', themeColors.backgroundColor);
+    const themeColors =
+      svgOptions.theme === "dark" ? this.theme.dark : this.theme.light;
+    const background = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect",
+    );
+    background.setAttribute("width", this.containerWidth.toString());
+    background.setAttribute("height", this.containerHeight.toString());
+    background.setAttribute("fill", themeColors.backgroundColor);
     chartGroup.appendChild(background);
 
     // Calculate chart area
@@ -95,10 +110,10 @@ export class SVGRenderer implements ChartRenderer {
 
     // Render data based on chart type
     switch (type) {
-      case 'line':
+      case "line":
         this.renderLineChart(data, svgOptions, chartArea, chartGroup);
         break;
-      case 'scatter':
+      case "scatter":
         this.renderScatterChart(data, svgOptions, chartArea, chartGroup);
         break;
       default:
@@ -110,7 +125,7 @@ export class SVGRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     this.render(container, data, options, type);
   }
@@ -128,21 +143,25 @@ export class SVGRenderer implements ChartRenderer {
   private calculateScales(
     data: ChartData,
     chartArea: ChartArea,
-    xAxis: ChartAxes['x'],
-    yAxis: ChartAxes['y']
+    xAxis: ChartAxes["x"],
+    yAxis: ChartAxes["y"],
   ): ChartScales {
     if (!data?.datasets || data?.datasets.length === 0) {
       return {
-        x: { min: 0, max: 1, type: xAxis.type === 'time' ? 'time' : 'linear' },
-        y: { min: 0, max: 1, type: yAxis.type === 'log' ? 'linear' : yAxis.type || 'linear' },
+        x: { min: 0, max: 1, type: xAxis.type === "time" ? "time" : "linear" },
+        y: {
+          min: 0,
+          max: 1,
+          type: yAxis.type === "log" ? "linear" : yAxis.type || "linear",
+        },
       };
     }
 
     const xValues: number[] = [];
     const yValues: number[] = [];
 
-    data?.datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    data?.datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         const x = this.normalizeValue(point.x);
         const { y } = point;
         if (Number.isFinite(x) && Number.isFinite(y)) {
@@ -154,8 +173,8 @@ export class SVGRenderer implements ChartRenderer {
 
     if (xValues.length === 0 || yValues.length === 0) {
       return {
-        x: { min: 0, max: 1, type: xAxis.type === 'time' ? 'time' : 'linear' },
-        y: { min: 0, max: 1, type: 'linear' },
+        x: { min: 0, max: 1, type: xAxis.type === "time" ? "time" : "linear" },
+        y: { min: 0, max: 1, type: "linear" },
       };
     }
 
@@ -168,12 +187,12 @@ export class SVGRenderer implements ChartRenderer {
       x: {
         min: xMin,
         max: xMax,
-        type: xAxis.type === 'time' ? 'time' : 'linear',
+        type: xAxis.type === "time" ? "time" : "linear",
       },
       y: {
         min: yMin,
         max: yMax,
-        type: 'linear',
+        type: "linear",
       },
     };
   }
@@ -183,9 +202,13 @@ export class SVGRenderer implements ChartRenderer {
     scale: Scale,
     start: number,
     end: number,
-    isVertical = false
+    isVertical = false,
   ): number {
-    if (!Number.isFinite(value) || !Number.isFinite(scale.min) || !Number.isFinite(scale.max)) {
+    if (
+      !Number.isFinite(value) ||
+      !Number.isFinite(scale.min) ||
+      !Number.isFinite(scale.max)
+    ) {
       return 0;
     }
 
@@ -207,11 +230,11 @@ export class SVGRenderer implements ChartRenderer {
     if (value instanceof Date) {
       return value.getTime();
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       const num = parseFloat(value);
       return isNaN(num) ? 0 : num;
     }
-    if (typeof value === 'number' && !isNaN(value)) {
+    if (typeof value === "number" && !isNaN(value)) {
       return value;
     }
     return 0;
@@ -224,7 +247,7 @@ export class SVGRenderer implements ChartRenderer {
     data: ChartData,
     options: ChartOptions,
     chartArea: ChartArea,
-    chartGroup: SVGGElement
+    chartGroup: SVGGElement,
   ): void {
     const axes = options?.axes;
     if (!axes?.x || !axes?.y) {
@@ -236,21 +259,31 @@ export class SVGRenderer implements ChartRenderer {
       return;
     }
 
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
 
     // Draw each dataset
     data?.datasets.forEach((dataset, datasetIndex) => {
-      const datasetGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      datasetGroup.setAttribute('class', `dataset-${datasetIndex}`);
-      datasetGroup.setAttribute('fill', 'none');
-      datasetGroup.setAttribute('stroke', dataset.color ?? this.getDefaultColor(datasetIndex));
-      datasetGroup.setAttribute('stroke-width', '2');
-      datasetGroup.setAttribute('stroke-linecap', 'round');
-      datasetGroup.setAttribute('stroke-linejoin', 'round');
+      const datasetGroup = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "g",
+      );
+      datasetGroup.setAttribute("class", `dataset-${datasetIndex}`);
+      datasetGroup.setAttribute("fill", "none");
+      datasetGroup.setAttribute(
+        "stroke",
+        dataset.color ?? this.getDefaultColor(datasetIndex),
+      );
+      datasetGroup.setAttribute("stroke-width", "2");
+      datasetGroup.setAttribute("stroke-linecap", "round");
+      datasetGroup.setAttribute("stroke-linejoin", "round");
 
       // Add shadow filter for better visibility based on theme
-      if (options?.theme === 'dark') {
-        datasetGroup.setAttribute('filter', `drop-shadow(0 0 2px ${themeColors.textColor})`);
+      if (options?.theme === "dark") {
+        datasetGroup.setAttribute(
+          "filter",
+          `drop-shadow(0 0 2px ${themeColors.textColor})`,
+        );
       }
 
       // Add the dataset group to the chart group
@@ -259,13 +292,24 @@ export class SVGRenderer implements ChartRenderer {
       const points: { x: number; y: number }[] = [];
 
       // Map data points to SVG coordinates
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
         if (Number.isFinite(x) && Number.isFinite(y)) {
           points.push({
-            x: this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right),
-            y: this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true),
+            x: this.mapValueToPixel(
+              x,
+              scales.x,
+              chartArea.left,
+              chartArea.right,
+            ),
+            y: this.mapValueToPixel(
+              y,
+              scales.y,
+              chartArea.bottom,
+              chartArea.top,
+              true,
+            ),
           });
         }
       });
@@ -275,17 +319,23 @@ export class SVGRenderer implements ChartRenderer {
       }
 
       // Create the line path
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path",
+      );
       let pathData = `M ${points[0].x} ${points[0].y}`;
 
       for (let i = 1; i < points.length; i++) {
         pathData += ` L ${points[i].x} ${points[i].y}`;
       }
 
-      path.setAttribute('d', pathData);
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', dataset.color ?? this.getDefaultColor(datasetIndex));
-      path.setAttribute('stroke-width', '2');
+      path.setAttribute("d", pathData);
+      path.setAttribute("fill", "none");
+      path.setAttribute(
+        "stroke",
+        dataset.color ?? this.getDefaultColor(datasetIndex),
+      );
+      path.setAttribute("stroke-width", "2");
 
       datasetGroup.appendChild(path);
     });
@@ -298,7 +348,7 @@ export class SVGRenderer implements ChartRenderer {
     data: ChartData,
     options: ChartOptions,
     chartArea: ChartArea,
-    chartGroup: SVGGElement
+    chartGroup: SVGGElement,
   ): void {
     const axes = options?.axes;
     if (!axes?.x || !axes?.y) {
@@ -310,12 +360,16 @@ export class SVGRenderer implements ChartRenderer {
       return;
     }
 
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
 
     // Draw each dataset
     data?.datasets.forEach((dataset, datasetIndex) => {
-      const datasetGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      datasetGroup.setAttribute('class', `dataset-${datasetIndex}`);
+      const datasetGroup = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "g",
+      );
+      datasetGroup.setAttribute("class", `dataset-${datasetIndex}`);
 
       // Add the dataset group to the chart group
       chartGroup.appendChild(datasetGroup);
@@ -332,17 +386,31 @@ export class SVGRenderer implements ChartRenderer {
           return;
         }
 
-        const cx = this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right);
-        const cy = this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true);
+        const cx = this.mapValueToPixel(
+          x,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        );
+        const cy = this.mapValueToPixel(
+          y,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
 
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', String(cx));
-        circle.setAttribute('cy', String(cy));
-        circle.setAttribute('r', '4');
-        circle.setAttribute('fill', pointColor);
+        const circle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle",
+        );
+        circle.setAttribute("cx", String(cx));
+        circle.setAttribute("cy", String(cy));
+        circle.setAttribute("r", "4");
+        circle.setAttribute("fill", pointColor);
         // Add a stroke with the pointOutline color for better visibility
-        circle.setAttribute('stroke', pointOutline);
-        circle.setAttribute('stroke-width', '1');
+        circle.setAttribute("stroke", pointOutline);
+        circle.setAttribute("stroke-width", "1");
 
         // Store original data for tooltips
         circle.dataset.index = String(pointIndex);
@@ -363,7 +431,7 @@ export class SVGRenderer implements ChartRenderer {
     data: ChartData,
     options: ChartOptions,
     chartArea: ChartArea,
-    chartGroup: SVGGElement
+    chartGroup: SVGGElement,
   ): void {
     const axes = options?.axes;
     if (!axes?.x || !axes?.y) {
@@ -375,11 +443,15 @@ export class SVGRenderer implements ChartRenderer {
       return;
     }
 
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
 
     // Create a group for axes
-    const axesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    axesGroup.setAttribute('class', 'axes');
+    const axesGroup = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "g",
+    );
+    axesGroup.setAttribute("class", "axes");
     chartGroup.appendChild(axesGroup);
 
     // Draw x-axis ticks and labels
@@ -392,30 +464,41 @@ export class SVGRenderer implements ChartRenderer {
         continue;
       }
 
-      const x = this.mapValueToPixel(value, scales.x, chartArea.left, chartArea.right);
+      const x = this.mapValueToPixel(
+        value,
+        scales.x,
+        chartArea.left,
+        chartArea.right,
+      );
       const y = chartArea.bottom;
 
       // Draw tick line
-      const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      tick.setAttribute('x1', String(x));
-      tick.setAttribute('y1', String(y));
-      tick.setAttribute('x2', String(x));
-      tick.setAttribute('y2', String(y + 6));
-      tick.setAttribute('stroke', themeColors.axisColor || '#000');
+      const tick = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line",
+      );
+      tick.setAttribute("x1", String(x));
+      tick.setAttribute("y1", String(y));
+      tick.setAttribute("x2", String(x));
+      tick.setAttribute("y2", String(y + 6));
+      tick.setAttribute("stroke", themeColors.axisColor || "#000");
       axesGroup.appendChild(tick);
 
       // Draw label
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', String(x));
-      label.setAttribute('y', String(y + 20));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('fill', themeColors.textColor || '#000');
-      label.setAttribute('font-size', '12px');
+      const label = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text",
+      );
+      label.setAttribute("x", String(x));
+      label.setAttribute("y", String(y + 20));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", themeColors.textColor || "#000");
+      label.setAttribute("font-size", "12px");
 
       let tickLabel = String(value);
       if (axes.x.tickFormat) {
         tickLabel = axes.x.tickFormat(value);
-      } else if (axes.x.type === 'time') {
+      } else if (axes.x.type === "time") {
         const date = new Date(value);
         if (!isNaN(date.getTime())) {
           tickLabel = date.toLocaleDateString();
@@ -437,25 +520,37 @@ export class SVGRenderer implements ChartRenderer {
       }
 
       const x = chartArea.left;
-      const y = this.mapValueToPixel(value, scales.y, chartArea.bottom, chartArea.top, true);
+      const y = this.mapValueToPixel(
+        value,
+        scales.y,
+        chartArea.bottom,
+        chartArea.top,
+        true,
+      );
 
       // Draw tick line
-      const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      tick.setAttribute('x1', String(x));
-      tick.setAttribute('y1', String(y));
-      tick.setAttribute('x2', String(x - 6));
-      tick.setAttribute('y2', String(y));
-      tick.setAttribute('stroke', themeColors.axisColor || '#000');
+      const tick = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line",
+      );
+      tick.setAttribute("x1", String(x));
+      tick.setAttribute("y1", String(y));
+      tick.setAttribute("x2", String(x - 6));
+      tick.setAttribute("y2", String(y));
+      tick.setAttribute("stroke", themeColors.axisColor || "#000");
       axesGroup.appendChild(tick);
 
       // Draw label
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', String(x - 10));
-      label.setAttribute('y', String(y));
-      label.setAttribute('text-anchor', 'end');
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('fill', themeColors.textColor || '#000');
-      label.setAttribute('font-size', '12px');
+      const label = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text",
+      );
+      label.setAttribute("x", String(x - 10));
+      label.setAttribute("y", String(y));
+      label.setAttribute("text-anchor", "end");
+      label.setAttribute("dominant-baseline", "middle");
+      label.setAttribute("fill", themeColors.textColor || "#000");
+      label.setAttribute("font-size", "12px");
 
       let tickLabel = String(value);
       if (axes.y.tickFormat) {
@@ -467,46 +562,58 @@ export class SVGRenderer implements ChartRenderer {
     }
 
     // Draw axis lines
-    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    xAxis.setAttribute('x1', String(chartArea.left));
-    xAxis.setAttribute('y1', String(chartArea.bottom));
-    xAxis.setAttribute('x2', String(chartArea.right));
-    xAxis.setAttribute('y2', String(chartArea.bottom));
-    xAxis.setAttribute('stroke', themeColors.axisColor || '#000');
+    const xAxis = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line",
+    );
+    xAxis.setAttribute("x1", String(chartArea.left));
+    xAxis.setAttribute("y1", String(chartArea.bottom));
+    xAxis.setAttribute("x2", String(chartArea.right));
+    xAxis.setAttribute("y2", String(chartArea.bottom));
+    xAxis.setAttribute("stroke", themeColors.axisColor || "#000");
     axesGroup.appendChild(xAxis);
 
-    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    yAxis.setAttribute('x1', String(chartArea.left));
-    yAxis.setAttribute('y1', String(chartArea.top));
-    yAxis.setAttribute('x2', String(chartArea.left));
-    yAxis.setAttribute('y2', String(chartArea.bottom));
-    yAxis.setAttribute('stroke', themeColors.axisColor || '#000');
+    const yAxis = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line",
+    );
+    yAxis.setAttribute("x1", String(chartArea.left));
+    yAxis.setAttribute("y1", String(chartArea.top));
+    yAxis.setAttribute("x2", String(chartArea.left));
+    yAxis.setAttribute("y2", String(chartArea.bottom));
+    yAxis.setAttribute("stroke", themeColors.axisColor || "#000");
     axesGroup.appendChild(yAxis);
 
     // Draw axis labels if provided
     if (axes.x.label) {
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', String((chartArea.left + chartArea.right) / 2));
-      label.setAttribute('y', String(chartArea.bottom + 40));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('fill', themeColors.textColor || '#000');
-      label.setAttribute('font-size', '14px');
-      label.setAttribute('font-weight', 'bold');
+      const label = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text",
+      );
+      label.setAttribute("x", String((chartArea.left + chartArea.right) / 2));
+      label.setAttribute("y", String(chartArea.bottom + 40));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", themeColors.textColor || "#000");
+      label.setAttribute("font-size", "14px");
+      label.setAttribute("font-weight", "bold");
       label.textContent = axes.x.label;
       axesGroup.appendChild(label);
     }
 
     if (axes.y.label) {
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const label = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text",
+      );
       const x = chartArea.left - 40;
       const y = (chartArea.top + chartArea.bottom) / 2;
-      label.setAttribute('x', String(x));
-      label.setAttribute('y', String(y));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('transform', `rotate(-90, ${x}, ${y})`);
-      label.setAttribute('fill', themeColors.textColor || '#000');
-      label.setAttribute('font-size', '14px');
-      label.setAttribute('font-weight', 'bold');
+      label.setAttribute("x", String(x));
+      label.setAttribute("y", String(y));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("transform", `rotate(-90, ${x}, ${y})`);
+      label.setAttribute("fill", themeColors.textColor || "#000");
+      label.setAttribute("font-size", "14px");
+      label.setAttribute("font-weight", "bold");
       label.textContent = axes.y.label;
       axesGroup.appendChild(label);
     }
@@ -519,15 +626,19 @@ export class SVGRenderer implements ChartRenderer {
     scales: ChartScales,
     chartArea: ChartArea,
     options: ChartOptions,
-    chartGroup: SVGGElement
+    chartGroup: SVGGElement,
   ): void {
-    const xAxis = options?.axes?.x ?? { type: 'linear', grid: true };
-    const yAxis = options?.axes?.y ?? { type: 'linear', grid: true };
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const xAxis = options?.axes?.x ?? { type: "linear", grid: true };
+    const yAxis = options?.axes?.y ?? { type: "linear", grid: true };
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
 
     // Create a group for the grid
-    const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    gridGroup.setAttribute('class', 'grid');
+    const gridGroup = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "g",
+    );
+    gridGroup.setAttribute("class", "grid");
     chartGroup.appendChild(gridGroup);
 
     // Draw x-axis grid lines
@@ -537,15 +648,23 @@ export class SVGRenderer implements ChartRenderer {
 
       for (let i = 0; i < xTickCount; i++) {
         const value = scales.x.min + i * xStep;
-        const x = this.mapValueToPixel(value, scales.x, chartArea.left, chartArea.right);
+        const x = this.mapValueToPixel(
+          value,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        );
 
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x.toString());
-        line.setAttribute('y1', chartArea.top.toString());
-        line.setAttribute('x2', x.toString());
-        line.setAttribute('y2', chartArea.bottom.toString());
-        line.setAttribute('stroke', themeColors.gridColor);
-        line.setAttribute('stroke-width', '0.5');
+        const line = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line",
+        );
+        line.setAttribute("x1", x.toString());
+        line.setAttribute("y1", chartArea.top.toString());
+        line.setAttribute("x2", x.toString());
+        line.setAttribute("y2", chartArea.bottom.toString());
+        line.setAttribute("stroke", themeColors.gridColor);
+        line.setAttribute("stroke-width", "0.5");
 
         gridGroup.appendChild(line);
       }
@@ -558,15 +677,24 @@ export class SVGRenderer implements ChartRenderer {
 
       for (let i = 0; i < yTickCount; i++) {
         const value = scales.y.min + i * yStep;
-        const y = this.mapValueToPixel(value, scales.y, chartArea.bottom, chartArea.top, true);
+        const y = this.mapValueToPixel(
+          value,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
 
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', chartArea.left.toString());
-        line.setAttribute('y1', y.toString());
-        line.setAttribute('x2', chartArea.right.toString());
-        line.setAttribute('y2', y.toString());
-        line.setAttribute('stroke', themeColors.gridColor);
-        line.setAttribute('stroke-width', '0.5');
+        const line = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line",
+        );
+        line.setAttribute("x1", chartArea.left.toString());
+        line.setAttribute("y1", y.toString());
+        line.setAttribute("x2", chartArea.right.toString());
+        line.setAttribute("y2", y.toString());
+        line.setAttribute("stroke", themeColors.gridColor);
+        line.setAttribute("stroke-width", "0.5");
 
         gridGroup.appendChild(line);
       }
@@ -577,21 +705,21 @@ export class SVGRenderer implements ChartRenderer {
    * Get a default color based on index
    */
   private getDefaultColor(index: number): string {
-    const defaultColor = '#4285F4';
-    if (typeof index !== 'number' || !isFinite(index)) {
+    const defaultColor = "#4285F4";
+    if (typeof index !== "number" || !isFinite(index)) {
       return defaultColor;
     }
     const colors = [
-      '#4285F4', // Google Blue
-      '#34A853', // Google Green
-      '#FBBC05', // Google Yellow
-      '#EA4335', // Google Red
-      '#673AB7', // Deep Purple
-      '#3F51B5', // Indigo
-      '#2196F3', // Blue
-      '#03A9F4', // Light Blue
-      '#00BCD4', // Cyan
-      '#009688', // Teal
+      "#4285F4", // Google Blue
+      "#34A853", // Google Green
+      "#FBBC05", // Google Yellow
+      "#EA4335", // Google Red
+      "#673AB7", // Deep Purple
+      "#3F51B5", // Indigo
+      "#2196F3", // Blue
+      "#03A9F4", // Light Blue
+      "#00BCD4", // Cyan
+      "#009688", // Teal
     ];
     return colors[index % colors.length] || defaultColor;
   }

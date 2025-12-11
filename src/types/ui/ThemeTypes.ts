@@ -8,27 +8,27 @@
  * Semantic color names available in the theme
  */
 export enum ThemeColorName {
-  PRIMARY = 'primary',
-  SECONDARY = 'secondary',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  DANGER = 'danger',
-  INFO = 'info',
-  LIGHT = 'light',
-  DARK = 'dark',
-  BACKGROUND = 'background',
-  SURFACE = 'surface',
-  TEXT = 'text',
-  TEXT_SECONDARY = 'textSecondary',
-  BORDER = 'border',
-  HIGHLIGHT = 'highlight',
-  ACCENT = 'accent',
+  PRIMARY = "primary",
+  SECONDARY = "secondary",
+  SUCCESS = "success",
+  WARNING = "warning",
+  DANGER = "danger",
+  INFO = "info",
+  LIGHT = "light",
+  DARK = "dark",
+  BACKGROUND = "background",
+  SURFACE = "surface",
+  TEXT = "text",
+  TEXT_SECONDARY = "textSecondary",
+  BORDER = "border",
+  HIGHLIGHT = "highlight",
+  ACCENT = "accent",
 }
 
 /**
  * Theme mode options (light, dark, or system preference)
  */
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = "light" | "dark" | "system";
 
 /**
  * Theme context value interface
@@ -54,28 +54,28 @@ export interface ThemeContextValue {
  * Valid font size names within the theme
  */
 export enum ThemeFontSizeName {
-  XSMALL = 'xsmall',
-  SMALL = 'small',
-  MEDIUM = 'medium',
-  LARGE = 'large',
-  XLARGE = 'xlarge',
-  XXLARGE = 'xxlarge',
-  DISPLAY1 = 'display1',
-  DISPLAY2 = 'display2',
-  DISPLAY3 = 'display3',
+  XSMALL = "xsmall",
+  SMALL = "small",
+  MEDIUM = "medium",
+  LARGE = "large",
+  XLARGE = "xlarge",
+  XXLARGE = "xxlarge",
+  DISPLAY1 = "display1",
+  DISPLAY2 = "display2",
+  DISPLAY3 = "display3",
 }
 
 /**
  * Valid spacing scale values within the theme
  */
 export enum ThemeSpacingName {
-  NONE = 'none',
-  XSMALL = 'xsmall',
-  SMALL = 'small',
-  MEDIUM = 'medium',
-  LARGE = 'large',
-  XLARGE = 'xlarge',
-  XXLARGE = 'xxlarge',
+  NONE = "none",
+  XSMALL = "xsmall",
+  SMALL = "small",
+  MEDIUM = "medium",
+  LARGE = "large",
+  XLARGE = "xlarge",
+  XXLARGE = "xxlarge",
 }
 
 /**
@@ -104,23 +104,23 @@ export type ThemeSpacing = number | string | ThemeSpacingName;
  * Theme border radius values
  */
 export enum ThemeBorderRadius {
-  NONE = 'none',
-  SMALL = 'small',
-  MEDIUM = 'medium',
-  LARGE = 'large',
-  FULL = 'full',
+  NONE = "none",
+  SMALL = "small",
+  MEDIUM = "medium",
+  LARGE = "large",
+  FULL = "full",
 }
 
 /**
  * Theme breakpoint definitions for responsive design
  */
 export enum ThemeBreakpoint {
-  XS = 'xs',
-  SM = 'sm',
-  MD = 'md',
-  LG = 'lg',
-  XL = 'xl',
-  XXL = 'xxl',
+  XS = "xs",
+  SM = "sm",
+  MD = "md",
+  LG = "lg",
+  XL = "xl",
+  XXL = "xxl",
 }
 
 /**
@@ -128,7 +128,8 @@ export enum ThemeBreakpoint {
  */
 export interface Theme {
   name: string;
-  colors: Record<ThemeColorName, PaletteColor | string> & Record<string, PaletteColor | string | Record<string, string>>;
+  colors: Record<ThemeColorName, PaletteColor | string> &
+    Record<string, PaletteColor | string | Record<string, string>>;
   typography: {
     fontFamily: {
       base: string;
@@ -199,16 +200,19 @@ export interface Theme {
  */
 export function isThemeColorName(value: unknown): value is ThemeColorName {
   return (
-    typeof value === 'string' && Object.values(ThemeColorName).includes(value as ThemeColorName)
+    typeof value === "string" &&
+    Object.values(ThemeColorName).includes(value as ThemeColorName)
   );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeFontSizeName
  */
-export function isThemeFontSizeName(value: unknown): value is ThemeFontSizeName {
+export function isThemeFontSizeName(
+  value: unknown,
+): value is ThemeFontSizeName {
   return (
-    typeof value === 'string' &&
+    typeof value === "string" &&
     Object.values(ThemeFontSizeName).includes(value as ThemeFontSizeName)
   );
 }
@@ -218,16 +222,19 @@ export function isThemeFontSizeName(value: unknown): value is ThemeFontSizeName 
  */
 export function isThemeSpacingName(value: unknown): value is ThemeSpacingName {
   return (
-    typeof value === 'string' && Object.values(ThemeSpacingName).includes(value as ThemeSpacingName)
+    typeof value === "string" &&
+    Object.values(ThemeSpacingName).includes(value as ThemeSpacingName)
   );
 }
 
 /**
  * Type guard for checking if a value is a valid ThemeBorderRadius
  */
-export function isThemeBorderRadius(value: unknown): value is ThemeBorderRadius {
+export function isThemeBorderRadius(
+  value: unknown,
+): value is ThemeBorderRadius {
   return (
-    typeof value === 'string' &&
+    typeof value === "string" &&
     Object.values(ThemeBorderRadius).includes(value as ThemeBorderRadius)
   );
 }
@@ -237,33 +244,40 @@ export function isThemeBorderRadius(value: unknown): value is ThemeBorderRadius 
  */
 export function isThemeBreakpoint(value: unknown): value is ThemeBreakpoint {
   return (
-    typeof value === 'string' && Object.values(ThemeBreakpoint).includes(value as ThemeBreakpoint)
+    typeof value === "string" &&
+    Object.values(ThemeBreakpoint).includes(value as ThemeBreakpoint)
   );
 }
 
 /**
  * Safely extracts a color value from the theme
  */
-export function getThemeColor(theme: Theme, color: ThemeColor, fallback?: string): string {
+export function getThemeColor(
+  theme: Theme,
+  color: ThemeColor,
+  fallback?: string,
+): string {
   if (!color) {
-    return fallback ?? '';
+    return fallback ?? "";
   }
 
   // Handle direct color name
   if (isThemeColorName(color)) {
     const themeColorValue = theme.colors[color];
-    return typeof themeColorValue === 'object' && themeColorValue !== null && 'main' in themeColorValue ? 
-           themeColorValue.main ?? fallback ?? '' : 
-           typeof themeColorValue === 'string' ? 
-           themeColorValue ?? fallback ?? '' : 
-           fallback ?? '';
+    return typeof themeColorValue === "object" &&
+      themeColorValue !== null &&
+      "main" in themeColorValue
+      ? (themeColorValue.main ?? fallback ?? "")
+      : typeof themeColorValue === "string"
+        ? (themeColorValue ?? fallback ?? "")
+        : (fallback ?? "");
   }
 
   // Handle color with intensity (e.g., 'primary.500')
-  const [colorName, intensity] = color.split('.');
-  if (colorName && intensity && typeof theme.colors[colorName] === 'object') {
+  const [colorName, intensity] = color.split(".");
+  if (colorName && intensity && typeof theme.colors[colorName] === "object") {
     const paletteColor = theme.colors[colorName] as PaletteColor;
-    return paletteColor[intensity] ?? fallback ?? '';
+    return paletteColor[intensity] ?? fallback ?? "";
   }
 
   // Return the raw value if it doesn't match pattern
@@ -286,7 +300,7 @@ export interface AlertColors {
  * Defines the structure for the theme's color palette.
  */
 export interface ColorPalette {
-  mode: 'light' | 'dark';
+  mode: "light" | "dark";
   primary: PaletteColor;
   secondary: PaletteColor;
   error: PaletteColor;
@@ -338,18 +352,18 @@ let _defaultTheme: Theme | null = null;
 function getDefaultTheme(): Theme {
   if (!_defaultTheme) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    _defaultTheme = require('../../ui/theme/defaultTheme').defaultTheme;
+    _defaultTheme = require("../../ui/theme/defaultTheme").defaultTheme;
   }
   return _defaultTheme!;
 }
 
 // Update deepMergePalette signature and logic with proper typing
 function deepMergePalette(
-  base: Theme['colors'], 
-  overrides: Partial<Theme['colors']>
-): Theme['colors'] {
+  base: Theme["colors"],
+  overrides: Partial<Theme["colors"]>,
+): Theme["colors"] {
   // Clone the base object to avoid modifying it directly
-  const merged = JSON.parse(JSON.stringify(base)) as Theme['colors']; 
+  const merged = JSON.parse(JSON.stringify(base)) as Theme["colors"];
 
   // Iterate through override entries with proper type safety
   for (const [key, overrideValue] of Object.entries(overrides)) {
@@ -357,8 +371,11 @@ function deepMergePalette(
       const baseValue = base[key];
 
       // Check if both values are plain objects suitable for deep merge
-      const isPlainObject = (val: unknown): val is Record<string, unknown> => 
-        typeof val === 'object' && val !== null && !Array.isArray(val) && val.constructor === Object;
+      const isPlainObject = (val: unknown): val is Record<string, unknown> =>
+        typeof val === "object" &&
+        val !== null &&
+        !Array.isArray(val) &&
+        val.constructor === Object;
 
       if (isPlainObject(overrideValue) && isPlainObject(baseValue)) {
         // For nested objects, merge them manually to avoid type issues
@@ -368,14 +385,17 @@ function deepMergePalette(
             (mergedNested as Record<string, unknown>)[nestedKey] = nestedValue;
           }
         }
-        merged[key] = mergedNested as PaletteColor | string | Record<string, string>;
+        merged[key] = mergedNested as
+          | PaletteColor
+          | string
+          | Record<string, string>;
       } else {
         // Override primitive values or replace non-plain objects/arrays
         merged[key] = overrideValue;
       }
     }
   }
-  
+
   return merged;
 }
 
@@ -397,31 +417,58 @@ export function createTheme(config: Partial<Theme> = {}): Theme {
     typography: {
       ...baseTheme.typography,
       ...(config.typography ?? {}),
-      fontFamily: { ...baseTheme.typography.fontFamily, ...(config.typography?.fontFamily ?? {}) },
-      fontSizes: { ...baseTheme.typography.fontSizes, ...(config.typography?.fontSizes ?? {}) },
-      fontWeights: { ...baseTheme.typography.fontWeights, ...(config.typography?.fontWeights ?? {}) },
-      lineHeights: { ...baseTheme.typography.lineHeights, ...(config.typography?.lineHeights ?? {}) },
-      letterSpacings: { ...baseTheme.typography.letterSpacings, ...(config.typography?.letterSpacings ?? {}) },
+      fontFamily: {
+        ...baseTheme.typography.fontFamily,
+        ...(config.typography?.fontFamily ?? {}),
+      },
+      fontSizes: {
+        ...baseTheme.typography.fontSizes,
+        ...(config.typography?.fontSizes ?? {}),
+      },
+      fontWeights: {
+        ...baseTheme.typography.fontWeights,
+        ...(config.typography?.fontWeights ?? {}),
+      },
+      lineHeights: {
+        ...baseTheme.typography.lineHeights,
+        ...(config.typography?.lineHeights ?? {}),
+      },
+      letterSpacings: {
+        ...baseTheme.typography.letterSpacings,
+        ...(config.typography?.letterSpacings ?? {}),
+      },
     },
     spacing: { ...baseTheme.spacing, ...(config.spacing ?? {}) },
     sizes: {
-       ...baseTheme.sizes,
-       ...(config.sizes ?? {}),
-       modalWidth: { ...baseTheme.sizes.modalWidth, ...(config.sizes?.modalWidth ?? {}) },
-     },
+      ...baseTheme.sizes,
+      ...(config.sizes ?? {}),
+      modalWidth: {
+        ...baseTheme.sizes.modalWidth,
+        ...(config.sizes?.modalWidth ?? {}),
+      },
+    },
     borders: {
-       ...baseTheme.borders,
-       ...(config.borders ?? {}),
-       width: { ...baseTheme.borders.width, ...(config.borders?.width ?? {}) },
-       radius: { ...baseTheme.borders.radius, ...(config.borders?.radius ?? {}) },
-     },
+      ...baseTheme.borders,
+      ...(config.borders ?? {}),
+      width: { ...baseTheme.borders.width, ...(config.borders?.width ?? {}) },
+      radius: {
+        ...baseTheme.borders.radius,
+        ...(config.borders?.radius ?? {}),
+      },
+    },
     shadows: { ...baseTheme.shadows, ...(config.shadows ?? {}) },
     transitions: {
-       ...baseTheme.transitions,
-       ...(config.transitions ?? {}),
-       duration: { ...baseTheme.transitions.duration, ...(config.transitions?.duration ?? {}) },
-       timing: { ...baseTheme.transitions.timing, ...(config.transitions?.timing ?? {}) },
-     },
+      ...baseTheme.transitions,
+      ...(config.transitions ?? {}),
+      duration: {
+        ...baseTheme.transitions.duration,
+        ...(config.transitions?.duration ?? {}),
+      },
+      timing: {
+        ...baseTheme.transitions.timing,
+        ...(config.transitions?.timing ?? {}),
+      },
+    },
     zIndices: { ...baseTheme.zIndices, ...(config.zIndices ?? {}) },
     breakpoints: { ...baseTheme.breakpoints, ...(config.breakpoints ?? {}) },
     components: { ...baseTheme.components, ...(config.components ?? {}) },
@@ -430,32 +477,35 @@ export function createTheme(config: Partial<Theme> = {}): Theme {
 }
 
 // Update generateThemeCSSVariables signature
-export function generateThemeCSSVariables(theme: Theme): Record<string, string> {
+export function generateThemeCSSVariables(
+  theme: Theme,
+): Record<string, string> {
   const variables: Record<string, string> = {};
   const colors = theme.colors as Record<string, string | PaletteColor>;
 
   // Palette colors
-  Object.keys(colors).forEach(key => {
+  Object.keys(colors).forEach((key) => {
     const colorKey = key;
     const value = colors[colorKey];
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       variables[`--color-${key}`] = value;
-    } else if (typeof value === 'object' && value !== null && 'main' in value) {
+    } else if (typeof value === "object" && value !== null && "main" in value) {
       // Handle PaletteColor objects
       const paletteColor = value;
-      Object.keys(paletteColor).forEach(shadeKey => {
+      Object.keys(paletteColor).forEach((shadeKey) => {
         const colorValue = paletteColor[shadeKey];
         // Add check for undefined before assignment (Fix Line 444)
         if (colorValue !== undefined) {
           variables[`--color-${key}-${shadeKey}`] = colorValue;
         }
       });
-    } else if (key === 'background' || key === 'text') { // Assuming these are Record<string, string>
-      const nestedObj = value; 
-      Object.keys(nestedObj).forEach(nestedKey => {
-        if (nestedObj[nestedKey] !== undefined) { 
-           variables[`--color-${key}-${nestedKey}`] = nestedObj[nestedKey];
+    } else if (key === "background" || key === "text") {
+      // Assuming these are Record<string, string>
+      const nestedObj = value;
+      Object.keys(nestedObj).forEach((nestedKey) => {
+        if (nestedObj[nestedKey] !== undefined) {
+          variables[`--color-${key}-${nestedKey}`] = nestedObj[nestedKey];
         }
       });
     }
@@ -467,52 +517,71 @@ export function generateThemeCSSVariables(theme: Theme): Record<string, string> 
   // Typography
   if (theme.typography) {
     if (theme.typography.fontFamily) {
-        Object.entries(theme.typography.fontFamily).forEach(([key, value]) => {
-            if (value !== undefined) { variables[`--font-family-${key}`] = value; }
-        });
+      Object.entries(theme.typography.fontFamily).forEach(([key, value]) => {
+        if (value !== undefined) {
+          variables[`--font-family-${key}`] = value;
+        }
+      });
     }
     if (theme.typography.fontSizes) {
       Object.entries(theme.typography.fontSizes).forEach(([key, value]) => {
-        if (value !== undefined) { variables[`--font-size-${key}`] = value; }
+        if (value !== undefined) {
+          variables[`--font-size-${key}`] = value;
+        }
       });
     }
-     // Add similar loops for fontWeights, lineHeights, letterSpacings
-     if (theme.typography.fontWeights) {
-        Object.entries(theme.typography.fontWeights).forEach(([key, value]) => {
-            if (value !== undefined) { variables[`--font-weight-${key}`] = String(value); } // Convert number to string
-        });
-     }
-     if (theme.typography.lineHeights) {
-         Object.entries(theme.typography.lineHeights).forEach(([key, value]) => {
-             if (value !== undefined) { variables[`--line-height-${key}`] = String(value); } // Convert number to string
-         });
-     }
-     if (theme.typography.letterSpacings) {
-         Object.entries(theme.typography.letterSpacings).forEach(([key, value]) => {
-             if (value !== undefined) { variables[`--letter-spacing-${key}`] = value; }
-         });
-     }
+    // Add similar loops for fontWeights, lineHeights, letterSpacings
+    if (theme.typography.fontWeights) {
+      Object.entries(theme.typography.fontWeights).forEach(([key, value]) => {
+        if (value !== undefined) {
+          variables[`--font-weight-${key}`] = String(value);
+        } // Convert number to string
+      });
+    }
+    if (theme.typography.lineHeights) {
+      Object.entries(theme.typography.lineHeights).forEach(([key, value]) => {
+        if (value !== undefined) {
+          variables[`--line-height-${key}`] = String(value);
+        } // Convert number to string
+      });
+    }
+    if (theme.typography.letterSpacings) {
+      Object.entries(theme.typography.letterSpacings).forEach(
+        ([key, value]) => {
+          if (value !== undefined) {
+            variables[`--letter-spacing-${key}`] = value;
+          }
+        },
+      );
+    }
   }
 
   // Spacing
   if (theme.spacing) {
-     Object.entries(theme.spacing).forEach(([key, value]) => {
-       if (value !== undefined) { variables[`--spacing-${key}`] = typeof value === 'number' ? `${value}px` : value; }
-     });
+    Object.entries(theme.spacing).forEach(([key, value]) => {
+      if (value !== undefined) {
+        variables[`--spacing-${key}`] =
+          typeof value === "number" ? `${value}px` : value;
+      }
+    });
   }
 
   // Breakpoints
   if (theme.breakpoints) {
-     Object.entries(theme.breakpoints).forEach(([key, value]) => {
-       if (value !== undefined) { variables[`--breakpoint-${key}`] = value; } // Already strings
-     });
+    Object.entries(theme.breakpoints).forEach(([key, value]) => {
+      if (value !== undefined) {
+        variables[`--breakpoint-${key}`] = value;
+      } // Already strings
+    });
   }
 
   // Shadows
   if (theme.shadows) {
-      Object.entries(theme.shadows).forEach(([key, value]) => {
-         if (value !== undefined) { variables[`--shadow-${key}`] = value; }
-       });
+    Object.entries(theme.shadows).forEach(([key, value]) => {
+      if (value !== undefined) {
+        variables[`--shadow-${key}`] = value;
+      }
+    });
   }
 
   // Add Borders, Transitions, zIndices, Sizes if needed
@@ -522,7 +591,7 @@ export function generateThemeCSSVariables(theme: Theme): Record<string, string> 
 }
 
 // Refine ThemeColorShade type definition
-export type ThemeColorShade = 'main' | 'light' | 'dark' | 'contrastText';
+export type ThemeColorShade = "main" | "light" | "dark" | "contrastText";
 
 // PaletteColor definition
 export interface PaletteColor {
@@ -532,4 +601,3 @@ export interface PaletteColor {
   contrastText?: string;
   [key: string]: string | undefined;
 }
-

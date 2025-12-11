@@ -1,33 +1,38 @@
-import { Tier } from '../core/GameTypes';
+import { Tier } from "../core/GameTypes";
 // Import ShipStatus from CommonShipTypes to break circular dependency with ShipTypes
-import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats, ShipStatus } from './CommonShipTypes';
+import {
+  CommonShipAbility,
+  CommonShipDisplayStats,
+  CommonShipStats,
+  ShipStatus,
+} from "./CommonShipTypes";
 
 // Player Ship Classes - Changed from type alias to enum
 export enum PlayerShipClass {
-  HARBRINGER_GALLEON = 'harbringer-galleon',
-  MIDWAY_CARRIER = 'midway-carrier',
-  MOTHER_EARTH_REVENGE = 'mother-earth-revenge',
-  ORION_FRIGATE = 'orion-frigate',
-  SPITFLARE = 'spitflare',
-  STAR_SCHOONER = 'star-schooner',
-  VOID_DREDGER_MINER = 'void-dredger-miner',
-  ANDROMEDA_CUTTER = 'andromeda-cutter',
+  HARBRINGER_GALLEON = "harbringer-galleon",
+  MIDWAY_CARRIER = "midway-carrier",
+  MOTHER_EARTH_REVENGE = "mother-earth-revenge",
+  ORION_FRIGATE = "orion-frigate",
+  SPITFLARE = "spitflare",
+  STAR_SCHOONER = "star-schooner",
+  VOID_DREDGER_MINER = "void-dredger-miner",
+  ANDROMEDA_CUTTER = "andromeda-cutter",
   // Add placeholder/default if needed
-  SCOUT = 'scout', // Added SCOUT based on usage in ShipHangar.tsx
-  FIGHTER = 'fighter', // Added FIGHTER based on usage in ShipHangar.tsx
-  CRUISER = 'cruiser', // Added CRUISER based on usage in ShipHangar.tsx
+  SCOUT = "scout", // Added SCOUT based on usage in ShipHangar.tsx
+  FIGHTER = "fighter", // Added FIGHTER based on usage in ShipHangar.tsx
+  CRUISER = "cruiser", // Added CRUISER based on usage in ShipHangar.tsx
   // Add the specific mining ship classes
-  ROCK_BREAKER = 'rock-breaker', // Added MS-RB12G
-  VOID_DREDGER = 'void-dredger', // Added MVVD (Note: VOID_DREDGER_MINER already exists, clarify if VOID_DREDGER is separate or rename existing)
+  ROCK_BREAKER = "rock-breaker", // Added MS-RB12G
+  VOID_DREDGER = "void-dredger", // Added MVVD (Note: VOID_DREDGER_MINER already exists, clarify if VOID_DREDGER is separate or rename existing)
 }
 
 // Player Ship Categories
-export type PlayerShipCategory = 'combat' | 'recon' | 'mining';
+export type PlayerShipCategory = "combat" | "recon" | "mining";
 
 // Fighter state (relevant for carriers)
 export interface Fighter {
   id: string;
-  status: 'docked' | 'deployed' | 'returning' | 'lost';
+  status: "docked" | "deployed" | "returning" | "lost";
   health: number;
   // Add maxHealth or other relevant fighter stats if needed
 }
@@ -35,8 +40,8 @@ export interface Fighter {
 // Docking Bay state (relevant for specific carriers/motherships)
 export interface DockingBay {
   id: string;
-  type: 'fighter' | 'frigate' | 'carrier';
-  status: 'empty' | 'occupied' | 'launching' | 'docking';
+  type: "fighter" | "frigate" | "carrier";
+  status: "empty" | "occupied" | "launching" | "docking";
   shipId?: string;
 }
 

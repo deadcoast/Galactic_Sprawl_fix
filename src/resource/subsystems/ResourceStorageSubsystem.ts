@@ -1,17 +1,18 @@
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { eventSystem } from "../../lib/events/UnifiedEventSystem";
 import {
-    errorLoggingService,
-    ErrorSeverity,
-    ErrorType
-} from '../../services/logging/ErrorLoggingService';
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from "../../services/logging/ErrorLoggingService";
 import {
-    ResourceState as StringResourceState,
-    ResourceTransfer as StringResourceTransfer, ResourceType,
-    ResourceTypeString
-} from '../../types/resources/ResourceTypes';
-import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
+  ResourceState as StringResourceState,
+  ResourceTransfer as StringResourceTransfer,
+  ResourceType,
+  ResourceTypeString,
+} from "../../types/resources/ResourceTypes";
+import { ensureStringResourceType } from "../../utils/resources/ResourceTypeConverter";
 // Use type-only import to break circular dependency with ResourceSystem
-import type { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+import type { ResourceSystem, ResourceSystemConfig } from "../ResourceSystem";
 
 /**
  * Safe and forceful conversion to enum ResourceType
@@ -27,7 +28,7 @@ function forceToEnumResourceType(type: string): ResourceType {
  */
 function getParentResourceState(
   parentSystem: ResourceSystem,
-  stringType: ResourceTypeString
+  stringType: ResourceTypeString,
 ): StringResourceState | undefined {
   // The parentSystem.getResourceState expects ResourceType enum
   // Here we use forceToEnumResourceType to ensure type compatibility
@@ -40,7 +41,7 @@ function getParentResourceState(
 export interface StorageContainerConfig {
   id: string;
   name: string;
-  type: 'container' | 'pool' | 'storage';
+  type: "container" | "pool" | "storage";
   capacity: number;
   resourceTypes: ResourceTypeString[];
   priority: number;
@@ -102,8 +103,14 @@ export class ResourceStorageSubsystem {
     // Higher number = higher priority
     this.resourcePriorities.set(ResourceType.ENERGY as ResourceTypeString, 10);
     this.resourcePriorities.set(ResourceType.MINERALS as ResourceTypeString, 8);
-    this.resourcePriorities.set(ResourceType.POPULATION as ResourceTypeString, 9);
-    this.resourcePriorities.set(ResourceType.RESEARCH as ResourceTypeString, 10);
+    this.resourcePriorities.set(
+      ResourceType.POPULATION as ResourceTypeString,
+      9,
+    );
+    this.resourcePriorities.set(
+      ResourceType.RESEARCH as ResourceTypeString,
+      10,
+    );
     this.resourcePriorities.set(ResourceType.PLASMA as ResourceTypeString, 10);
     this.resourcePriorities.set(ResourceType.GAS as ResourceTypeString, 7);
     this.resourcePriorities.set(ResourceType.EXOTIC as ResourceTypeString, 6);
@@ -123,10 +130,12 @@ export class ResourceStorageSubsystem {
       this.isInitialized = true;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize ResourceStorageSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error("Failed to initialize ResourceStorageSubsystem"),
         ErrorType.INITIALIZATION,
         ErrorSeverity.CRITICAL,
-        { componentName: 'ResourceStorageSubsystem', action: 'initialize' }
+        { componentName: "ResourceStorageSubsystem", action: "initialize" },
       );
       throw error;
     }
@@ -150,10 +159,12 @@ export class ResourceStorageSubsystem {
       this.isInitialized = false;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to dispose ResourceStorageSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error("Failed to dispose ResourceStorageSubsystem"),
         ErrorType.RUNTIME,
         ErrorSeverity.HIGH,
-        { componentName: 'ResourceStorageSubsystem', action: 'dispose' }
+        { componentName: "ResourceStorageSubsystem", action: "dispose" },
       );
       throw error;
     }
@@ -163,12 +174,21 @@ export class ResourceStorageSubsystem {
    * Register a storage container
    */
   public registerContainer(config: StorageContainerConfig): boolean {
-    if (!config.id || !config.resourceTypes || config.resourceTypes.length === 0) {
+    if (
+      !config.id ||
+      !config.resourceTypes ||
+      config.resourceTypes.length === 0
+    ) {
       errorLoggingService.logError(
-        new Error(`Invalid storage container configuration: ${JSON.stringify(config)}`),
+        new Error(
+          `Invalid storage container configuration: ${JSON.stringify(config)}`,
+        ),
         ErrorType.CONFIGURATION,
         ErrorSeverity.MEDIUM,
-        { componentName: 'ResourceStorageSubsystem', action: 'registerContainer' }
+        {
+          componentName: "ResourceStorageSubsystem",
+          action: "registerContainer",
+        },
       );
       return false;
     }
@@ -225,8 +245,12 @@ export class ResourceStorageSubsystem {
   /**
    * Get containers by resource type
    */
-  public getContainersByResourceType(type: ResourceTypeString): StorageContainerState[] {
-    return Array.from(this.containers.values()).filter(container => container.resources.has(type));
+  public getContainersByResourceType(
+    type: ResourceTypeString,
+  ): StorageContainerState[] {
+    return Array.from(this.containers.values()).filter((container) =>
+      container.resources.has(type),
+    );
   }
 
   /**
@@ -235,7 +259,7 @@ export class ResourceStorageSubsystem {
   public storeResource(
     containerId: string,
     type: ResourceTypeString | ResourceType,
-    amount: number
+    amount: number,
   ): number {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
@@ -247,7 +271,9 @@ export class ResourceStorageSubsystem {
 
     // Check if container supports this resource type
     if (!container.config.resourceTypes.includes(stringType)) {
-      console.warn(`Container ${containerId} does not support resource type ${stringType}`);
+      console.warn(
+        `Container ${containerId} does not support resource type ${stringType}`,
+      );
       return 0;
     }
 
@@ -267,13 +293,13 @@ export class ResourceStorageSubsystem {
 
     if (availableSpace <= 0) {
       // Handle overflow based on policy
-      if (this.config.overflowPolicy === 'redistribute') {
+      if (this.config.overflowPolicy === "redistribute") {
         return this.redistributeResource(stringType, amount, containerId);
       }
 
       // Publish overflow event
       eventSystem.publish({
-        type: 'RESOURCE_STORAGE_OVERFLOW',
+        type: "RESOURCE_STORAGE_OVERFLOW",
         resourceType: forceToEnumResourceType(stringType),
         amount,
         containerId,
@@ -292,13 +318,16 @@ export class ResourceStorageSubsystem {
     const systemState = getParentResourceState(this.parentSystem, stringType);
     if (systemState) {
       systemState.current += amountToStore;
-      this.parentSystem.updateResourceState(forceToEnumResourceType(stringType), systemState);
+      this.parentSystem.updateResourceState(
+        forceToEnumResourceType(stringType),
+        systemState,
+      );
     }
 
     // Record transfer
     this.recordTransfer({
       type: forceToEnumResourceType(stringType),
-      source: 'external',
+      source: "external",
       target: containerId,
       amount: amountToStore,
       timestamp: Date.now(),
@@ -313,7 +342,7 @@ export class ResourceStorageSubsystem {
   public retrieveResource(
     containerId: string,
     type: ResourceTypeString | ResourceType,
-    amount: number
+    amount: number,
   ): number {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
@@ -339,14 +368,17 @@ export class ResourceStorageSubsystem {
     const systemState = getParentResourceState(this.parentSystem, stringType);
     if (systemState) {
       systemState.current -= amountToRetrieve;
-      this.parentSystem.updateResourceState(forceToEnumResourceType(stringType), systemState);
+      this.parentSystem.updateResourceState(
+        forceToEnumResourceType(stringType),
+        systemState,
+      );
     }
 
     // Record transfer
     this.recordTransfer({
       type: forceToEnumResourceType(stringType),
       source: containerId,
-      target: 'external',
+      target: "external",
       amount: amountToRetrieve,
       timestamp: Date.now(),
     });
@@ -360,14 +392,14 @@ export class ResourceStorageSubsystem {
   private redistributeResource(
     type: ResourceTypeString,
     amount: number,
-    excludeContainerId: string
+    excludeContainerId: string,
   ): number {
     let totalStored = 0;
     const availableContainers = Array.from(this.containers.values())
       .filter(
-        container =>
+        (container) =>
           container.config.id !== excludeContainerId &&
-          container.config.resourceTypes.includes(type)
+          container.config.resourceTypes.includes(type),
       )
       .sort((a, b) => b.config.priority - a.config.priority);
 
@@ -387,13 +419,18 @@ export class ResourceStorageSubsystem {
   /**
    * Store resource in the best available container
    */
-  public storeResourceOptimal(type: ResourceTypeString | ResourceType, amount: number): number {
+  public storeResourceOptimal(
+    type: ResourceTypeString | ResourceType,
+    amount: number,
+  ): number {
     if (amount <= 0) {
       return 0;
     }
 
     // Get all containers that can store this resource type
-    const availableContainers = this.getContainersByResourceType(type as ResourceTypeString);
+    const availableContainers = this.getContainersByResourceType(
+      type as ResourceTypeString,
+    );
 
     if (availableContainers.length === 0) {
       return 0;
@@ -403,11 +440,13 @@ export class ResourceStorageSubsystem {
     const containerScores = this.calculateContainerScores(
       availableContainers,
       type as ResourceTypeString,
-      true
+      true,
     );
 
     // Sort containers by score (highest first)
-    const sortedContainers = [...containerScores].sort((a, b) => b.score - a.score);
+    const sortedContainers = [...containerScores].sort(
+      (a, b) => b.score - a.score,
+    );
 
     let remainingAmount = amount;
     let totalStored = 0;
@@ -418,16 +457,20 @@ export class ResourceStorageSubsystem {
         break;
       }
 
-      const amountStored = this.storeResource(containerId, type, remainingAmount);
+      const amountStored = this.storeResource(
+        containerId,
+        type,
+        remainingAmount,
+      );
       totalStored += amountStored;
       remainingAmount -= amountStored;
     }
 
     // Handle overflow if needed
-    if (remainingAmount > 0 && this.config.overflowPolicy !== 'reject') {
+    if (remainingAmount > 0 && this.config.overflowPolicy !== "reject") {
       // Emit overflow event
       eventSystem.publish({
-        type: 'RESOURCE_STORAGE_OVERFLOW',
+        type: "RESOURCE_STORAGE_OVERFLOW",
         resourceType: type,
         amount: remainingAmount,
         timestamp: Date.now(),
@@ -445,13 +488,18 @@ export class ResourceStorageSubsystem {
   /**
    * Retrieve resource from the best available container
    */
-  public retrieveResourceOptimal(type: ResourceTypeString | ResourceType, amount: number): number {
+  public retrieveResourceOptimal(
+    type: ResourceTypeString | ResourceType,
+    amount: number,
+  ): number {
     if (amount <= 0) {
       return 0;
     }
 
     // Get all containers that store this resource type
-    const availableContainers = this.getContainersByResourceType(type as ResourceTypeString);
+    const availableContainers = this.getContainersByResourceType(
+      type as ResourceTypeString,
+    );
 
     if (availableContainers.length === 0) {
       return 0;
@@ -462,11 +510,13 @@ export class ResourceStorageSubsystem {
     const containerScores = this.calculateContainerScores(
       availableContainers,
       type as ResourceTypeString,
-      true
+      true,
     );
 
     // Sort containers by score (highest first)
-    const sortedContainers = [...containerScores].sort((a, b) => b.score - a.score);
+    const sortedContainers = [...containerScores].sort(
+      (a, b) => b.score - a.score,
+    );
 
     let remainingAmount = amount;
     let totalRetrieved = 0;
@@ -477,7 +527,11 @@ export class ResourceStorageSubsystem {
         break;
       }
 
-      const amountRetrieved = this.retrieveResource(containerId, type, remainingAmount);
+      const amountRetrieved = this.retrieveResource(
+        containerId,
+        type,
+        remainingAmount,
+      );
       totalRetrieved += amountRetrieved;
       remainingAmount -= amountRetrieved;
     }
@@ -491,7 +545,7 @@ export class ResourceStorageSubsystem {
   private calculateContainerScores(
     containers: StorageContainerState[],
     resourceType: ResourceTypeString,
-    forRetrieval = false
+    forRetrieval = false,
   ): { containerId: string; score: number }[] {
     const weights = {
       containerPriority: 0.4,
@@ -499,9 +553,10 @@ export class ResourceStorageSubsystem {
       fillPercentage: 0.2,
     };
 
-    const resourcePriorityValue = this.resourcePriorities.get(resourceType) ?? 5;
+    const resourcePriorityValue =
+      this.resourcePriorities.get(resourceType) ?? 5;
 
-    return containers.map(container => {
+    return containers.map((container) => {
       const resourceState = container.resources.get(resourceType)!;
       const fillRatio = resourceState.current / resourceState.max;
 
@@ -528,10 +583,12 @@ export class ResourceStorageSubsystem {
   public redistributeOverflow(
     type: ResourceTypeString | ResourceType,
     amount: number,
-    sourceId?: string
+    sourceId?: string,
   ): number {
     // Find containers that can store this resource type
-    const relevantContainers = this.getContainersByResourceType(type as ResourceTypeString);
+    const relevantContainers = this.getContainersByResourceType(
+      type as ResourceTypeString,
+    );
 
     if (relevantContainers.length === 0) {
       return 0;
@@ -539,19 +596,21 @@ export class ResourceStorageSubsystem {
 
     // If sourceId is provided, filter out that container
     const eligibleContainers = sourceId
-      ? relevantContainers.filter(c => c.config.id !== sourceId)
+      ? relevantContainers.filter((c) => c.config.id !== sourceId)
       : relevantContainers;
 
     if (eligibleContainers.length === 0) {
       // Sort by upgrade potential (containers with lower upgrade level first)
       const upgradableContainers = relevantContainers
         .filter(
-          container =>
+          (container) =>
             container.config.upgradeLevel !== undefined &&
             container.config.maxUpgradeLevel !== undefined &&
-            container.config.upgradeLevel < container.config.maxUpgradeLevel
+            container.config.upgradeLevel < container.config.maxUpgradeLevel,
         )
-        .sort((a, b) => (a.config.upgradeLevel ?? 0) - (b.config.upgradeLevel ?? 0));
+        .sort(
+          (a, b) => (a.config.upgradeLevel ?? 0) - (b.config.upgradeLevel ?? 0),
+        );
 
       if (upgradableContainers.length === 0) {
         return 0;
@@ -561,7 +620,10 @@ export class ResourceStorageSubsystem {
       const containerToUpgrade = upgradableContainers[0];
 
       // For each resource type in the container
-      for (const [_resType, resourceState] of containerToUpgrade.resources.entries()) {
+      for (const [
+        _resType,
+        resourceState,
+      ] of containerToUpgrade.resources.entries()) {
         // Increase capacity by 20%
         const capacityIncrease = resourceState.max * 0.2;
         resourceState.max += capacityIncrease;
@@ -589,7 +651,9 @@ export class ResourceStorageSubsystem {
           break;
         }
 
-        const resourceState = container.resources.get(type as ResourceTypeString)!;
+        const resourceState = container.resources.get(
+          type as ResourceTypeString,
+        )!;
         const availableSpace = resourceState.max - resourceState.current;
 
         if (availableSpace <= 0) {
@@ -597,7 +661,11 @@ export class ResourceStorageSubsystem {
         }
 
         const amountToStore = Math.min(remainingAmount, availableSpace);
-        const stored = this.storeResource(container.config.id, type, amountToStore);
+        const stored = this.storeResource(
+          container.config.id,
+          type,
+          amountToStore,
+        );
 
         totalStored += stored;
         remainingAmount -= stored;
@@ -618,7 +686,7 @@ export class ResourceStorageSubsystem {
     }
 
     // Calculate fill ratios
-    const fillRatios = containers.map(container => {
+    const fillRatios = containers.map((container) => {
       const resourceState = container.resources.get(type)!;
       return {
         id: container.config.id,
@@ -627,8 +695,8 @@ export class ResourceStorageSubsystem {
     });
 
     // Find min and max fill ratios
-    const minFill = Math.min(...fillRatios.map(r => r.fillRatio));
-    const maxFill = Math.max(...fillRatios.map(r => r.fillRatio));
+    const minFill = Math.min(...fillRatios.map((r) => r.fillRatio));
+    const maxFill = Math.max(...fillRatios.map((r) => r.fillRatio));
 
     // Check if imbalance exceeds threshold (default 0.2 or 20%)
     const threshold = 0.2;
@@ -640,7 +708,10 @@ export class ResourceStorageSubsystem {
   /**
    * Rebalance resources between containers
    */
-  private rebalanceContainers(type: ResourceTypeString, containers: StorageContainerState[]): void {
+  private rebalanceContainers(
+    type: ResourceTypeString,
+    containers: StorageContainerState[],
+  ): void {
     // Calculate target fill ratio (average)
     let totalCurrent = 0;
     let totalMax = 0;
@@ -669,14 +740,15 @@ export class ResourceStorageSubsystem {
       if (difference > 0) {
         // Need to add resources
         // Find container with excess
-        const sourceContainer = containers.find(c => {
+        const sourceContainer = containers.find((c) => {
           const rs = c.resources.get(type)!;
           return rs.current / rs.max > targetFillRatio + 0.05;
         });
 
         if (sourceContainer) {
           const sourceState = sourceContainer.resources.get(type)!;
-          const availableToTransfer = sourceState.current - sourceState.max * targetFillRatio;
+          const availableToTransfer =
+            sourceState.current - sourceState.max * targetFillRatio;
           const transferAmount = Math.min(difference, availableToTransfer);
 
           // Transfer resources
@@ -684,7 +756,7 @@ export class ResourceStorageSubsystem {
             sourceContainer.config.id,
             container.config.id,
             type,
-            transferAmount
+            transferAmount,
           );
         }
       }
@@ -698,7 +770,7 @@ export class ResourceStorageSubsystem {
     sourceId: string,
     targetId: string,
     type: ResourceTypeString | ResourceType,
-    amount: number
+    amount: number,
   ): number {
     if (amount <= 0 || sourceId === targetId) {
       return 0;
@@ -745,7 +817,7 @@ export class ResourceStorageSubsystem {
 
     // Publish transfer event
     eventSystem.publish({
-      type: 'RESOURCE_TRANSFER',
+      type: "RESOURCE_TRANSFER",
       resourceType: transfer.type,
       amount: transfer.amount,
       source: transfer.source,
@@ -796,7 +868,10 @@ export class ResourceStorageSubsystem {
   /**
    * Set resource priority
    */
-  public setResourcePriority(type: ResourceTypeString | ResourceType, priority: number): void {
+  public setResourcePriority(
+    type: ResourceTypeString | ResourceType,
+    priority: number,
+  ): void {
     // Ensure priority is between 0 and 10
     const constrainedPriority = Math.max(0, Math.min(10, priority));
     const stringType = ensureStringResourceType(type);
@@ -814,7 +889,10 @@ export class ResourceStorageSubsystem {
   /**
    * Update container configuration
    */
-  public updateContainerConfig(id: string, config: Partial<StorageContainerConfig>): boolean {
+  public updateContainerConfig(
+    id: string,
+    config: Partial<StorageContainerConfig>,
+  ): boolean {
     const container = this.containers.get(id);
     if (!container) {
       return false;
@@ -834,7 +912,7 @@ export class ResourceStorageSubsystem {
    */
   public getContainerResourceState(
     containerId: string,
-    type: ResourceTypeString | ResourceType
+    type: ResourceTypeString | ResourceType,
   ): StringResourceState | null {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
@@ -851,7 +929,7 @@ export class ResourceStorageSubsystem {
    * Get all resource states for a specific container
    */
   public getContainerResourceStates(
-    containerId: string
+    containerId: string,
   ): Map<ResourceTypeString, StringResourceState> | null {
     const container = this.containers.get(containerId);
     if (!container) {
@@ -871,13 +949,13 @@ export class ResourceStorageSubsystem {
    * Get all containers that store a specific resource type
    */
   public getContainersForResourceType(
-    type: ResourceTypeString | ResourceType
+    type: ResourceTypeString | ResourceType,
   ): StorageContainerState[] {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
-    return Array.from(this.containers.values()).filter(container =>
-      container.config.resourceTypes.includes(stringType)
+    return Array.from(this.containers.values()).filter((container) =>
+      container.config.resourceTypes.includes(stringType),
     );
   }
 
@@ -901,7 +979,9 @@ export class ResourceStorageSubsystem {
   /**
    * Get total storage capacity for a specific resource type across all containers
    */
-  public getTotalStorageCapacity(type: ResourceTypeString | ResourceType): number {
+  public getTotalStorageCapacity(
+    type: ResourceTypeString | ResourceType,
+  ): number {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
@@ -917,7 +997,9 @@ export class ResourceStorageSubsystem {
   /**
    * Get available storage space for a specific resource type across all containers
    */
-  public getAvailableStorageSpace(type: ResourceTypeString | ResourceType): number {
+  public getAvailableStorageSpace(
+    type: ResourceTypeString | ResourceType,
+  ): number {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
