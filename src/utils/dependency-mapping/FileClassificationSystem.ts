@@ -1,25 +1,25 @@
 /**
  * @file FileClassificationSystem.ts
- * 
+ *
  * File classification and validation system for safe directory reorganization
  * Implements the core file classification logic and validation test suite
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { DependencyMapper, ValidationResult } from './DependencyMapper';
-import { BaselineValidator } from './BaselineValidator';
+import * as fs from "fs";
+import * as path from "path";
+import { DependencyMapper, ValidationResult } from "./DependencyMapper";
+import { BaselineValidator } from "./BaselineValidator";
 
 export enum FileCategory {
-  CRITICAL_CONFIG = 'critical-config',
-  BUILD_CONFIG = 'build-config',
-  TESTING_CONFIG = 'testing-config',
-  LINTING_CONFIG = 'linting-config',
-  DOCUMENTATION = 'documentation',
-  REPORTS = 'reports',
-  ASSETS = 'assets',
-  SOURCE = 'source',
-  TEMPORARY = 'temporary'
+  CRITICAL_CONFIG = "critical-config",
+  BUILD_CONFIG = "build-config",
+  TESTING_CONFIG = "testing-config",
+  LINTING_CONFIG = "linting-config",
+  DOCUMENTATION = "documentation",
+  REPORTS = "reports",
+  ASSETS = "assets",
+  SOURCE = "source",
+  TEMPORARY = "temporary",
 }
 
 export interface FileClassification {
@@ -41,7 +41,7 @@ export interface ValidationTestSuite {
 export interface ValidationTest {
   name: string;
   command: string;
-  expectedResult: 'success' | 'no-change';
+  expectedResult: "success" | "no-change";
   description: string;
   timeout?: number;
 }
@@ -82,7 +82,7 @@ export class FileClassificationSystem {
 
     // Process all file categories
     const allFiles = new Map<string, any>();
-    
+
     // Collect all files from dependency map
     for (const [path, fileRef] of dependencyMap.configFiles) {
       allFiles.set(path, fileRef);
@@ -113,7 +113,7 @@ export class FileClassificationSystem {
     const fileName = path.basename(filePath);
     const category = this.determineFileCategory(filePath, fileName);
     const toolsAffected = this.getAffectedTools(fileName, category);
-    
+
     let canRelocate = fileRef.canRelocate;
     let reason = fileRef.reason;
     let proposedNewPath: string | undefined;
@@ -121,13 +121,17 @@ export class FileClassificationSystem {
     // Determine proposed new path based on category
     if (canRelocate) {
       proposedNewPath = this.getProposedPath(filePath, category);
-      
+
       // Double-check if relocation is safe for affected tools
       if (toolsAffected.length > 0) {
-        const toolSafety = this.checkToolSafety(fileName, proposedNewPath, toolsAffected);
+        const toolSafety = this.checkToolSafety(
+          fileName,
+          proposedNewPath,
+          toolsAffected,
+        );
         if (!toolSafety.isSafe) {
           canRelocate = false;
-          reason = `Tool compatibility: ${toolSafety.issues.join(', ')}`;
+          reason = `Tool compatibility: ${toolSafety.issues.join(", ")}`;
           proposedNewPath = undefined;
         }
       }
@@ -140,22 +144,33 @@ export class FileClassificationSystem {
       canRelocate,
       proposedNewPath,
       reason,
-      toolsAffected
+      toolsAffected,
     };
   }
 
   /**
    * Determine the category of a file
    */
-  private determineFileCategory(filePath: string, fileName: string): FileCategory {
+  private determineFileCategory(
+    filePath: string,
+    fileName: string,
+  ): FileCategory {
     // Critical configuration files that must stay in root
     const criticalConfigs = [
-      'package.json', 'package-lock.json', 'index.html',
-      'vite.config.ts', 'vite.config.js',
-      'eslint.config.js', '.eslintrc.js', '.eslintrc.json',
-      'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json',
-      'tailwind.config.js', 'tailwind.config.ts',
-      '.gitignore'
+      "package.json",
+      "package-lock.json",
+      "index.html",
+      "vite.config.ts",
+      "vite.config.js",
+      "eslint.config.js",
+      ".eslintrc.js",
+      ".eslintrc.json",
+      "tsconfig.json",
+      "tsconfig.app.json",
+      "tsconfig.node.json",
+      "tailwind.config.js",
+      "tailwind.config.ts",
+      ".gitignore",
     ];
 
     if (criticalConfigs.includes(fileName)) {
@@ -164,20 +179,27 @@ export class FileClassificationSystem {
 
     // Build configuration files
     const buildConfigs = [
-      '.prettierrc', '.prettierrc.json', '.prettierrc.js',
-      'prettier.config.js', 'postcss.config.js', 'postcss.config.ts',
-      '.sourcery.yaml'
+      ".prettierrc",
+      ".prettierrc.json",
+      ".prettierrc.js",
+      "prettier.config.js",
+      "postcss.config.js",
+      "postcss.config.ts",
+      ".sourcery.yaml",
     ];
 
-    if (buildConfigs.some(pattern => fileName.includes(pattern))) {
+    if (buildConfigs.some((pattern) => fileName.includes(pattern))) {
       return FileCategory.BUILD_CONFIG;
     }
 
     // Testing configuration files
     const testConfigs = [
-      'vitest.config.ts', 'vitest.config.js',
-      'playwright.config.ts', 'playwright.config.js',
-      'jest.config.js', 'jest-setup.js'
+      "vitest.config.ts",
+      "vitest.config.js",
+      "playwright.config.ts",
+      "playwright.config.js",
+      "jest.config.js",
+      "jest-setup.js",
     ];
 
     if (testConfigs.includes(fileName)) {
@@ -185,30 +207,30 @@ export class FileClassificationSystem {
     }
 
     // Linting configuration files
-    const lintConfigs = ['eslint_baseline.txt'];
+    const lintConfigs = ["eslint_baseline.txt"];
 
     if (lintConfigs.includes(fileName)) {
       return FileCategory.LINTING_CONFIG;
     }
 
     // Documentation files
-    if (fileName.endsWith('.md') || fileName.endsWith('.txt')) {
+    if (fileName.endsWith(".md") || fileName.endsWith(".txt")) {
       return FileCategory.DOCUMENTATION;
     }
 
     // Report files
-    const reportFiles = ['ERRORS.json', 'WARNINGS.json', 'test-prettier.js'];
+    const reportFiles = ["ERRORS.json", "WARNINGS.json", "test-prettier.js"];
     if (reportFiles.includes(fileName)) {
       return FileCategory.REPORTS;
     }
 
     // Source files
-    if (filePath.startsWith('src/')) {
+    if (filePath.startsWith("src/")) {
       return FileCategory.SOURCE;
     }
 
     // Asset files
-    if (filePath.startsWith('.assets/') || filePath.startsWith('assets/')) {
+    if (filePath.startsWith(".assets/") || filePath.startsWith("assets/")) {
       return FileCategory.ASSETS;
     }
 
@@ -221,29 +243,29 @@ export class FileClassificationSystem {
    */
   private getAffectedTools(fileName: string, category: FileCategory): string[] {
     const toolMap: Record<string, string[]> = {
-      'eslint.config.js': ['eslint'],
-      '.eslintrc.js': ['eslint'],
-      '.eslintrc.json': ['eslint'],
-      'eslint_baseline.txt': ['eslint'],
-      '.prettierrc': ['prettier'],
-      '.prettierrc.json': ['prettier'],
-      '.prettierrc.js': ['prettier'],
-      'prettier.config.js': ['prettier'],
-      'tsconfig.json': ['typescript'],
-      'tsconfig.app.json': ['typescript'],
-      'tsconfig.node.json': ['typescript'],
-      'vite.config.ts': ['vite'],
-      'vite.config.js': ['vite'],
-      'vitest.config.ts': ['vitest'],
-      'vitest.config.js': ['vitest'],
-      'playwright.config.ts': ['playwright'],
-      'playwright.config.js': ['playwright'],
-      'tailwind.config.js': ['tailwind'],
-      'tailwind.config.ts': ['tailwind'],
-      'postcss.config.js': ['postcss'],
-      'postcss.config.ts': ['postcss'],
-      'jest.config.js': ['jest'],
-      'jest-setup.js': ['jest']
+      "eslint.config.js": ["eslint"],
+      ".eslintrc.js": ["eslint"],
+      ".eslintrc.json": ["eslint"],
+      "eslint_baseline.txt": ["eslint"],
+      ".prettierrc": ["prettier"],
+      ".prettierrc.json": ["prettier"],
+      ".prettierrc.js": ["prettier"],
+      "prettier.config.js": ["prettier"],
+      "tsconfig.json": ["typescript"],
+      "tsconfig.app.json": ["typescript"],
+      "tsconfig.node.json": ["typescript"],
+      "vite.config.ts": ["vite"],
+      "vite.config.js": ["vite"],
+      "vitest.config.ts": ["vitest"],
+      "vitest.config.js": ["vitest"],
+      "playwright.config.ts": ["playwright"],
+      "playwright.config.js": ["playwright"],
+      "tailwind.config.js": ["tailwind"],
+      "tailwind.config.ts": ["tailwind"],
+      "postcss.config.js": ["postcss"],
+      "postcss.config.ts": ["postcss"],
+      "jest.config.js": ["jest"],
+      "jest-setup.js": ["jest"],
     };
 
     return toolMap[fileName] || [];
@@ -257,18 +279,18 @@ export class FileClassificationSystem {
 
     switch (category) {
       case FileCategory.BUILD_CONFIG:
-        return path.join('config', 'build', fileName);
+        return path.join("config", "build", fileName);
       case FileCategory.TESTING_CONFIG:
-        return path.join('config', 'testing', fileName);
+        return path.join("config", "testing", fileName);
       case FileCategory.LINTING_CONFIG:
-        return path.join('config', 'linting', fileName);
+        return path.join("config", "linting", fileName);
       case FileCategory.DOCUMENTATION:
-        return path.join('docs', fileName);
+        return path.join("docs", fileName);
       case FileCategory.REPORTS:
-        return path.join('reports', fileName);
+        return path.join("reports", fileName);
       case FileCategory.ASSETS:
-        if (filePath.startsWith('.assets/')) {
-          return filePath.replace('.assets/', 'assets/');
+        if (filePath.startsWith(".assets/")) {
+          return filePath.replace(".assets/", "assets/");
         }
         return filePath;
       default:
@@ -282,17 +304,17 @@ export class FileClassificationSystem {
   private checkToolSafety(
     fileName: string,
     newPath: string,
-    toolsAffected: string[]
+    toolsAffected: string[],
   ): { isSafe: boolean; issues: string[] } {
     const issues: string[] = [];
 
     // Tools that require config in root
-    const rootRequiredTools = ['eslint', 'typescript', 'vite', 'tailwind'];
+    const rootRequiredTools = ["eslint", "typescript", "vite", "tailwind"];
 
     for (const tool of toolsAffected) {
       if (rootRequiredTools.includes(tool)) {
         const newDir = path.dirname(newPath);
-        if (newDir !== '.' && newDir !== '') {
+        if (newDir !== "." && newDir !== "") {
           issues.push(`${tool} requires config in root directory`);
         }
       }
@@ -300,7 +322,7 @@ export class FileClassificationSystem {
 
     return {
       isSafe: issues.length === 0,
-      issues
+      issues,
     };
   }
 
@@ -311,87 +333,88 @@ export class FileClassificationSystem {
     return {
       preMove: [
         {
-          name: 'baseline-build',
-          command: 'npm run build',
-          expectedResult: 'success',
-          description: 'Verify build works before reorganization',
-          timeout: 60000
+          name: "baseline-build",
+          command: "npm run build",
+          expectedResult: "success",
+          description: "Verify build works before reorganization",
+          timeout: 60000,
         },
         {
-          name: 'baseline-typecheck',
-          command: 'npm run type-check',
-          expectedResult: 'success',
-          description: 'Verify type checking works before reorganization',
-          timeout: 30000
+          name: "baseline-typecheck",
+          command: "npm run type-check",
+          expectedResult: "success",
+          description: "Verify type checking works before reorganization",
+          timeout: 30000,
         },
         {
-          name: 'baseline-lint',
-          command: 'npm run lint',
-          expectedResult: 'no-change',
-          description: 'Capture lint baseline before reorganization',
-          timeout: 30000
+          name: "baseline-lint",
+          command: "npm run lint",
+          expectedResult: "no-change",
+          description: "Capture lint baseline before reorganization",
+          timeout: 30000,
         },
         {
-          name: 'baseline-test',
-          command: 'npm run test -- --run',
-          expectedResult: 'success',
-          description: 'Verify tests pass before reorganization',
-          timeout: 60000
-        }
+          name: "baseline-test",
+          command: "npm run test -- --run",
+          expectedResult: "success",
+          description: "Verify tests pass before reorganization",
+          timeout: 60000,
+        },
       ],
       duringMove: [
         {
-          name: 'incremental-build',
-          command: 'npm run build',
-          expectedResult: 'success',
-          description: 'Verify build works after each file move',
-          timeout: 60000
+          name: "incremental-build",
+          command: "npm run build",
+          expectedResult: "success",
+          description: "Verify build works after each file move",
+          timeout: 60000,
         },
         {
-          name: 'incremental-typecheck',
-          command: 'npm run type-check',
-          expectedResult: 'success',
-          description: 'Verify type checking works after each file move',
-          timeout: 30000
-        }
+          name: "incremental-typecheck",
+          command: "npm run type-check",
+          expectedResult: "success",
+          description: "Verify type checking works after each file move",
+          timeout: 30000,
+        },
       ],
       postMove: [
         {
-          name: 'final-build',
-          command: 'npm run build',
-          expectedResult: 'success',
-          description: 'Verify build works after complete reorganization',
-          timeout: 60000
+          name: "final-build",
+          command: "npm run build",
+          expectedResult: "success",
+          description: "Verify build works after complete reorganization",
+          timeout: 60000,
         },
         {
-          name: 'final-typecheck',
-          command: 'npm run type-check',
-          expectedResult: 'success',
-          description: 'Verify type checking works after complete reorganization',
-          timeout: 30000
+          name: "final-typecheck",
+          command: "npm run type-check",
+          expectedResult: "success",
+          description:
+            "Verify type checking works after complete reorganization",
+          timeout: 30000,
         },
         {
-          name: 'final-lint',
-          command: 'npm run lint',
-          expectedResult: 'no-change',
-          description: 'Verify lint results unchanged after reorganization',
-          timeout: 30000
+          name: "final-lint",
+          command: "npm run lint",
+          expectedResult: "no-change",
+          description: "Verify lint results unchanged after reorganization",
+          timeout: 30000,
         },
         {
-          name: 'final-test',
-          command: 'npm run test -- --run',
-          expectedResult: 'success',
-          description: 'Verify tests pass after complete reorganization',
-          timeout: 60000
+          name: "final-test",
+          command: "npm run test -- --run",
+          expectedResult: "success",
+          description: "Verify tests pass after complete reorganization",
+          timeout: 60000,
         },
         {
-          name: 'dev-server',
-          command: 'timeout 10s npm run dev || true',
-          expectedResult: 'success',
-          description: 'Verify development server starts after reorganization',
-          timeout: 15000
-        }
-      ]
+          name: "dev-server",
+          command: "timeout 10s npm run dev || true",
+          expectedResult: "success",
+          description: "Verify development server starts after reorganization",
+          timeout: 15000,
+        },
+      ],
     };
   }
 
@@ -399,7 +422,7 @@ export class FileClassificationSystem {
    * Create rollback system with atomic operations
    */
   public async createRollbackSystem(
-    operations: AtomicMoveOperation[]
+    operations: AtomicMoveOperation[],
   ): Promise<void> {
     this.rollbackOperations = [];
 
@@ -415,7 +438,7 @@ export class FileClassificationSystem {
         },
         rollback: async () => {
           await this.rollbackMoveOperation(operation);
-        }
+        },
       };
 
       this.rollbackOperations.push(rollbackOp);
@@ -425,7 +448,9 @@ export class FileClassificationSystem {
   /**
    * Execute atomic file move operation
    */
-  private async executeAtomicMove(operation: AtomicMoveOperation): Promise<void> {
+  private async executeAtomicMove(
+    operation: AtomicMoveOperation,
+  ): Promise<void> {
     const { sourceFile, targetFile, backupFile } = operation;
 
     // Create target directory if it doesn't exist
@@ -446,7 +471,9 @@ export class FileClassificationSystem {
   /**
    * Verify move operation was successful
    */
-  private async verifyMoveOperation(operation: AtomicMoveOperation): Promise<boolean> {
+  private async verifyMoveOperation(
+    operation: AtomicMoveOperation,
+  ): Promise<boolean> {
     const { sourceFile, targetFile } = operation;
 
     // Check that source file no longer exists and target file exists
@@ -459,7 +486,9 @@ export class FileClassificationSystem {
   /**
    * Rollback move operation
    */
-  private async rollbackMoveOperation(operation: AtomicMoveOperation): Promise<void> {
+  private async rollbackMoveOperation(
+    operation: AtomicMoveOperation,
+  ): Promise<void> {
     const { sourceFile, targetFile, backupFile } = operation;
 
     // Restore from backup if backup exists
@@ -492,19 +521,23 @@ export class FileClassificationSystem {
   /**
    * Run validation tests
    */
-  public async runValidationTests(tests: ValidationTest[]): Promise<ValidationResult> {
+  public async runValidationTests(
+    tests: ValidationTest[],
+  ): Promise<ValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     for (const test of tests) {
       try {
         const result = await this.baselineValidator.runCommand(test.command);
-        
-        if (test.expectedResult === 'success' && result.exitCode !== 0) {
+
+        if (test.expectedResult === "success" && result.exitCode !== 0) {
           errors.push(`Test '${test.name}' failed: ${result.stderr}`);
-        } else if (test.expectedResult === 'no-change') {
+        } else if (test.expectedResult === "no-change") {
           // For no-change tests, we just capture the output for comparison
-          warnings.push(`Test '${test.name}' completed for baseline comparison`);
+          warnings.push(
+            `Test '${test.name}' completed for baseline comparison`,
+          );
         }
       } catch (error) {
         errors.push(`Test '${test.name}' threw error: ${error}`);
@@ -514,7 +547,7 @@ export class FileClassificationSystem {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -535,7 +568,7 @@ export class FileClassificationSystem {
    */
   public async getRelocatableFiles(): Promise<FileClassification[]> {
     const classifications = await this.classifyAllFiles();
-    return Array.from(classifications.values()).filter(c => c.canRelocate);
+    return Array.from(classifications.values()).filter((c) => c.canRelocate);
   }
 
   /**
@@ -543,7 +576,7 @@ export class FileClassificationSystem {
    */
   public async getCriticalFiles(): Promise<FileClassification[]> {
     const classifications = await this.classifyAllFiles();
-    return Array.from(classifications.values()).filter(c => !c.canRelocate);
+    return Array.from(classifications.values()).filter((c) => !c.canRelocate);
   }
 
   /**
@@ -563,7 +596,7 @@ export class FileClassificationSystem {
       relocatableFiles,
       criticalFiles,
       validationSuite,
-      estimatedOperations: relocatableFiles.length
+      estimatedOperations: relocatableFiles.length,
     };
   }
 }
