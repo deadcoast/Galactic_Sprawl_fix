@@ -1,12 +1,12 @@
-import
-  {
-    ChartAxes,
-    ChartData,
-    ChartDataPoint,
-    ChartOptions,
-    ChartRenderer,
-    ChartType
-  } from '../Chart';
+// Use type-only import to break circular dependency with Chart.tsx
+import type {
+  ChartAxes,
+  ChartData,
+  ChartDataPoint,
+  ChartOptions,
+  ChartRenderer,
+  ChartType,
+} from "../Chart";
 
 // Define local types that extend the base chart interfaces
 interface ChartPoint extends ChartDataPoint {
@@ -16,22 +16,22 @@ interface ChartPoint extends ChartDataPoint {
 }
 
 enum ChartScaleType {
-  Linear = 'linear',
-  Time = 'time',
-  Category = 'category',
-  Log = 'log',
+  Linear = "linear",
+  Time = "time",
+  Category = "category",
+  Log = "log",
 }
 
 enum ChartLegendPosition {
-  Top = 'top',
-  Bottom = 'bottom',
-  Left = 'left',
-  Right = 'right',
+  Top = "top",
+  Bottom = "bottom",
+  Left = "left",
+  Right = "right",
 }
 
 enum ChartTooltipMode {
-  Nearest = 'nearest',
-  Index = 'index',
+  Nearest = "nearest",
+  Index = "index",
 }
 
 interface ChartPadding {
@@ -41,7 +41,7 @@ interface ChartPadding {
   left: number;
 }
 
-type ChartAxisType = 'linear' | 'time' | 'category' | 'log';
+type ChartAxisType = "linear" | "time" | "category" | "log";
 
 interface ChartScale {
   min: number;
@@ -95,16 +95,16 @@ export class CanvasRenderer implements ChartRenderer {
 
   private theme: ChartThemes = {
     light: {
-      backgroundColor: '#ffffff',
-      textColor: '#333333',
-      gridColor: '#e0e0e0',
-      axisColor: '#666666',
+      backgroundColor: "#ffffff",
+      textColor: "#333333",
+      gridColor: "#e0e0e0",
+      axisColor: "#666666",
     },
     dark: {
-      backgroundColor: '#1a1a1a',
-      textColor: '#ffffff',
-      gridColor: '#333333',
-      axisColor: '#999999',
+      backgroundColor: "#1a1a1a",
+      textColor: "#ffffff",
+      gridColor: "#333333",
+      axisColor: "#999999",
     },
   };
 
@@ -115,7 +115,7 @@ export class CanvasRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     this.initialize(container, options);
     this.update(container, data, options, type);
@@ -128,7 +128,7 @@ export class CanvasRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     if (!this.isInitialized) {
       this.initialize(container, options);
@@ -154,9 +154,11 @@ export class CanvasRenderer implements ChartRenderer {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       // Set background color
-      const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
-      this.ctx.fillStyle = options?.backgroundColor ?? themeColors.backgroundColor;
-      if (this.ctx.fillStyle !== 'transparent') {
+      const themeColors =
+        options?.theme === "dark" ? this.theme.dark : this.theme.light;
+      this.ctx.fillStyle =
+        options?.backgroundColor ?? themeColors.backgroundColor;
+      if (this.ctx.fillStyle !== "transparent") {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       }
 
@@ -168,25 +170,25 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Render chart based on type
       switch (type) {
-        case 'line':
+        case "line":
           this.renderLineChart(data, options, chartArea);
           break;
-        case 'bar':
+        case "bar":
           this.renderBarChart(data, options, chartArea);
           break;
-        case 'scatter':
+        case "scatter":
           this.renderScatterChart(data, options, chartArea);
           break;
-        case 'area':
+        case "area":
           this.renderAreaChart(data, options, chartArea);
           break;
-        case 'pie':
+        case "pie":
           this.renderPieChart(data, options);
           break;
-        case 'radar':
+        case "radar":
           this.renderRadarChart(data, options);
           break;
-        case 'heatmap':
+        case "heatmap":
           this.renderHeatmapChart(data, options, chartArea);
           break;
         default:
@@ -244,36 +246,40 @@ export class CanvasRenderer implements ChartRenderer {
    */
   private initialize(container: HTMLElement, options: ChartOptions): void {
     // Clean existing canvas if unknown
-    const existingCanvas = container.querySelector('canvas');
+    const existingCanvas = container.querySelector("canvas");
     if (existingCanvas) {
       container.removeChild(existingCanvas);
     }
 
     // Create new canvas
-    this.canvas = document.createElement('canvas');
-    this.canvas.style.display = 'block';
+    this.canvas = document.createElement("canvas");
+    this.canvas.style.display = "block";
 
     // Set canvas dimensions from options if provided
     if (options?.width) {
       this.canvas.style.width =
-        typeof options?.width === 'number' ? `${options?.width}px` : options?.width;
+        typeof options?.width === "number"
+          ? `${options?.width}px`
+          : options?.width;
     } else {
-      this.canvas.style.width = '100%';
+      this.canvas.style.width = "100%";
     }
 
     if (options?.height) {
       this.canvas.style.height =
-        typeof options?.height === 'number' ? `${options?.height}px` : options?.height;
+        typeof options?.height === "number"
+          ? `${options?.height}px`
+          : options?.height;
     } else {
-      this.canvas.style.height = '100%';
+      this.canvas.style.height = "100%";
     }
 
     container.appendChild(this.canvas);
 
     // Get context
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext("2d");
     if (!this.ctx) {
-      throw new Error('Could not get canvas context');
+      throw new Error("Could not get canvas context");
     }
 
     // Set dimensions
@@ -305,7 +311,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render line chart
    */
-  private renderLineChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderLineChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     const { ctx } = this;
     if (!ctx) {
       return;
@@ -331,13 +341,24 @@ export class CanvasRenderer implements ChartRenderer {
       const points: { x: number; y: number }[] = [];
 
       // Map data points to canvas coordinates
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
         if (Number.isFinite(x) && Number.isFinite(y)) {
           points.push({
-            x: this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right),
-            y: this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true),
+            x: this.mapValueToPixel(
+              x,
+              scales.x,
+              chartArea.left,
+              chartArea.right,
+            ),
+            y: this.mapValueToPixel(
+              y,
+              scales.y,
+              chartArea.bottom,
+              chartArea.top,
+              true,
+            ),
           });
         }
       });
@@ -363,7 +384,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render bar chart
    */
-  private renderBarChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderBarChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     if (!this.ctx) {
       return;
     }
@@ -385,12 +410,13 @@ export class CanvasRenderer implements ChartRenderer {
     // Calculate bar width based on the number of datasets and data points
     const allLabels = this.getAllXValues(data);
     const totalBarGroups = allLabels.length || 1;
-    const barGroupWidth = (chartArea.right - chartArea.left) / (totalBarGroups + 1);
+    const barGroupWidth =
+      (chartArea.right - chartArea.left) / (totalBarGroups + 1);
     const barWidth = (barGroupWidth * 0.8) / (datasets.length || 1);
 
     // Draw each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         const xValue = this.normalizeValue(point.x);
         const yValue = this.normalizeValue(point.y);
         const xIndex = allLabels.indexOf(String(xValue));
@@ -399,13 +425,30 @@ export class CanvasRenderer implements ChartRenderer {
           (xIndex + 1) * barGroupWidth -
           barGroupWidth * 0.4 +
           datasetIndex * barWidth;
-        const yZero = this.mapValueToPixel(0, scales.y, chartArea.bottom, chartArea.top, true);
-        const y = this.mapValueToPixel(yValue, scales.y, chartArea.bottom, chartArea.top, true);
+        const yZero = this.mapValueToPixel(
+          0,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
+        const y = this.mapValueToPixel(
+          yValue,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
 
         if (this.ctx) {
           const fillStyle = dataset.color ?? this.getDefaultColor(datasetIndex);
           this.setCanvasStyle(fillStyle);
-          this.ctx.fillRect(x, Math.min(y, yZero), barWidth, Math.abs(y - yZero));
+          this.ctx.fillRect(
+            x,
+            Math.min(y, yZero),
+            barWidth,
+            Math.abs(y - yZero),
+          );
         }
       });
     });
@@ -414,7 +457,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render scatter chart
    */
-  private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderScatterChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     const { ctx } = this;
     if (!ctx) {
       return;
@@ -437,21 +484,34 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw each dataset
     data?.datasets.forEach((dataset, datasetIndex) => {
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
         if (!Number.isFinite(x) || !Number.isFinite(y)) {
           return;
         }
 
-        const cx = this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right);
-        const cy = this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true);
+        const cx = this.mapValueToPixel(
+          x,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        );
+        const cy = this.mapValueToPixel(
+          y,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
         const radius = (point as ChartPoint).radius ?? 4;
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.fillStyle =
-          (point as ChartPoint).color ?? dataset.color ?? this.getDefaultColor(datasetIndex);
+          (point as ChartPoint).color ??
+          dataset.color ??
+          this.getDefaultColor(datasetIndex);
         ctx.fill();
       });
     });
@@ -460,7 +520,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render area chart
    */
-  private renderAreaChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderAreaChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     if (!this.ctx) {
       return;
     }
@@ -481,7 +545,7 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      const points = dataset.data?.map(point => ({
+      const points = dataset.data?.map((point) => ({
         x: this.normalizeValue(point.x),
         y: this.normalizeValue(point.y),
       }));
@@ -493,18 +557,45 @@ export class CanvasRenderer implements ChartRenderer {
       // Draw filled area
       this.ctx.beginPath();
       this.ctx.moveTo(
-        this.mapValueToPixel(points[0].x, scales.x, chartArea.left, chartArea.right),
-        chartArea.bottom
+        this.mapValueToPixel(
+          points[0].x,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        ),
+        chartArea.bottom,
       );
       this.ctx.lineTo(
-        this.mapValueToPixel(points[0].x, scales.x, chartArea.left, chartArea.right),
-        this.mapValueToPixel(points[0].y, scales.y, chartArea.bottom, chartArea.top, true)
+        this.mapValueToPixel(
+          points[0].x,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        ),
+        this.mapValueToPixel(
+          points[0].y,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        ),
       );
 
       for (let i = 1; i < points.length; i++) {
         this.ctx.lineTo(
-          this.mapValueToPixel(points[i].x, scales.x, chartArea.left, chartArea.right),
-          this.mapValueToPixel(points[i].y, scales.y, chartArea.bottom, chartArea.top, true)
+          this.mapValueToPixel(
+            points[i].x,
+            scales.x,
+            chartArea.left,
+            chartArea.right,
+          ),
+          this.mapValueToPixel(
+            points[i].y,
+            scales.y,
+            chartArea.bottom,
+            chartArea.top,
+            true,
+          ),
         );
       }
 
@@ -513,14 +604,19 @@ export class CanvasRenderer implements ChartRenderer {
           points[points.length - 1].x,
           scales.x,
           chartArea.left,
-          chartArea.right
+          chartArea.right,
         ),
-        chartArea.bottom
+        chartArea.bottom,
       );
       this.ctx.closePath();
 
       // Create gradient fill
-      const gradient = this.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      const gradient = this.ctx.createLinearGradient(
+        0,
+        chartArea.top,
+        0,
+        chartArea.bottom,
+      );
       const color = dataset.color ?? this.getDefaultColor(datasetIndex);
       gradient.addColorStop(0, this.hexToRgba(color, 0.6));
       gradient.addColorStop(1, this.hexToRgba(color, 0.1));
@@ -572,12 +668,13 @@ export class CanvasRenderer implements ChartRenderer {
         this.ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         this.ctx.closePath();
 
-        const fillStyle = (point as ChartPoint).color ?? this.getDefaultColor(i);
+        const fillStyle =
+          (point as ChartPoint).color ?? this.getDefaultColor(i);
         this.setCanvasStyle(fillStyle);
         this.ctx.fill();
 
         // Draw slice border
-        this.ctx.strokeStyle = '#fff';
+        this.ctx.strokeStyle = "#fff";
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
 
@@ -588,10 +685,10 @@ export class CanvasRenderer implements ChartRenderer {
           const labelX = centerX + Math.cos(labelAngle) * labelRadius;
           const labelY = centerY + Math.sin(labelAngle) * labelRadius;
 
-          this.ctx.fillStyle = '#fff';
-          this.ctx.font = '12px Arial';
-          this.ctx.textAlign = 'center';
-          this.ctx.textBaseline = 'middle';
+          this.ctx.fillStyle = "#fff";
+          this.ctx.font = "12px Arial";
+          this.ctx.textAlign = "center";
+          this.ctx.textBaseline = "middle";
           this.ctx.fillText(point.x.toString(), labelX, labelY);
         }
       }
@@ -619,8 +716,8 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Find all unique labels (angles) from all datasets
     const allLabels = new Set<string>();
-    datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         allLabels.add(String(point.x));
       });
     });
@@ -630,7 +727,9 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw background grid (circles and lines)
     this.ctx.strokeStyle =
-      options?.theme === 'dark' ? this.theme.dark.gridColor : this.theme.light.gridColor;
+      options?.theme === "dark"
+        ? this.theme.dark.gridColor
+        : this.theme.light.gridColor;
     this.ctx.lineWidth = 0.5;
 
     // Draw circular grid lines
@@ -646,30 +745,38 @@ export class CanvasRenderer implements ChartRenderer {
       const angle = i * angleStep - Math.PI / 2; // Start from top
       this.ctx!.beginPath();
       this.ctx!.moveTo(centerX, centerY);
-      this.ctx!.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
+      this.ctx!.lineTo(
+        centerX + Math.cos(angle) * radius,
+        centerY + Math.sin(angle) * radius,
+      );
       this.ctx!.stroke();
 
       // Draw labels
       const labelX = centerX + Math.cos(angle) * (radius + 15);
       const labelY = centerY + Math.sin(angle) * (radius + 15);
       this.ctx!.fillStyle =
-        options?.theme === 'dark' ? this.theme.dark.textColor : this.theme.light.textColor;
-      this.ctx!.font = '12px Arial';
-      this.ctx!.textAlign = 'center';
-      this.ctx!.textBaseline = 'middle';
+        options?.theme === "dark"
+          ? this.theme.dark.textColor
+          : this.theme.light.textColor;
+      this.ctx!.font = "12px Arial";
+      this.ctx!.textAlign = "center";
+      this.ctx!.textBaseline = "middle";
       this.ctx!.fillText(labels[i], labelX, labelY);
     });
 
     // Find max value for scaling
     const maxValue = datasets.reduce((max, dataset) => {
-      const datasetMax = dataset.data?.reduce((m, point) => Math.max(m, point.y), 0);
+      const datasetMax = dataset.data?.reduce(
+        (m, point) => Math.max(m, point.y),
+        0,
+      );
       return Math.max(max, datasetMax);
     }, 0);
 
     // Draw each dataset
     datasets.forEach((dataset, datasetIndex) => {
       const dataMap = new Map<string, number>();
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         dataMap.set(String(point.x), point.y);
       });
 
@@ -708,7 +815,7 @@ export class CanvasRenderer implements ChartRenderer {
       this.ctx!.stroke();
 
       // Draw points
-      points.forEach(point => {
+      points.forEach((point) => {
         this.ctx!.beginPath();
         this.ctx!.arc(point.x, point.y, 3, 0, Math.PI * 2);
         this.ctx!.fillStyle = color;
@@ -720,7 +827,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render heatmap chart
    */
-  private renderHeatmapChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderHeatmapChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     if (!this.ctx) {
       return;
     }
@@ -737,16 +848,16 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Use axes in a simple check - doesn't affect functionality but prevents linter warnings
     const axesProvided = Boolean(axes);
-    if (!axesProvided && process.env.NODE_ENV === 'development') {
-      console.warn('Using default axes configuration for heatmap chart');
+    if (!axesProvided && process.env.NODE_ENV === "development") {
+      console.warn("Using default axes configuration for heatmap chart");
     }
 
     // For heatmap, we need to find all unique x and y values
     const uniqueX = new Set<string>();
     const uniqueY = new Set<string>();
 
-    datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         uniqueX.add(String(point.x));
         uniqueY.add(String(point.y));
       });
@@ -763,11 +874,11 @@ export class CanvasRenderer implements ChartRenderer {
     let minValue = Infinity;
     let maxValue = -Infinity;
 
-    datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         const pointData = point as ChartPoint;
         const value = pointData.value ?? pointData.y;
-        if (typeof value === 'number') {
+        if (typeof value === "number") {
           minValue = Math.min(minValue, value);
           maxValue = Math.max(maxValue, value);
         }
@@ -776,12 +887,14 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Draw grid
     this.ctx.strokeStyle =
-      options?.theme === 'dark' ? this.theme.dark.gridColor : this.theme.light.gridColor;
+      options?.theme === "dark"
+        ? this.theme.dark.gridColor
+        : this.theme.light.gridColor;
     this.ctx.lineWidth = 0.5;
 
     // Draw cells
-    datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         if (!this.ctx) {
           return;
         }
@@ -795,7 +908,7 @@ export class CanvasRenderer implements ChartRenderer {
         }
 
         const value = pointData.value ?? pointData.y;
-        if (typeof value !== 'number') {
+        if (typeof value !== "number") {
           return;
         }
 
@@ -816,7 +929,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render axes for charts
    */
-  private renderAxes(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderAxes(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     const { ctx } = this;
     if (!ctx) {
       return;
@@ -832,7 +949,8 @@ export class CanvasRenderer implements ChartRenderer {
       return;
     }
 
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
 
     // Draw x-axis line
     ctx.beginPath();
@@ -856,7 +974,12 @@ export class CanvasRenderer implements ChartRenderer {
 
     for (let i = 0; i < xTickCount; i++) {
       const value = scales.x.min + i * xStep;
-      const x = this.mapValueToPixel(value, scales.x, chartArea.left, chartArea.right);
+      const x = this.mapValueToPixel(
+        value,
+        scales.x,
+        chartArea.left,
+        chartArea.right,
+      );
 
       // Draw tick
       ctx.beginPath();
@@ -867,12 +990,12 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Draw label
       ctx.fillStyle = themeColors.textColor;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
       ctx.fillText(
         axes.x.tickFormat ? axes.x.tickFormat(value) : value.toString(),
         x,
-        chartArea.bottom + 8
+        chartArea.bottom + 8,
       );
     }
 
@@ -882,7 +1005,13 @@ export class CanvasRenderer implements ChartRenderer {
 
     for (let i = 0; i < yTickCount; i++) {
       const value = scales.y.min + i * yStep;
-      const y = this.mapValueToPixel(value, scales.y, chartArea.bottom, chartArea.top, true);
+      const y = this.mapValueToPixel(
+        value,
+        scales.y,
+        chartArea.bottom,
+        chartArea.top,
+        true,
+      );
 
       // Draw tick
       ctx.beginPath();
@@ -893,25 +1022,25 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Draw label
       ctx.fillStyle = themeColors.textColor;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
       ctx.fillText(
         axes.y.tickFormat ? axes.y.tickFormat(value) : value.toString(),
         chartArea.left - 8,
-        y
+        y,
       );
     }
 
     // Draw axis labels if provided
     if (axes.x.label) {
       ctx.fillStyle = themeColors.textColor;
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
+      ctx.font = "bold 14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
       ctx.fillText(
         axes.x.label,
         (chartArea.left + chartArea.right) / 2,
-        this.canvas!.height / this.resolutionScale - 5
+        this.canvas!.height / this.resolutionScale - 5,
       );
     }
 
@@ -920,9 +1049,9 @@ export class CanvasRenderer implements ChartRenderer {
       ctx.translate(10, (chartArea.top + chartArea.bottom) / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.fillStyle = themeColors.textColor;
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
+      ctx.font = "bold 14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
       ctx.fillText(axes.y.label, 0, 0);
       ctx.restore();
     }
@@ -935,7 +1064,7 @@ export class CanvasRenderer implements ChartRenderer {
     xCategories: string[],
     yCategories: string[],
     chartArea: ChartArea,
-    options: ChartOptions
+    options: ChartOptions,
   ): void {
     if (!this.ctx) {
       return;
@@ -946,10 +1075,12 @@ export class CanvasRenderer implements ChartRenderer {
 
     // X-axis labels
     this.ctx.fillStyle =
-      options?.theme === 'dark' ? this.theme.dark.textColor : this.theme.light.textColor;
-    this.ctx.font = '12px Arial';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'top';
+      options?.theme === "dark"
+        ? this.theme.dark.textColor
+        : this.theme.light.textColor;
+    this.ctx.font = "12px Arial";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "top";
 
     xCategories.forEach((category, i) => {
       const x = chartArea.left + (i + 0.5) * cellWidth;
@@ -958,8 +1089,8 @@ export class CanvasRenderer implements ChartRenderer {
     });
 
     // Y-axis labels
-    this.ctx.textAlign = 'right';
-    this.ctx.textBaseline = 'middle';
+    this.ctx.textAlign = "right";
+    this.ctx.textBaseline = "middle";
 
     yCategories.forEach((category, i) => {
       const x = chartArea.left - 5;
@@ -971,13 +1102,18 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Draw grid lines
    */
-  private drawGrid(scales: ChartScales, chartArea: ChartArea, options: ChartOptions): void {
+  private drawGrid(
+    scales: ChartScales,
+    chartArea: ChartArea,
+    options: ChartOptions,
+  ): void {
     const { ctx } = this;
     if (!ctx) {
       return;
     }
 
-    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors =
+      options?.theme === "dark" ? this.theme.dark : this.theme.light;
     const axes = options?.axes;
     if (!axes?.x || !axes?.y) {
       return;
@@ -990,7 +1126,12 @@ export class CanvasRenderer implements ChartRenderer {
 
       for (let i = 0; i < xTickCount; i++) {
         const value = scales.x.min + i * xStep;
-        const x = this.mapValueToPixel(value, scales.x, chartArea.left, chartArea.right);
+        const x = this.mapValueToPixel(
+          value,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        );
 
         ctx.beginPath();
         ctx.moveTo(x, chartArea.top);
@@ -1008,7 +1149,13 @@ export class CanvasRenderer implements ChartRenderer {
 
       for (let i = 0; i < yTickCount; i++) {
         const value = scales.y.min + i * yStep;
-        const y = this.mapValueToPixel(value, scales.y, chartArea.bottom, chartArea.top, true);
+        const y = this.mapValueToPixel(
+          value,
+          scales.y,
+          chartArea.bottom,
+          chartArea.top,
+          true,
+        );
 
         ctx.beginPath();
         ctx.moveTo(chartArea.left, y);
@@ -1023,14 +1170,20 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render legend
    */
-  private renderLegend(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderLegend(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     if (!this.ctx || !this.canvas) {
       return;
     }
 
     const { datasets } = data;
     const legend: ChartLegend = {
-      position: (options?.legend?.position as ChartLegendPosition) ?? ChartLegendPosition.Top,
+      position:
+        (options?.legend?.position as ChartLegendPosition) ??
+        ChartLegendPosition.Top,
       display: options?.legend?.visible ?? false,
     };
 
@@ -1041,7 +1194,9 @@ export class CanvasRenderer implements ChartRenderer {
     const padding = 10;
     const itemHeight = 20;
     const itemWidth = 80;
-    const itemsPerRow = Math.floor((chartArea.right - chartArea.left) / itemWidth);
+    const itemsPerRow = Math.floor(
+      (chartArea.right - chartArea.left) / itemWidth,
+    );
     const rows = Math.ceil(datasets.length / itemsPerRow);
 
     const legendWidth = Math.min(datasets.length, itemsPerRow) * itemWidth;
@@ -1051,19 +1206,19 @@ export class CanvasRenderer implements ChartRenderer {
     let startY: number | undefined;
 
     switch (legend.position) {
-      case 'top':
+      case "top":
         startX = (chartArea.left + chartArea.right - legendWidth) / 2;
         startY = chartArea.top - legendHeight - padding;
         break;
-      case 'bottom':
+      case "bottom":
         startX = (chartArea.left + chartArea.right - legendWidth) / 2;
         startY = chartArea.bottom + padding;
         break;
-      case 'left':
+      case "left":
         startX = chartArea.left - legendWidth - padding;
         startY = (chartArea.top + chartArea.bottom - legendHeight) / 2;
         break;
-      case 'right':
+      case "right":
         startX = chartArea.right + padding;
         startY = (chartArea.top + chartArea.bottom - legendHeight) / 2;
         break;
@@ -1089,16 +1244,20 @@ export class CanvasRenderer implements ChartRenderer {
 
       // Draw border around color box
       this.ctx!.strokeStyle =
-        options?.theme === 'dark' ? this.theme.dark.axisColor : this.theme.light.axisColor;
+        options?.theme === "dark"
+          ? this.theme.dark.axisColor
+          : this.theme.light.axisColor;
       this.ctx!.lineWidth = 1;
       this.ctx!.strokeRect(x, y + 4, 12, 12);
 
       // Draw text
       this.ctx!.fillStyle =
-        options?.theme === 'dark' ? this.theme.dark.textColor : this.theme.light.textColor;
-      this.ctx!.font = '12px Arial';
-      this.ctx!.textAlign = 'left';
-      this.ctx!.textBaseline = 'middle';
+        options?.theme === "dark"
+          ? this.theme.dark.textColor
+          : this.theme.light.textColor;
+      this.ctx!.font = "12px Arial";
+      this.ctx!.textAlign = "left";
+      this.ctx!.textBaseline = "middle";
       this.ctx!.fillText(dataset.label || `Series ${i + 1}`, x + 18, y + 10);
     });
   }
@@ -1106,7 +1265,11 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Set up tooltip for chart
    */
-  private setupTooltip(container: HTMLElement, data: ChartData, options: ChartOptions): void {
+  private setupTooltip(
+    container: HTMLElement,
+    data: ChartData,
+    options: ChartOptions,
+  ): void {
     if (!this.canvas) {
       return;
     }
@@ -1117,29 +1280,31 @@ export class CanvasRenderer implements ChartRenderer {
     }
 
     // Create tooltip element
-    this.tooltipElement = document.createElement('div');
-    this.tooltipElement.className = 'chart-tooltip';
-    this.tooltipElement.style.position = 'absolute';
-    this.tooltipElement.style.display = 'none';
-    this.tooltipElement.style.backgroundColor = options?.theme === 'dark' ? '#333' : '#fff';
-    this.tooltipElement.style.color = options?.theme === 'dark' ? '#fff' : '#333';
-    this.tooltipElement.style.border = `1px solid ${options?.theme === 'dark' ? '#555' : '#ddd'}`;
-    this.tooltipElement.style.padding = '8px';
-    this.tooltipElement.style.borderRadius = '4px';
-    this.tooltipElement.style.pointerEvents = 'none';
-    this.tooltipElement.style.zIndex = '1000';
-    this.tooltipElement.style.fontSize = '12px';
-    this.tooltipElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+    this.tooltipElement = document.createElement("div");
+    this.tooltipElement.className = "chart-tooltip";
+    this.tooltipElement.style.position = "absolute";
+    this.tooltipElement.style.display = "none";
+    this.tooltipElement.style.backgroundColor =
+      options?.theme === "dark" ? "#333" : "#fff";
+    this.tooltipElement.style.color =
+      options?.theme === "dark" ? "#fff" : "#333";
+    this.tooltipElement.style.border = `1px solid ${options?.theme === "dark" ? "#555" : "#ddd"}`;
+    this.tooltipElement.style.padding = "8px";
+    this.tooltipElement.style.borderRadius = "4px";
+    this.tooltipElement.style.pointerEvents = "none";
+    this.tooltipElement.style.zIndex = "1000";
+    this.tooltipElement.style.fontSize = "12px";
+    this.tooltipElement.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
 
     container.appendChild(this.tooltipElement);
 
     // Add event listeners
-    this.canvas.addEventListener('mousemove', e =>
-      this.handleMouseMove(e, data, options, container)
+    this.canvas.addEventListener("mousemove", (e) =>
+      this.handleMouseMove(e, data, options, container),
     );
-    this.canvas.addEventListener('mouseout', () => {
+    this.canvas.addEventListener("mouseout", () => {
       if (this.tooltipElement) {
-        this.tooltipElement.style.display = 'none';
+        this.tooltipElement.style.display = "none";
       }
     });
   }
@@ -1151,7 +1316,7 @@ export class CanvasRenderer implements ChartRenderer {
     e: MouseEvent,
     data: ChartData,
     options: ChartOptions,
-    container: HTMLElement
+    container: HTMLElement,
   ): void {
     if (!this.canvas || !this.ctx || !this.tooltipElement) {
       return;
@@ -1164,16 +1329,21 @@ export class CanvasRenderer implements ChartRenderer {
     const chartArea = this.calculateChartArea(options);
 
     // Only process if mouse is inside chart area
-    if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
-      this.tooltipElement.style.display = 'none';
+    if (
+      x < chartArea.left ||
+      x > chartArea.right ||
+      y < chartArea.top ||
+      y > chartArea.bottom
+    ) {
+      this.tooltipElement.style.display = "none";
       return;
     }
 
     // Find nearest data point(s) using tooltip options
     const tooltipMode =
-      options?.tooltip?.mode === 'nearest' ||
-      options?.tooltip?.mode === 'point' ||
-      options?.tooltip?.mode === 'dataset'
+      options?.tooltip?.mode === "nearest" ||
+      options?.tooltip?.mode === "point" ||
+      options?.tooltip?.mode === "dataset"
         ? ChartTooltipMode.Nearest
         : ChartTooltipMode.Index;
 
@@ -1184,22 +1354,23 @@ export class CanvasRenderer implements ChartRenderer {
       options,
       chartArea,
       tooltipMode,
-      options?.tooltip?.intersect !== false
+      options?.tooltip?.intersect !== false,
     );
 
     if (nearestPoints.length === 0) {
-      this.tooltipElement.style.display = 'none';
+      this.tooltipElement.style.display = "none";
       return;
     }
 
     // Build tooltip content
-    let tooltipContent = '';
+    let tooltipContent = "";
 
     nearestPoints.forEach(({ dataset, point, dataIndex }) => {
-      const formattedX = point.x instanceof Date ? point.x.toLocaleDateString() : point.x;
+      const formattedX =
+        point.x instanceof Date ? point.x.toLocaleDateString() : point.x;
 
       const formattedY =
-        typeof point.y === 'number'
+        typeof point.y === "number"
           ? point.y.toLocaleString(undefined, { maximumFractionDigits: 2 })
           : point.y;
 
@@ -1217,7 +1388,7 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Update tooltip
     this.tooltipElement.innerHTML = tooltipContent;
-    this.tooltipElement.style.display = 'block';
+    this.tooltipElement.style.display = "block";
 
     // Position tooltip
     const tooltipRect = this.tooltipElement.getBoundingClientRect();
@@ -1247,34 +1418,48 @@ export class CanvasRenderer implements ChartRenderer {
     options: ChartOptions,
     chartArea: ChartArea,
     mode: ChartTooltipMode,
-    intersect: boolean
-  ): { dataset: ChartData['datasets'][0]; point: ChartPoint; dataIndex: number }[] {
+    intersect: boolean,
+  ): {
+    dataset: ChartData["datasets"][0];
+    point: ChartPoint;
+    dataIndex: number;
+  }[] {
     const { datasets } = data;
-    const axes = options?.axes ?? { x: { type: 'linear' }, y: { type: 'linear' } };
+    const axes = options?.axes ?? {
+      x: { type: "linear" },
+      y: { type: "linear" },
+    };
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
 
     const nearestPoints: {
-      dataset: ChartData['datasets'][0];
+      dataset: ChartData["datasets"][0];
       point: ChartPoint;
       dataIndex: number;
       distance: number;
     }[] = [];
 
     datasets.forEach((dataset, datasetIndex) => {
-      dataset.data?.forEach(point => {
+      dataset.data?.forEach((point) => {
         const normalizedX = this.normalizeValue(point.x);
         const normalizedY = this.normalizeValue(point.y);
-        const pointX = this.mapValueToPixel(normalizedX, scales.x, chartArea.left, chartArea.right);
+        const pointX = this.mapValueToPixel(
+          normalizedX,
+          scales.x,
+          chartArea.left,
+          chartArea.right,
+        );
         const pointY = this.mapValueToPixel(
           normalizedY,
           scales.y,
           chartArea.bottom,
           chartArea.top,
-          true
+          true,
         );
 
         // Calculate distance
-        const distance = Math.sqrt(Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2));
+        const distance = Math.sqrt(
+          Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
+        );
         const radius = (point as ChartPoint).radius ?? 4;
 
         nearestPoints.push({
@@ -1295,7 +1480,9 @@ export class CanvasRenderer implements ChartRenderer {
     // Sort points by distance and return closest ones based on mode
     const filtered =
       mode === ChartTooltipMode.Nearest
-        ? nearestPoints.filter(p => !intersect || p.distance < (p.point.radius ?? 4))
+        ? nearestPoints.filter(
+            (p) => !intersect || p.distance < (p.point.radius ?? 4),
+          )
         : nearestPoints;
 
     return filtered
@@ -1309,23 +1496,27 @@ export class CanvasRenderer implements ChartRenderer {
   private calculateScales(
     data: ChartData,
     chartArea: ChartArea,
-    xAxis: ChartAxes['x'],
-    yAxis: ChartAxes['y']
+    xAxis: ChartAxes["x"],
+    yAxis: ChartAxes["y"],
   ): ChartScales {
     if (!data?.datasets.length) {
       return {
-        x: { min: 0, max: 1, type: 'linear' },
-        y: { min: 0, max: 1, type: 'linear' },
+        x: { min: 0, max: 1, type: "linear" },
+        y: { min: 0, max: 1, type: "linear" },
       };
     }
 
     const xValues = data?.datasets
-      .flatMap(dataset => dataset.data?.map(point => this.normalizeValue(point.x)))
-      .filter(value => typeof value === 'number' && isFinite(value));
+      .flatMap((dataset) =>
+        dataset.data?.map((point) => this.normalizeValue(point.x)),
+      )
+      .filter((value) => typeof value === "number" && isFinite(value));
 
     const yValues = data?.datasets
-      .flatMap(dataset => dataset.data?.map(point => this.normalizeValue(point.y)))
-      .filter(value => typeof value === 'number' && isFinite(value));
+      .flatMap((dataset) =>
+        dataset.data?.map((point) => this.normalizeValue(point.y)),
+      )
+      .filter((value) => typeof value === "number" && isFinite(value));
 
     const xMin = xValues.length ? Math.min(...xValues) : 0;
     const xMax = xValues.length ? Math.max(...xValues) : 1;
@@ -1338,20 +1529,20 @@ export class CanvasRenderer implements ChartRenderer {
 
     return {
       x: {
-        min: typeof xAxis.min === 'number' ? xAxis.min : xMin - xPadding,
-        max: typeof xAxis.max === 'number' ? xAxis.max : xMax + xPadding,
-        type: xAxis.type ?? 'linear',
+        min: typeof xAxis.min === "number" ? xAxis.min : xMin - xPadding,
+        max: typeof xAxis.max === "number" ? xAxis.max : xMax + xPadding,
+        type: xAxis.type ?? "linear",
       },
       y: {
-        min: typeof yAxis.min === 'number' ? yAxis.min : yMin - yPadding,
-        max: typeof yAxis.max === 'number' ? yAxis.max : yMax + yPadding,
-        type: yAxis.type ?? 'linear',
+        min: typeof yAxis.min === "number" ? yAxis.min : yMin - yPadding,
+        max: typeof yAxis.max === "number" ? yAxis.max : yMax + yPadding,
+        type: yAxis.type ?? "linear",
       },
     };
   }
 
   private normalizeValue(
-    value: ChartDataPoint['x'] | ChartDataPoint['y'] | null | undefined
+    value: ChartDataPoint["x"] | ChartDataPoint["y"] | null | undefined,
   ): number {
     if (value === null || value === undefined) {
       return 0;
@@ -1359,11 +1550,11 @@ export class CanvasRenderer implements ChartRenderer {
     if (value instanceof Date) {
       return value.getTime();
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       const parsed = parseFloat(value);
       return isFinite(parsed) ? parsed : 0;
     }
-    return typeof value === 'number' && isFinite(value) ? value : 0;
+    return typeof value === "number" && isFinite(value) ? value : 0;
   }
 
   /**
@@ -1374,7 +1565,7 @@ export class CanvasRenderer implements ChartRenderer {
     scale: ChartScale,
     start: number,
     end: number,
-    invert = false
+    invert = false,
   ): number {
     const range = end - start;
     const domain = scale.max - scale.min;
@@ -1387,10 +1578,10 @@ export class CanvasRenderer implements ChartRenderer {
    */
   private getAllXValues(data: ChartData): string[] {
     const allValues = new Set<string>();
-    data?.datasets.forEach(dataset => {
-      dataset.data?.forEach(point => {
+    data?.datasets.forEach((dataset) => {
+      dataset.data?.forEach((point) => {
         const value = this.normalizeValue(point.x);
-        if (typeof value === 'number' && isFinite(value)) {
+        if (typeof value === "number" && isFinite(value)) {
           allValues.add(String(value));
         }
       });
@@ -1398,7 +1589,9 @@ export class CanvasRenderer implements ChartRenderer {
     return Array.from(allValues).sort((a, b) => {
       const aNum = parseFloat(a);
       const bNum = parseFloat(b);
-      return isFinite(aNum) && isFinite(bNum) ? aNum - bNum : a.localeCompare(b);
+      return isFinite(aNum) && isFinite(bNum)
+        ? aNum - bNum
+        : a.localeCompare(b);
     });
   }
 
@@ -1407,16 +1600,16 @@ export class CanvasRenderer implements ChartRenderer {
    */
   private getDefaultColor(index: number): string {
     const colors = [
-      '#4e79a7',
-      '#f28e2c',
-      '#e15759',
-      '#76b7b2',
-      '#59a14f',
-      '#edc949',
-      '#af7aa1',
-      '#ff9da7',
-      '#9c755f',
-      '#bab0ab',
+      "#4e79a7",
+      "#f28e2c",
+      "#e15759",
+      "#76b7b2",
+      "#59a14f",
+      "#edc949",
+      "#af7aa1",
+      "#ff9da7",
+      "#9c755f",
+      "#bab0ab",
     ];
     return colors[index % colors.length];
   }
@@ -1442,10 +1635,15 @@ export class CanvasRenderer implements ChartRenderer {
 
   private calculateChartArea(options: ChartOptions): ChartArea {
     if (!this.canvas) {
-      throw new Error('Canvas is not initialized');
+      throw new Error("Canvas is not initialized");
     }
 
-    const defaultPadding: ChartPadding = { top: 40, right: 40, bottom: 40, left: 60 };
+    const defaultPadding: ChartPadding = {
+      top: 40,
+      right: 40,
+      bottom: 40,
+      left: 60,
+    };
     const padding: ChartPadding = {
       top: options?.padding?.top ?? defaultPadding.top,
       right: options?.padding?.right ?? defaultPadding.right,

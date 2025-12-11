@@ -1,24 +1,23 @@
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import
-  {
-    errorLoggingService,
-    ErrorSeverity,
-    ErrorType
-  } from '../../services/logging/ErrorLoggingService';
-import { EventType } from '../../types/events/EventTypes';
-import
-  {
-    FlowConnection,
-    FlowNode,
-    FlowNodeType,
-    ResourcePriorityConfig,
-    ResourceState,
-    ResourceTransfer,
-    ResourceType
-  } from '../../types/resources/ResourceTypes';
-import { validateResourceTransfer } from '../../utils/typeGuards/resourceTypeGuards';
-import { ResourceFlowWorkerUtil } from '../../utils/workers/ResourceFlowWorkerUtil';
-import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+import { eventSystem } from "../../lib/events/UnifiedEventSystem";
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from "../../services/logging/ErrorLoggingService";
+import { EventType } from "../../types/events/EventTypes";
+import {
+  FlowConnection,
+  FlowNode,
+  FlowNodeType,
+  ResourcePriorityConfig,
+  ResourceState,
+  ResourceTransfer,
+  ResourceType,
+} from "../../types/resources/ResourceTypes";
+import { validateResourceTransfer } from "../../utils/typeGuards/resourceTypeGuards";
+import { ResourceFlowWorkerUtil } from "../../utils/workers/ResourceFlowWorkerUtil";
+// Use type-only import to break circular dependency with ResourceSystem
+import type { ResourceSystem, ResourceSystemConfig } from "../ResourceSystem";
 
 /**
  * Flow optimization result
@@ -120,10 +119,12 @@ export class ResourceFlowSubsystem {
         this.workerUtil = new ResourceFlowWorkerUtil();
       } catch (error) {
         errorLoggingService.logError(
-          error instanceof Error ? error : new Error('Failed to initialize ResourceFlowWorkerUtil'),
+          error instanceof Error
+            ? error
+            : new Error("Failed to initialize ResourceFlowWorkerUtil"),
           ErrorType.INITIALIZATION,
           ErrorSeverity.HIGH,
-          { componentName: 'ResourceFlowSubsystem', action: 'constructor' }
+          { componentName: "ResourceFlowSubsystem", action: "constructor" },
         );
       }
     }
@@ -144,10 +145,12 @@ export class ResourceFlowSubsystem {
       this.isInitialized = true;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to initialize ResourceFlowSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error("Failed to initialize ResourceFlowSubsystem"),
         ErrorType.INITIALIZATION,
         ErrorSeverity.CRITICAL,
-        { componentName: 'ResourceFlowSubsystem', action: 'initialize' }
+        { componentName: "ResourceFlowSubsystem", action: "initialize" },
       );
       throw error;
     }
@@ -189,10 +192,12 @@ export class ResourceFlowSubsystem {
       this.isInitialized = false;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to dispose ResourceFlowSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error("Failed to dispose ResourceFlowSubsystem"),
         ErrorType.RUNTIME,
         ErrorSeverity.HIGH,
-        { componentName: 'ResourceFlowSubsystem', action: 'dispose' }
+        { componentName: "ResourceFlowSubsystem", action: "dispose" },
       );
       throw error;
     }
@@ -203,11 +208,11 @@ export class ResourceFlowSubsystem {
    */
   private initializeEventSubscriptions(): void {
     // Subscribe to relevant events
-    eventSystem.subscribe('MODULE_CREATED', this.handleModuleCreated);
-    eventSystem.subscribe('MODULE_UPDATED', this.handleModuleUpdated);
-    eventSystem.subscribe('MODULE_DESTROYED', this.handleModuleDestroyed);
-    eventSystem.subscribe('MODULE_ENABLED', this.handleModuleStateChanged);
-    eventSystem.subscribe('MODULE_DISABLED', this.handleModuleStateChanged);
+    eventSystem.subscribe("MODULE_CREATED", this.handleModuleCreated);
+    eventSystem.subscribe("MODULE_UPDATED", this.handleModuleUpdated);
+    eventSystem.subscribe("MODULE_DESTROYED", this.handleModuleDestroyed);
+    eventSystem.subscribe("MODULE_ENABLED", this.handleModuleStateChanged);
+    eventSystem.subscribe("MODULE_DISABLED", this.handleModuleStateChanged);
   }
 
   /**
@@ -252,12 +257,16 @@ export class ResourceFlowSubsystem {
    * Registers a node in the resource flow network
    */
   public registerNode(node: FlowNode): boolean {
-    if (!node.id || !node.resources || Object.keys(node.resources).length === 0) {
+    if (
+      !node.id ||
+      !node.resources ||
+      Object.keys(node.resources).length === 0
+    ) {
       errorLoggingService.logError(
-        new Error('Invalid flow node: ' + JSON.stringify(node)),
+        new Error("Invalid flow node: " + JSON.stringify(node)),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerNode' }
+        { componentName: "ResourceFlowSubsystem", action: "registerNode" },
       );
       return false;
     }
@@ -305,15 +314,17 @@ export class ResourceFlowSubsystem {
         }
       } else {
         errorLoggingService.logError(
-          new Error(`Invalid resource key "${resourceKey}" found in node ${node.id}`),
+          new Error(
+            `Invalid resource key "${resourceKey}" found in node ${node.id}`,
+          ),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
           {
-            componentName: 'ResourceFlowSubsystem',
-            action: 'registerNode',
+            componentName: "ResourceFlowSubsystem",
+            action: "registerNode",
             nodeId: node.id,
             resourceKey,
-          }
+          },
         );
       }
     }
@@ -377,16 +388,16 @@ export class ResourceFlowSubsystem {
         // Log potential issue if key wasn't a valid ResourceType during removal
         errorLoggingService.logError(
           new Error(
-            `Attempted to unregister node ${id} with potentially invalid resource key "${resourceKey}"`
+            `Attempted to unregister node ${id} with potentially invalid resource key "${resourceKey}"`,
           ),
           ErrorType.VALIDATION,
           ErrorSeverity.LOW,
           {
-            componentName: 'ResourceFlowSubsystem',
-            action: 'unregisterNode',
+            componentName: "ResourceFlowSubsystem",
+            action: "unregisterNode",
             nodeId: id,
             resourceKey,
-          }
+          },
         );
       }
     }
@@ -418,10 +429,13 @@ export class ResourceFlowSubsystem {
       (connection.maxRate ?? 0) <= 0
     ) {
       errorLoggingService.logError(
-        new Error('Invalid connection: ' + JSON.stringify(connection)),
+        new Error("Invalid connection: " + JSON.stringify(connection)),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerConnection",
+        },
       );
       return false;
     }
@@ -432,7 +446,10 @@ export class ResourceFlowSubsystem {
         new Error(`Source node ${connection.source} does not exist`),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerConnection",
+        },
       );
       return false;
     }
@@ -442,7 +459,10 @@ export class ResourceFlowSubsystem {
         new Error(`Target node ${connection.target} does not exist`),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerConnection",
+        },
       );
       return false;
     }
@@ -450,16 +470,21 @@ export class ResourceFlowSubsystem {
     // Ensure source node has the resource type
     const sourceNode = this.nodes.get(connection.source);
     const hasRequiredResourceType = connection.resourceTypes.some(
-      rt => sourceNode?.resources && Object.prototype.hasOwnProperty.call(sourceNode.resources, rt)
+      (rt) =>
+        sourceNode?.resources &&
+        Object.prototype.hasOwnProperty.call(sourceNode.resources, rt),
     );
     if (!sourceNode || !hasRequiredResourceType) {
       errorLoggingService.logError(
         new Error(
-          `Source node ${connection.source} does not have required resource type(s): ${connection.resourceTypes.join(', ')}`
+          `Source node ${connection.source} does not have required resource type(s): ${connection.resourceTypes.join(", ")}`,
         ),
         ErrorType.VALIDATION,
         ErrorSeverity.LOW,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerConnection' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerConnection",
+        },
       );
       return false;
     }
@@ -472,7 +497,7 @@ export class ResourceFlowSubsystem {
     this.addToArray(this.targetConnections, connection.target, connection.id);
 
     // Invalidate cache for affected resources
-    connection.resourceTypes.forEach(rt => this.invalidateCache(rt));
+    connection.resourceTypes.forEach((rt) => this.invalidateCache(rt));
 
     return true;
   }
@@ -494,7 +519,7 @@ export class ResourceFlowSubsystem {
     this.connections.delete(id);
 
     // Invalidate cache for affected resources
-    connection.resourceTypes.forEach(rt => this.invalidateCache(rt));
+    connection.resourceTypes.forEach((rt) => this.invalidateCache(rt));
 
     return true;
   }
@@ -506,7 +531,7 @@ export class ResourceFlowSubsystem {
     sourceId: string,
     targetId: string,
     resourceType: ResourceType,
-    rate: number
+    rate: number,
   ): boolean {
     // Check if source and target nodes exist
     const source = this.nodes.get(sourceId);
@@ -515,11 +540,14 @@ export class ResourceFlowSubsystem {
     if (!source || !target) {
       errorLoggingService.logError(
         new Error(
-          `Cannot register flow: source or target node not found (Source: ${sourceId}, Target: ${targetId})`
+          `Cannot register flow: source or target node not found (Source: ${sourceId}, Target: ${targetId})`,
         ),
         ErrorType.VALIDATION,
         ErrorSeverity.MEDIUM,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerResourceFlow' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerResourceFlow",
+        },
       );
       return false;
     }
@@ -533,7 +561,10 @@ export class ResourceFlowSubsystem {
         new Error(`Source node ${sourceId} does not produce ${resourceType}`),
         ErrorType.VALIDATION,
         ErrorSeverity.MEDIUM,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerResourceFlow' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerResourceFlow",
+        },
       );
       return false;
     }
@@ -547,7 +578,10 @@ export class ResourceFlowSubsystem {
         new Error(`Target node ${targetId} does not accept ${resourceType}`),
         ErrorType.VALIDATION,
         ErrorSeverity.MEDIUM,
-        { componentName: 'ResourceFlowSubsystem', action: 'registerResourceFlow' }
+        {
+          componentName: "ResourceFlowSubsystem",
+          action: "registerResourceFlow",
+        },
       );
       return false;
     }
@@ -631,8 +665,12 @@ export class ResourceFlowSubsystem {
 
     try {
       // Get active nodes and connections
-      const activeNodes = Array.from(this.nodes.values()).filter(node => node.active);
-      const activeConnections = Array.from(this.connections.values()).filter(conn => conn.active);
+      const activeNodes = Array.from(this.nodes.values()).filter(
+        (node) => node.active,
+      );
+      const activeConnections = Array.from(this.connections.values()).filter(
+        (conn) => conn.active,
+      );
 
       // Check if we should use Web Worker offloading
       if (
@@ -644,7 +682,7 @@ export class ResourceFlowSubsystem {
           // Offload optimization to Web Worker
           const result = await this.workerUtil.optimizeFlows(
             // Convert to the expected FlowNode type from StandardizedResourceTypes
-            activeNodes.map(node => {
+            activeNodes.map((node) => {
               // Keep resources as Record<ResourceType, ResourceState>
               return {
                 id: node.id,
@@ -653,7 +691,7 @@ export class ResourceFlowSubsystem {
                 capacity: node.capacity ?? 100, // Use node capacity or default
                 currentLoad: 0, // Placeholder
                 // efficiency: node.efficiency || 1.0, // Remove efficiency
-                status: node.active ? 'active' : 'inactive',
+                status: node.active ? "active" : "inactive",
                 resources: node.resources, // Pass the original Record
                 active: node.active,
                 x: node.x,
@@ -664,7 +702,7 @@ export class ResourceFlowSubsystem {
               } as FlowNode; // Use the imported FlowNode type
             }),
             // Convert to the expected FlowConnection type
-            activeConnections.map(conn => ({
+            activeConnections.map((conn) => ({
               id: conn.id,
               source: conn.source,
               target: conn.target,
@@ -676,11 +714,10 @@ export class ResourceFlowSubsystem {
             })),
             // Convert Map to expected parameter type
             new Map(
-              Object.entries(Object.fromEntries(this.resourceStates)).map(([key, value]) => [
-                key as ResourceType,
-                value,
-              ])
-            )
+              Object.entries(Object.fromEntries(this.resourceStates)).map(
+                ([key, value]) => [key as ResourceType, value],
+              ),
+            ),
           );
 
           // Apply the results from the worker
@@ -688,14 +725,13 @@ export class ResourceFlowSubsystem {
 
           // Add execution time to performance metrics
           result.performanceMetrics ??= {
-              executionTimeMs: 0,
-              nodesProcessed: activeNodes.length,
-              connectionsProcessed: activeConnections.length,
-              transfersGenerated: result.transfers?.length ?? 0,
-            };
+            executionTimeMs: 0,
+            nodesProcessed: activeNodes.length,
+            connectionsProcessed: activeConnections.length,
+            transfersGenerated: result.transfers?.length ?? 0,
+          };
 
           result.performanceMetrics.executionTimeMs = Date.now() - startTime;
-
 
           const convertedResult = this.convertWorkerResult(result);
           this.lastOptimizationResult = convertedResult;
@@ -703,20 +739,30 @@ export class ResourceFlowSubsystem {
           return convertedResult;
         } catch (error) {
           errorLoggingService.logError(
-            new Error(`Web Worker optimization failed, falling back to main thread: ${String(error)}`),
+            new Error(
+              `Web Worker optimization failed, falling back to main thread: ${String(error)}`,
+            ),
             ErrorType.WORKER,
             ErrorSeverity.MEDIUM,
-            { componentName: 'ResourceFlowSubsystem', action: 'optimizeFlows' }
+            { componentName: "ResourceFlowSubsystem", action: "optimizeFlows" },
           );
           // Fall back to main thread optimization
         }
       }
 
       // Categorize nodes by type
-      const producers = activeNodes.filter(node => node.type === FlowNodeType.PRODUCER);
-      const consumers = activeNodes.filter(node => node.type === FlowNodeType.CONSUMER);
-      const storages = activeNodes.filter(node => node.type === FlowNodeType.STORAGE);
-      const converters = activeNodes.filter(node => node.type === FlowNodeType.CONVERTER);
+      const producers = activeNodes.filter(
+        (node) => node.type === FlowNodeType.PRODUCER,
+      );
+      const consumers = activeNodes.filter(
+        (node) => node.type === FlowNodeType.CONSUMER,
+      );
+      const storages = activeNodes.filter(
+        (node) => node.type === FlowNodeType.STORAGE,
+      );
+      const converters = activeNodes.filter(
+        (node) => node.type === FlowNodeType.CONVERTER,
+      );
 
       // Process converters
       this.processConverters(converters, activeConnections);
@@ -726,17 +772,20 @@ export class ResourceFlowSubsystem {
         producers,
         consumers,
         storages,
-        activeConnections
+        activeConnections,
       );
 
       // Identify resource issues
-      const { bottlenecks, underutilized } = this.identifyResourceIssues(availability, demand);
+      const { bottlenecks, underutilized } = this.identifyResourceIssues(
+        availability,
+        demand,
+      );
 
       // Optimize flow rates
       const { updatedConnections, transfers } = this.optimizeFlowRates(
         activeConnections,
         availability,
-        demand
+        demand,
       );
 
       // Update connections with optimized rates
@@ -796,9 +845,12 @@ export class ResourceFlowSubsystem {
   /**
    * Process converters
    */
-  private processConverters(converters: FlowNode[], activeConnections: FlowConnection[]): void {
+  private processConverters(
+    converters: FlowNode[],
+    activeConnections: FlowConnection[],
+  ): void {
     // Process each converter node
-    converters.forEach(converter => {
+    converters.forEach((converter) => {
       this.processAdvancedConverter(converter, activeConnections);
     });
   }
@@ -808,15 +860,18 @@ export class ResourceFlowSubsystem {
    */
   private processAdvancedConverter(
     converter: FlowNode,
-     
-    _activeConnections: FlowConnection[]
+
+    _activeConnections: FlowConnection[],
   ): void {
     // Implementation of advanced converter logic will go here
     errorLoggingService.logError(
       new Error(`Processing advanced converter: ${converter.id}`),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
-      { componentName: 'ResourceFlowSubsystem', action: 'processAdvancedConverter' }
+      {
+        componentName: "ResourceFlowSubsystem",
+        action: "processAdvancedConverter",
+      },
     );
   }
 
@@ -827,7 +882,7 @@ export class ResourceFlowSubsystem {
     producers: FlowNode[],
     consumers: FlowNode[],
     storages: FlowNode[],
-    activeConnections: FlowConnection[]
+    activeConnections: FlowConnection[],
   ): {
     availability: Partial<Record<ResourceType, number>>;
     demand: Partial<Record<ResourceType, number>>;
@@ -836,7 +891,7 @@ export class ResourceFlowSubsystem {
     const demand: Partial<Record<ResourceType, number>> = {};
 
     // Initialize with zero values for all resource types
-    Object.values(ResourceType).forEach(type => {
+    Object.values(ResourceType).forEach((type) => {
       availability[type] = 0;
       demand[type] = 0;
     });
@@ -844,28 +899,36 @@ export class ResourceFlowSubsystem {
     // Calculate availability from producers and storage
     for (const producer of producers) {
       // Iterate over keys of the producer's resources
-      for (const resourceType of Object.keys(producer.resources) as ResourceType[]) {
+      for (const resourceType of Object.keys(
+        producer.resources,
+      ) as ResourceType[]) {
         const state = producer.resources[resourceType];
         if (state) {
           // Find outgoing connections for this resource
           const outgoingConnections = activeConnections.filter(
-            conn => conn.source === producer.id && conn.resourceTypes.includes(resourceType)
+            (conn) =>
+              conn.source === producer.id &&
+              conn.resourceTypes.includes(resourceType),
           );
           const maxOutflow = outgoingConnections.reduce(
             (sum, conn) => sum + (conn.maxRate ?? 0),
-            0
+            0,
           ); // Add null check
           availability[resourceType] =
-            (availability[resourceType] ?? 0) + Math.min(state.production, maxOutflow); // Use production rate
+            (availability[resourceType] ?? 0) +
+            Math.min(state.production, maxOutflow); // Use production rate
         }
       }
     }
     for (const storage of storages) {
       // Iterate over keys of the storage's resources
-      for (const resourceType of Object.keys(storage.resources) as ResourceType[]) {
+      for (const resourceType of Object.keys(
+        storage.resources,
+      ) as ResourceType[]) {
         const state = storage.resources[resourceType];
         if (state) {
-          availability[resourceType] = (availability[resourceType] ?? 0) + state.current; // Add current stored amount
+          availability[resourceType] =
+            (availability[resourceType] ?? 0) + state.current; // Add current stored amount
         }
       }
     }
@@ -873,16 +936,24 @@ export class ResourceFlowSubsystem {
     // Calculate demand from consumers
     for (const consumer of consumers) {
       // Iterate over keys of the consumer's resources
-      for (const resourceType of Object.keys(consumer.resources) as ResourceType[]) {
+      for (const resourceType of Object.keys(
+        consumer.resources,
+      ) as ResourceType[]) {
         const state = consumer.resources[resourceType];
         if (state) {
           // Find incoming connections for this resource
           const incomingConnections = activeConnections.filter(
-            conn => conn.target === consumer.id && conn.resourceTypes.includes(resourceType)
+            (conn) =>
+              conn.target === consumer.id &&
+              conn.resourceTypes.includes(resourceType),
           );
-          const maxInflow = incomingConnections.reduce((sum, conn) => sum + (conn.maxRate ?? 0), 0); // Add null check
+          const maxInflow = incomingConnections.reduce(
+            (sum, conn) => sum + (conn.maxRate ?? 0),
+            0,
+          ); // Add null check
           demand[resourceType] =
-            (demand[resourceType] ?? 0) + Math.min(state.consumption, maxInflow); // Use consumption rate
+            (demand[resourceType] ?? 0) +
+            Math.min(state.consumption, maxInflow); // Use consumption rate
         }
       }
     }
@@ -895,7 +966,7 @@ export class ResourceFlowSubsystem {
    */
   private identifyResourceIssues(
     availability: Partial<Record<ResourceType, number>>,
-    demand: Partial<Record<ResourceType, number>>
+    demand: Partial<Record<ResourceType, number>>,
   ): {
     bottlenecks: string[];
     underutilized: string[];
@@ -922,7 +993,7 @@ export class ResourceFlowSubsystem {
   private optimizeFlowRates(
     activeConnections: FlowConnection[],
     availability: Partial<Record<ResourceType, number>>,
-    demand: Partial<Record<ResourceType, number>>
+    demand: Partial<Record<ResourceType, number>>,
   ): {
     updatedConnections: FlowConnection[];
     transfers: ResourceTransfer[];
@@ -933,7 +1004,7 @@ export class ResourceFlowSubsystem {
 
     // Sort connections by priority (high to low)
     const prioritizedConnections = [...activeConnections].sort(
-      (a, b) => (b.priority?.priority ?? 0) - (a.priority?.priority ?? 0) // Added null checks and default value
+      (a, b) => (b.priority?.priority ?? 0) - (a.priority?.priority ?? 0), // Added null checks and default value
     );
 
     // Adjust flow rates
@@ -954,7 +1025,10 @@ export class ResourceFlowSubsystem {
         connection.currentRate = 0;
       } else if (availableForType >= demandForType) {
         // Full flow possible
-        connection.currentRate = Math.min(connection.maxRate ?? Infinity, demandForType); // Default maxRate to Infinity
+        connection.currentRate = Math.min(
+          connection.maxRate ?? Infinity,
+          demandForType,
+        ); // Default maxRate to Infinity
       } else {
         // Partial flow based on ratio
         const ratio = availableForType / demandForType;
@@ -991,7 +1065,9 @@ export class ResourceFlowSubsystem {
 
     // Trim history if needed
     if (this.transferHistory.length > this.config.maxHistorySize) {
-      this.transferHistory = this.transferHistory.slice(-this.config.maxHistorySize);
+      this.transferHistory = this.transferHistory.slice(
+        -this.config.maxHistorySize,
+      );
     }
   }
 
@@ -1058,7 +1134,7 @@ export class ResourceFlowSubsystem {
   // Module event handlers
   private handleModuleCreated = (event: unknown): void => {
     // Type guard to ensure the event has the expected properties
-    if (!event || typeof event !== 'object') {
+    if (!event || typeof event !== "object") {
       return;
     }
 
@@ -1075,11 +1151,14 @@ export class ResourceFlowSubsystem {
     // Determine node type based on module type
     let nodeType: FlowNodeType;
     // Use FlowNodeType enum values
-    if (eventData.moduleType === 'producer' || eventData.moduleType === 'mining') {
+    if (
+      eventData.moduleType === "producer" ||
+      eventData.moduleType === "mining"
+    ) {
       nodeType = FlowNodeType.PRODUCER;
-    } else if (eventData.moduleType === 'storage') {
+    } else if (eventData.moduleType === "storage") {
       nodeType = FlowNodeType.STORAGE;
-    } else if (eventData.moduleType === 'converter') {
+    } else if (eventData.moduleType === "converter") {
       nodeType = FlowNodeType.CONVERTER;
     } else {
       // Default to consumer if module type doesn't match others
@@ -1095,7 +1174,13 @@ export class ResourceFlowSubsystem {
       // Assign a default state if not provided in the event
       // const providedState = eventData.resources?.includes(resTypeEnum); // Removed unused variable
       // TODO: Get default state more dynamically if possible
-      resourcesMap[resTypeEnum] = { current: 0, max: 1000, min: 0, production: 0, consumption: 0 };
+      resourcesMap[resTypeEnum] = {
+        current: 0,
+        max: 1000,
+        min: 0,
+        production: 0,
+        consumption: 0,
+      };
     }
 
     // Create and register node
@@ -1120,7 +1205,7 @@ export class ResourceFlowSubsystem {
 
   private handleModuleUpdated = (event: unknown): void => {
     // Type guard to ensure the event has the expected properties
-    if (!event || typeof event !== 'object') {
+    if (!event || typeof event !== "object") {
       return;
     }
 
@@ -1147,7 +1232,9 @@ export class ResourceFlowSubsystem {
     if (eventData.changes.resources) {
       // Update the existing resources map based on the incoming array
       const newResourceTypes = new Set(eventData.changes.resources);
-      const currentResourceTypes = Object.keys(node.resources) as ResourceType[];
+      const currentResourceTypes = Object.keys(
+        node.resources,
+      ) as ResourceType[];
 
       // Add new resource types with default state
       for (const resType of newResourceTypes) {
@@ -1193,7 +1280,7 @@ export class ResourceFlowSubsystem {
 
   private handleModuleDestroyed = (event: unknown): void => {
     // Type guard to ensure the event has the expected properties
-    if (!event || typeof event !== 'object') {
+    if (!event || typeof event !== "object") {
       return;
     }
 
@@ -1207,7 +1294,7 @@ export class ResourceFlowSubsystem {
 
   private handleModuleStateChanged = (event: unknown): void => {
     // Type guard to ensure the event has the expected properties
-    if (!event || typeof event !== 'object') {
+    if (!event || typeof event !== "object") {
       return;
     }
 
@@ -1240,10 +1327,12 @@ export class ResourceFlowSubsystem {
   /**
    * Convert worker result to the format expected by the subsystem
    */
-  private convertWorkerResult(result: WorkerOptimizationResult): FlowOptimizationResult {
+  private convertWorkerResult(
+    result: WorkerOptimizationResult,
+  ): FlowOptimizationResult {
     return {
       ...result,
-      updatedConnections: result.updatedConnections.map(wc => {
+      updatedConnections: result.updatedConnections.map((wc) => {
         const existingConn = this.connections.get(wc.id);
         return {
           id: wc.id,
@@ -1254,7 +1343,7 @@ export class ResourceFlowSubsystem {
           maxRate: wc.maxRate ?? existingConn?.maxRate ?? 0,
           currentRate: wc.currentRate ?? existingConn?.currentRate ?? 0,
           priority:
-            typeof wc.priority === 'number'
+            typeof wc.priority === "number"
               ? existingConn?.priority
               : (wc.priority as ResourcePriorityConfig),
           active: wc.active ?? existingConn?.active ?? false,

@@ -9,10 +9,17 @@
  * - Deduplicating similar errors to prevent log spam
  */
 
-import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
-import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { ErrorDetails, ErrorSeverity, ErrorType, IErrorLog } from './ErrorTypes'; // Re-enabled import
-import { LogContext, logger } from './loggerService';
+// Use type-only import to break circular dependency with UnifiedEventSystem
+// BaseEvent is only used as a type (for ErrorLoggingServiceEvents), not at runtime
+import type { BaseEvent } from "../../lib/events/UnifiedEventSystem";
+import { AbstractBaseManager } from "../../lib/managers/BaseManager";
+import {
+  ErrorDetails,
+  ErrorSeverity,
+  ErrorType,
+  IErrorLog,
+} from "./ErrorTypes"; // Re-enabled import
+import { LogContext, logger } from "./loggerService";
 
 // Structure for error metadata
 export interface ErrorMetadata {
@@ -52,7 +59,7 @@ type ErrorLoggingServiceEvents = BaseEvent & {
  */
 export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingServiceEvents> {
   public constructor() {
-    super('ErrorLoggingService');
+    super("ErrorLoggingService");
   }
 
   protected onInitialize(): Promise<void> {
@@ -81,13 +88,13 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
     error: Error | string,
     type: ErrorType = ErrorType.UNKNOWN, // Assuming ErrorType has UNKNOWN
     severity: ErrorSeverity = ErrorSeverity.MEDIUM, // Assuming ErrorSeverity has MEDIUM
-    details?: ErrorDetails
+    details?: ErrorDetails,
   ): void {
     const errorMessage = error instanceof Error ? error.message : error;
     const stack = error instanceof Error ? error.stack : undefined;
 
     const context: LogContext = {
-      module: 'ErrorLoggingService',
+      module: "ErrorLoggingService",
       ...(details ?? {}),
       errorType: type,
       errorSeverity: severity,
@@ -98,13 +105,25 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
       case ErrorSeverity.CRITICAL:
       case ErrorSeverity.HIGH:
       case ErrorSeverity.MEDIUM:
-        logger.error(errorMessage, context, error instanceof Error ? error : undefined);
+        logger.error(
+          errorMessage,
+          context,
+          error instanceof Error ? error : undefined,
+        );
         break;
       case ErrorSeverity.LOW:
-        logger.warn(errorMessage, context, error instanceof Error ? error : undefined);
+        logger.warn(
+          errorMessage,
+          context,
+          error instanceof Error ? error : undefined,
+        );
         break;
       case ErrorSeverity.INFO:
-        logger.info(errorMessage, context, error instanceof Error ? error : undefined);
+        logger.info(
+          errorMessage,
+          context,
+          error instanceof Error ? error : undefined,
+        );
         break;
     }
 
@@ -112,17 +131,20 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
     if (severity === ErrorSeverity.CRITICAL) {
       this.metrics.critical_errors = (this.metrics.critical_errors ?? 0) + 1;
     } else if (severity === ErrorSeverity.HIGH) {
-      this.metrics.high_severity_errors = (this.metrics.high_severity_errors ?? 0) + 1;
+      this.metrics.high_severity_errors =
+        (this.metrics.high_severity_errors ?? 0) + 1;
     } else if (severity === ErrorSeverity.MEDIUM) {
-      this.metrics.medium_severity_errors = (this.metrics.medium_severity_errors ?? 0) + 1;
+      this.metrics.medium_severity_errors =
+        (this.metrics.medium_severity_errors ?? 0) + 1;
     } else if (severity === ErrorSeverity.LOW) {
-      this.metrics.low_severity_errors = (this.metrics.low_severity_errors ?? 0) + 1;
+      this.metrics.low_severity_errors =
+        (this.metrics.low_severity_errors ?? 0) + 1;
     }
   }
 
   public logWarn(message: string, details?: ErrorDetails): void {
     const context: LogContext = {
-      module: 'ErrorLoggingService',
+      module: "ErrorLoggingService",
       ...(details ?? {}),
     };
     logger.warn(message, context);
@@ -131,7 +153,7 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
 
   public logInfo(message: string, details?: ErrorDetails): void {
     const context: LogContext = {
-      module: 'ErrorLoggingService',
+      module: "ErrorLoggingService",
       ...(details ?? {}),
     };
     logger.info(message, context);
@@ -140,7 +162,7 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
 
   public logDebug(message: string, details?: ErrorDetails): void {
     const context: LogContext = {
-      module: 'ErrorLoggingService',
+      module: "ErrorLoggingService",
       ...(details ?? {}),
     };
     logger.debug(message, context);
@@ -156,7 +178,7 @@ export class ErrorLoggingServiceImpl extends AbstractBaseManager<ErrorLoggingSer
   }
 
   protected getVersion(): string {
-    return '1.0.0';
+    return "1.0.0";
   }
 
   protected getStats(): Record<string, number | string> {
@@ -174,4 +196,3 @@ export const errorLoggingService = ErrorLoggingServiceImpl.getInstance();
 // Export enums directly, use 'export type' for type aliases
 export { ErrorSeverity, ErrorType };
 export type { ErrorDetails, IErrorLog };
-

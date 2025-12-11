@@ -1,15 +1,19 @@
-import { Position, Tier, Velocity } from '../core/GameTypes';
-import { WeaponMount } from '../weapons/WeaponTypes';
-import
-  {
-    CommonShipCapabilities,
-    CommonShipStats,
-    ShipCargo,
-    ShipCategory,
-    ShipStatus,
-  } from './CommonShipTypes';
-import { FactionBehaviorConfig, FactionId, FactionShipClass } from './FactionShipTypes'; // Keep FactionShipStats import if used
-import { PlayerShipClass } from './PlayerShipTypes';
+import { Position, Tier, Velocity } from "../core/GameTypes";
+import { WeaponMount } from "../weapons/WeaponTypes";
+import {
+  CommonShipCapabilities,
+  CommonShipStats,
+  ShipCargo,
+  ShipCategory,
+  ShipStatus,
+} from "./CommonShipTypes";
+// Use type-only imports to complete circular dependency fix
+import type {
+  FactionBehaviorConfig,
+  FactionId,
+  FactionShipClass,
+} from "./FactionShipTypes";
+import type { PlayerShipClass } from "./PlayerShipTypes";
 
 export { ShipCategory, ShipStatus };
 // Alias used by UI components expecting UnifiedShipStatus
@@ -57,20 +61,51 @@ export interface Ship {
 // --- DETAILS INTERFACES --- Keep these minimal with only category-specific fields
 
 export interface CombatShipDetails {
-  category: ShipCategory.COMBAT | ShipCategory.FIGHTER | ShipCategory.CRUISER | ShipCategory.BATTLESHIP | ShipCategory.CARRIER;
+  category:
+    | ShipCategory.COMBAT
+    | ShipCategory.FIGHTER
+    | ShipCategory.CRUISER
+    | ShipCategory.BATTLESHIP
+    | ShipCategory.CARRIER;
   class?: FactionShipClass | PlayerShipClass;
   combatDetails?: CombatStatsDetails; // Update reference to renamed interface
   tactics?: FactionBehaviorConfig;
-  formation?: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number; };
-  specialAbility?: { name: string; description: string; cooldown: number; active: boolean; effectiveness?: number; };
-  techBonuses?: { weaponEfficiency?: number; shieldRegeneration?: number; energyEfficiency?: number; };
-  combatStats?: { damageDealt: number; damageReceived: number; killCount: number; assistCount: number; };
-  combatStatusDetail?: { main: 'active' | 'disabled' | 'destroyed'; secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting'; effects?: string[]; };
+  formation?: {
+    type: "offensive" | "defensive" | "balanced";
+    spacing: number;
+    facing: number;
+  };
+  specialAbility?: {
+    name: string;
+    description: string;
+    cooldown: number;
+    active: boolean;
+    effectiveness?: number;
+  };
+  techBonuses?: {
+    weaponEfficiency?: number;
+    shieldRegeneration?: number;
+    energyEfficiency?: number;
+  };
+  combatStats?: {
+    damageDealt: number;
+    damageReceived: number;
+    killCount: number;
+    assistCount: number;
+  };
+  combatStatusDetail?: {
+    main: "active" | "disabled" | "destroyed";
+    secondary?: "charging" | "cooling" | "repairing" | "boosting";
+    effects?: string[];
+  };
 }
 
 export interface MiningShipDetails {
   category: ShipCategory.MINING;
-  class?: PlayerShipClass.ROCK_BREAKER | PlayerShipClass.VOID_DREDGER | FactionShipClass;
+  class?:
+    | PlayerShipClass.ROCK_BREAKER
+    | PlayerShipClass.VOID_DREDGER
+    | FactionShipClass;
   currentLoad?: number;
   targetNode?: string;
   efficiency?: number;
@@ -78,7 +113,10 @@ export interface MiningShipDetails {
 
 export interface ReconShipDetails {
   category: ShipCategory.RECON | ShipCategory.SCOUT;
-  class?: PlayerShipClass.ANDROMEDA_CUTTER | PlayerShipClass.STAR_SCHOONER | FactionShipClass;
+  class?:
+    | PlayerShipClass.ANDROMEDA_CUTTER
+    | PlayerShipClass.STAR_SCHOONER
+    | FactionShipClass;
   // ExplorationHub-specific tracking?
   efficiency?: number;
   lastUpdate?: number;
@@ -86,10 +124,14 @@ export interface ReconShipDetails {
   reconCapabilities?: ReconCapabilities;
   assignedSectorId?: string;
   targetSector?: string;
-  currentTask?: { type: string; target: string; progress: number; };
-  discoveries?: { mappedSectors: number; anomaliesFound: number; resourcesLocated: number; };
-  stealth?: { active: boolean; level: number; cooldown: number; };
-  sensors?: { range: number; accuracy: number; anomalyDetection: number; };
+  currentTask?: { type: string; target: string; progress: number };
+  discoveries?: {
+    mappedSectors: number;
+    anomaliesFound: number;
+    resourcesLocated: number;
+  };
+  stealth?: { active: boolean; level: number; cooldown: number };
+  sensors?: { range: number; accuracy: number; anomalyDetection: number };
 }
 
 export interface TransportShipDetails {
@@ -109,12 +151,12 @@ export interface ReconCapabilities extends Partial<CommonShipCapabilities> {
   // Assuming these are core capabilities, make non-optional initially
   scanning: number;
   stealth: number;
-  combat?: number;      // Optional combat capability value
+  combat?: number; // Optional combat capability value
   stealthActive?: boolean; // Optional flag for active stealth
-  speed?: number;         // Optional speed override/detail
-  range?: number;         // Optional range override/detail
-  cargo?: number;         // Optional cargo override/detail
-  weapons?: number;       // Optional weapons override/detail
+  speed?: number; // Optional speed override/detail
+  range?: number; // Optional range override/detail
+  cargo?: number; // Optional cargo override/detail
+  weapons?: number; // Optional weapons override/detail
   // Inherits canScan, canJump, etc. from CommonShipCapabilities via extends Partial<...>
 }
 
@@ -142,57 +184,76 @@ export interface BlueprintWeaponData {
 export type WeaponDataSource = BlueprintWeaponData | WeaponMount;
 
 // Type Guards
-export function isBlueprintWeaponData(data: WeaponDataSource): data is BlueprintWeaponData {
+export function isBlueprintWeaponData(
+  data: WeaponDataSource,
+): data is BlueprintWeaponData {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'name' in data &&
-    'damage' in data &&
-    !('size' in data) &&
-    !('currentWeapon' in data)
+    "name" in data &&
+    "damage" in data &&
+    !("size" in data) &&
+    !("currentWeapon" in data)
   );
 }
 
-export function isEmptyWeaponMount(data: WeaponDataSource): data is WeaponMount {
+export function isEmptyWeaponMount(
+  data: WeaponDataSource,
+): data is WeaponMount {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'size' in data &&
+    "size" in data &&
     (data as WeaponMount).currentWeapon === undefined
   );
 }
 
-export function isWeaponMountWithWeapon(data: WeaponDataSource): data is WeaponMount {
+export function isWeaponMountWithWeapon(
+  data: WeaponDataSource,
+): data is WeaponMount {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'currentWeapon' in data &&
+    "currentWeapon" in data &&
     data.currentWeapon !== undefined
   );
 }
 
-export function isCombatShip(ship: Ship): ship is Ship & { details: CombatShipDetails } {
+export function isCombatShip(
+  ship: Ship,
+): ship is Ship & { details: CombatShipDetails } {
   return (
-    ship.details !== null && (
-      ship.details.category === ShipCategory.COMBAT ||
+    ship.details !== null &&
+    (ship.details.category === ShipCategory.COMBAT ||
       ship.details.category === ShipCategory.FIGHTER ||
       ship.details.category === ShipCategory.CRUISER ||
       ship.details.category === ShipCategory.BATTLESHIP ||
-      ship.details.category === ShipCategory.CARRIER
-    )
+      ship.details.category === ShipCategory.CARRIER)
   );
 }
 
-export function isMiningShip(ship: Ship): ship is Ship & { details: MiningShipDetails } {
+export function isMiningShip(
+  ship: Ship,
+): ship is Ship & { details: MiningShipDetails } {
   return ship.details !== null && ship.details.category === ShipCategory.MINING;
 }
 
-export function isReconShip(ship: Ship): ship is Ship & { details: ReconShipDetails } {
-  return ship.details !== null && (ship.details.category === ShipCategory.RECON || ship.details.category === ShipCategory.SCOUT);
+export function isReconShip(
+  ship: Ship,
+): ship is Ship & { details: ReconShipDetails } {
+  return (
+    ship.details !== null &&
+    (ship.details.category === ShipCategory.RECON ||
+      ship.details.category === ShipCategory.SCOUT)
+  );
 }
 
-export function isTransportShip(ship: Ship): ship is Ship & { details: TransportShipDetails } {
-  return ship.details !== null && ship.details.category === ShipCategory.TRANSPORT;
+export function isTransportShip(
+  ship: Ship,
+): ship is Ship & { details: TransportShipDetails } {
+  return (
+    ship.details !== null && ship.details.category === ShipCategory.TRANSPORT
+  );
 }
 
 /**
@@ -248,7 +309,7 @@ export type CombatShip = Ship & {
    * Current formation metadata if the ship is part of one.
    */
   formation?: {
-    type: 'offensive' | 'defensive' | 'balanced';
+    type: "offensive" | "defensive" | "balanced";
     spacing: number;
     facing: number;
     position?: number;

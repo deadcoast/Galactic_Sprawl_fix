@@ -1,25 +1,26 @@
-import { ResourceType } from './ResourceTypes';
+// Use type-only import to break circular dependency
+import type { ResourceType } from "./ResourceTypes";
 
 export enum ProcessStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  PAUSED = 'paused',
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  PAUSED = "paused",
 }
 
 export enum ChainProcessingStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  PAUSED = 'paused',
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  PAUSED = "paused",
 }
 
 export enum ResourceTransferStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
 }
 
 /**
