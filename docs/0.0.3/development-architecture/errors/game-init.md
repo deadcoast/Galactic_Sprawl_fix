@@ -34,7 +34,9 @@ if (config.defaultResourceLimits) {
     this.initializeResource(type as ResourceType, limits.min, limits.max);
   });
 } else {
-  console.warn('[ResourceManager] Warning: defaultResourceLimits is null or undefined in config');
+  console.warn(
+    "[ResourceManager] Warning: defaultResourceLimits is null or undefined in config",
+  );
 }
 ```
 
@@ -47,7 +49,7 @@ if (assets) {
   });
   resolve();
 } else {
-  console.warn('[AssetManager] Warning: loaded assets is null or undefined');
+  console.warn("[AssetManager] Warning: loaded assets is null or undefined");
   resolve(); // Still resolve to avoid blocking game initialization
 }
 ```
@@ -66,13 +68,13 @@ if (subModuleConfigs) {
 
 ```typescript
 if (defaultModuleConfigs) {
-  Object.values(defaultModuleConfigs).forEach(config => {
+  Object.values(defaultModuleConfigs).forEach((config) => {
     if (config) {
       moduleManager.registerModuleConfig(config);
     }
   });
 } else {
-  console.warn('defaultModuleConfigs is null or undefined');
+  console.warn("defaultModuleConfigs is null or undefined");
 }
 ```
 

@@ -36,13 +36,11 @@ The **Galactic Sprawl Tech Tree** is organized into five major branches. Each br
 Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie each object to the correct Tier. This is crucial for **progression**.
 
 1. **Tech Tree Scene/UI**
-
    - Create a dedicated “Research” UI or overlay where you show three columns (War, Recon, Mining).
    - You can do this as a **scrollable** layout, with Tier 1 items at the top, Tier 2 in the middle, Tier 3 at the bottom.
    - Mark locked items with a lock icon or a grayed-out button.
 
 2. **Tier Unlock Requirements**
-
    - Each Tier or node in the Tech Tree might require some combination of: resources, time-based research, number of existing buildings, or other criteria.
    - Use variables/timers to handle these.
 
@@ -80,7 +78,6 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
 ### Mothership Core Systems
 
 - **Tier 1:**
-
   - **Basic Mothership Functions:**  
     • Standard Radar (local system scanning)  
     • Basic Ship Hanger (enables production of Spitflares and Rock Breaker)  
@@ -88,7 +85,6 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
     • Basic Colony Station (initial trade and population hub)
 
 - **Tier 2:**
-
   - **Advanced Infrastructure:**  
     • **Advanced Radar:** Unlocks galaxy-wide monitoring (enemy detection and mineral spotting)  
     • **Expanded Ship Hanger:** Adds mid-tier ships (Star Schooner, Orion’s Frigate) and unlocks ship upgrades  
@@ -97,7 +93,6 @@ Now that you have Tier 1 modules, integrate the **Tech Tree** system and tie eac
     • **Mineral Processing Centre (Tier 2):** Enhanced mining automation and faster resource refinement
 
 - **Tier 3:**
-
   - **Capital Infrastructure:**  
     • **Ultra-Advanced Radar:** Full-spectrum scanning that detects anomalies, hidden tech, and habitable worlds  
     • **Mega Ship Hanger:** Enables construction of capital ships (Harbringer Galleon, Midway Carrier)  

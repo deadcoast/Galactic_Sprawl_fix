@@ -99,7 +99,6 @@ turnRate: number
 ## Core Resource Tracking Types
 
 - **ResourceTypes.ts**: src/types/resources/ResourceTypes.ts
-
   - Contains core resource type definitions
   - Includes ResourceState, ResourceType, ResourceThreshold interfaces
   - Dependencies: GameTypes.ts
@@ -112,19 +111,16 @@ turnRate: number
 ## Resource Serialization Interfaces
 
 - **SerializedResourceState**: Interface for serialized resource state
-
   - Used for localStorage persistence
   - Contains serialized resources and thresholds
   - Implemented in useResourceTracking.ts
 
 - **SerializedResource**: Interface for individual serialized resources
-
   - Contains amount, capacity, rate properties
   - Used in SerializedResourceState
   - Implemented in useResourceTracking.ts
 
 - **ResourceTotals**: Interface for resource totals
-
   - Contains total amounts, capacities, and rates
   - Used for summary calculations
   - Implemented in useResourceTracking.ts
@@ -183,32 +179,27 @@ useResourceTracking
 The following files have been updated to fix Map iteration issues by using Array.from() to convert Map entries, keys, or values to arrays before iteration:
 
 - **Resource Manager**: src/managers/game/ResourceManager.ts
-
   - Fixed Map iteration in apply(), update(), and various resource management methods
   - Added calculateTransferRate() method to compute resource transfer rates
   - Updated removeResource() to return a boolean indicating success or failure
   - Added event emission for resource changes
 
 - **Resource Performance Monitor**: src/managers/resource/ResourcePerformanceMonitor.ts
-
   - Fixed Map iteration in update() and getMetrics() methods
   - Converted Map.values() to arrays before iteration
   - Improved type safety for performance metrics collection
 
 - **Resource Exchange Manager**: src/managers/resource/ResourceExchangeManager.ts
-
   - Fixed Map iteration in update() and processExchanges() methods
   - Converted Map.entries() to arrays before iteration
   - Enhanced type safety for exchange rate calculations
 
 - **Resource Pool Manager**: src/managers/resource/ResourcePoolManager.ts
-
   - Fixed Map iteration in distributePool() and allocateResources() methods
   - Converted Map.entries() to arrays before iteration
   - Improved type safety for pool distribution rules
 
 - **Resource Storage Manager**: src/managers/resource/ResourceStorageManager.ts
-
   - Fixed Map iteration in update() and getStorageContainers() methods
   - Converted Map.values() to arrays before iteration
   - Enhanced type safety for storage container management

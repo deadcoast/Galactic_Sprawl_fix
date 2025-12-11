@@ -120,11 +120,11 @@ function handleEvent(event: BaseEvent) {
 ```typescript
 function isResourceEvent(event: BaseEvent): event is ResourceEvent {
   return (
-    event.type === 'RESOURCE_UPDATED' &&
+    event.type === "RESOURCE_UPDATED" &&
     event.data !== undefined &&
-    typeof event.data === 'object' &&
-    'resourceId' in event.data &&
-    'amount' in event.data
+    typeof event.data === "object" &&
+    "resourceId" in event.data &&
+    "amount" in event.data
   );
 }
 
@@ -180,7 +180,7 @@ dispatch(action: LegacyModuleAction | { type: string }): void {
 
 ```typescript
 function processItems(items: any[]) {
-  return items.map(item => (item as unknown as DataItem).value);
+  return items.map((item) => (item as unknown as DataItem).value);
 }
 ```
 
@@ -192,7 +192,7 @@ interface HasValue {
 }
 
 function processItems<T extends HasValue>(items: T[]): (string | number)[] {
-  return items.map(item => item.value);
+  return items.map((item) => item.value);
 }
 ```
 
@@ -209,7 +209,7 @@ function processItems<T extends HasValue>(items: T[]): (string | number)[] {
 function validateObjectArray(value: unknown): boolean {
   return (
     Array.isArray(value) &&
-    value.every(item => (item as unknown as { id: string }).id !== undefined)
+    value.every((item) => (item as unknown as { id: string }).id !== undefined)
   );
 }
 
@@ -220,24 +220,24 @@ interface Identifiable {
 
 function validateObjectArray<T extends Identifiable>(
   value: unknown,
-  validator: (item: unknown) => item is T
+  validator: (item: unknown) => item is T,
 ): value is T[] {
   return Array.isArray(value) && value.every(validator);
 }
 
 function isIdentifiable(item: unknown): item is Identifiable {
   return (
-    typeof item === 'object' &&
+    typeof item === "object" &&
     item !== null &&
-    'id' in item &&
-    typeof (item as any).id === 'string'
+    "id" in item &&
+    typeof (item as any).id === "string"
   );
 }
 
 // Usage
 if (validateObjectArray(value, isIdentifiable)) {
   // TypeScript knows value is Identifiable[]
-  value.forEach(item => console.log(item.id));
+  value.forEach((item) => console.log(item.id));
 }
 ```
 
@@ -249,8 +249,9 @@ if (validateObjectArray(value, isIdentifiable)) {
 
 ```typescript
 // Accessing properties from window
-const resourceManager = (window as unknown as { resourceManager?: ResourceManager })
-  .resourceManager;
+const resourceManager = (
+  window as unknown as { resourceManager?: ResourceManager }
+).resourceManager;
 ```
 
 **Better Approach**:
@@ -279,9 +280,15 @@ const resourceManager = window.resourceManager;
 
 ```typescript
 // Before:
-const { resourceManager } = window as unknown as { resourceManager?: ResourceManager };
-const { thresholdManager } = window as unknown as { thresholdManager?: ResourceThresholdManager };
-const { flowManager } = window as unknown as { flowManager?: ResourceFlowManager };
+const { resourceManager } = window as unknown as {
+  resourceManager?: ResourceManager;
+};
+const { thresholdManager } = window as unknown as {
+  thresholdManager?: ResourceThresholdManager;
+};
+const { flowManager } = window as unknown as {
+  flowManager?: ResourceFlowManager;
+};
 
 // After:
 // In a types definition file (global.d.ts)
@@ -390,10 +397,10 @@ function callExternalLibraryFunction(): ExpectedResult {
 
   // Validate the result matches our expected structure
   if (
-    typeof result === 'object' &&
+    typeof result === "object" &&
     result !== null &&
-    'property1' in result &&
-    'property2' in result
+    "property1" in result &&
+    "property2" in result
   ) {
     return {
       property1: result.property1,
@@ -403,7 +410,7 @@ function callExternalLibraryFunction(): ExpectedResult {
   }
 
   // Handle invalid results
-  throw new Error('External library returned unexpected format');
+  throw new Error("External library returned unexpected format");
 }
 ```
 

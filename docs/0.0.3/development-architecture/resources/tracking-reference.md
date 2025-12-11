@@ -7,7 +7,6 @@ RESOURCE TRACKING REFERENCES
 ## Core Resource Tracking Types
 
 - **ResourceTypes.ts**: src/types/resources/ResourceTypes.ts
-
   - Contains core resource type definitions
   - Includes ResourceState, ResourceType, ResourceThreshold interfaces
   - Dependencies: GameTypes.ts
@@ -20,19 +19,16 @@ RESOURCE TRACKING REFERENCES
 ## Resource Serialization Interfaces
 
 - **SerializedResourceState**: Interface for serialized resource state
-
   - Used for localStorage persistence
   - Contains serialized resources and thresholds
   - Implemented in useResourceTracking.ts
 
 - **SerializedResource**: Interface for individual serialized resources
-
   - Contains amount, capacity, rate properties
   - Used in SerializedResourceState
   - Implemented in useResourceTracking.ts
 
 - **ResourceTotals**: Interface for resource totals
-
   - Contains total amounts, capacities, and rates
   - Used for summary calculations
   - Implemented in useResourceTracking.ts
@@ -85,12 +81,10 @@ useResourceTracking
 ## Resource Tracking Components
 
 - **ResourceTracker**: src/components/resources/ResourceTracker.tsx
-
   - Purpose: Main component for tracking and displaying resource information
   - Dependencies: useResourceTracking, ResourceDisplay
 
 - **ResourceHistory**: src/components/resources/ResourceHistory.tsx
-
   - Purpose: Displays historical resource data
   - Dependencies: useResourceTracking, ChartJS
 
@@ -101,12 +95,10 @@ useResourceTracking
 ## Resource Tracking Hooks
 
 - **useResourceHistory**: src/hooks/resources/useResourceHistory.ts
-
   - Purpose: Hook for accessing resource history data
   - Dependencies: useResourceTracking
 
 - **useResourceAlerts**: src/hooks/resources/useResourceAlerts.ts
-
   - Purpose: Hook for managing resource alerts
   - Dependencies: useResourceTracking, AlertSystem
 
@@ -117,11 +109,9 @@ useResourceTracking
 ## Resource Tracking Events
 
 - **ResourceUpdateEvent**: Triggered when a resource is updated
-
   - Payload: { resourceType, oldValue, newValue, source }
 
 - **ResourceThresholdEvent**: Triggered when a resource crosses a threshold
-
   - Payload: { resourceType, threshold, value, direction }
 
 - **ResourceAlertEvent**: Triggered when a resource alert is generated
@@ -130,12 +120,10 @@ useResourceTracking
 ## Resource Tracking Integration
 
 - **ResourceTrackingProvider**: src/providers/ResourceTrackingProvider.tsx
-
   - Purpose: Context provider for resource tracking
   - Dependencies: useResourceTracking
 
 - **ResourceTrackingConsumer**: src/providers/ResourceTrackingConsumer.tsx
-
   - Purpose: Context consumer for resource tracking
   - Dependencies: ResourceTrackingProvider
 
@@ -148,7 +136,6 @@ useResourceTracking
 ## Core Resource Tracking Types
 
 - **ResourceTypes.ts**: src/types/resources/ResourceTypes.ts
-
   - Contains core resource type definitions
   - Includes ResourceState, ResourceType, ResourceThreshold interfaces
   - Dependencies: GameTypes.ts
@@ -161,19 +148,16 @@ useResourceTracking
 ## Resource Serialization Interfaces
 
 - **SerializedResourceState**: Interface for serialized resource state
-
   - Used for localStorage persistence
   - Contains serialized resources and thresholds
   - Implemented in useResourceTracking.ts
 
 - **SerializedResource**: Interface for individual serialized resources
-
   - Contains amount, capacity, rate properties
   - Used in SerializedResourceState
   - Implemented in useResourceTracking.ts
 
 - **ResourceTotals**: Interface for resource totals
-
   - Contains total amounts, capacities, and rates
   - Used for summary calculations
   - Implemented in useResourceTracking.ts
@@ -232,7 +216,6 @@ useResourceTracking
 ## Core Resource Tracking Types
 
 - **ResourceTypes.ts**: src/types/resources/ResourceTypes.ts
-
   - Contains core resource type definitions
   - Includes ResourceState, ResourceType, ResourceThreshold interfaces
   - Dependencies: GameTypes.ts
@@ -245,19 +228,16 @@ useResourceTracking
 ## Resource Serialization Interfaces
 
 - **SerializedResourceState**: Interface for serialized resource state
-
   - Used for localStorage persistence
   - Contains serialized resources and thresholds
   - Implemented in useResourceTracking.ts
 
 - **SerializedResource**: Interface for individual serialized resources
-
   - Contains amount, capacity, rate properties
   - Used in SerializedResourceState
   - Implemented in useResourceTracking.ts
 
 - **ResourceTotals**: Interface for resource totals
-
   - Contains total amounts, capacities, and rates
   - Used for summary calculations
   - Implemented in useResourceTracking.ts

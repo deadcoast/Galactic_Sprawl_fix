@@ -16,31 +16,26 @@ This documentation represents the `source of truth` for system architecture deci
 When working with this architectural documentation:
 
 1. **Component References**
-
    - Use unique identifiers for all system elements
    - Follow established naming conventions
    - Maintain clear component boundaries
 
 2. **Implementation Specifications**
-
    - Parse JSON objects and TypeScript interfaces as structured specifications
    - Use these definitions as templates for concrete implementations
    - Follow type definitions strictly
 
 3. **Code Analysis**
-
    - Review relevant codebase files before implementation
    - Understand current implementation status
    - Identify potential integration points
 
 4. **Implementation Standards**
-
    - Fill placeholder values with concrete code that aligns with standards
    - Follow established architectural patterns
    - Maintain type safety throughout
 
 5. **Code Generation**
-
    - Present implementation suggestions with specific examples
    - Follow the established patterns in example code
    - Include all necessary imports and dependencies
@@ -62,7 +57,10 @@ interface BaseManager<T extends BaseEvent = BaseEvent> {
   dispose(): void;
 
   // Event handling
-  subscribeToEvent<E extends T>(eventType: EventType, handler: EventHandler<E>): Unsubscribe;
+  subscribeToEvent<E extends T>(
+    eventType: EventType,
+    handler: EventHandler<E>,
+  ): Unsubscribe;
   publishEvent<E extends T>(event: E): void;
 
   // Metadata
@@ -131,18 +129,18 @@ useEventSubscription(eventBus, EventType.EXAMPLE_EVENT, handleEvent, [
 ```typescript
 // In a component
 const componentId = useComponentRegistration({
-  type: 'ExampleComponent',
-  eventSubscriptions: ['EXAMPLE_EVENT_TYPE'],
-  updatePriority: 'medium',
+  type: "ExampleComponent",
+  eventSubscriptions: ["EXAMPLE_EVENT_TYPE"],
+  updatePriority: "medium",
 });
 
 useComponentLifecycle({
-  onMount: () => console.log('Component mounted'),
-  onUnmount: () => console.log('Component unmounted'),
+  onMount: () => console.log("Component mounted"),
+  onUnmount: () => console.log("Component unmounted"),
   eventSubscriptions: [
     {
-      eventType: 'EXAMPLE_EVENT_TYPE',
-      handler: event => handleEvent(event),
+      eventType: "EXAMPLE_EVENT_TYPE",
+      handler: (event) => handleEvent(event),
     },
   ],
 });
@@ -151,25 +149,21 @@ useComponentLifecycle({
 ## Best Practices
 
 1. **Type Safety**
-
    - Use TypeScript interfaces and types consistently
    - Avoid using `any` type
    - Implement proper type guards
 
 2. **Event Handling**
-
    - Always clean up event subscriptions
    - Use typed event handlers
    - Follow the event subscription pattern
 
 3. **State Management**
-
    - Use context providers for shared state
    - Implement proper state updates
    - Follow the reducer pattern
 
 4. **Performance**
-
    - Implement proper memoization
    - Use React.memo for pure components
    - Follow the component registration pattern

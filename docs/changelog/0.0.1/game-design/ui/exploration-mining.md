@@ -27,12 +27,10 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
   - Render a map that distinguishes between fully mapped, partially mapped, and unmapped sectors.
   - Use visual cues such as brightness, opacity, and color overlays (e.g., dimmed for unexplored, highlighted for recently discovered areas).
 - **Real-Time Updates:**
-
   - Integrate live updates so that as recon ships gather data, the map reflects changes in real time.
   - Display the current position and trajectory of recon ships using animated icons or markers.
 
 - **Interactive Elements:**
-
   - **Tooltips & Popovers:** On hovering over a system, show key details (e.g., discovered anomalies, resource potential, and system name).
   - **Click-to-Detail:** Allow users to click a system to open a detailed view or modal containing further exploration data, including possible routes, anomalies, or hidden tech discoveries.
   - **Filtering Controls:** Provide UI controls (such as checkboxes, sliders, or dropdown menus) to filter the map by criteria like exploration progress, anomaly presence, or recon ship activity.
@@ -50,7 +48,6 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
   - Utilize an SVG or Canvas-based component to render the exploration map.
   - Use layered rendering to separate background (galaxy starfield), mapping overlays, and recon ship icons.
 - **Control Sidebar/Overlay:**
-
   - A collapsible sidebar that holds filtering controls and a legend explaining the map’s visual cues.
   - Contains a “Refresh” or “Auto-Update” toggle to control real-time updates.
 
@@ -61,22 +58,18 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
 ### Implementation Techniques
 
 - **Rendering & Animations:**
-
   - **react-d3-graph / d3.js:** Use for rendering dynamic graphs or network layouts that can represent galaxy sectors.
   - **react-three-fiber:** If a 3D overlay is desired, use this library for rendering recon ship icons or creating subtle depth effects.
   - **react-spring / Framer Motion:** To animate transitions on the map (e.g., fading in mapped regions or smoothly moving recon ship markers).
 
 - **Interactivity:**
-
   - **react-tooltip:** Implement tooltips for system details on hover.
   - **react-hotkeys:** For keyboard shortcuts (e.g., to toggle between heat map and standard views or to quickly focus on a specific system).
 
 - **State Management:**
-
   - Use React Context or Redux to manage real-time exploration data and UI states (filters, selected system, auto-update status).
 
 - **Data Integration:**
-
   - Implement a polling or subscription mechanism (e.g., via WebSocket or an API polling service) to update exploration data continuously.
   - Ensure that data visualization components update efficiently by memoizing components where possible.
 
@@ -91,7 +84,6 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
 ### Exploration Hub Building
 
 - **Integration & Access:**
-
   - **Placement:**  
     The Exploration Hub can be constructed on the Mothership or within a Colony. It is designed as a central control node for recon missions.
   - **Tiered Functionality:**
@@ -105,7 +97,6 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
 ### Exploration Map View UI Window
 
 - **Layout & Structure:**
-
   - **Overlay Map:**  
     The Exploration Window overlays a partial “galaxy map” showing both mapped and unmapped sectors.
     - **Mapped Sectors:**  
@@ -116,7 +107,6 @@ The **Exploration Hub** is the primary interface for monitoring galaxy explorati
     Clicking on an unmapped sector highlights it and displays basic expected data (e.g., likelihood of habitable worlds, resource potential).
 
 - **Automation & Recon Dispatch:**
-
   - **Automatic Recon Ship Deployment:**  
     Recon ships are automatically dispatched from the Exploration Hub to investigate unmapped sectors.
     - **Path Animation:**  
@@ -145,7 +135,6 @@ The **Mineral Processing Centre** is designed as the command center for managing
 - Serve as the central point for managing mining operations and resource flows.
 
 - **Mineral Map Display:**
-
   - Render a map or grid view that shows icons representing different mineral nodes.
   - Each mineral type should have a unique visual icon that is both thematic and easily recognizable.
   - Display visual cues (such as color coding or blinking outlines) to indicate node status (e.g., high priority, below threshold, or currently active for mining).
@@ -159,7 +148,6 @@ The **Mineral Processing Centre** is designed as the command center for managing
   - Use charts or progress bars to represent current stockpiles, extraction rates, and the overall efficiency of the mining operations.
   - Provide real-time feedback as mining ships extract resources and update resource pools.
 - **Interactivity & Feedback:**
-
   - Enable tooltips on mineral icons to quickly display key metrics (e.g., current stock, extraction rate).
   - Animate changes when thresholds are reached or when the “Mine All” mode is activated, such as pulsing or glowing effects on the relevant icons.
   - Allow users to filter or sort the mineral list by type, priority, or current yield.
@@ -176,30 +164,25 @@ The **Mineral Processing Centre** is designed as the command center for managing
     - **“Mine All” Button:** A prominent toggle that overrides individual settings.
   - May also include summary charts (using charting libraries) to display overall mining performance.
 - **Detail Modal/Expanded View:**
-
   - When a mineral icon is clicked, open a modal with detailed information:
     - Historical yield data, extraction efficiency, and comparisons with other minerals.
     - Graphs (e.g., line charts or bar charts) to visualize resource accumulation over time.
 
 - **Rendering & Animations:**
-
   - **Recharts / Victory:** Use for data visualization to create responsive charts that update in real time.
   - **react-spring:** To animate changes in threshold values, icon states, or the activation of the “Mine All” mode.
   - **CSS-in-JS (styled-components or Emotion):** For consistent theming and smooth UI transitions.
 
 - **Interactivity:**
-
   - **React-Tooltip:** For quick mineral stats on hover.
   - **Material-UI:** For prebuilt components such as sliders, dropdowns, and buttons that can be customized for the sci-fi theme.
   - **React Hotkeys:** For keyboard shortcuts to quickly toggle the “Mine All” mode or navigate between mineral types.
 
 - **State Management:**
-
   - Utilize React Context or Redux to manage the state of mining priorities, threshold values, and the build queue for mining ships.
   - Ensure that the UI updates in real time as recon data updates the list of mineral nodes.
 
 - **Data Integration:**
-
   - Implement a polling mechanism or WebSocket connection to continuously fetch updated mineral data.
   - Optimize data visualization components using memoization to prevent unnecessary re-renders.
 
@@ -217,7 +200,6 @@ The **Mineral Processing Centre** is designed as the command center for managing
 ### Mineral Processing Centre Building
 
 - **Integration & Access:**
-
   - **Purchase & Placement:**  
     The Mineral Processing Centre can be purchased as an upgrade option from the Mothership or any established Colony. It appears as an upgrade tile or building in your colony’s management UI.
   - **Tiered Capabilities:**
@@ -232,14 +214,12 @@ The **Mineral Processing Centre** is designed as the command center for managing
 ### Mining Map Window
 
 - **Overview & Layout:**
-
   - **Dedicated Overlay/Tab:**  
     The Mining Map is a separate overlay that can be toggled from the main HUD or accessed via a dedicated button within the Mineral Processing Centre module.
   - **Resource Node Display:**  
     Discovered resource nodes (asteroids, planet-based minerals, etc.) appear as icons or nodes on a simplified map. Each node displays basic information such as mineral type, abundance, and distance from the current system.
 
 - **Priority & Control Settings:**
-
   - **Priority Sliders & Thresholds:**  
     Allow players to set minimum and maximum thresholds for each mineral type. For example:
     - _Copper:_ Min: 3,000 units, Max: 10,000 units.
@@ -248,7 +228,6 @@ The **Mineral Processing Centre** is designed as the command center for managing
     Clicking on a resource node brings up a detailed panel with additional data (e.g., extraction rate, estimated depletion time) and a confirmation button to set or adjust mining priorities.
 
 - **Automation & Feedback:**
-
   - **Automated Dispatching:**  
     Once priorities are set, the system automatically dispatches the appropriate mining ships (e.g., Rock Breaker or Void Dredger) to the resource nodes.
     - **Dynamic Routing:**  

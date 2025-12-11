@@ -17,14 +17,12 @@ This document serves as the main index for the Galactic Sprawl project codebase 
 ## Categories
 
 1. [Development Tools](./Development_Tools_References.md)
-
    - Linting and Code Quality
    - Testing Framework
    - Build Tools
    - Type Safety Improvements
 
 2. [Core Systems](./Core_Systems_References.md)
-
    - Resource Management
    - Module Framework
    - Event System
@@ -33,7 +31,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Worker Architecture
 
 3. [Combat System](./Combat_System_References.md)
-
    - Combat Worker
    - Combat Types
    - Weapon Systems
@@ -41,7 +38,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Combat AI
 
 4. [UI Components](./UI_References.md)
-
    - HUD Components
    - Menus
    - Dialogs
@@ -49,7 +45,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Visualization
 
 5. [Game Mechanics](./Game_Mechanics_References.md)
-
    - Exploration
    - Mining
    - Research
@@ -57,20 +52,17 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Economy
 
 6. [Build Configuration](./Build_Configuration_References.md)
-
    - TypeScript Configuration
    - Vite Configuration
    - Dependency Management
    - Optimization Settings
 
 7. [Development Tools](./Categories/Development_Tools_References.md)
-
    - Linting and Code Quality
    - Testing Framework
    - Type Safety Improvements
 
 8. [Core Systems](./Categories/Core_Systems_References.md)
-
    - Resource Management
    - Module Framework
    - Event System
@@ -81,7 +73,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Civilization Sprawl View
 
 9. [Combat System](./Categories/Combat_System_References.md)
-
    - Combat Worker
    - Combat Type Conversion Utilities
    - Combat System Components
@@ -138,7 +129,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
 - Resource Management UI Components
 
 16. [Resource Tracking](./Categories/Resource_Tracking_References.md)
-
     - Core Resource Tracking Types
     - Resource Serialization Interfaces
     - Type Relationships
@@ -149,7 +139,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
     - Resource Tracking Integration
 
 17. [Effect System](./Categories/Effect_System_References.md)
-
     - Core Effect Types
     - Effect Utilities
     - Components Using Effects
@@ -162,7 +151,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
     - Effect System Events
 
 18. [Combat Type Conversion](./Categories/Combat_Type_Conversion_References.md)
-
     - Core Type Conversion Utilities
     - Combat System Components
     - Type Relationships
@@ -173,7 +161,6 @@ This document serves as the main index for the Galactic Sprawl project codebase 
     - Type Conversion Benefits
 
 19. [Automation System](./Categories/Automation_System_References.md)
-
     - Core Components
     - Automation Routines
     - Automation System Architecture
@@ -221,7 +208,7 @@ This mapping is maintained as a living document. When adding new components or m
 
   ```typescript
   function isResourceEvent(event: GameEvent): event is ResourceEvent {
-    return event.type === 'RESOURCE_UPDATE' && 'resourceId' in event.data;
+    return event.type === "RESOURCE_UPDATE" && "resourceId" in event.data;
   }
   ```
 
@@ -397,7 +384,6 @@ This mapping is maintained as a living document. When adding new components or m
 ### Module Tests
 
 - `src/tests/managers/module/ModuleManager.test.ts`: Tests for the Module Manager
-
   - Tests module creation, attachment, and state management
   - Verifies building registration and module retrieval
   - Ensures proper event emission for module actions
@@ -445,28 +431,24 @@ This mapping is maintained as a living document. When adding new components or m
 ### Component Effects
 
 - `src/effects/component_effects/ExplosionEffect.tsx` - Implements explosion visual effects with particle systems
-
   - Uses Three.js for 3D rendering
   - Implements proper animation lifecycle with useFrame
   - Provides configurable size, color, and intensity
   - Includes proper cleanup to prevent memory leaks
 
 - `src/effects/component_effects/ShieldEffect.tsx` - Implements shield visual effects with custom shaders
-
   - Uses custom shader materials for advanced visual effects
   - Implements hexagonal grid patterns and glow effects
   - Provides impact point visualization
   - Supports dynamic shield health visualization
 
 - `src/effects/component_effects/ShieldImpactEffect.ts` - Implements shield impact visual effects
-
   - Creates ripple effects at impact points
   - Generates crack patterns based on damage
   - Provides configurable impact intensity
   - Integrates with the shield effect system
 
 - `src/effects/component_effects/SmokeTrailEffect.tsx` - Implements smoke trail visual effects
-
   - Uses particle systems for realistic smoke
   - Provides configurable direction and intensity
   - Implements proper physics-based movement
@@ -487,59 +469,45 @@ Please refer to the [CodeBase Mapping Index](./CodeBase_Mapping_Index.md) for th
 ## Available Category References
 
 1. [Development Tools References](./Categories/Development_Tools_References.md)
-
    - Contains information about development tools, linting configuration, and testing utilities
 
 2. [Core Systems References](./Categories/Core_Systems_References.md)
-
    - Contains information about core system architecture, including resource management, module framework, and event systems
 
 3. [Combat System References](./Categories/Combat_System_References.md)
-
    - Contains information about combat system architecture, including combat worker, type conversion utilities, and combat components
 
 4. [Build Configuration References](./Categories/Build_Configuration_References.md)
-
    - Contains information about build configuration, including TypeScript configuration and Vite configuration
 
 5. [UI References](./Categories/UI_References.md)
-
    - Contains information about UI components, view system architecture, and visualization components
 
 6. [Game Mechanics References](./Categories/Game_Mechanics_References.md)
-
    - Contains information about game modules architecture, state management, faction ship system, resource management system, and automation system
 
 7. [Testing Framework References](./Categories/Testing_Framework_References.md)
-
    - Contains information about unit tests, component tests, integration tests, and end-to-end tests
 
 8. [Ship System References](./Categories/Ship_System_References.md)
-
    - Contains information about ship configuration, ship type relationships, ship implementation details, ship formation system, AI integration, and player ship system
 
 9. [Resource Management References](./Categories/Resource_Management_References.md)
-
    - Contains information about resource management system implementation, resource type definitions, resource utilities, resource tracking flow, and resource management UI components
 
 10. [Resource Tracking References](./Categories/Resource_Tracking_References.md)
-
     - Contains information about resource tracking system implementation, resource serialization interfaces, type relationships, resource tracking flow, and resource tracking integration
 
 11. [Effect System References](./Categories/Effect_System_References.md)
-
     - Contains information about effect system implementation, core effect types, effect utilities, components using effects, effect system integration, and effect system events
 
 12. [Combat Type Conversion References](./Categories/Combat_Type_Conversion_References.md)
-
     - Contains information about combat system type conversion utilities, combat system components, type relationships, conversion flow, and type conversion implementation
 
 13. [Automation System References](./Categories/Automation_System_References.md)
-
     - Contains information about automation system implementation, core components, automation routines, system architecture, events, integration, and testing
 
 14. [Project Phase References](./Categories/Project_Phase_References.md)
-
     - Contains information about project mapping guidelines, development phases, workflow, structure, coding standards, and best practices
 
 ## Maintenance Guidelines
@@ -564,7 +532,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Resource Management System Optimizations
 
 - `src/managers/resource/ResourceFlowManager.ts` - Optimized for better performance with large resource networks:
-
   - Added caching system for resource states to reduce redundant lookups
   - Implemented batch processing for large networks to prevent UI freezing
   - Split the large `optimizeFlows()` method into smaller, focused methods
@@ -574,7 +541,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
   - Added configurable parameters for optimization interval, cache TTL, and batch size
 
 - `src/tests/managers/resource/ResourceFlowManager.test.ts` - Updated tests for the optimized ResourceFlowManager:
-
   - Added tests for the caching system
   - Added tests for batch processing with large networks
   - Added tests for converter node processing
@@ -589,7 +555,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 - `src/tests/performance/ResourceFlowManager.benchmark.ts` - Performance benchmarks for ResourceFlowManager, measuring execution time, nodes processed, connections processed, transfers generated, and memory usage for different network sizes and configurations.
 
 - `CodeBase_Docs/ResourceFlowManager_Optimizations.md` - Detailed documentation of the ResourceFlowManager optimizations:
-
   - Overview of the optimization goals
   - Explanation of the caching system implementation
   - Details on batch processing for large networks
@@ -609,7 +574,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Optimized Components
 
 1. **MiningWindow** (`src/components/buildings/modules/MiningHub/MiningWindow.tsx`)
-
    - Purpose: Main interface for mining operations
    - Optimizations:
      - Memoized resource filtering and sorting
@@ -618,7 +582,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
      - Type-safe state management
 
 2. **ModuleStatusDisplay** (`src/components/modules/ModuleStatusDisplay.tsx`)
-
    - Purpose: Displays module status information
    - Optimizations:
      - Wrapped in React.memo
@@ -626,7 +589,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
      - Efficient state updates
 
 3. **ModuleStatusSummary** (`src/components/modules/ModuleStatusSummary.tsx`)
-
    - Purpose: Shows summary of module statuses
    - Optimizations:
      - Wrapped in React.memo
@@ -634,7 +596,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
      - Optimized rendering
 
 4. **ModuleStatusSummaryItem** (`src/components/modules/ModuleStatusSummaryItem.tsx`)
-
    - Purpose: Individual module status item
    - Optimizations:
      - Wrapped in React.memo
@@ -642,7 +603,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
      - Efficient updates
 
 5. **ModuleAlertList** (`src/components/alerts/ModuleAlertList.tsx`)
-
    - Purpose: Displays module alerts
    - Optimizations:
      - Wrapped in React.memo
@@ -659,19 +619,16 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Performance Enhancement Patterns
 
 1. **Memoization Strategy**
-
    - Use React.memo for pure components
    - Implement useMemo for expensive calculations
    - Apply useCallback for event handlers
 
 2. **State Management**
-
    - Group related state
    - Use functional updates
    - Implement proper cleanup
 
 3. **Type Safety**
-
    - Strong TypeScript types
    - Proper interface definitions
    - Type-safe event handling
@@ -684,27 +641,23 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ## Testing Framework and End-to-End Testing
 
 - `playwright.config.ts`: Configuration file for Playwright end-to-end testing
-
   - Defines test directory (`src/tests/e2e`)
   - Sets timeouts and reporter options
   - Configures browsers (Chromium and Firefox)
   - Sets up web server command and port
 
 - `src/tests/e2e/README.md`: Documentation for setting up and running Playwright tests
-
   - Installation instructions
   - Configuration details
   - Examples and best practices
   - Page Object Model pattern documentation
 
 - `src/tests/e2e/models/MiningPage.ts`: Page Object Model for the Mining page
-
   - Locators for page elements
   - Methods for interacting with the page
   - Helper methods for verification and assertions
 
 - `src/tests/e2e/mining.spec.ts`: End-to-end tests for the Mining page
-
   - Tests for resource display
   - Tests for search and filtering functionality
   - Tests for resource selection and view mode toggle
@@ -771,7 +724,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ## State Management
 
 - `src/utils/state/contextSelectors.ts` - Utilities for optimizing context state access and preventing unnecessary re-renders
-
   - `createSelector` - Creates a memoized selector function
   - `useContextSelector` - Hook for selecting portions of context state
   - `createContextSelector` - Creates a hook for selecting context state
@@ -780,7 +732,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
   - `createMultiPropertySelector` - Creates a hook for selecting multiple properties
 
 - `src/utils/state/statePersistence.ts` - Utilities for persisting state to localStorage with versioning
-
   - `createStatePersistence` - Creates a state persistence manager
   - `createStatePersistenceHook` - Creates a hook-friendly state persistence manager
   - `createLocalStorageItem` - Creates a simple localStorage getter/setter
@@ -798,27 +749,22 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Component Profiling System
 
 - `src/utils/profiling/componentProfiler.ts` - Core utilities for profiling individual components
-
   - `createComponentProfiler` - Creates a component profiler
   - `profileRender` - Profiles a component render
   - `withProfiling` - HOC for profiling a component
 
 - `src/utils/profiling/applicationProfiler.ts` - Application-wide profiling system
-
   - `createApplicationProfiler` - Creates an application profiler
   - `applicationProfiler` - Global application profiler instance
 
 - `src/hooks/ui/useComponentProfiler.ts` - React hook for profiling components
-
   - `useComponentProfiler` - Hook for profiling a component
   - `useComponentProfilerWithUpdates` - Hook for profiling with state updates
 
 - `src/hooks/ui/useProfilingOverlay.ts` - Hook for controlling the profiling overlay
-
   - `useProfilingOverlay` - Hook for controlling the overlay visibility
 
 - `src/components/ui/profiling/ProfilingOverlay.tsx` - Visual overlay for displaying profiling metrics
-
   - `ProfilingOverlay` - Component for displaying profiling metrics
 
 - `src/types/ui/UITypes.ts` - Types for the profiling system
@@ -901,14 +847,14 @@ This factory creates a real implementation of the ModuleEvents system for testin
 **Example Usage:**
 
 ```typescript
-import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+import { createTestModuleEvents } from "../factories/createTestModuleEvents";
 
-describe('ModuleManager', () => {
+describe("ModuleManager", () => {
   let testModuleEvents;
 
   beforeEach(() => {
     testModuleEvents = createTestModuleEvents();
-    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+    vi.doMock("../../../lib/modules/ModuleEvents", () => testModuleEvents);
   });
 
   afterEach(() => {
@@ -916,15 +862,15 @@ describe('ModuleManager', () => {
     vi.resetModules();
   });
 
-  it('should emit events correctly', () => {
+  it("should emit events correctly", () => {
     // Test using real implementation
-    const moduleEvents = require('../../../lib/modules/ModuleEvents');
-    moduleEvents.moduleEventBus.emit('TEST_EVENT', { data: 'test' });
+    const moduleEvents = require("../../../lib/modules/ModuleEvents");
+    moduleEvents.moduleEventBus.emit("TEST_EVENT", { data: "test" });
 
     // Verify using helper methods
-    const events = testModuleEvents.getEmittedEvents('TEST_EVENT');
+    const events = testModuleEvents.getEmittedEvents("TEST_EVENT");
     expect(events.length).toBe(1);
-    expect(events[0].eventData.data).toBe('test');
+    expect(events[0].eventData.data).toBe("test");
   });
 });
 ```
@@ -1122,26 +1068,22 @@ All tests are now located in the `src/tests/` directory, organized by test type.
 ### Tool Tests
 
 - `src/tests/tools/fix-typescript-any.test.js` - Tests for the TypeScript 'any' type fixer tool
-
   - Tests various command-line options and functionality
   - Verifies proper handling of TypeScript files with 'any' types
   - Uses dynamic imports and proper mocking of global objects
 
 - `src/tests/tools/setup-linting.test.js` - Tests for the ESLint and Prettier setup tool
-
   - Completely rewritten to use proper ES module mocking
   - Tests configuration file creation and validation
   - Verifies proper handling of existing configuration files
   - Uses manual mocks with both named and default exports
 
 - `src/tests/tools/run-lint-workflow.test.js` - Tests for the lint workflow runner
-
   - Tests various command-line options and workflow steps
   - Verifies proper handling of errors and command failures
   - Uses dynamic imports and proper mocking of global objects
 
 - `src/tests/tools/fix-eslint-by-rule.test.js` - Tests for the ESLint rule fixer
-
   - Tests various command-line options and rule fixing functionality
   - Verifies proper handling of errors and progress reporting
   - Uses dynamic imports and proper mocking of global objects
@@ -1532,7 +1474,6 @@ The following npm scripts have been added to package.json to run different types
 The GameHUD component has been significantly enhanced with the following features:
 
 1. **Keyboard Shortcuts**
-
    - Alt+M for Mining menu
    - Alt+E for Exploration menu
    - Alt+H for Mothership menu
@@ -1542,13 +1483,11 @@ The GameHUD component has been significantly enhanced with the following feature
    - Escape to close active menu
 
 2. **Enhanced Resource Display**
-
    - Added real-time extraction rate indicators (+/- per second)
    - Resource status indicators with icons (critical, normal, abundant)
    - Color-coded resource values based on thresholds
 
 3. **Tooltips and Improved UX**
-
    - Implemented detailed tooltips for all menu items
    - Enhanced resource requirement displays
    - Added build availability status in tooltips
@@ -1565,20 +1504,17 @@ The GameHUD component has been significantly enhanced with the following feature
 The ResourceVisualization component has been enhanced with an informative tooltip system that provides detailed information about each resource:
 
 1. **Resource Information Display**
-
    - Shows current value, capacity, and utilization percentage
    - Displays extraction/consumption rates with color coding
    - Includes time-to-empty calculations for resources being consumed
    - Includes time-to-full calculations for resources being generated
 
 2. **Threshold Visualization**
-
    - Displays low and critical thresholds with colored indicators
    - Shows status messages based on current resource levels
    - Provides visual feedback on resource status
 
 3. **Interactive Elements**
-
    - Tooltips appear on hover with smooth positioning
    - Cursor changes to indicate interactive elements
    - Resource cards provide visual feedback on hover
@@ -1664,13 +1600,11 @@ The Ship Hangar System manages ship construction, docking, deployment, and maint
 ### Core Integration Components
 
 - `src/components/core/SystemIntegration.tsx` - Core component that bridges frontend and backend systems
-
   - Handles resource state synchronization
   - Connects to ModuleEvents system for real-time updates
   - Emits resource update events to notify other systems
 
 - `src/components/core/ThresholdIntegration.tsx` - Component that integrates resource thresholds with UI
-
   - Monitors resource levels against defined thresholds
   - Triggers alerts when thresholds are crossed
   - Updates UI components with threshold status
@@ -1684,7 +1618,6 @@ The Ship Hangar System manages ship construction, docking, deployment, and maint
 ### Event System
 
 - `src/services/EventPropagationService.ts` - Service for mapping and propagating events between systems
-
   - Centralizes event mapping configuration
   - Transforms events between different event systems
   - Ensures events are properly propagated to all interested components

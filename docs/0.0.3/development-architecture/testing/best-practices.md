@@ -37,7 +37,11 @@ beforeEach(() => {
   flowManager = new ResourceFlowManager(100, 500, 10);
 
   // Create the integration using real managers
-  integration = new MiningResourceIntegration(miningManager, thresholdManager, flowManager);
+  integration = new MiningResourceIntegration(
+    miningManager,
+    thresholdManager,
+    flowManager,
+  );
 
   // Initialize the integration
   integration.initialize();
@@ -66,24 +70,24 @@ afterEach(() => {
 Test that components register with each other correctly:
 
 ```typescript
-it('should register mining nodes in ResourceFlowManager as producer nodes', () => {
+it("should register mining nodes in ResourceFlowManager as producer nodes", () => {
   // Arrange
-  const registerNodeSpy = vi.spyOn(flowManager, 'registerNode');
+  const registerNodeSpy = vi.spyOn(flowManager, "registerNode");
   const position: Position = { x: 100, y: 200 };
 
   // Act
-  integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+  integration.registerMiningNode("test-node-1", "minerals", position, 0.8);
 
   // Assert
   expect(registerNodeSpy).toHaveBeenCalledTimes(1);
   expect(registerNodeSpy).toHaveBeenCalledWith(
     expect.objectContaining({
-      id: 'test-node-1',
-      type: 'producer',
-      resources: ['minerals'],
+      id: "test-node-1",
+      type: "producer",
+      resources: ["minerals"],
       active: true,
       efficiency: 0.8,
-    })
+    }),
   );
 });
 ```
@@ -93,9 +97,9 @@ it('should register mining nodes in ResourceFlowManager as producer nodes', () =
 Test that components respond to events from other components:
 
 ```typescript
-it('should create resource flows when ships are assigned to nodes', () => {
+it("should create resource flows when ships are assigned to nodes", () => {
   // Arrange
-  const createFlowSpy = vi.spyOn(flowManager, 'createFlow');
+  const createFlowSpy = vi.spyOn(flowManager, "createFlow");
 
   // Simulate ship assignment event
   const shipAssignedEvent = {
@@ -105,7 +109,7 @@ it('should create resource flows when ships are assigned to nodes', () => {
   // Get event handler
   const shipAssignedHandlers = vi
     .mocked(moduleEventBus.subscribe)
-    .mock.calls.find(call => call[0] === 'SHIP_ASSIGNED');
+    .mock.calls.find((call) => call[0] === "SHIP_ASSIGNED");
 
   // Act
   if (shipAssignedHandlers && shipAssignedHandlers[1]) {
@@ -123,12 +127,12 @@ it('should create resource flows when ships are assigned to nodes', () => {
 Test that data flows correctly between components:
 
 ```typescript
-it('should update thresholds when resource state changes', () => {
+it("should update thresholds when resource state changes", () => {
   // Arrange
-  const updateThresholdSpy = vi.spyOn(thresholdManager, 'updateThreshold');
+  const updateThresholdSpy = vi.spyOn(thresholdManager, "updateThreshold");
 
   // Act
-  integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+  integration.registerMiningNode("test-node-1", "minerals", position, 0.8);
   // Trigger a resource update
 
   // Assert
@@ -155,8 +159,8 @@ When working with events or objects that cross component boundaries, use type as
 Define custom event types for testing that extend the base types:
 
 ```typescript
-interface ShipAssignedEvent extends Omit<ModuleEvent, 'type' | 'moduleType'> {
-  type: 'SHIP_ASSIGNED';
+interface ShipAssignedEvent extends Omit<ModuleEvent, "type" | "moduleType"> {
+  type: "SHIP_ASSIGNED";
   moduleType: ExtendedModuleType;
   shipId: string;
   nodeId: string;
@@ -176,7 +180,7 @@ Extend existing types when needed for testing:
 
 ```typescript
 // Extend ModuleType with our test types
-type ExtendedModuleType = ModuleType | 'miningHub';
+type ExtendedModuleType = ModuleType | "miningHub";
 ```
 
 ## Best Practices for Mocking
@@ -186,16 +190,16 @@ type ExtendedModuleType = ModuleType | 'miningHub';
 Mock dependencies that aren't part of the integration being tested:
 
 ```typescript
-vi.mock('../../../lib/modules/ModuleEvents', () => ({
+vi.mock("../../../lib/modules/ModuleEvents", () => ({
   moduleEventBus: {
     emit: vi.fn(),
     subscribe: vi.fn(() => () => {}),
     unsubscribe: vi.fn(),
   },
   ModuleEventType: {
-    RESOURCE_PRODUCED: 'RESOURCE_PRODUCED',
-    RESOURCE_CONSUMED: 'RESOURCE_CONSUMED',
-    RESOURCE_UPDATED: 'RESOURCE_UPDATED',
+    RESOURCE_PRODUCED: "RESOURCE_PRODUCED",
+    RESOURCE_CONSUMED: "RESOURCE_CONSUMED",
+    RESOURCE_UPDATED: "RESOURCE_UPDATED",
   },
 }));
 ```
@@ -205,13 +209,13 @@ vi.mock('../../../lib/modules/ModuleEvents', () => ({
 Use spies on real component methods to verify they're called correctly:
 
 ```typescript
-const registerNodeSpy = vi.spyOn(flowManager, 'registerNode');
+const registerNodeSpy = vi.spyOn(flowManager, "registerNode");
 // ... test code ...
 expect(registerNodeSpy).toHaveBeenCalledWith(
   expect.objectContaining({
-    id: 'test-node-1',
+    id: "test-node-1",
     // ... expected parameters ...
-  })
+  }),
 );
 ```
 
@@ -221,7 +225,7 @@ Check component state directly to verify integration worked correctly:
 
 ```typescript
 const nodes = flowManager.getNodes();
-const updatedNode = nodes.find(node => node.id === 'test-node-1');
+const updatedNode = nodes.find((node) => node.id === "test-node-1");
 expect(updatedNode).toBeDefined();
 expect(updatedNode?.efficiency).toBe(1.2);
 ```

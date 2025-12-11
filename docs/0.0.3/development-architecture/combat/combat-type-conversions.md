@@ -14,13 +14,11 @@ COMBAT TYPE CONVERSION REFERENCES
 ## Combat System Components
 
 - **useCombatAI.ts**: src/hooks/combat/useCombatAI.js
-
   - Updated to use type conversion functions for CombatUnit objects
   - Accesses health, shield, etc. through the stats property
   - Dependencies: typeConversions.ts, CombatTypes.ts, BehaviorTreeManager.ts
 
 - **ShipClassFactory.ts**: src/factories/ships/ShipClassFactory.ts
-
   - Updated to create manager-style CombatUnit objects and convert them
   - Uses proper WeaponSystem interface for weapon conversion
   - Dependencies: typeConversions.ts, CombatTypes.ts, WeaponTypes.ts
@@ -84,7 +82,6 @@ combatManager.getUnitStatus(unitId)
 ## Type Conversion Implementation
 
 - **convertToCombatTypesUnit**: src/utils/typeConversions.ts
-
   - Purpose: Converts CombatManager.CombatUnit to CombatTypes.CombatUnit
   - Features:
     - Maps properties to appropriate structure
@@ -104,7 +101,6 @@ combatManager.getUnitStatus(unitId)
 ## Type Conversion Usage
 
 - **Combat Manager**: src/managers/combat/combatManager.ts
-
   - Purpose: Central manager for combat system
   - Uses type conversion for:
     - Sending data to combat worker
@@ -134,13 +130,11 @@ combatManager.getUnitStatus(unitId)
 ## Type Conversion Benefits
 
 1. **Type Safety**:
-
    - Ensures type safety across different parts of the system
    - Prevents runtime errors from incorrect property access
    - Provides better IDE support with autocomplete
 
 2. **Separation of Concerns**:
-
    - Allows manager to use simpler flat structure
    - Allows type system to use more complex nested structure
    - Decouples different parts of the combat system

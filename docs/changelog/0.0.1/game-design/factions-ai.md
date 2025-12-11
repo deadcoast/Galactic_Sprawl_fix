@@ -73,7 +73,6 @@ The Factions & AI Section is segmented into Seven parts.
   - **Lost Nova (Exiles)**
   - **Equator Horizon (Ancient Civilization)**
 - **General Setup:**
-
   - Each faction is managed as a separate AI group (using React Context or Redux to maintain independent state).
   - Use asynchronous event management (e.g., RxJS) to handle spawning, system triggers, and ongoing AI behavior updates.
   - Maintain a JSON or similar configuration file for each faction that includes:
@@ -82,7 +81,6 @@ The Factions & AI Section is segmented into Seven parts.
     - **Global AI States:** Aggressive, Defensive, Stealth, or Intervention modes.
 
 - **Separate AI Logic Groups:**
-
   - **Implementation:** Treat each faction as a distinct AI group managed via its own logic module.
   - **Methods:**
     - Use React Context or Redux to hold the state for each faction’s active fleets and behaviors.
@@ -100,14 +98,12 @@ The Factions & AI Section is segmented into Seven parts.
 ## Faction Fleets & Behavior
 
 - **Prefab Ships per Faction:**
-
   - For each faction, create prefabs for key vessels (e.g., “The Rat King” for Space Rats, “Eclipse Scythe” for Lost Nova, “Celestial Arbiter” for Equator Horizon).
   - **Implementation:**
     - Each prefab should include ship stats, visual assets, and preset loadouts that match the faction’s theme.
     - Store these prefabs in a central asset repository accessible by the enemy AI system.
 
 - **AI State Assignments:**
-
   - **Space Rats:**
     - **Behavior:** Always attack on sight. Use aggressive, close-range tactics and ambush patterns.
     - **Methods:**
@@ -134,7 +130,6 @@ The Factions & AI Section is segmented into Seven parts.
 ## Territorial Spawning & Map Integration
 
 - **Spawning Methods:**
-
   - **Triggered Spawning:**
     - Spawn faction fleets when the player enters designated star systems, or after a set time interval.
     - Use event listeners in your React components to detect system changes (e.g., using React Router hooks or custom hooks for map navigation).
@@ -145,11 +140,9 @@ The Factions & AI Section is segmented into Seven parts.
     - Some star systems may be pre-assigned to enemy factions and visually indicated (using D3.js or React-Vis for map overlays).
 
 - **Territorial Indicators:**
-
   - On the Galaxy Map, enemy-controlled systems are color-coded (e.g., red for Space Rats, purple/teal for Lost Nova, a distinct tone for Equator Horizon).
 
 - **Visual Indicators on the Galaxy Map:**
-
   - Color-code enemy-controlled systems based on faction (red for Space Rats, purple/teal for Lost Nova, a distinct hue for Equator Horizon).
   - **Implementation:**
     - Integrate with your map component using libraries like D3.js (for dynamic SVG overlays) or React-Vis for rendering and updating visual elements in real time.
@@ -190,7 +183,6 @@ The Factions & AI Section is segmented into Seven parts.
     - Integrate libraries such as PathFinding.js for smooth vector or grid-based movement.
     - Integrate steering behaviors (e.g., Reynolds' Boids) for fleet maneuvers.
 - **AI Integration with UI:**
-
   - Use React hooks to update enemy AI state and trigger re-renders in your .tsx components.
   - Display enemy status on the Galaxy Map with dynamic indicators (e.g., flashing icons for active engagements).
 
@@ -231,7 +223,6 @@ By following these guidelines, a robust, fully implemented Factions & Enemy AI s
 ### **Part 1: Faction Assets and Ship Classes**
 
 - [ ] **Space Rats (Pirates)**
-
   - [ ] Define 10 ship classes:
     - The Rat King (Flagship)
     - Asteroid Marauder
@@ -248,7 +239,6 @@ By following these guidelines, a robust, fully implemented Factions & Enemy AI s
   - [ ] Include lore: Outlaws raiding merchants, miners, and haulers
 
 - [ ] **Lost Nova (Exiles)**
-
   - [ ] Define 10 ship classes:
     - Eclipse Scythe
     - Null’s Revenge

@@ -76,13 +76,11 @@ Detailed explanation of the issue and the consolidation approach
 The consolidation effort is organized into three phases:
 
 1. **Phase 1: Foundation Components**
-
    - Establish core architectural patterns
    - Focus on VERY HIGH and HIGH priority tasks
    - Create base classes and utilities needed by other components
 
 2. **Phase 2: Specialized Components**
-
    - Consolidate medium-priority duplicates
    - Focus on system-specific components
    - Build on Phase 1 foundations
@@ -168,7 +166,6 @@ Refactor all service classes to extend the base Singleton class instead of imple
 ### Implementation Steps
 
 1. For each service file:
-
    - Import the base Singleton class
    - Modify the class to extend Singleton<ServiceClass>
    - Remove the private static instance property
@@ -178,7 +175,7 @@ Refactor all service classes to extend the base Singleton class instead of imple
 2. Example refactoring (for ErrorLoggingService):
 
    ```typescript
-   import { Singleton } from '../lib/patterns/Singleton';
+   import { Singleton } from "../lib/patterns/Singleton";
 
    class ErrorLoggingServiceImpl extends Singleton<ErrorLoggingServiceImpl> {
      protected constructor() {
@@ -227,7 +224,6 @@ Create a unified service registry that replaces both existing implementations, w
 
 1. Create a new ServiceRegistry implementation in `/src/lib/registry/ServiceRegistry.ts`
 2. Implement a type-safe registry with the following features:
-
    - Support for both managers and services
    - Lazy initialization
    - Dependency injection
@@ -236,9 +232,9 @@ Create a unified service registry that replaces both existing implementations, w
 3. Example implementation:
 
    ```typescript
-   import { Singleton } from '../patterns/Singleton';
-   import { BaseService } from '../services/BaseService';
-   import { BaseManager } from '../managers/BaseManager';
+   import { Singleton } from "../patterns/Singleton";
+   import { BaseService } from "../services/BaseService";
+   import { BaseManager } from "../managers/BaseManager";
 
    export class ServiceRegistry extends Singleton<ServiceRegistry> {
      private services = new Map<string, BaseService>();
@@ -318,7 +314,7 @@ Create a unified event system that consolidates the functionality of multiple ex
 3. Example implementation:
 
    ```typescript
-   import { Singleton } from '../patterns/Singleton';
+   import { Singleton } from "../patterns/Singleton";
 
    // Event types
    export interface BaseEvent {
@@ -327,7 +323,9 @@ Create a unified event system that consolidates the functionality of multiple ex
    }
 
    // Event handler types
-   export type EventHandler<T extends BaseEvent> = (event: T) => void | Promise<void>;
+   export type EventHandler<T extends BaseEvent> = (
+     event: T,
+   ) => void | Promise<void>;
 
    export class EventSystem extends Singleton<EventSystem> {
      private handlers = new Map<string, Set<EventHandler<any>>>();
@@ -335,7 +333,7 @@ Create a unified event system that consolidates the functionality of multiple ex
      // Registration methods
      public subscribe<T extends BaseEvent>(
        eventType: string,
-       handler: EventHandler<T>
+       handler: EventHandler<T>,
      ): () => void {
        // Implementation that returns unsubscribe function
      }
@@ -396,7 +394,6 @@ Create a unified resource management system that consolidates multiple resource-
 
 1. Create a new resource system in `/src/resource/ResourceSystem.ts`
 2. Design a modular architecture with:
-
    - Core resource definitions
    - Storage management
    - Flow control
@@ -474,7 +471,9 @@ Create reusable hook factory patterns to eliminate duplicated hook implementatio
 
    ```typescript
    // In /src/hooks/factory/createDataFetchHook.ts
-   export function createDataFetchHook<T, P extends any[]>(fetchFn: (...args: P) => Promise<T>) {
+   export function createDataFetchHook<T, P extends any[]>(
+     fetchFn: (...args: P) => Promise<T>,
+   ) {
      return (...args: P) => {
        const [data, setData] = useState<T | null>(null);
        const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -520,7 +519,7 @@ Create reusable hook factory patterns to eliminate duplicated hook implementatio
    // In /src/hooks/factory/createStateHook.ts
    export function createStateHook<T, A extends any[]>(
      initialState: T | (() => T),
-     actions: Record<string, (...args: any[]) => Partial<T>>
+     actions: Record<string, (...args: any[]) => Partial<T>>,
    ) {
      return () => {
        const [state, setState] = useState<T>(initialState);
@@ -530,7 +529,7 @@ Create reusable hook factory patterns to eliminate duplicated hook implementatio
 
          for (const [key, action] of Object.entries(actions)) {
            result[key] = (...args: any[]) => {
-             setState(prevState => ({
+             setState((prevState) => ({
                ...prevState,
                ...action(...args),
              }));
@@ -586,9 +585,9 @@ Implement a chart component system using the strategy pattern to allow for diffe
 
    ```typescript
    // In /src/visualization/Chart.tsx
-   import { CanvasRenderer } from './renderers/CanvasRenderer';
-   import { SVGRenderer } from './renderers/SVGRenderer';
-   import { WebGLRenderer } from './renderers/WebGLRenderer';
+   import { CanvasRenderer } from "./renderers/CanvasRenderer";
+   import { SVGRenderer } from "./renderers/SVGRenderer";
+   import { WebGLRenderer } from "./renderers/WebGLRenderer";
 
    export type ChartData = {
      // Common data structure for all chart types
@@ -597,23 +596,23 @@ Implement a chart component system using the strategy pattern to allow for diffe
    export type ChartOptions = {
      width?: number | string;
      height?: number | string;
-     renderer?: 'canvas' | 'svg' | 'webgl';
+     renderer?: "canvas" | "svg" | "webgl";
      // Other chart options
    };
 
    export const Chart: React.FC<{
      data: ChartData;
      options?: ChartOptions;
-     type: 'line' | 'bar' | 'scatter' | 'area';
+     type: "line" | "bar" | "scatter" | "area";
    }> = ({ data, options = {}, type }) => {
      // Choose renderer based on options and chart type
      const renderer = useMemo(() => {
        switch (options.renderer) {
-         case 'canvas':
+         case "canvas":
            return new CanvasRenderer();
-         case 'webgl':
+         case "webgl":
            return new WebGLRenderer();
-         case 'svg':
+         case "svg":
          default:
            return new SVGRenderer();
        }
@@ -692,8 +691,8 @@ Refactor manager implementations to use the base Singleton class and standardize
 
    ```typescript
    // In /src/lib/managers/BaseManager.ts
-   import { Singleton } from '../patterns/Singleton';
-   import { EventSystem, BaseEvent } from '../events/UnifiedEventSystem';
+   import { Singleton } from "../patterns/Singleton";
+   import { EventSystem, BaseEvent } from "../events/UnifiedEventSystem";
 
    export abstract class BaseManager<T extends BaseEvent> extends Singleton<T> {
      protected eventSystem: EventSystem;
@@ -707,7 +706,10 @@ Refactor manager implementations to use the base Singleton class and standardize
        this.eventSystem.publish(event);
      }
 
-     protected subscribe<E extends T>(eventType: string, handler: (event: E) => void): () => void {
+     protected subscribe<E extends T>(
+       eventType: string,
+       handler: (event: E) => void,
+     ): () => void {
        return this.eventSystem.subscribe(eventType, handler);
      }
 
@@ -758,8 +760,8 @@ Create a unified UI component hierarchy for common elements like buttons, implem
    ```typescript
    // In /src/ui/components/Button/Button.tsx
    export type ButtonProps = {
-     variant?: 'primary' | 'secondary' | 'tertiary';
-     size?: 'small' | 'medium' | 'large';
+     variant?: "primary" | "secondary" | "tertiary";
+     size?: "small" | "medium" | "large";
      disabled?: boolean;
      onClick?: () => void;
      children: React.ReactNode;
@@ -767,8 +769,8 @@ Create a unified UI component hierarchy for common elements like buttons, implem
    };
 
    export const Button: React.FC<ButtonProps> = ({
-     variant = 'primary',
-     size = 'medium',
+     variant = "primary",
+     size = "medium",
      disabled = false,
      onClick,
      children,
@@ -989,8 +991,8 @@ Standardize testing utilities across the codebase for consistency and reusabilit
    ```typescript
    // In /src/testing/mockUtils.ts
    export const createMockResource = (override = {}) => ({
-     id: 'test-resource-1',
-     type: 'energy',
+     id: "test-resource-1",
+     type: "energy",
      amount: 100,
      capacity: 1000,
      ...override,

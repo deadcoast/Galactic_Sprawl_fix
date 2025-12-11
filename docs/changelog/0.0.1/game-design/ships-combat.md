@@ -18,11 +18,9 @@ This section provides the framework for developing your fleet and combat mechani
 ## War Ship Prefabs & Core Assets
 
 - **Global War Ship Rules:**
-
   - All war Ships are Automatically dispatched from the Ship Hanger in the Colony Starport to intercept any nearby enemy craft as soon as the radar detects a threat.
 
 - **Core War Ships:**
-
   - **Spitflare (Tier 1):** Small, agile fighter with basic weaponry.
   - **Star Schooner (Tier 1/Tier 2):** Versatile design with a deployable rail gun mechanism.
   - **Orion’s Frigate (Tier 2):** Mid-tier all-purpose warship offering balanced firepower.
@@ -31,7 +29,6 @@ This section provides the framework for developing your fleet and combat mechani
   - **Mother Earth’s Revenge (Special):** A unique capital ship that serves as a mobile starport and repair/trade hub.
 
 - **Asset Details:**
-
   - Develop or import 2D/3D models or sprites for each ship.
   - Assign base stats for **Weapons, Armor, Speed, and Special Abilities**.
   - Implement distinct visual effects (e.g., thruster animations, shield glows, turret rotations) to differentiate between tiers and roles.
@@ -39,35 +36,30 @@ This section provides the framework for developing your fleet and combat mechani
 - **Ship Types and Their Roles:**
 
 1. **Spitflare (Tier 1):**
-
    - **Role:** Small, fast fighters for quick strikes.
    - **Characteristics:** Light hull and shield; equipped with basic machine guns.
    - **Automation:** Automatically dispatched from the Ship Hanger to intercept any nearby enemy craft as soon as the radar detects a threat.
    - **Visuals:** Minimalist design with a sleek, aerodynamic shape. Visual indicators show basic damage effects.
 
 2. **Star Schooner (Tier 1/Tier 2):**
-
    - **Role:** Versatile warship with both offensive and support capabilities.
    - **Characteristics:** Features a deployable rail gun (initially in a basic form, upgradeable to more advanced variants).
    - **Automation:** Engages enemies with a focus on long-range support; requires the ship to anchor before firing its rail gun.
    - **Visuals:** Initially simple in design, with the option to display additional rail gun components upon Tier 2 upgrades.
 
 3. **Orion’s Frigate (Tier 2):**
-
    - **Role:** Mid-tier, all-purpose warship for balanced combat.
    - **Characteristics:** Equips a combination of machine guns and Gauss cannons with medium armor and shields.
    - **Automation:** Automatically adjusts engagement distance based on enemy proximity; capable of both pursuit and retreat maneuvers.
    - **Visuals:** More detailed model than Tier 1 ships, showing a heavier hull and improved weapon mounts.
 
 4. **Harbringer Galleon (Tier 2):**
-
    - **Role:** Heavily armed and armored front-line vessel.
    - **Characteristics:** Carries multiple heavy weapons (MGSS, rockets) and reinforced armor.
    - **Automation:** Acts as a central combat unit that can hold a line; dispatches smaller ships to cover flanks.
    - **Visuals:** Larger, bulkier appearance with visible heavy plating and robust weapon turrets.
 
 5. **Midway Carrier (Tier 3):**
-
    - **Role:** Capital ship functioning as a mobile repair, upgrade, and command hub.
    - **Characteristics:** Can deploy and house up to 30 smaller fighters (e.g., Spitflares), equipped with heavy armor and large shields.
    - **Automation:** Provides mobile repairs and acts as a command center to coordinate nearby warships; dispatches internal fighters automatically when engaged.
@@ -98,7 +90,6 @@ This section provides the framework for developing your fleet and combat mechani
 - **Visual Differentiation:**
   - Implement distinct visual transformations between tiers—for example, a basic hull for Tier 1 evolving into a more robust, intricately detailed hull at Tier 2 and a capital-scale look at Tier 3.
 - **Upgrade Feedback:**
-
   - Display UI panels that compare base stats with upgraded stats and show an animated upgrade sequence for added immersion.
 
 - **Tier Progression and Requirements:**
@@ -107,13 +98,11 @@ This section provides the framework for developing your fleet and combat mechani
   - Provides the basic ship and combat capabilities.
   - Unlocks initial ship models (Spitflare, basic Star Schooner) and weapon configurations.
 - **Tier 2:**
-
   - Upgrades add improved hull armor, upgraded weapon variants (e.g., advanced rail gun and Gauss cannon upgrades), and unlock mid-tier vessels (Orion’s Frigate, Harbringer Galleon).
   - Requires specific resource investments and tech tree achievements such as building an advanced Ship Hanger.
   - Visual enhancements include additional detailing, extra weapon hardpoints, and more elaborate engine effects.
 
 - **Tier 3:**
-
   - Unlocks capital-scale ships (Midway Carrier) and enhances existing ships with cutting-edge technologies (e.g., enhanced shields, faster weapon reload times).
   - Involves high-level tech tree nodes, larger resource commitments, and often prerequisites in the form of multiple colony and infrastructure upgrades.
   - Visual transformations are dramatic, with significant changes in hull design, advanced cockpit layouts, and dynamic energy shield effects.
@@ -124,23 +113,19 @@ This section provides the framework for developing your fleet and combat mechani
 - **Visual Differentiation:**
   - Implement distinct visual transformations between tiers—for example, a basic hull for Tier 1 evolving into a more robust, intricately detailed hull at Tier 2 and a capital-scale look at Tier 3.
 - **Upgrade Feedback:**
-
   - Display UI panels that compare base stats with upgraded stats and show an animated upgrade sequence for added immersion.
 
 - **Upgrade Mechanics:**
 
 - **Visual Representation:**
-
   - Each upgrade results in a visible change: for instance, Orion’s Frigate might evolve from a streamlined fighter to a more battle-worn, heavily armored design.
   - Upgraded ships display additional components (e.g., extra turrets, reinforced plating) that not only change the look but also communicate improved stats to the player.
 
 - **Stat Improvements:**
-
   - Upgrades increase weapon damage, improve shield recharge rates, add bonus hit points, and enhance speed or maneuverability.
   - Each upgrade is clearly documented in the game’s UI with comparative stat panels so the player understands the benefits before committing resources.
 
 - **Automation Integration:**
-
   - The game’s automation system continuously checks upgrade eligibility (based on tech tree, resource availability, and ship experience) and signals to the player when an upgrade is possible.
   - Upgrades also influence automated behavior: for example, a ship that has upgraded its radar system might detect enemies earlier, or an enhanced engine upgrade might allow a vessel to reach engagement ranges faster.
 
@@ -156,28 +141,24 @@ This section provides the framework for developing your fleet and combat mechani
 - **Core Weapon Categories and Their Upgrades:**
 
 1. **Machine Guns:**
-
    - **Base Model:** Fast firing, low damage; used on Tier 1 ships like the Spitflare.
    - **Upgrades:**
      - _Plasma Rounds:_ Offer medium DPS with bonus effects against armor.
      - _Spark Rounds:_ Electrify targets, dealing additional damage to shields.
 
 2. **Gauss Cannon:**
-
    - **Base Model:** High penetration beam-style weapon.
    - **Upgrades:**
      - _Gauss Planer:_ Wider beam with slightly reduced damage, ideal against swarms of smaller ships.
      - _Recirculating Gauss:_ Provides a continuous beam with a focus on sustained damage output over burst damage.
 
 3. **Rail Gun:**
-
    - **Base Model:** Long-range, high-damage projectile weapon.
    - **Upgrades:**
      - _Light Shot:_ A sniper-style, high-DPS option ideal for targeting large enemy vessels.
      - _Maurader:_ Delivers synchronized burst fire across multiple targets; effective against armored units.
 
 4. **MGSS (Mini Gun Super Spooler):**
-
    - **Base Model:** Very high rate of fire with moderate damage.
    - **Upgrades:**
      - _Engine Assisted Spool:_ Increases projectile speed and RoF, but slightly reduces accuracy.
@@ -191,7 +172,6 @@ This section provides the framework for developing your fleet and combat mechani
      - _Big Bang Rockets:_ Feature a two-stage explosion for massive area damage.
 
 - **Implemented Weapons:**
-
   - **Machine Guns:** Fast firing, low-damage; later upgrade to Plasma Rounds or Spark Rounds for enhanced effects.
   - **Gauss Cannon:** High-penetration, beam-style; with upgrades like the Gauss Planer or Recirculating Gauss for varied tactical use.
   - **Rail Gun:** Long-range, high-damage; variants such as Light Shot or Maurader offer different burst or sustained damage profiles.
@@ -199,7 +179,6 @@ This section provides the framework for developing your fleet and combat mechani
   - **Rockets:** Explosive ordnance with variants (EMPR, Swarm Rocket, Big Bang) offering area-of-effect and disabling capabilities.
 
 - **Implementation Details:**
-
   - Script bullet behaviors (projectile speed, damage, collision detection, and area-of-effect triggers) in your game engine.
   - Link specific weapons to appropriate ship types and upgrade paths.
   - Integrate weapon upgrades via the Tech Tree so that improvements reflect in both stats and visual effects (e.g., more pronounced muzzle flashes, altered projectile colors).
@@ -225,25 +204,21 @@ This section provides the framework for developing your fleet and combat mechani
   - Utilize the Radar system to flag enemy presence. When a threat is detected, war ships automatically switch from patrol to intercept mode.
   - Script engagement ranges and target-selection algorithms to determine when and how ships engage or retreat.
 - **Combat Modes:**
-
   - Provide options for different engagement tactics (e.g., defensive, aggressive, evasive).
   - Program ships to coordinate with allied units, forming formations and executing group maneuvers.
 
 - **Automated Engagement:**
 
 - **Radar Integration:**
-
   - Ships are connected to the radar system, which continuously monitors for enemy presence within a defined engagement range.
   - When an enemy is detected, the automation system triggers an alert, and available ships are dispatched based on proximity and current operational status.
 
 - **Engagement Protocols:**
-
   - **Target Acquisition:** Ships automatically select targets based on threat levels, distance, and ship type.
   - **Firing Sequences:** Once a target is engaged, the ship cycles through its weapon systems, prioritizing those with optimal range and damage profiles.
   - **Defensive Maneuvers:** Ships can automatically perform evasive actions or regroup into formations (such as V-formations) for coordinated attacks if multiple vessels are engaged.
 
 - **Tactical Formations and Coordination:**
-
   - Capital ships (like the Midway Carrier) act as command centers, coordinating the movements and firing patterns of nearby warships.
   - Automated coordination ensures that ships maintain optimal formation distances, cover vulnerable flanks, and concentrate fire on high-value targets.
 
@@ -265,7 +240,6 @@ This section provides the framework for developing your fleet and combat mechani
 ## Specialized Recon & Mining Ships
 
 - **Recon Ship Example Implementation:**
-
   - **AC27G “Andromeda Cutter”:**
     - Emphasize speed and stealth; equip with advanced radar and cloaking systems.
     - Designed for rapid galaxy mapping, anomaly detection, and scouting enemy positions.
@@ -276,11 +250,9 @@ This section provides the framework for developing your fleet and combat mechani
 - **Dual-Role Options:**
   - Tier 2 Recon ships are equipped to automate between combat and secondary roles (e.g., a recon ship temporarily supporting defensive fire in an emergency).
 - **Upgrade Paths:**
-
   - Allow recon and mining ships to receive specialized upgrades that improve their core functions (e.g., faster mapping speeds or enhanced mining yields).
 
 - **Mining Ship Example Implementation:**
-
   - **Void Dredger (Mining Ship):**
     - A large, specialized ship for resource extraction with heavy mining lasers.
     - Programmed to interface with the Mineral Processing Centre and auto-dock at resource nodes.
@@ -295,7 +267,6 @@ This section provides the framework for developing your fleet and combat mechani
 - **Recon Ships:**
 
 - **AC27G “Andromeda Cutter”:**
-
   - **Role:** Fast, stealthy recon vessel focused on mapping and enemy detection.
   - **Capabilities:**
     - Enhanced sensor arrays and cloaking technology allow it to scout without being easily detected.
@@ -326,7 +297,6 @@ This section provides the framework for developing your fleet and combat mechani
 ## Faction Variants & Additional Combat Enhancements
 
 - **Unique Enemy & Ally Variants:**
-
   - Different factions (e.g., Space Rats, Lost Nova, Equator Horizon) have ships with unique visual styles and combat behaviors.
   - Create variations in weapon loadouts, armor designs, and AI tactics to differentiate enemy fleets from the player’s.
 
@@ -335,7 +305,6 @@ This section provides the framework for developing your fleet and combat mechani
 - **Salvage & Repair Systems:**
   - Implement systems where post-battle, players can recover resources or ship components from wreckage, fueling further upgrades.
 - **Dynamic Battle Scenarios:**
-
   - Use scripted encounters or random events to vary combat scenarios, ensuring battles remain engaging and unpredictable.
 
 - **Faction-Based Customizations:**
@@ -426,7 +395,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
 ---
 
 1. **Weapon Systems**
-
    - **Core Weapon Categories & Upgrades:**
      - **Machine Guns:**
        - _Base:_ Fast firing, low-damage (used on Tier 1 ships).
@@ -466,7 +434,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
 ---
 
 1. **Specialized Recon & Mining Ships**
-
    - **Recon Ships (AC27G “Andromeda Cutter”):**
      - _Role:_ Fast, stealthy vessel for rapid mapping, enemy detection, and anomaly discovery.
      - _Capabilities:_ Equipped with advanced sensor arrays and cloaking systems.
@@ -496,7 +463,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
 ## Ship Arsenal & Combat Systems Implementation Checklist
 
 1. **War Ships & Core Assets**
-
    - [ ] **Global Rules:**
      - All warships auto-dispatched from the Colony Starport’s Ship Hanger upon radar enemy detection.
    - [ ] **Ship Prefabs & Roles:**
@@ -513,7 +479,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
      - [ ] Use modular visual overlays (e.g., additional armor plating) for tier advancements.
 
 2. **Ship Tier Upgrades & Customization**
-
    - [ ] **Tier System & Requirements:**
      - [ ] Tier 1: Basic ships and capabilities.
      - [ ] Tier 2: Improved hull armor, upgraded weapon variants, unlock mid-tier vessels (requires tech tree milestones such as an advanced Ship Hanger).
@@ -526,7 +491,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
      - [ ] Allow customization of loadouts and cosmetic details post-upgrade.
 
 3. **Weapon Systems**
-
    - [ ] **Core Weapon Categories & Upgrades:**
      - [ ] Machine Guns: Base (fast firing, low damage) and upgrades (Plasma Rounds, Spark Rounds).
      - [ ] Gauss Cannon: Base (high penetration beam) and upgrades (Gauss Planer, Recirculating Gauss).
@@ -542,7 +506,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
      - [ ] Implement physics-based interactions (realistic trajectories, damage falloffs).
 
 4. **Combat Automation & Engagement Logic**
-
    - [ ] **Automated Engagement:**
      - [ ] Integrate radar systems for continuous enemy detection.
      - [ ] Auto-switch ships from patrol to intercept mode upon threat detection.
@@ -560,7 +523,6 @@ This comprehensive build plan for the **Ship Arsenal & Combat Systems** in **Gal
      - [ ] Coordinate multi-ship maneuvers (flanking, coordinated barrages).
 
 5. **Specialized Recon & Mining Ships**
-
    - [ ] **Recon Ships – AC27G “Andromeda Cutter”:**
      - [ ] Role: Fast, stealth recon vessel for mapping and enemy detection.
      - [ ] Capabilities: Advanced sensor arrays, cloaking, XP gain from exploration.

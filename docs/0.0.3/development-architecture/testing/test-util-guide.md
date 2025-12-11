@@ -29,14 +29,14 @@ The test utilities are located in `src/tests/utils/testUtils.tsx` and provide a 
 This utility wraps the standard React Testing Library's `render` function with the application's context providers.
 
 ```tsx
-import { renderWithProviders } from 'src/tests/utils/testUtils';
+import { renderWithProviders } from "src/tests/utils/testUtils";
 
 // Basic usage
 const { getByText, getByRole } = renderWithProviders(<YourComponent />);
 
 // With user events
 const { user, getByText } = renderWithProviders(<YourComponent />);
-await user.click(getByText('Button'));
+await user.click(getByText("Button"));
 ```
 
 ### `AllProviders`
@@ -73,9 +73,9 @@ const resource = createMockResource();
 
 // Override specific properties
 const customResource = createMockResource({
-  name: 'Custom Resource',
+  name: "Custom Resource",
   amount: 500,
-  category: 'special',
+  category: "special",
 });
 ```
 
@@ -89,7 +89,7 @@ const resources = createMockResources(5);
 
 // Create 3 resources with custom properties
 const customResources = createMockResources(3, {
-  category: 'energy',
+  category: "energy",
   visible: false,
 });
 ```
@@ -100,8 +100,8 @@ Creates a mock resource node (producer or consumer).
 
 ```tsx
 const node = createMockResourceNode({
-  type: 'consumer',
-  resources: ['minerals'],
+  type: "consumer",
+  resources: ["minerals"],
 });
 ```
 
@@ -111,9 +111,9 @@ Creates a mock connection between resource nodes.
 
 ```tsx
 const connection = createMockResourceConnection({
-  source: 'producer-1',
-  target: 'consumer-1',
-  resourceType: 'energy',
+  source: "producer-1",
+  target: "consumer-1",
+  resourceType: "energy",
 });
 ```
 
@@ -125,8 +125,8 @@ Creates a mock game event.
 
 ```tsx
 const event = createMockEvent({
-  type: 'building.constructed',
-  data: { buildingId: 'mine-1' },
+  type: "building.constructed",
+  data: { buildingId: "mine-1" },
 });
 ```
 
@@ -163,10 +163,10 @@ Tests a component's loading state.
 ```tsx
 await testLoadingState(
   <ResourceList resources={[]} />, // Component to test
-  'isLoading', // Prop name for loading state
+  "isLoading", // Prop name for loading state
   () => {
     /* callback to finish loading */
-  }
+  },
 );
 ```
 
@@ -177,8 +177,8 @@ Tests a component's error state.
 ```tsx
 testErrorState(
   <ResourceList resources={[]} />, // Component to test
-  'error', // Prop name for error state
-  'Failed to load resources' // Error message
+  "error", // Prop name for error state
+  "Failed to load resources", // Error message
 );
 ```
 
@@ -187,14 +187,14 @@ testErrorState(
 Tests a form component's submission behavior.
 
 ```tsx
-const formElement = screen.getByRole('form');
+const formElement = screen.getByRole("form");
 const onSubmit = vi.fn();
 
 await testFormSubmission(
   formElement,
-  { name: '#name-input', email: '#email-input' }, // Selectors
-  { name: 'Test User', email: 'test@example.com' }, // Values
-  onSubmit
+  { name: "#name-input", email: "#email-input" }, // Selectors
+  { name: "Test User", email: "test@example.com" }, // Values
+  onSubmit,
 );
 
 // Verifies the form was submitted with the correct values
@@ -207,7 +207,11 @@ await testFormSubmission(
 Measures how long a function takes to execute.
 
 ```tsx
-const { result, executionTimeMs } = await measureExecutionTime(someExpensiveFunction, arg1, arg2);
+const { result, executionTimeMs } = await measureExecutionTime(
+  someExpensiveFunction,
+  arg1,
+  arg2,
+);
 
 console.warn(`Function took ${executionTimeMs}ms to execute`);
 ```
@@ -220,7 +224,7 @@ Measures memory usage of a function (when available in the environment).
 const { result, memoryChangeMB } = await measureMemoryUsage(
   someMemoryIntensiveFunction,
   arg1,
-  arg2
+  arg2,
 );
 
 if (memoryChangeMB) {
@@ -236,11 +240,11 @@ Creates a utility for collecting and reporting performance metrics across multip
 const reporter = createPerformanceReporter();
 
 // Record metrics for different operations
-reporter.record('Operation A', 150); // 150ms execution time
-reporter.record('Operation B', 300, 5); // 300ms execution time, 5MB memory usage
+reporter.record("Operation A", 150); // 150ms execution time
+reporter.record("Operation B", 300, 5); // 300ms execution time, 5MB memory usage
 
 // Get metrics for a specific operation
-const metricsA = reporter.getMetrics('Operation A');
+const metricsA = reporter.getMetrics("Operation A");
 console.warn(`Avg execution time: ${metricsA.executionTime.avg}ms`);
 
 // Print a formatted report to the console
@@ -257,19 +261,19 @@ A complete example is available in the `src/tests/utils/testUtilsUsageExample.te
 ### Mock Factories Example
 
 ```tsx
-describe('Resource Components', () => {
-  it('should display resource information', () => {
+describe("Resource Components", () => {
+  it("should display resource information", () => {
     // Create mock data
     const resources = createMockResources(3, {
-      type: 'mineral',
-      category: 'basic',
+      type: "mineral",
+      category: "basic",
     });
 
     // Render with providers
     renderWithProviders(<ResourceDisplay resources={resources} />);
 
     // Test component behavior
-    resources.forEach(resource => {
+    resources.forEach((resource) => {
       expect(screen.getByTestId(`resource-${resource.id}`)).toBeInTheDocument();
     });
   });
@@ -279,8 +283,8 @@ describe('Resource Components', () => {
 ### Performance Testing Example
 
 ```tsx
-describe('ResourceFlowManager Performance', () => {
-  it('should optimize large networks efficiently', async () => {
+describe("ResourceFlowManager Performance", () => {
+  it("should optimize large networks efficiently", async () => {
     const manager = new ResourceFlowManager();
     const nodeCount = 100;
 
@@ -289,8 +293,8 @@ describe('ResourceFlowManager Performance', () => {
       manager.registerNode(
         createMockResourceNode({
           id: `node-${i}`,
-          type: i < nodeCount / 2 ? 'producer' : 'consumer',
-        })
+          type: i < nodeCount / 2 ? "producer" : "consumer",
+        }),
       );
     }
 

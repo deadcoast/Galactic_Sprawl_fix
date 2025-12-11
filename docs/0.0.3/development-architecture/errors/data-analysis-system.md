@@ -9,19 +9,16 @@ The Data Analysis System provides comprehensive analytics capabilities for explo
 The Data Analysis System consists of several key components:
 
 1. **Data Collection Layer**
-
    - `DataCollectionService`: Collects and preprocesses data from exploration events
    - Event subscription system for real-time data updates
    - Data caching and filtering capabilities
 
 2. **Analysis Layer**
-
    - `AnalysisAlgorithmService`: Implements various analysis algorithms
    - Support for trend analysis, correlation analysis, distribution analysis, etc.
    - Result caching for performance optimization
 
 3. **Context Layer**
-
    - `DataAnalysisContext`: Provides a React context for data analysis capabilities
    - State management for datasets, analysis configurations, and results
    - Integration with Data Collection and Analysis services
@@ -62,7 +59,7 @@ const resourceData = dataCollectionService.getResourceData();
 
 // Filter data
 const filteredData = dataCollectionService.filterData(resourceData, [
-  { field: 'properties.resourcePotential', operator: 'greaterThan', value: 50 },
+  { field: "properties.resourcePotential", operator: "greaterThan", value: 50 },
 ]);
 ```
 
@@ -84,11 +81,11 @@ const result = await analysisService.runAnalysis(config, dataset);
 // Run specific analysis
 const trendResult = analysisService.analyzeTrend(
   dataset,
-  'date',
-  'resourcePotential',
-  'resourceType',
+  "date",
+  "resourcePotential",
+  "resourceType",
   [startDate, endDate],
-  'average'
+  "average",
 );
 ```
 
@@ -119,7 +116,7 @@ refreshData();
 
 // Filter data
 const filteredData = filterDataset(datasetId, [
-  { field: 'properties.resourcePotential', operator: 'greaterThan', value: 50 },
+  { field: "properties.resourcePotential", operator: "greaterThan", value: 50 },
 ]);
 
 // Run analysis
@@ -180,13 +177,11 @@ Component for displaying analysis results. It provides:
 ## Future Enhancements
 
 1. **Advanced Visualization**
-
    - Implement real chart visualizations (line, bar, scatter, etc.)
    - Add custom visualization options
    - Improve visualization styling
 
 2. **Performance Optimization**
-
    - Add pagination for large datasets
    - Implement virtualized lists for better performance
    - Optimize algorithm calculations

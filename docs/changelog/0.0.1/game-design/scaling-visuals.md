@@ -14,14 +14,12 @@ This section focuses on two main areas:
 ### Handling Large-Scale Data
 
 - **Resource Counters & UI Performance:**
-
   - **Technique:** Use virtualization to efficiently render large lists.
   - **Method:**
     - Integrate libraries such as **react-window** or **react-virtualized** to render only the visible portion of star system lists or resource counters.
     - Utilize memoization (e.g., React.memo) and optimized selectors (e.g., reselect with Redux) to prevent unnecessary re-renders.
 
 - **Star System Switching:**
-
   - **Technique:** Cache and lazy-load star system data.
   - **Method:**
     - Use React Router for navigation between systems and pre-fetch system data asynchronously (using RxJS or async/await patterns) to minimize loading times.

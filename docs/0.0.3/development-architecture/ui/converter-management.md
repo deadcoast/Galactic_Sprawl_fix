@@ -280,7 +280,7 @@ interface ChainVisualizationProps {
   converters: Record<string, ConverterSummary>;
   recipes: Record<string, RecipeDetail>;
   interactive?: boolean;
-  onNodeClick?: (nodeId: string, type: 'converter' | 'recipe') => void;
+  onNodeClick?: (nodeId: string, type: "converter" | "recipe") => void;
 }
 
 const ChainVisualization: React.FC<ChainVisualizationProps> = ({
@@ -299,7 +299,6 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 ### Visual Design Elements
 
 1. **Color Coding**:
-
    - Green: Optimal efficiency (>90%)
    - Yellow: Moderate efficiency (70-90%)
    - Orange: Low efficiency (50-70%)
@@ -307,7 +306,6 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
    - Blue: Inactive or paused
 
 2. **Icons**:
-
    - Different icons for converter types (smelter, assembler, refinery)
    - Status icons (active, paused, error)
    - Resource type icons
@@ -320,13 +318,11 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 ### Interaction Patterns
 
 1. **Drag and Drop**:
-
    - Drag recipes to converters to start processes
    - Drag and drop chain steps to reorder them
    - Drag resources between storage and converters
 
 2. **Contextual Controls**:
-
    - Right-click menus for common actions
    - Hover tooltips with detailed information
    - Double-click to open detailed views
@@ -369,13 +365,11 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 ## Accessibility Considerations
 
 1. **Keyboard Navigation**:
-
    - All interactive elements should be keyboard accessible
    - Implement logical tab order
    - Add keyboard shortcuts for common actions
 
 2. **Screen Reader Support**:
-
    - Add proper ARIA labels and roles
    - Ensure meaningful text alternatives for visual elements
    - Implement announcements for state changes
@@ -388,13 +382,11 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 ## Performance Considerations
 
 1. **Component Optimization**:
-
    - Use React.memo for components that render frequently
    - Implement virtualization for long lists
    - Use requestAnimationFrame for animations
 
 2. **Data Management**:
-
    - Implement data caching for converter and recipe information
    - Use efficient data structures for quick lookups
    - Batch updates to minimize render cycles

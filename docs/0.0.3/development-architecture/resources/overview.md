@@ -13,7 +13,7 @@ This template provides guidance for fixing ResourceType errors in the Galactic S
 ```typescript
 // ERROR: String literals used for resource types
 function processResource(resourceType: string, amount: number) {
-  if (resourceType === 'minerals') {
+  if (resourceType === "minerals") {
     // Process minerals
   }
 }
@@ -22,7 +22,7 @@ function processResource(resourceType: string, amount: number) {
 **Fix**:
 
 ```typescript
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "../../types/resources/ResourceTypes";
 
 // FIXED: Use ResourceType enum
 function processResource(resourceType: ResourceType, amount: number) {
@@ -37,15 +37,15 @@ function processResource(resourceType: ResourceType, amount: number) {
 ```typescript
 // ERROR: String literals in object properties
 const resources = [
-  { type: 'minerals', amount: 100 },
-  { type: 'energy', amount: 50 },
+  { type: "minerals", amount: 100 },
+  { type: "energy", amount: 50 },
 ];
 ```
 
 **Fix**:
 
 ```typescript
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "../../types/resources/ResourceTypes";
 
 // FIXED: Use ResourceType enum in object properties
 const resources = [
@@ -80,14 +80,14 @@ const resourceData = JSON.parse('{"type":"minerals","amount":100}');
 **Fix**:
 
 ```typescript
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "../../types/resources/ResourceTypes";
 
 // FIXED: Convert string to enum after parsing
 const resourceData = JSON.parse('{"type":"minerals","amount":100}');
 resourceData.type =
-  resourceData.type === 'minerals'
+  resourceData.type === "minerals"
     ? ResourceType.MINERALS
-    : resourceData.type === 'energy'
+    : resourceData.type === "energy"
       ? ResourceType.ENERGY
       : resourceData.type; // Handle other cases
 ```
@@ -95,24 +95,20 @@ resourceData.type =
 ## Fix Implementation Steps
 
 1. **Identify ResourceType Imports**
-
    - Check if the file already imports ResourceType
    - If not, add import from the correct path
    - Example: `import { ResourceType } from '../../types/resources/ResourceTypes';`
 
 2. **Update Function Signatures**
-
    - Change parameter types from `string` to `ResourceType`
    - Update return types if functions return resource types
 
 3. **Replace String Literals with Enum Values**
-
    - Replace 'minerals' with `ResourceType.MINERALS`
    - Replace 'energy' with `ResourceType.ENERGY`
    - Replace other resource strings with their enum counterparts
 
 4. **Update Comparisons**
-
    - Change `resourceType === 'minerals'` to `resourceType === ResourceType.MINERALS`
    - Change string-based switch statements to enum-based
 
@@ -180,7 +176,9 @@ function mapResourceTypeToExternalFormat(type: ResourceType): { id: string } {
 }
 
 // Usage
-thirdPartyLib.processResource(mapResourceTypeToExternalFormat(ResourceType.MINERALS));
+thirdPartyLib.processResource(
+  mapResourceTypeToExternalFormat(ResourceType.MINERALS),
+);
 ```
 
 ## Testing After Fixes
@@ -212,23 +210,23 @@ The Resource Type Standardization project has successfully transitioned the code
 
 ```typescript
 export enum ResourceType {
-  IRON = 'IRON',
-  COPPER = 'COPPER',
-  TITANIUM = 'TITANIUM',
-  URANIUM = 'URANIUM',
-  WATER = 'WATER',
-  HELIUM = 'HELIUM',
-  DEUTERIUM = 'DEUTERIUM',
-  ANTIMATTER = 'ANTIMATTER',
-  DARK_MATTER = 'DARK_MATTER',
-  EXOTIC_MATTER = 'EXOTIC_MATTER',
-  POPULATION = 'POPULATION',
-  RESEARCH = 'RESEARCH',
-  PLASMA = 'PLASMA',
-  GAS = 'GAS',
-  EXOTIC = 'EXOTIC',
-  MINERALS = 'MINERALS',
-  ENERGY = 'ENERGY',
+  IRON = "IRON",
+  COPPER = "COPPER",
+  TITANIUM = "TITANIUM",
+  URANIUM = "URANIUM",
+  WATER = "WATER",
+  HELIUM = "HELIUM",
+  DEUTERIUM = "DEUTERIUM",
+  ANTIMATTER = "ANTIMATTER",
+  DARK_MATTER = "DARK_MATTER",
+  EXOTIC_MATTER = "EXOTIC_MATTER",
+  POPULATION = "POPULATION",
+  RESEARCH = "RESEARCH",
+  PLASMA = "PLASMA",
+  GAS = "GAS",
+  EXOTIC = "EXOTIC",
+  MINERALS = "MINERALS",
+  ENERGY = "ENERGY",
 }
 ```
 
@@ -238,7 +236,7 @@ The `ResourceTypeConverter` utility provides functions for converting between st
 
 ```typescript
 // Convert string to enum
-const enumType = ensureEnumResourceType('minerals'); // ResourceType.MINERALS
+const enumType = ensureEnumResourceType("minerals"); // ResourceType.MINERALS
 
 // Convert enum to string
 const stringType = ensureStringResourceType(ResourceType.MINERALS); // "minerals"
@@ -272,9 +270,9 @@ export interface ResourceTypeMetadata {
 export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
   [ResourceType.IRON]: {
     id: ResourceType.IRON,
-    displayName: 'Iron',
-    description: 'Basic building material',
-    icon: 'iron-icon',
+    displayName: "Iron",
+    description: "Basic building material",
+    icon: "iron-icon",
     category: ResourceCategory.BASIC,
     defaultMax: 1000,
   },
@@ -287,14 +285,12 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
 #### Migration Path
 
 1. For files using string-based ResourceType:
-
    - Replace `import { ResourceType } from '../types/resources/ResourceTypes'` with `import { ResourceType } from '../types/resources/StandardizedResourceTypes'`
    - Update string literals (e.g., 'minerals') to enum values (e.g., ResourceType.MINERALS)
    - Use ResourceTypeConverter utilities for backward compatibility where needed
    - Add appropriate type annotations for function parameters and return types
 
 2. For files supporting both formats during transition:
-
    - Import both types with aliases: `import { ResourceType as StringResourceType } from '../types/resources/ResourceTypes'` and `import { ResourceType } from '../types/resources/StandardizedResourceTypes'`
    - Use the ResourceTypeConverter utilities to convert between formats
    - Update function signatures to accept both types where needed
@@ -309,19 +305,16 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
 The deprecation process is divided into four phases, each with increasing strictness:
 
 1. **Phase 1: Warnings**
-
    - Console warnings are emitted when string-based resource types are used
    - Low impact - Developers are informed but code continues to work
    - Purpose: Raise awareness and encourage voluntary migration
 
 2. **Phase 2: Development Errors**
-
    - Console errors in development mode, warnings in production
    - Medium impact - More visible in development, but doesn't break production
    - Purpose: Increase urgency for developers to update their code
 
 3. **Phase 3: Development Exceptions**
-
    - Throws errors in development mode, logs errors in production
    - High impact - Breaks development builds, strongly visible in production logs
    - Purpose: Force migration in development while maintaining production stability
@@ -366,25 +359,21 @@ A custom ESLint rule (`no-string-resource-types`) has been implemented to warn o
 ### Core Components
 
 1. **ResourceSystem**
-
    - Singleton that manages all resource-related functionality
    - Uses StandardizedResourceType with compatibility layer
    - Coordinates between specialized subsystems
 
 2. **ResourceFlowSubsystem**
-
    - Manages resource flow between entities
    - Accepts both string and enum resource types
    - Handles resource transfers and rate calculations
 
 3. **ResourceTransferSubsystem**
-
    - Manages one-time resource transfers
    - Validates transfers against resource capacities
    - Emits events for successful and failed transfers
 
 4. **ResourceStorageSubsystem**
-
    - Manages resource storage capacities
    - Handles resource capacity upgrades
    - Provides storage-related queries and validations
@@ -397,19 +386,16 @@ A custom ESLint rule (`no-string-resource-types`) has been implemented to warn o
 ### Integration Points
 
 1. **ResourceRegistry**
-
    - Centralized registry for resource types and metadata
    - Provides lookup and validation functions
    - Serves as the single source of truth for resource information
 
 2. **ResourceTypeConverter**
-
    - Converts between string and enum resource types
    - Provides caching for performance optimization
    - Includes type guards for validation
 
 3. **ResourceManager**
-
    - High-level interface for game systems
    - Coordinates resource operations across subsystems
    - Provides simplified API for common resource operations
@@ -424,12 +410,10 @@ A custom ESLint rule (`no-string-resource-types`) has been implemented to warn o
 The resource system uses events for communication between components:
 
 1. **Resource Change Events**
-
    - Emitted when resource amounts change
    - Include resource type, amount, and change reason
 
 2. **Resource Threshold Events**
-
    - Emitted when resource thresholds are crossed
    - Include resource type, threshold type, and current value
 
@@ -452,8 +436,8 @@ const resourceSchema = z.object({
 
 // Use in an API endpoint
 const getResourceEndpoint = createApiEndpoint({
-  path: '/api/resources/:resourceType',
-  method: 'GET',
+  path: "/api/resources/:resourceType",
+  method: "GET",
   requestSchema: z.object({
     resourceType: z.nativeEnum(ResourceType),
   }),
@@ -484,13 +468,11 @@ See `src/docs/ApiResourceTypeGuide.md` for comprehensive examples and best pract
 ## Future Enhancements
 
 1. **Resource Relationships**
-
    - Implement resource conversion recipes
    - Add resource dependencies
    - Create resource chains and production trees
 
 2. **Advanced Resource Visualization**
-
    - Implement Sankey diagrams for resource flows
    - Create heat maps for resource distribution
    - Add time-series visualization for resource trends
@@ -505,19 +487,16 @@ See `src/docs/ApiResourceTypeGuide.md` for comprehensive examples and best pract
 For developers who need more detailed information about the resource system, the following documentation files are available:
 
 1. **ResourceTypeMigrationGuide.md** (`src/docs/ResourceTypeMigrationGuide.md`)
-
    - Comprehensive guide for migrating from string-based to enum-based resource types
    - Step-by-step instructions with code examples
    - Common migration patterns and solutions to typical challenges
 
 2. **StandardizedResourceTypeGuide.md** (`src/docs/StandardizedResourceTypeGuide.md`)
-
    - Detailed guide on using standardized resource types
    - Examples of common patterns and best practices
    - Troubleshooting tips for common issues
 
 3. **ApiResourceTypeGuide.md** (`src/docs/ApiResourceTypeGuide.md`)
-
    - Guide for using standardized resource types with the API client
    - Examples of defining API endpoints with resource types
    - Best practices for validation and error handling
@@ -558,10 +537,13 @@ The Galactic Sprawl codebase has transitioned from string-based resource types t
 
 ```typescript
 // Import the ResourceType enum
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // If you need resource categories or rarity levels
-import { ResourceCategory, ResourceRarity } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceCategory,
+  ResourceRarity,
+} from "../types/resources/StandardizedResourceTypes";
 ```
 
 ### Using Resource Type Enum Values
@@ -608,7 +590,7 @@ const mineralAmount = resourceMap.get(ResourceType.MINERALS); // 100
 ### Type Guards
 
 ```typescript
-import { isEnumResourceType } from '../utils/resources/ResourceTypeConverter';
+import { isEnumResourceType } from "../utils/resources/ResourceTypeConverter";
 
 // Check if a value is a valid resource type
 function processResourceValue(value: unknown) {
@@ -616,7 +598,7 @@ function processResourceValue(value: unknown) {
     // value is now typed as ResourceType
     return `Processing ${value}`;
   }
-  return 'Invalid resource type';
+  return "Invalid resource type";
 }
 ```
 
@@ -625,7 +607,10 @@ function processResourceValue(value: unknown) {
 The `ResourceTypeInfo` object provides metadata for each resource type:
 
 ```typescript
-import { ResourceType, ResourceTypeInfo } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeInfo,
+} from "../types/resources/StandardizedResourceTypes";
 
 // Get display name for UI
 const displayName = ResourceTypeInfo[ResourceType.MINERALS].displayName; // "Minerals"
@@ -677,17 +662,17 @@ import {
   ensureStringResourceType,
   isStringResourceType,
   isEnumResourceType,
-} from '../utils/resources/ResourceTypeConverter';
+} from "../utils/resources/ResourceTypeConverter";
 
 // Convert any resource type to enum format
-const enumType = ensureEnumResourceType('minerals'); // ResourceType.MINERALS
+const enumType = ensureEnumResourceType("minerals"); // ResourceType.MINERALS
 // or
 const enumType2 = ensureEnumResourceType(ResourceType.MINERALS); // ResourceType.MINERALS (unchanged)
 
 // Convert any resource type to string format
 const stringType = ensureStringResourceType(ResourceType.MINERALS); // "minerals"
 // or
-const stringType2 = ensureStringResourceType('minerals'); // "minerals" (unchanged)
+const stringType2 = ensureStringResourceType("minerals"); // "minerals" (unchanged)
 
 // Type guards
 if (isEnumResourceType(value)) {
@@ -707,12 +692,12 @@ import {
   toStringResourceMap,
   toEnumResourceRecord,
   toStringResourceRecord,
-} from '../utils/resources/ResourceTypeConverter';
+} from "../utils/resources/ResourceTypeConverter";
 
 // Convert Maps
 const stringMap = new Map([
-  ['minerals', 100],
-  ['energy', 50],
+  ["minerals", 100],
+  ["energy", 50],
 ]);
 const enumMap = toEnumResourceMap(stringMap);
 // Map { ResourceType.MINERALS => 100, ResourceType.ENERGY => 50 }
@@ -736,10 +721,13 @@ const basicResources: ResourceType[] = [
 ];
 
 // Filter resources by category
-import { ResourceCategory, ResourceTypeInfo } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceCategory,
+  ResourceTypeInfo,
+} from "../types/resources/StandardizedResourceTypes";
 
 const advancedResources = Object.values(ResourceType).filter(
-  type => ResourceTypeInfo[type].category === ResourceCategory.ADVANCED
+  (type) => ResourceTypeInfo[type].category === ResourceCategory.ADVANCED,
 );
 ```
 
@@ -749,15 +737,15 @@ const advancedResources = Object.values(ResourceType).filter(
 function getResourceColor(type: ResourceType): string {
   switch (type) {
     case ResourceType.MINERALS:
-      return '#8B4513'; // Brown
+      return "#8B4513"; // Brown
     case ResourceType.ENERGY:
-      return '#FFD700'; // Gold
+      return "#FFD700"; // Gold
     case ResourceType.POPULATION:
-      return '#1E90FF'; // Blue
+      return "#1E90FF"; // Blue
     case ResourceType.RESEARCH:
-      return '#9370DB'; // Purple
+      return "#9370DB"; // Purple
     default:
-      return '#CCCCCC'; // Gray
+      return "#CCCCCC"; // Gray
   }
 }
 ```
@@ -812,22 +800,22 @@ export function ResourceSelector({ onSelect }: { onSelect: (type: ResourceType) 
 ### Unit Testing Resource Functions
 
 ```typescript
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
-import { ResourceManager } from '../managers/ResourceManager';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
+import { ResourceManager } from "../managers/ResourceManager";
 
-describe('ResourceManager', () => {
+describe("ResourceManager", () => {
   let manager: ResourceManager;
 
   beforeEach(() => {
     manager = new ResourceManager();
   });
 
-  it('should add resources correctly', () => {
+  it("should add resources correctly", () => {
     manager.addResource(ResourceType.MINERALS, 100);
     expect(manager.getResourceAmount(ResourceType.MINERALS)).toBe(100);
   });
 
-  it('should not exceed maximum capacity', () => {
+  it("should not exceed maximum capacity", () => {
     manager.setResourceCapacity(ResourceType.ENERGY, 50);
     manager.addResource(ResourceType.ENERGY, 100);
     expect(manager.getResourceAmount(ResourceType.ENERGY)).toBe(50);
@@ -879,7 +867,7 @@ if (resourceType === ResourceType.MINERALS) {
 }
 
 // Slower (string comparison)
-if (resourceTypeString === 'minerals') {
+if (resourceTypeString === "minerals") {
   // ...
 }
 ```
@@ -956,7 +944,7 @@ if (resourceTypeString === 'minerals') {
    Solution:
 
    ```typescript
-   import { isEnumResourceType } from '../utils/resources/ResourceTypeConverter';
+   import { isEnumResourceType } from "../utils/resources/ResourceTypeConverter";
 
    const resourceType = getResourceTypeFromSomewhere();
    if (isEnumResourceType(resourceType)) {
@@ -972,15 +960,17 @@ if (resourceTypeString === 'minerals') {
 
    ```typescript
    // Error: Type '"minerals"' is not assignable to parameter of type 'ResourceType'
-   expect(screen.getByText('minerals')).toBeInTheDocument();
+   expect(screen.getByText("minerals")).toBeInTheDocument();
    ```
 
    Solution:
 
    ```typescript
-   import { ensureStringResourceType } from '../utils/resources/ResourceTypeConverter';
+   import { ensureStringResourceType } from "../utils/resources/ResourceTypeConverter";
 
-   expect(screen.getByText(ensureStringResourceType(ResourceType.MINERALS))).toBeInTheDocument();
+   expect(
+     screen.getByText(ensureStringResourceType(ResourceType.MINERALS)),
+   ).toBeInTheDocument();
    ```
 
    # Standardized Resource Types Documentation
@@ -997,13 +987,13 @@ The `ResourceType` enum replaces string literals for resource types, providing b
 
 ```typescript
 export enum ResourceType {
-  MINERALS = 'minerals',
-  ENERGY = 'energy',
-  POPULATION = 'population',
-  RESEARCH = 'research',
-  PLASMA = 'plasma',
-  GAS = 'gas',
-  EXOTIC = 'exotic',
+  MINERALS = "minerals",
+  ENERGY = "energy",
+  POPULATION = "population",
+  RESEARCH = "research",
+  PLASMA = "plasma",
+  GAS = "gas",
+  EXOTIC = "exotic",
 }
 ```
 
@@ -1013,13 +1003,13 @@ For backward compatibility with existing code that uses string literals:
 
 ```typescript
 export type ResourceTypeString =
-  | 'minerals'
-  | 'energy'
-  | 'population'
-  | 'research'
-  | 'plasma'
-  | 'gas'
-  | 'exotic';
+  | "minerals"
+  | "energy"
+  | "population"
+  | "research"
+  | "plasma"
+  | "gas"
+  | "exotic";
 ```
 
 ### Resource Metadata
@@ -1043,9 +1033,9 @@ With a lookup object for easy access:
 export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
   [ResourceType.MINERALS]: {
     id: ResourceType.MINERALS,
-    displayName: 'Minerals',
-    description: 'Basic building materials',
-    icon: 'mineral-icon',
+    displayName: "Minerals",
+    description: "Basic building materials",
+    icon: "mineral-icon",
     category: ResourceCategory.BASIC,
     defaultMax: 1000,
   },
@@ -1103,7 +1093,10 @@ export class ResourceStateClass {
   }
 
   // Static creation methods
-  public static fromResourceState(state: ResourceState, type: ResourceType): ResourceStateClass {
+  public static fromResourceState(
+    state: ResourceState,
+    type: ResourceType,
+  ): ResourceStateClass {
     /* ... */
   }
 }
@@ -1157,7 +1150,7 @@ import {
   ResourceType,
   ResourceTypeHelpers,
   ResourceStateClass,
-} from 'src/types/resources/StandardizedResourceTypes';
+} from "src/types/resources/StandardizedResourceTypes";
 
 // Using the enum
 function processResource(type: ResourceType) {
@@ -1183,10 +1176,10 @@ console.log(`Energy rate: ${energyState.rate}`);
 
 ```typescript
 // Before
-const resourceType = 'minerals';
+const resourceType = "minerals";
 
 // After
-import { ResourceType } from 'src/types/resources/StandardizedResourceTypes';
+import { ResourceType } from "src/types/resources/StandardizedResourceTypes";
 const resourceType = ResourceType.MINERALS;
 ```
 
@@ -1194,11 +1187,15 @@ const resourceType = ResourceType.MINERALS;
 
 ```typescript
 // For functions that might receive string types from legacy code
-import { ResourceType, ResourceTypeHelpers } from 'src/types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from "src/types/resources/StandardizedResourceTypes";
 
 function processResource(type: string | ResourceType) {
   // Convert string to enum if needed
-  const resourceType = typeof type === 'string' ? ResourceTypeHelpers.stringToEnum(type) : type;
+  const resourceType =
+    typeof type === "string" ? ResourceTypeHelpers.stringToEnum(type) : type;
 
   // Now use resourceType which is guaranteed to be a ResourceType enum
 }
@@ -1215,11 +1212,17 @@ function updateResourceUI(resourceState: any) {
 }
 
 // After
-import { ResourceStateClass, ResourceType } from 'src/types/resources/StandardizedResourceTypes';
+import {
+  ResourceStateClass,
+  ResourceType,
+} from "src/types/resources/StandardizedResourceTypes";
 
 function updateResourceUI(resourceState: any, resourceType: ResourceType) {
   // Convert to ResourceStateClass for proper handling
-  const state = ResourceStateClass.fromResourceState(resourceState, resourceType);
+  const state = ResourceStateClass.fromResourceState(
+    resourceState,
+    resourceType,
+  );
   const ratio = state.current / state.max;
 }
 ```
@@ -1263,14 +1266,17 @@ export const ResourceDisplay: React.FC<ResourceDisplayProps> = ({ resourceType, 
 ### Resource Manager Integration
 
 ```typescript
-import { ResourceType, ResourceStateClass } from 'src/types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceStateClass,
+} from "src/types/resources/StandardizedResourceTypes";
 
 class ResourceManager {
   private resourceStates: Map<ResourceType, ResourceStateClass> = new Map();
 
   constructor() {
     // Initialize with default states
-    Object.values(ResourceType).forEach(type => {
+    Object.values(ResourceType).forEach((type) => {
       this.resourceStates.set(type, new ResourceStateClass({ type }));
     });
   }
@@ -1296,7 +1302,7 @@ The resource type system uses TypeScript enums instead of string literals for im
 
 ```typescript
 // ✅ DO use the ResourceType enum
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Good example - using enum
 function processResource(type: ResourceType) {
@@ -1308,7 +1314,7 @@ function processResource(type: ResourceType) {
 // ❌ DON'T use string literals directly
 // Bad example - using string literals
 function processResource(type: string) {
-  if (type === 'energy') {
+  if (type === "energy") {
     // No type safety!
     // Process energy
   }
@@ -1336,10 +1342,13 @@ Always use the enum value for resource types:
 Use the `ResourceTypeHelpers` for any conversions between strings and enum values:
 
 ```typescript
-import { ResourceType, ResourceTypeHelpers } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from "../types/resources/StandardizedResourceTypes";
 
 // Convert string to enum
-const energyEnum = ResourceTypeHelpers.stringToEnum('energy'); // Returns ResourceType.ENERGY
+const energyEnum = ResourceTypeHelpers.stringToEnum("energy"); // Returns ResourceType.ENERGY
 
 // Convert enum to string
 const energyString = ResourceTypeHelpers.enumToString(ResourceType.ENERGY); // Returns 'energy'
@@ -1368,7 +1377,10 @@ const metadata = ResourceTypeHelpers.getMetadata(ResourceType.ENERGY);
 The `ResourceStateClass` provides a consistent way to manage resource state with built-in validation:
 
 ```typescript
-import { ResourceType, ResourceStateClass } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceStateClass,
+} from "../types/resources/StandardizedResourceTypes";
 
 // Create a new resource state
 const energyState = new ResourceStateClass({
@@ -1384,7 +1396,10 @@ const energyState = new ResourceStateClass({
 const netRate = energyState.rate; // 5 (production - consumption)
 
 // Use with resource manager
-resourceManager.updateResourceState(ResourceType.ENERGY, energyState.asObject());
+resourceManager.updateResourceState(
+  ResourceType.ENERGY,
+  energyState.asObject(),
+);
 ```
 
 ## Resource Flow Components
@@ -1397,11 +1412,11 @@ import {
   FlowNodeType,
   FlowNode,
   FlowConnection,
-} from '../types/resources/StandardizedResourceTypes';
+} from "../types/resources/StandardizedResourceTypes";
 
 // Create a producer node
 const producerNode: FlowNode = {
-  id: 'energy-producer',
+  id: "energy-producer",
   type: FlowNodeType.PRODUCER,
   resources: [ResourceType.ENERGY],
   priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
@@ -1410,9 +1425,9 @@ const producerNode: FlowNode = {
 
 // Create a connection
 const connection: FlowConnection = {
-  id: 'energy-connection',
-  source: 'energy-producer',
-  target: 'energy-consumer',
+  id: "energy-connection",
+  source: "energy-producer",
+  target: "energy-consumer",
   resourceType: ResourceType.ENERGY,
   maxRate: 10,
   currentRate: 5,
@@ -1443,7 +1458,7 @@ interface ResourceDisplayProps {
 
 ```typescript
 // Before
-resourceManager.addResource('energy', 10);
+resourceManager.addResource("energy", 10);
 
 // After
 resourceManager.addResource(ResourceType.ENERGY, 10);
@@ -1453,7 +1468,7 @@ resourceManager.addResource(ResourceType.ENERGY, 10);
 
 ```typescript
 // Before
-if (resource.type === 'energy') {
+if (resource.type === "energy") {
   // Handle energy
 }
 
@@ -1484,9 +1499,9 @@ Resources are organized into categories that determine their properties and beha
 
 ```typescript
 export enum ResourceCategory {
-  BASIC = 'basic',
-  ADVANCED = 'advanced',
-  SPECIAL = 'special',
+  BASIC = "basic",
+  ADVANCED = "advanced",
+  SPECIAL = "special",
 }
 ```
 
@@ -1497,7 +1512,10 @@ Use these categories when filtering or grouping resources in the UI or game logi
 Use the `ResourceThreshold` interface for defining thresholds:
 
 ```typescript
-import { ResourceType, ResourceThreshold } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceThreshold,
+} from "../types/resources/StandardizedResourceTypes";
 
 const energyThreshold: ResourceThreshold = {
   resourceId: ResourceType.ENERGY,
@@ -1524,13 +1542,13 @@ The `ResourceType` is defined as a string literal union type in `src/types/resou
 
 ```typescript
 export type ResourceType =
-  | 'minerals'
-  | 'energy'
-  | 'population'
-  | 'research'
-  | 'plasma'
-  | 'gas'
-  | 'exotic';
+  | "minerals"
+  | "energy"
+  | "population"
+  | "research"
+  | "plasma"
+  | "gas"
+  | "exotic";
 ```
 
 **Issues:**
@@ -1614,13 +1632,13 @@ Convert from string literal union to an enum with associated metadata:
 
 ```typescript
 export enum ResourceType {
-  MINERALS = 'minerals',
-  ENERGY = 'energy',
-  POPULATION = 'population',
-  RESEARCH = 'research',
-  PLASMA = 'plasma',
-  GAS = 'gas',
-  EXOTIC = 'exotic',
+  MINERALS = "minerals",
+  ENERGY = "energy",
+  POPULATION = "population",
+  RESEARCH = "research",
+  PLASMA = "plasma",
+  GAS = "gas",
+  EXOTIC = "exotic",
 }
 
 export interface ResourceTypeMetadata {
@@ -1634,9 +1652,9 @@ export interface ResourceTypeMetadata {
 export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
   [ResourceType.MINERALS]: {
     id: ResourceType.MINERALS,
-    displayName: 'Minerals',
-    description: 'Basic building materials',
-    icon: 'mineral-icon',
+    displayName: "Minerals",
+    description: "Basic building materials",
+    icon: "mineral-icon",
     category: ResourceCategory.BASIC,
   },
   // ... other resource types
@@ -1748,15 +1766,15 @@ The Galactic Sprawl API client has been updated to work with standardized resour
 The `TypeSafeApiClient` provides type-safe API requests with validation using Zod schemas:
 
 ```typescript
-import { z } from 'zod';
-import { TypeSafeApiClient, createApiClient } from '../api/TypeSafeApiClient';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { z } from "zod";
+import { TypeSafeApiClient, createApiClient } from "../api/TypeSafeApiClient";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Create an API client instance
 const apiClient = createApiClient({
-  baseUrl: 'https://api.galacticsprawl.com',
+  baseUrl: "https://api.galacticsprawl.com",
   defaultHeaders: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 ```
@@ -1768,14 +1786,14 @@ const apiClient = createApiClient({
 Use the `ResourceType` enum in your Zod schemas to ensure type safety:
 
 ```typescript
-import { z } from 'zod';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { z } from "zod";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Define a schema for resource update requests
 const resourceUpdateSchema = z.object({
   resourceType: z.nativeEnum(ResourceType),
   amount: z.number().positive(),
-  operation: z.enum(['add', 'subtract', 'set']),
+  operation: z.enum(["add", "subtract", "set"]),
 });
 
 // Type derived from the schema
@@ -1785,7 +1803,7 @@ type ResourceUpdateRequest = z.infer<typeof resourceUpdateSchema>;
 const updateRequest: ResourceUpdateRequest = {
   resourceType: ResourceType.MINERALS,
   amount: 100,
-  operation: 'add',
+  operation: "add",
 };
 ```
 
@@ -1794,9 +1812,9 @@ const updateRequest: ResourceUpdateRequest = {
 Define API endpoints that use resource types:
 
 ```typescript
-import { z } from 'zod';
-import { createApiEndpoint } from '../api/TypeSafeApiClient';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { z } from "zod";
+import { createApiEndpoint } from "../api/TypeSafeApiClient";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Define a response schema for resource data
 const resourceResponseSchema = z.object({
@@ -1806,23 +1824,23 @@ const resourceResponseSchema = z.object({
       amount: z.number(),
       capacity: z.number(),
       rate: z.number(),
-    })
+    }),
   ),
   timestamp: z.number(),
 });
 
 // Create an API endpoint for fetching resources
 const getResourcesEndpoint = createApiEndpoint({
-  path: '/api/resources',
-  method: 'GET',
+  path: "/api/resources",
+  method: "GET",
   requestSchema: z.object({}),
   responseSchema: resourceResponseSchema,
 });
 
 // Create an API endpoint for updating resources
 const updateResourceEndpoint = createApiEndpoint({
-  path: '/api/resources/update',
-  method: 'POST',
+  path: "/api/resources/update",
+  method: "POST",
   requestSchema: resourceUpdateSchema,
   responseSchema: z.object({
     success: z.boolean(),
@@ -1847,7 +1865,7 @@ async function fetchResources() {
     const response = await apiClient.request(getResourcesEndpoint);
     return response.data.resources;
   } catch (error) {
-    console.error('Failed to fetch resources:', error);
+    console.error("Failed to fetch resources:", error);
     return [];
   }
 }
@@ -1858,7 +1876,7 @@ async function updateResource(type: ResourceType, amount: number) {
     const response = await apiClient.request(updateResourceEndpoint, {
       resourceType: type,
       amount: amount,
-      operation: 'add',
+      operation: "add",
     });
     return response.data.updatedResource;
   } catch (error) {
@@ -1868,7 +1886,7 @@ async function updateResource(type: ResourceType, amount: number) {
 }
 
 // Example usage
-updateResource(ResourceType.ENERGY, 50).then(result => {
+updateResource(ResourceType.ENERGY, 50).then((result) => {
   if (result) {
     console.log(`Updated ${result.type} to ${result.amount}`);
   }
@@ -1882,8 +1900,8 @@ updateResource(ResourceType.ENERGY, 50).then(result => {
 The API client automatically validates responses using Zod schemas:
 
 ```typescript
-import { z } from 'zod';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { z } from "zod";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Define a schema for resource data
 const resourceSchema = z.object({
@@ -1895,8 +1913,8 @@ const resourceSchema = z.object({
 
 // Use in an API endpoint
 const getResourceEndpoint = createApiEndpoint({
-  path: '/api/resources/:resourceType',
-  method: 'GET',
+  path: "/api/resources/:resourceType",
+  method: "GET",
   requestSchema: z.object({
     resourceType: z.nativeEnum(ResourceType),
   }),
@@ -1925,7 +1943,7 @@ async function getResource(type: ResourceType) {
 The API client will throw validation errors for invalid resource types:
 
 ```typescript
-import { ApiErrorType } from '../api/TypeSafeApiClient';
+import { ApiErrorType } from "../api/TypeSafeApiClient";
 
 async function safeGetResource(type: unknown) {
   try {
@@ -1937,12 +1955,24 @@ async function safeGetResource(type: unknown) {
     const response = await getResource(type);
     return response;
   } catch (error) {
-    if (error instanceof ApiError && error.type === ApiErrorType.REQUEST_VALIDATION_ERROR) {
-      console.error('Invalid resource type in request:', error.validationErrors);
-    } else if (error instanceof ApiError && error.type === ApiErrorType.RESPONSE_VALIDATION_ERROR) {
-      console.error('Invalid resource type in response:', error.validationErrors);
+    if (
+      error instanceof ApiError &&
+      error.type === ApiErrorType.REQUEST_VALIDATION_ERROR
+    ) {
+      console.error(
+        "Invalid resource type in request:",
+        error.validationErrors,
+      );
+    } else if (
+      error instanceof ApiError &&
+      error.type === ApiErrorType.RESPONSE_VALIDATION_ERROR
+    ) {
+      console.error(
+        "Invalid resource type in response:",
+        error.validationErrors,
+      );
     } else {
-      console.error('Other error:', error);
+      console.error("Other error:", error);
     }
     return null;
   }
@@ -1954,12 +1984,12 @@ async function safeGetResource(type: unknown) {
 ### Fetching Multiple Resource Types
 
 ```typescript
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Define an endpoint for fetching multiple resources
 const getMultipleResourcesEndpoint = createApiEndpoint({
-  path: '/api/resources/batch',
-  method: 'POST',
+  path: "/api/resources/batch",
+  method: "POST",
   requestSchema: z.object({
     resourceTypes: z.array(z.nativeEnum(ResourceType)),
   }),
@@ -1977,27 +2007,29 @@ async function fetchMultipleResources(types: ResourceType[]) {
 
     return response.data.resources;
   } catch (error) {
-    console.error('Failed to fetch resources:', error);
+    console.error("Failed to fetch resources:", error);
     return {};
   }
 }
 
 // Example usage
-fetchMultipleResources([ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.POPULATION]).then(
-  resources => {
-    // resources is a record with ResourceType keys
-    const minerals = resources[ResourceType.MINERALS];
-    const energy = resources[ResourceType.ENERGY];
+fetchMultipleResources([
+  ResourceType.MINERALS,
+  ResourceType.ENERGY,
+  ResourceType.POPULATION,
+]).then((resources) => {
+  // resources is a record with ResourceType keys
+  const minerals = resources[ResourceType.MINERALS];
+  const energy = resources[ResourceType.ENERGY];
 
-    console.log(`Minerals: ${minerals.amount}, Energy: ${energy.amount}`);
-  }
-);
+  console.log(`Minerals: ${minerals.amount}, Energy: ${energy.amount}`);
+});
 ```
 
 ### Resource Transfer API
 
 ```typescript
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Define a schema for resource transfers
 const resourceTransferSchema = z.object({
@@ -2009,8 +2041,8 @@ const resourceTransferSchema = z.object({
 
 // Create an API endpoint for resource transfers
 const transferResourceEndpoint = createApiEndpoint({
-  path: '/api/resources/transfer',
-  method: 'POST',
+  path: "/api/resources/transfer",
+  method: "POST",
   requestSchema: resourceTransferSchema,
   responseSchema: z.object({
     success: z.boolean(),
@@ -2024,7 +2056,7 @@ async function transferResource(
   sourceId: string,
   targetId: string,
   type: ResourceType,
-  amount: number
+  amount: number,
 ) {
   try {
     const response = await apiClient.request(transferResourceEndpoint, {
@@ -2047,21 +2079,30 @@ async function transferResource(
 ### Resource-Specific Error Handling
 
 ```typescript
-import { ApiError, ApiErrorType } from '../api/TypeSafeApiClient';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ApiError, ApiErrorType } from "../api/TypeSafeApiClient";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
 // Handle resource-specific errors
-async function handleResourceOperation(type: ResourceType, operation: () => Promise<any>) {
+async function handleResourceOperation(
+  type: ResourceType,
+  operation: () => Promise<any>,
+) {
   try {
     return await operation();
   } catch (error) {
     if (error instanceof ApiError) {
       switch (error.type) {
         case ApiErrorType.REQUEST_VALIDATION_ERROR:
-          console.error(`Invalid request for ${type} operation:`, error.validationErrors);
+          console.error(
+            `Invalid request for ${type} operation:`,
+            error.validationErrors,
+          );
           break;
         case ApiErrorType.RESPONSE_VALIDATION_ERROR:
-          console.error(`Invalid response for ${type} operation:`, error.validationErrors);
+          console.error(
+            `Invalid response for ${type} operation:`,
+            error.validationErrors,
+          );
           break;
         case ApiErrorType.NOT_FOUND_ERROR:
           console.error(`Resource ${type} not found`);
@@ -2080,7 +2121,9 @@ async function handleResourceOperation(type: ResourceType, operation: () => Prom
 }
 
 // Example usage
-handleResourceOperation(ResourceType.ENERGY, () => updateResource(ResourceType.ENERGY, 100));
+handleResourceOperation(ResourceType.ENERGY, () =>
+  updateResource(ResourceType.ENERGY, 100),
+);
 ```
 
 ## Best Practices
@@ -2102,7 +2145,7 @@ handleResourceOperation(ResourceType.ENERGY, () => updateResource(ResourceType.E
    z.nativeEnum(ResourceType);
 
    // Bad
-   z.enum(['minerals', 'energy', 'population']);
+   z.enum(["minerals", "energy", "population"]);
    ```
 
 3. **Create reusable schemas** for common resource structures
@@ -2135,9 +2178,12 @@ handleResourceOperation(ResourceType.ENERGY, () => updateResource(ResourceType.E
      const result = await apiClient.request(endpoint);
      // Use result
    } catch (error) {
-     if (error instanceof ApiError && error.type === ApiErrorType.VALIDATION_ERROR) {
+     if (
+       error instanceof ApiError &&
+       error.type === ApiErrorType.VALIDATION_ERROR
+     ) {
        // Handle validation error
-       console.error('Validation error:', error.validationErrors);
+       console.error("Validation error:", error.validationErrors);
      } else {
        // Handle other errors
      }
@@ -2234,10 +2280,13 @@ Add the `ResourceType` enum import to your file:
 
 ```typescript
 // Before
-import { ResourceState } from '../types/resources/ResourceTypes';
+import { ResourceState } from "../types/resources/ResourceTypes";
 
 // After
-import { ResourceType, ResourceState } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceState,
+} from "../types/resources/StandardizedResourceTypes";
 ```
 
 ### Step 2: Update Props and Interfaces
@@ -2262,7 +2311,7 @@ Replace string literals with enum values:
 
 ```typescript
 // Before
-const resourceType = 'energy';
+const resourceType = "energy";
 
 // After
 const resourceType = ResourceType.ENERGY;
@@ -2274,7 +2323,7 @@ Replace string comparisons with enum comparisons:
 
 ```typescript
 // Before
-if (resource.type === 'energy') {
+if (resource.type === "energy") {
   // Handle energy resource
 }
 
@@ -2291,22 +2340,22 @@ Replace string cases with enum cases:
 ```typescript
 // Before
 switch (resource.type) {
-  case 'energy':
-    return 'energy-icon';
-  case 'minerals':
-    return 'minerals-icon';
+  case "energy":
+    return "energy-icon";
+  case "minerals":
+    return "minerals-icon";
   default:
-    return 'default-icon';
+    return "default-icon";
 }
 
 // After
 switch (resource.type) {
   case ResourceType.ENERGY:
-    return 'energy-icon';
+    return "energy-icon";
   case ResourceType.MINERALS:
-    return 'minerals-icon';
+    return "minerals-icon";
   default:
-    return 'default-icon';
+    return "default-icon";
 }
 ```
 
@@ -2316,10 +2365,14 @@ Replace string arrays with enum arrays:
 
 ```typescript
 // Before
-const resourceTypes = ['energy', 'minerals', 'gas'];
+const resourceTypes = ["energy", "minerals", "gas"];
 
 // After
-const resourceTypes = [ResourceType.ENERGY, ResourceType.MINERALS, ResourceType.GAS];
+const resourceTypes = [
+  ResourceType.ENERGY,
+  ResourceType.MINERALS,
+  ResourceType.GAS,
+];
 ```
 
 ### Step 7: Update API Calls and Method Parameters
@@ -2328,8 +2381,8 @@ Replace string parameters with enum parameters:
 
 ```typescript
 // Before
-resourceManager.addResource('energy', 10);
-resourceManager.getResourceState('energy');
+resourceManager.addResource("energy", 10);
+resourceManager.getResourceState("energy");
 
 // After
 resourceManager.addResource(ResourceType.ENERGY, 10);
@@ -2369,7 +2422,7 @@ Don't forget to update your tests to use the enum values:
 
 ```typescript
 // Before
-expect(component.props.resourceType).toBe('energy');
+expect(component.props.resourceType).toBe("energy");
 
 // After
 expect(component.props.resourceType).toBe(ResourceType.ENERGY);
@@ -2391,10 +2444,10 @@ expect(component.props.resourceType).toBe(ResourceType.ENERGY);
 
 ```typescript
 // Before
-const energyResources = resources.filter(r => r.type === 'energy');
+const energyResources = resources.filter((r) => r.type === "energy");
 
 // After
-const energyResources = resources.filter(r => r.type === ResourceType.ENERGY);
+const energyResources = resources.filter((r) => r.type === ResourceType.ENERGY);
 ```
 
 ### Migrating Maps and Objects

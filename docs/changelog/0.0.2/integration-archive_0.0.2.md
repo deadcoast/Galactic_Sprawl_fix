@@ -20,7 +20,11 @@ When working with this architectural documentation:
 ```json
 {
   "project": "Galactic Sprawl",
-  "current_issues": ["UI-backend disconnection", "Inconsistent type usage", "Architectural drift"],
+  "current_issues": [
+    "UI-backend disconnection",
+    "Inconsistent type usage",
+    "Architectural drift"
+  ],
   "goal": "Transform codebase into maintainable, scalable system with clear architectural boundaries"
 }
 ```
@@ -146,7 +150,10 @@ interface BaseManager<T extends BaseEvent = BaseEvent> {
   dispose(): void;
 
   // Event handling
-  subscribeToEvent<E extends T>(eventType: EventType, handler: EventHandler<E>): Unsubscribe;
+  subscribeToEvent<E extends T>(
+    eventType: EventType,
+    handler: EventHandler<E>,
+  ): Unsubscribe;
   publishEvent<E extends T>(event: E): void;
 
   // Metadata
@@ -257,18 +264,18 @@ The Component Registration pattern provides a standardized approach for register
 ```typescript
 // In a component
 const componentId = useComponentRegistration({
-  type: 'ExampleComponent',
-  eventSubscriptions: ['EXAMPLE_EVENT_TYPE'],
-  updatePriority: 'medium',
+  type: "ExampleComponent",
+  eventSubscriptions: ["EXAMPLE_EVENT_TYPE"],
+  updatePriority: "medium",
 });
 
 useComponentLifecycle({
-  onMount: () => console.log('Component mounted'),
-  onUnmount: () => console.log('Component unmounted'),
+  onMount: () => console.log("Component mounted"),
+  onUnmount: () => console.log("Component unmounted"),
   eventSubscriptions: [
     {
-      eventType: 'EXAMPLE_EVENT_TYPE',
-      handler: event => handleEvent(event),
+      eventType: "EXAMPLE_EVENT_TYPE",
+      handler: (event) => handleEvent(event),
     },
   ],
 });
@@ -308,9 +315,9 @@ Key characteristics:
 interface ResourceImplementationTasks {
   type_standardization: {
     target_files: [
-      'src/types/resources/ResourceTypes.ts',
-      'src/managers/game/ResourceManager.ts',
-      'src/managers/resource/ResourceFlowManager.ts',
+      "src/types/resources/ResourceTypes.ts",
+      "src/managers/game/ResourceManager.ts",
+      "src/managers/resource/ResourceFlowManager.ts",
     ];
     type_definitions: {
       resources: string; // Core resource type definitions with strict typing
@@ -320,26 +327,38 @@ interface ResourceImplementationTasks {
   };
   connection_implementation: {
     missing_connections: [
-      { from: 'ResourceManager'; to: 'GameContext'; connection_type: 'event-driven' },
-      { from: 'ResourceRatesContext'; to: 'ResourceVisual'; connection_type: 'hook-based' },
-      { from: 'ResourceManager'; to: 'ThresholdContext'; connection_type: 'middleware' },
+      {
+        from: "ResourceManager";
+        to: "GameContext";
+        connection_type: "event-driven";
+      },
+      {
+        from: "ResourceRatesContext";
+        to: "ResourceVisual";
+        connection_type: "hook-based";
+      },
+      {
+        from: "ResourceManager";
+        to: "ThresholdContext";
+        connection_type: "middleware";
+      },
     ];
     implementation_priority: [1, 2, 3]; // Connection implementation order
   };
   event_standardization: {
     event_types: [
-      'RESOURCE_PRODUCED',
-      'RESOURCE_CONSUMED',
-      'RESOURCE_TRANSFERRED',
-      'RESOURCE_THRESHOLD_REACHED',
+      "RESOURCE_PRODUCED",
+      "RESOURCE_CONSUMED",
+      "RESOURCE_TRANSFERRED",
+      "RESOURCE_THRESHOLD_REACHED",
     ];
     emission_points: [
-      'ResourceManager.addResource()',
-      'ResourceManager.subtractResource()',
-      'ResourceManager.transferResource()',
-      'ResourceThresholdManager.checkThresholds()',
+      "ResourceManager.addResource()",
+      "ResourceManager.subtractResource()",
+      "ResourceManager.transferResource()",
+      "ResourceThresholdManager.checkThresholds()",
     ];
-    subscription_patterns: 'Use moduleEventBus.subscribe() with cleanup on component unmount';
+    subscription_patterns: "Use moduleEventBus.subscribe() with cleanup on component unmount";
   };
 }
 ```
@@ -370,19 +389,19 @@ interface ResourceImplementationTasks {
 ```typescript
 interface EventSystemTasks {
   standardization: {
-    event_type_definitions: '✅ Create standardized event interfaces with strict typing';
-    subscription_utilities: '✅ Implement useEventSubscription hook with automated cleanup';
+    event_type_definitions: "✅ Create standardized event interfaces with strict typing";
+    subscription_utilities: "✅ Implement useEventSubscription hook with automated cleanup";
     memory_leak_prevention: {
-      tracking_mechanism: '✅ Track subscriptions by component or hook instance ID';
-      cleanup_pattern: '✅ Use useEffect cleanup function to unsubscribe';
+      tracking_mechanism: "✅ Track subscriptions by component or hook instance ID";
+      cleanup_pattern: "✅ Use useEffect cleanup function to unsubscribe";
     };
   };
   implementation_order: [
-    '✅ Standardize event type definitions',
-    '✅ Implement subscription utilities',
-    '✅ Enhance EventDispatcher with standardized hooks',
-    '✅ Refactor UI components to use standardized patterns',
-    '✅ Add memory leak detection in development mode',
+    "✅ Standardize event type definitions",
+    "✅ Implement subscription utilities",
+    "✅ Enhance EventDispatcher with standardized hooks",
+    "✅ Refactor UI components to use standardized patterns",
+    "✅ Add memory leak detection in development mode",
   ];
 }
 ```
@@ -415,26 +434,31 @@ interface EventSystemTasks {
 ```typescript
 interface ContextStandardizationTasks {
   template_creation: {
-    context_template: '✅ Create a standard context provider pattern with consistent API';
-    connection_pattern: '✅ Implement standard manager-context connection via middleware';
+    context_template: "✅ Create a standard context provider pattern with consistent API";
+    connection_pattern: "✅ Implement standard manager-context connection via middleware";
   };
   refactoring: {
-    priority_contexts: ['GameContext', 'ResourceRatesContext', 'ThresholdContext', 'ModuleContext'];
+    priority_contexts: [
+      "GameContext",
+      "ResourceRatesContext",
+      "ThresholdContext",
+      "ModuleContext",
+    ];
     implementation_steps: [
-      '✅ Extract common context provider patterns',
-      '✅ Create standard reducer pattern',
-      '✅ Implement manager connection middleware',
-      '✅ Standardize event subscription',
-      '✅ Add memoization for performance',
+      "✅ Extract common context provider patterns",
+      "✅ Create standard reducer pattern",
+      "✅ Implement manager connection middleware",
+      "✅ Standardize event subscription",
+      "✅ Add memoization for performance",
     ];
   };
   consumer_updates: {
-    patterns: '✅ Use context selectors to prevent unnecessary re-renders';
+    patterns: "✅ Use context selectors to prevent unnecessary re-renders";
     hook_implementations: [
-      '🔄 useGame() with selector pattern',
-      '🔄 useResourceRates() with selector pattern',
-      '✅ useThresholds() with selector pattern',
-      '🔄 useModules() with selector pattern',
+      "🔄 useGame() with selector pattern",
+      "🔄 useResourceRates() with selector pattern",
+      "✅ useThresholds() with selector pattern",
+      "🔄 useModules() with selector pattern",
     ];
   };
 }
@@ -461,41 +485,41 @@ interface ContextStandardizationTasks {
 ```typescript
 interface ManagerStandardizationTasks {
   interface_definition: {
-    base_manager_interface: '✅ Create a BaseManager interface with standard lifecycle methods';
+    base_manager_interface: "✅ Create a BaseManager interface with standard lifecycle methods";
     specialization_patterns: {
-      ResourceManager: '✅ Implement BaseManager with resource-specific extensions';
-      ModuleManager: '✅ Implement BaseManager with module-specific extensions';
-      ExplorationManager: '🔄 Implement BaseManager with exploration-specific extensions';
+      ResourceManager: "✅ Implement BaseManager with resource-specific extensions";
+      ModuleManager: "✅ Implement BaseManager with module-specific extensions";
+      ExplorationManager: "🔄 Implement BaseManager with exploration-specific extensions";
     };
   };
   service_registry: {
-    implementation: '✅ Create a centralized ServiceRegistry for dependency injection';
-    dependency_resolution: '✅ Implement dependency resolution with proper initialization order';
+    implementation: "✅ Create a centralized ServiceRegistry for dependency injection";
+    dependency_resolution: "✅ Implement dependency resolution with proper initialization order";
   };
   refactoring: {
-    priority_managers: ['ResourceManager', 'ModuleManager', 'GameLoopManager'];
+    priority_managers: ["ResourceManager", "ModuleManager", "GameLoopManager"];
     implementation_steps: {
       ResourceManager: [
-        '✅ Implement BaseManager interface',
-        '✅ Add consistent event emission',
-        '✅ Standardize error handling',
-        '✅ Add performance tracking',
+        "✅ Implement BaseManager interface",
+        "✅ Add consistent event emission",
+        "✅ Standardize error handling",
+        "✅ Add performance tracking",
       ];
       ModuleManager: [
-        '✅ Implement BaseManager interface',
-        '✅ Standardize event emission',
-        '✅ Add dependency injection',
-        '✅ Improve error handling',
+        "✅ Implement BaseManager interface",
+        "✅ Standardize event emission",
+        "✅ Add dependency injection",
+        "✅ Improve error handling",
       ];
     };
   };
   initialization: {
-    sequence_implementation: '✅ Create a staged initialization process in App.tsx';
+    sequence_implementation: "✅ Create a staged initialization process in App.tsx";
     dependency_graph: {
       ResourceManager: [];
-      ModuleManager: ['ResourceManager'];
-      ResourceFlowManager: ['ResourceManager'];
-      GameLoopManager: ['ResourceManager', 'ModuleManager'];
+      ModuleManager: ["ResourceManager"];
+      ResourceFlowManager: ["ResourceManager"];
+      GameLoopManager: ["ResourceManager", "ModuleManager"];
     };
   };
 }
@@ -519,33 +543,37 @@ interface ManagerStandardizationTasks {
 interface UIConnectionTasks {
   context_usage: {
     standardized_hooks: {
-      useResource: 'Access resource data with selector pattern';
-      useModule: 'Access module data with selector pattern';
-      useGameActions: 'Dispatch game actions with type safety';
+      useResource: "Access resource data with selector pattern";
+      useModule: "Access module data with selector pattern";
+      useGameActions: "Dispatch game actions with type safety";
     };
-    implementation_priority: ['useResource', 'useModule', 'useGameActions'];
+    implementation_priority: ["useResource", "useModule", "useGameActions"];
   };
   event_subscriptions: {
-    standard_pattern: 'Use useEventSubscription hook with selector pattern';
+    standard_pattern: "Use useEventSubscription hook with selector pattern";
     implementation_examples: {
-      ResourceVisualization: 'Subscribe to resource events for real-time updates';
-      ModuleStatusDisplay: 'Subscribe to module events for status changes';
-      GameHUD: 'Subscribe to game events for global state changes';
+      ResourceVisualization: "Subscribe to resource events for real-time updates";
+      ModuleStatusDisplay: "Subscribe to module events for status changes";
+      GameHUD: "Subscribe to game events for global state changes";
     };
   };
   component_updates: {
-    priority_components: ['ResourceVisualization', 'ModuleStatusDisplay', 'GameHUD'];
+    priority_components: [
+      "ResourceVisualization",
+      "ModuleStatusDisplay",
+      "GameHUD",
+    ];
     implementation_steps: {
       ResourceVisualization: [
-        'Refactor to use standardized hooks',
-        'Implement event subscription',
-        'Add memoization for performance',
-        'Implement error boundary',
+        "Refactor to use standardized hooks",
+        "Implement event subscription",
+        "Add memoization for performance",
+        "Implement error boundary",
       ];
       ModuleStatusDisplay: [
-        'Connect to ModuleManager via context',
-        'Implement event subscription',
-        'Add real-time updates',
+        "Connect to ModuleManager via context",
+        "Implement event subscription",
+        "Add real-time updates",
       ];
     };
   };
@@ -568,40 +596,44 @@ interface UIConnectionTasks {
 ```typescript
 interface GameLoopTasks {
   central_implementation: {
-    loop_manager: 'Enhance GameLoopManager with priority-based scheduling';
-    update_scheduling: 'Implement multi-tier update scheduling based on priorities';
+    loop_manager: "Enhance GameLoopManager with priority-based scheduling";
+    update_scheduling: "Implement multi-tier update scheduling based on priorities";
   };
   system_integration: {
-    priority_systems: ['ResourceManager', 'ModuleManager', 'ResourceFlowManager'];
+    priority_systems: [
+      "ResourceManager",
+      "ModuleManager",
+      "ResourceFlowManager",
+    ];
     integration_pattern: {
-      ResourceManager: 'Register for high-priority updates';
-      ModuleManager: 'Register for medium-priority updates';
-      ResourceFlowManager: 'Register for low-priority optimization updates';
+      ResourceManager: "Register for high-priority updates";
+      ModuleManager: "Register for medium-priority updates";
+      ResourceFlowManager: "Register for low-priority optimization updates";
     };
   };
   performance: {
     optimization_strategies: [
-      'Batch similar updates',
-      'Skip unchanged components',
-      'Implement time budgeting',
-      'Add frame rate monitoring',
+      "Batch similar updates",
+      "Skip unchanged components",
+      "Implement time budgeting",
+      "Add frame rate monitoring",
     ];
-    monitoring_implementation: 'Add performance monitoring to detect bottlenecks';
+    monitoring_implementation: "Add performance monitoring to detect bottlenecks";
     comparison_functionality: {
-      component: 'OptimizationComparisonView';
-      location: 'src/components/ui/performance/OptimizationComparisonView.tsx';
+      component: "OptimizationComparisonView";
+      location: "src/components/ui/performance/OptimizationComparisonView.tsx";
       features: [
-        'Side-by-side comparison of optimized/unoptimized modes',
-        'Real-time performance metrics visualization',
-        'Statistical analysis of optimization benefits',
-        'A/B testing capabilities',
-        'Mode switching between optimized, unoptimized, and comparison views',
-        'Support for overlay and side-by-side visualization modes',
+        "Side-by-side comparison of optimized/unoptimized modes",
+        "Real-time performance metrics visualization",
+        "Statistical analysis of optimization benefits",
+        "A/B testing capabilities",
+        "Mode switching between optimized, unoptimized, and comparison views",
+        "Support for overlay and side-by-side visualization modes",
       ];
       integration_points: [
-        'Integrates with AnimationFrameManager for performance profiling',
-        'Provides standardized performance metrics collection',
-        'Supplies statistical comparison data for optimization analysis',
+        "Integrates with AnimationFrameManager for performance profiling",
+        "Provides standardized performance metrics collection",
+        "Supplies statistical comparison data for optimization analysis",
       ];
     };
   };
@@ -628,44 +660,47 @@ interface GameLoopTasks {
 interface ComponentRegistrationSystem {
   services: {
     ComponentRegistryService: {
-      purpose: 'Centralized tracking of all UI components';
+      purpose: "Centralized tracking of all UI components";
       capabilities: [
-        'Component registration and unregistration',
-        'Event subscription management',
-        'Performance metrics tracking',
-        'Component lookup by ID, type, and event subscription',
+        "Component registration and unregistration",
+        "Event subscription management",
+        "Performance metrics tracking",
+        "Component lookup by ID, type, and event subscription",
       ];
       connections: [
-        { to: 'EventPropagationService'; connection_type: 'event_distribution' },
-        { to: 'React UI Components'; connection_type: 'registration_hooks' },
+        {
+          to: "EventPropagationService";
+          connection_type: "event_distribution";
+        },
+        { to: "React UI Components"; connection_type: "registration_hooks" },
       ];
     };
   };
 
   hooks: {
     useComponentRegistration: {
-      purpose: 'Register React components with the registry';
+      purpose: "Register React components with the registry";
       parameters: {
-        type: 'Component type identifier';
-        eventSubscriptions: 'Array of event types the component listens to';
-        updatePriority: 'Priority level for updates (high, medium, low)';
+        type: "Component type identifier";
+        eventSubscriptions: "Array of event types the component listens to";
+        updatePriority: "Priority level for updates (high, medium, low)";
       };
-      return: 'Component ID for tracking';
+      return: "Component ID for tracking";
     };
 
     useComponentLifecycle: {
-      purpose: 'Manage component lifecycle and event subscriptions';
+      purpose: "Manage component lifecycle and event subscriptions";
       capabilities: [
-        'Mount/unmount event handling',
-        'Automatic event subscription setup and cleanup',
-        'Performance tracking integration',
+        "Mount/unmount event handling",
+        "Automatic event subscription setup and cleanup",
+        "Performance tracking integration",
       ];
     };
   };
 
   demo_components: {
-    ResourceDisplay: 'Example implementation of registration pattern';
-    ResourceRegistrationDemo: 'Demo UI for showcasing registry capabilities';
+    ResourceDisplay: "Example implementation of registration pattern";
+    ResourceRegistrationDemo: "Demo UI for showcasing registry capabilities";
   };
 }
 ```
@@ -675,13 +710,11 @@ interface ComponentRegistrationSystem {
 The Component Registration System establishes the following key integration points:
 
 1. **UI Components to Events System**:
-
    - Components register their interest in specific events
    - Event propagation is optimized to only notify relevant components
    - Automatic cleanup on component unmount prevents memory leaks
 
 2. **Performance Monitoring**:
-
    - Tracks component render counts and render times
    - Identifies components exceeding performance thresholds
    - Provides aggregated performance reports
@@ -698,7 +731,7 @@ interface ComponentMetadata {
   id: string; // Unique identifier for the component
   type: string; // Component type (e.g., 'ResourceDisplay')
   eventSubscriptions: string[]; // Events this component is interested in
-  updatePriority: 'high' | 'medium' | 'low'; // Priority for updates
+  updatePriority: "high" | "medium" | "low"; // Priority for updates
 
   // Performance metrics
   renderCount?: number;
@@ -720,7 +753,9 @@ interface ComponentRegistry {
 }
 
 // Hook implementations
-function useComponentRegistration(options: ComponentRegistrationOptions): string;
+function useComponentRegistration(
+  options: ComponentRegistrationOptions,
+): string;
 function useComponentLifecycle(options: ComponentLifecycleOptions): void;
 ```
 
@@ -731,19 +766,19 @@ function useComponentLifecycle(options: ComponentLifecycleOptions): void;
 const ExampleComponent: React.FC = () => {
   // Register with the component registry
   const componentId = useComponentRegistration({
-    type: 'ExampleComponent',
-    eventSubscriptions: ['EXAMPLE_EVENT_TYPE', 'ANOTHER_EVENT_TYPE'],
-    updatePriority: 'medium',
+    type: "ExampleComponent",
+    eventSubscriptions: ["EXAMPLE_EVENT_TYPE", "ANOTHER_EVENT_TYPE"],
+    updatePriority: "medium",
   });
 
   // Set up lifecycle and event handlers
   useComponentLifecycle({
-    onMount: () => console.log('Component mounted'),
-    onUnmount: () => console.log('Component unmounted'),
+    onMount: () => console.log("Component mounted"),
+    onUnmount: () => console.log("Component unmounted"),
     eventSubscriptions: [
       {
-        eventType: 'EXAMPLE_EVENT_TYPE',
-        handler: event => handleExampleEvent(event),
+        eventType: "EXAMPLE_EVENT_TYPE",
+        handler: (event) => handleExampleEvent(event),
       },
     ],
   });
@@ -772,40 +807,40 @@ const ExampleComponent: React.FC = () => {
 interface ResourceModuleIntegrationTasks {
   ui_refactoring: {
     component_list: [
-      'ResourceVisualization',
-      'ResourceVisualizationEnhanced',
-      'ResourceEventMonitor',
+      "ResourceVisualization",
+      "ResourceVisualizationEnhanced",
+      "ResourceEventMonitor",
     ];
     hook_implementations: {
-      useResource: 'Standardized hook for resource data access';
-      useResourceRates: 'Hook for production/consumption rates';
-      useResourceThresholds: 'Hook for threshold monitoring';
+      useResource: "Standardized hook for resource data access";
+      useResourceRates: "Hook for production/consumption rates";
+      useResourceThresholds: "Hook for threshold monitoring";
     };
   };
   event_subscriptions: {
     subscription_implementations: {
-      ResourceVisualization: 'Subscribe to RESOURCE_UPDATED, RESOURCE_THRESHOLD_CHANGED';
-      ResourceEventMonitor: 'Subscribe to all resource events with filtering';
-      ResourceManager: 'Emit standardized events for all resource changes';
+      ResourceVisualization: "Subscribe to RESOURCE_UPDATED, RESOURCE_THRESHOLD_CHANGED";
+      ResourceEventMonitor: "Subscribe to all resource events with filtering";
+      ResourceManager: "Emit standardized events for all resource changes";
     };
   };
   testing: {
     integration_tests: [
-      'ResourceVisualization renders correct data',
-      'ResourceVisualization updates on ResourceManager changes',
-      'ThresholdContext triggers alerts on threshold violations',
+      "ResourceVisualization renders correct data",
+      "ResourceVisualization updates on ResourceManager changes",
+      "ThresholdContext triggers alerts on threshold violations",
     ];
     test_implementation: {
-      ResourceVisualization: 'Test component rendering and updates';
-      ThresholdIntegration: 'Test threshold monitoring and alerts';
+      ResourceVisualization: "Test component rendering and updates";
+      ThresholdIntegration: "Test threshold monitoring and alerts";
     };
   };
   documentation: {
-    pattern_documentation: 'Document resource component patterns and best practices';
+    pattern_documentation: "Document resource component patterns and best practices";
     developer_guides: [
-      'Resource system integration guide',
-      'Threshold monitoring guide',
-      'Resource visualization best practices',
+      "Resource system integration guide",
+      "Threshold monitoring guide",
+      "Resource visualization best practices",
     ];
   };
 }
@@ -831,37 +866,41 @@ interface ResourceModuleIntegrationTasks {
 ```typescript
 interface ModuleSystemIntegrationTasks {
   ui_refactoring: {
-    component_list: ['ModuleHUD', 'ModuleStatusDisplay', 'ModuleUpgradeDisplay'];
+    component_list: [
+      "ModuleHUD",
+      "ModuleStatusDisplay",
+      "ModuleUpgradeDisplay",
+    ];
     hook_implementations: {
-      useModule: '✅ Hook for accessing module data';
-      useModuleActions: '✅ Hook for module actions';
-      useModuleEvents: '✅ Hook for module event subscription';
+      useModule: "✅ Hook for accessing module data";
+      useModuleActions: "✅ Hook for module actions";
+      useModuleEvents: "✅ Hook for module event subscription";
     };
   };
   event_subscriptions: {
     subscription_implementations: {
-      ModuleStatusDisplay: '✅ Subscribe to MODULE_STATUS_CHANGED, MODULE_UPDATED';
-      ModuleUpgradeDisplay: '✅ Subscribe to MODULE_UPGRADED, MODULE_UPGRADE_AVAILABLE';
-      ModuleHUD: '✅ Subscribe to MODULE_CREATED, MODULE_DESTROYED';
+      ModuleStatusDisplay: "✅ Subscribe to MODULE_STATUS_CHANGED, MODULE_UPDATED";
+      ModuleUpgradeDisplay: "✅ Subscribe to MODULE_UPGRADED, MODULE_UPGRADE_AVAILABLE";
+      ModuleHUD: "✅ Subscribe to MODULE_CREATED, MODULE_DESTROYED";
     };
   };
   testing: {
     integration_tests: [
-      '✅ ModuleStatusDisplay updates on status changes',
-      '✅ ModuleUpgradeDisplay shows correct upgrade options',
-      '✅ ModuleHUD correctly renders available modules',
+      "✅ ModuleStatusDisplay updates on status changes",
+      "✅ ModuleUpgradeDisplay shows correct upgrade options",
+      "✅ ModuleHUD correctly renders available modules",
     ];
     test_implementation: {
-      ModuleStatusDisplay: '✅ Test status updates and rendering';
-      ModuleUpgradeSystem: '✅ Test upgrade path calculation and application';
+      ModuleStatusDisplay: "✅ Test status updates and rendering";
+      ModuleUpgradeSystem: "✅ Test upgrade path calculation and application";
     };
   };
   documentation: {
-    pattern_documentation: '✅ Document module system integration patterns';
+    pattern_documentation: "✅ Document module system integration patterns";
     developer_guides: [
-      '✅ Module system integration guide',
-      '✅ Module upgrades implementation guide',
-      '✅ Module status monitoring guide',
+      "✅ Module system integration guide",
+      "✅ Module upgrades implementation guide",
+      "✅ Module status monitoring guide",
     ];
   };
 }
@@ -872,14 +911,12 @@ interface ModuleSystemIntegrationTasks {
 The Module System now provides the following integration points:
 
 1. **UI Components to ModuleManager**:
-
    - Components connect directly to the ModuleManager through event subscriptions
    - The ModuleCard component displays module information and provides controls
    - The ModuleGrid component allows filtering and sorting of modules
    - The ModuleUpgradeVisualization component shows upgrade progress
 
 2. **Event-Based Communication**:
-
    - Module components subscribe to module events using the standardized useEventSubscription hook
    - Components automatically update when module state changes
    - Event subscriptions are cleaned up on component unmount
@@ -907,40 +944,40 @@ The Module System now provides the following integration points:
 interface ExplorationSystemIntegrationTasks {
   ui_refactoring: {
     component_list: [
-      'DataAnalysisSystem',
-      'DiscoveryClassification',
-      'ResourcePotentialVisualization',
+      "DataAnalysisSystem",
+      "DiscoveryClassification",
+      "ResourcePotentialVisualization",
     ];
     hook_implementations: {
-      useExploration: 'Hook for exploration data';
-      useDataAnalysis: 'Hook for data analysis features';
-      useDiscovery: 'Hook for discovery classification';
+      useExploration: "Hook for exploration data";
+      useDataAnalysis: "Hook for data analysis features";
+      useDiscovery: "Hook for discovery classification";
     };
   };
   event_subscriptions: {
     subscription_implementations: {
-      DataAnalysisSystem: 'Subscribe to ANALYSIS_COMPLETED, DATA_UPDATED';
-      DiscoveryClassification: 'Subscribe to DISCOVERY_CLASSIFIED, NEW_DISCOVERY';
-      ResourcePotentialVisualization: 'Subscribe to RESOURCE_POTENTIAL_UPDATED';
+      DataAnalysisSystem: "Subscribe to ANALYSIS_COMPLETED, DATA_UPDATED";
+      DiscoveryClassification: "Subscribe to DISCOVERY_CLASSIFIED, NEW_DISCOVERY";
+      ResourcePotentialVisualization: "Subscribe to RESOURCE_POTENTIAL_UPDATED";
     };
   };
   testing: {
     integration_tests: [
-      'DataAnalysisSystem processes data correctly',
-      'DiscoveryClassification categorizes discoveries properly',
-      'ResourcePotentialVisualization shows accurate potential',
+      "DataAnalysisSystem processes data correctly",
+      "DiscoveryClassification categorizes discoveries properly",
+      "ResourcePotentialVisualization shows accurate potential",
     ];
     test_implementation: {
-      DataAnalysisSystem: 'Test analysis algorithms and visualization';
-      ExplorationManager: 'Test exploration coordination and discovery';
+      DataAnalysisSystem: "Test analysis algorithms and visualization";
+      ExplorationManager: "Test exploration coordination and discovery";
     };
   };
   documentation: {
-    pattern_documentation: 'Document exploration system integration patterns';
+    pattern_documentation: "Document exploration system integration patterns";
     developer_guides: [
-      'Exploration system integration guide',
-      'Data analysis implementation guide',
-      'Discovery classification guide',
+      "Exploration system integration guide",
+      "Data analysis implementation guide",
+      "Discovery classification guide",
     ];
   };
 }
@@ -954,27 +991,27 @@ interface ExplorationSystemIntegrationTasks {
 interface ResourceSystemIntegration {
   discovery_flow: {
     steps: [
-      'Resource detection by ExplorationManager',
-      'Resource classification by DiscoveryClassification',
-      'Resource registration with ResourceManager',
-      'Resource node creation in ResourceFlowManager',
+      "Resource detection by ExplorationManager",
+      "Resource classification by DiscoveryClassification",
+      "Resource registration with ResourceManager",
+      "Resource node creation in ResourceFlowManager",
     ];
     events: [
-      'RESOURCE_DETECTED',
-      'RESOURCE_CLASSIFIED',
-      'RESOURCE_REGISTERED',
-      'RESOURCE_NODE_CREATED',
+      "RESOURCE_DETECTED",
+      "RESOURCE_CLASSIFIED",
+      "RESOURCE_REGISTERED",
+      "RESOURCE_NODE_CREATED",
     ];
   };
 
   data_flow: {
     ExplorationManager: {
-      outputs: ['ResourceData', 'ResourceLocation', 'ResourceQuality'];
-      consumers: ['ResourceManager', 'ResourceFlowManager'];
+      outputs: ["ResourceData", "ResourceLocation", "ResourceQuality"];
+      consumers: ["ResourceManager", "ResourceFlowManager"];
     };
     ResourceManager: {
-      inputs: ['ResourceData', 'ResourceLocation'];
-      outputs: ['ResourceAvailability', 'ExtractionRate'];
+      inputs: ["ResourceData", "ResourceLocation"];
+      outputs: ["ResourceAvailability", "ExtractionRate"];
     };
   };
 }
@@ -986,27 +1023,27 @@ interface ResourceSystemIntegration {
 interface TechnologySystemIntegration {
   anomaly_research: {
     flow: [
-      'Anomaly detection by ExplorationManager',
-      'Classification by DiscoveryClassification',
-      'Research opportunity creation',
-      'Technology tree update',
+      "Anomaly detection by ExplorationManager",
+      "Classification by DiscoveryClassification",
+      "Research opportunity creation",
+      "Technology tree update",
     ];
     events: [
-      'ANOMALY_DETECTED',
-      'ANOMALY_CLASSIFIED',
-      'RESEARCH_OPPORTUNITY_CREATED',
-      'TECH_TREE_UPDATED',
+      "ANOMALY_DETECTED",
+      "ANOMALY_CLASSIFIED",
+      "RESEARCH_OPPORTUNITY_CREATED",
+      "TECH_TREE_UPDATED",
     ];
   };
 
   data_sharing: {
     ExplorationManager: {
-      provides: ['AnomalyData', 'ResearchOpportunities'];
-      receives: ['TechnologyRequirements', 'ResearchProgress'];
+      provides: ["AnomalyData", "ResearchOpportunities"];
+      receives: ["TechnologyRequirements", "ResearchProgress"];
     };
     TechnologyManager: {
-      provides: ['TechnologyRequirements', 'ResearchCapabilities'];
-      receives: ['AnomalyData', 'ResearchOpportunities'];
+      provides: ["TechnologyRequirements", "ResearchCapabilities"];
+      receives: ["AnomalyData", "ResearchOpportunities"];
     };
   };
 }
@@ -1022,8 +1059,11 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   private sectors: Map<string, SectorData>;
   private activeScans: Map<string, ScanOperation>;
 
-  constructor(eventBus: EventBus<ExplorationEvent>, shipManager: ReconShipManager) {
-    super('ExplorationManager', eventBus);
+  constructor(
+    eventBus: EventBus<ExplorationEvent>,
+    shipManager: ReconShipManager,
+  ) {
+    super("ExplorationManager", eventBus);
     this.shipManager = shipManager;
     this.sectors = new Map();
     this.activeScans = new Map();
@@ -1032,14 +1072,16 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   public async startSectorScan(sectorId: string): Promise<void> {
     const ships = await this.shipManager.getAvailableShips();
     if (ships.length === 0) {
-      throw new Error('No ships available for scanning');
+      throw new Error("No ships available for scanning");
     }
 
     const operation = new ScanOperation(sectorId, ships[0]);
     this.activeScans.set(operation.id, operation);
 
     await this.shipManager.assignShip(ships[0], operation);
-    this.publishEvent(this.createEvent(ExplorationEvents.SCAN_STARTED, { operation }));
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_STARTED, { operation }),
+    );
   }
 
   protected async onUpdate(deltaTime: number): Promise<void> {
@@ -1048,7 +1090,10 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     }
   }
 
-  private async updateScanOperation(operation: ScanOperation, deltaTime: number): Promise<void> {
+  private async updateScanOperation(
+    operation: ScanOperation,
+    deltaTime: number,
+  ): Promise<void> {
     operation.progress += deltaTime * operation.ship.scanRate;
 
     if (operation.progress >= 100) {
@@ -1061,18 +1106,26 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     for (const discovery of discoveries) {
       switch (discovery.type) {
-        case 'resource':
-          this.publishEvent(this.createEvent(ExplorationEvents.RESOURCE_DETECTED, { discovery }));
+        case "resource":
+          this.publishEvent(
+            this.createEvent(ExplorationEvents.RESOURCE_DETECTED, {
+              discovery,
+            }),
+          );
           break;
-        case 'anomaly':
-          this.publishEvent(this.createEvent(ExplorationEvents.ANOMALY_DETECTED, { discovery }));
+        case "anomaly":
+          this.publishEvent(
+            this.createEvent(ExplorationEvents.ANOMALY_DETECTED, { discovery }),
+          );
           break;
       }
     }
 
     this.activeScans.delete(operation.id);
     await this.shipManager.releaseShip(operation.ship);
-    this.publishEvent(this.createEvent(ExplorationEvents.SCAN_COMPLETED, { operation }));
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_COMPLETED, { operation }),
+    );
   }
 }
 ```
@@ -1193,62 +1246,66 @@ export const DataAnalysisSystem: React.FC = () => {
 ```typescript
 interface PerformanceOptimizationTasks {
   monitoring: {
-    critical_systems: ['ResourceFlowManager', 'GameLoopManager', 'EventSystem'];
-    monitoring_implementation: 'Implement comprehensive performance monitoring system';
+    critical_systems: ["ResourceFlowManager", "GameLoopManager", "EventSystem"];
+    monitoring_implementation: "Implement comprehensive performance monitoring system";
     benchmarking_tools: {
-      ResourceFlowManager: 'Extend ResourceFlowManager.benchmark.ts with more comprehensive test scenarios';
-      EventSystem: 'Create automated detection of performance regressions';
-      MemoryUsage: 'Add memory usage analysis to all benchmark tools';
-      UI: 'Create visual dashboard for performance test results';
+      ResourceFlowManager: "Extend ResourceFlowManager.benchmark.ts with more comprehensive test scenarios";
+      EventSystem: "Create automated detection of performance regressions";
+      MemoryUsage: "Add memory usage analysis to all benchmark tools";
+      UI: "Create visual dashboard for performance test results";
     };
   };
   profiling: {
-    key_operations: ['Resource flow optimization', 'Event distribution', 'UI rendering'];
-    profiling_implementation: 'Create performance profiling tools for key operations';
-    visualization: 'Implement visual profiling reports with performance trends over time';
+    key_operations: [
+      "Resource flow optimization",
+      "Event distribution",
+      "UI rendering",
+    ];
+    profiling_implementation: "Create performance profiling tools for key operations";
+    visualization: "Implement visual profiling reports with performance trends over time";
   };
   optimization: {
     target_areas: {
-      ResourceFlowManager: 'Optimize flow calculation algorithm';
-      EventSystem: 'Implement event batching and prioritization';
-      Rendering: 'Implement React.memo and useMemo for expensive components';
+      ResourceFlowManager: "Optimize flow calculation algorithm";
+      EventSystem: "Implement event batching and prioritization";
+      Rendering: "Implement React.memo and useMemo for expensive components";
     };
     implementation_strategies: {
       ResourceFlowManager: [
-        'Implement Web Worker offloading for large networks',
-        'Add spatial partitioning optimization for geographical networks',
-        'Convert optimization process to use async/await pattern',
-        'Implement predictive optimization based on trends',
+        "Implement Web Worker offloading for large networks",
+        "Add spatial partitioning optimization for geographical networks",
+        "Convert optimization process to use async/await pattern",
+        "Implement predictive optimization based on trends",
       ];
       EventSystem: [
-        'Create EventPrioritizer utility class',
-        'Implement time-based event batching with RxJS',
-        'Add priority queue for critical events',
-        'Develop event throttling for UI updates',
+        "Create EventPrioritizer utility class",
+        "Implement time-based event batching with RxJS",
+        "Add priority queue for critical events",
+        "Develop event throttling for UI updates",
       ];
       Rendering: [
-        'Audit all components for unnecessary re-renders',
-        'Apply React.memo to pure components',
-        'Implement useMemo for expensive calculations',
-        'Add useCallback for handler functions passed as props',
-        'Integrate react-window for resource lists',
-        'Add virtualized scrolling for event logs',
-        'Implement infinite loading pattern for large datasets',
-        'Create custom virtualization for specialized components',
+        "Audit all components for unnecessary re-renders",
+        "Apply React.memo to pure components",
+        "Implement useMemo for expensive calculations",
+        "Add useCallback for handler functions passed as props",
+        "Integrate react-window for resource lists",
+        "Add virtualized scrolling for event logs",
+        "Implement infinite loading pattern for large datasets",
+        "Create custom virtualization for specialized components",
       ];
     };
   };
   benchmarks: {
     benchmark_implementations: {
-      ResourceFlow: 'Benchmark resource flow optimization with varying node counts';
-      EventProcessing: 'Benchmark event processing with high event volumes';
-      RenderPerformance: 'Benchmark component rendering with complex state';
+      ResourceFlow: "Benchmark resource flow optimization with varying node counts";
+      EventProcessing: "Benchmark event processing with high event volumes";
+      RenderPerformance: "Benchmark component rendering with complex state";
     };
     automated_testing: {
-      PerformanceBudgets: 'Set up performance budgets for key operations';
-      CI_Integration: 'Configure CI/CD pipeline for performance testing';
-      RegressionAlerts: 'Implement workflow for performance regression alerts';
-      VisualReports: 'Create visual performance regression reports';
+      PerformanceBudgets: "Set up performance budgets for key operations";
+      CI_Integration: "Configure CI/CD pipeline for performance testing";
+      RegressionAlerts: "Implement workflow for performance regression alerts";
+      VisualReports: "Create visual performance regression reports";
     };
     success_criteria: {
       ResourceFlow: 5000; // Process 5000 nodes in < 16ms
@@ -1282,46 +1339,58 @@ The Exploration System manages space exploration, discovery, and analysis of new
 interface ExplorationSystem {
   managers: {
     ExplorationManager: {
-      purpose: 'Central manager for exploration operations';
+      purpose: "Central manager for exploration operations";
       responsibilities: [
-        'Sector discovery coordination',
-        'Anomaly detection',
-        'Resource detection',
-        'Scan operation management',
+        "Sector discovery coordination",
+        "Anomaly detection",
+        "Resource detection",
+        "Scan operation management",
       ];
       events: [
-        'SECTOR_DISCOVERED',
-        'ANOMALY_DETECTED',
-        'RESOURCE_DETECTED',
-        'SCAN_STARTED',
-        'SCAN_COMPLETED',
+        "SECTOR_DISCOVERED",
+        "ANOMALY_DETECTED",
+        "RESOURCE_DETECTED",
+        "SCAN_STARTED",
+        "SCAN_COMPLETED",
       ];
     };
     ReconShipManager: {
-      purpose: 'Manages reconnaissance ship operations';
-      responsibilities: ['Ship assignment', 'Scan coordination', 'Fleet management'];
+      purpose: "Manages reconnaissance ship operations";
+      responsibilities: [
+        "Ship assignment",
+        "Scan coordination",
+        "Fleet management",
+      ];
     };
   };
 
   contexts: {
     DataAnalysisContext: {
-      purpose: 'Provides analysis capabilities for discoveries';
-      features: ['Automated dataset creation', 'Real-time analysis', 'Classification support'];
+      purpose: "Provides analysis capabilities for discoveries";
+      features: [
+        "Automated dataset creation",
+        "Real-time analysis",
+        "Classification support",
+      ];
     };
   };
 
   components: {
     DataAnalysisSystem: {
-      purpose: 'UI component for visualizing analysis';
+      purpose: "UI component for visualizing analysis";
       features: [
-        'Real-time data visualization',
-        'Interactive analysis tools',
-        'Discovery classification',
+        "Real-time data visualization",
+        "Interactive analysis tools",
+        "Discovery classification",
       ];
     };
     DiscoveryClassification: {
-      purpose: 'Classifies new discoveries';
-      features: ['Resource classification', 'Anomaly categorization', 'Threat assessment'];
+      purpose: "Classifies new discoveries";
+      features: [
+        "Resource classification",
+        "Anomaly categorization",
+        "Threat assessment",
+      ];
     };
   };
 }
@@ -1335,27 +1404,27 @@ interface ExplorationSystem {
 interface ResourceSystemIntegration {
   discovery_flow: {
     steps: [
-      'Resource detection by ExplorationManager',
-      'Resource classification by DiscoveryClassification',
-      'Resource registration with ResourceManager',
-      'Resource node creation in ResourceFlowManager',
+      "Resource detection by ExplorationManager",
+      "Resource classification by DiscoveryClassification",
+      "Resource registration with ResourceManager",
+      "Resource node creation in ResourceFlowManager",
     ];
     events: [
-      'RESOURCE_DETECTED',
-      'RESOURCE_CLASSIFIED',
-      'RESOURCE_REGISTERED',
-      'RESOURCE_NODE_CREATED',
+      "RESOURCE_DETECTED",
+      "RESOURCE_CLASSIFIED",
+      "RESOURCE_REGISTERED",
+      "RESOURCE_NODE_CREATED",
     ];
   };
 
   data_flow: {
     ExplorationManager: {
-      outputs: ['ResourceData', 'ResourceLocation', 'ResourceQuality'];
-      consumers: ['ResourceManager', 'ResourceFlowManager'];
+      outputs: ["ResourceData", "ResourceLocation", "ResourceQuality"];
+      consumers: ["ResourceManager", "ResourceFlowManager"];
     };
     ResourceManager: {
-      inputs: ['ResourceData', 'ResourceLocation'];
-      outputs: ['ResourceAvailability', 'ExtractionRate'];
+      inputs: ["ResourceData", "ResourceLocation"];
+      outputs: ["ResourceAvailability", "ExtractionRate"];
     };
   };
 }
@@ -1367,27 +1436,27 @@ interface ResourceSystemIntegration {
 interface TechnologySystemIntegration {
   anomaly_research: {
     flow: [
-      'Anomaly detection by ExplorationManager',
-      'Classification by DiscoveryClassification',
-      'Research opportunity creation',
-      'Technology tree update',
+      "Anomaly detection by ExplorationManager",
+      "Classification by DiscoveryClassification",
+      "Research opportunity creation",
+      "Technology tree update",
     ];
     events: [
-      'ANOMALY_DETECTED',
-      'ANOMALY_CLASSIFIED',
-      'RESEARCH_OPPORTUNITY_CREATED',
-      'TECH_TREE_UPDATED',
+      "ANOMALY_DETECTED",
+      "ANOMALY_CLASSIFIED",
+      "RESEARCH_OPPORTUNITY_CREATED",
+      "TECH_TREE_UPDATED",
     ];
   };
 
   data_sharing: {
     ExplorationManager: {
-      provides: ['AnomalyData', 'ResearchOpportunities'];
-      receives: ['TechnologyRequirements', 'ResearchProgress'];
+      provides: ["AnomalyData", "ResearchOpportunities"];
+      receives: ["TechnologyRequirements", "ResearchProgress"];
     };
     TechnologyManager: {
-      provides: ['TechnologyRequirements', 'ResearchCapabilities'];
-      receives: ['AnomalyData', 'ResearchOpportunities'];
+      provides: ["TechnologyRequirements", "ResearchCapabilities"];
+      receives: ["AnomalyData", "ResearchOpportunities"];
     };
   };
 }
@@ -1403,8 +1472,11 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   private sectors: Map<string, SectorData>;
   private activeScans: Map<string, ScanOperation>;
 
-  constructor(eventBus: EventBus<ExplorationEvent>, shipManager: ReconShipManager) {
-    super('ExplorationManager', eventBus);
+  constructor(
+    eventBus: EventBus<ExplorationEvent>,
+    shipManager: ReconShipManager,
+  ) {
+    super("ExplorationManager", eventBus);
     this.shipManager = shipManager;
     this.sectors = new Map();
     this.activeScans = new Map();
@@ -1413,14 +1485,16 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   public async startSectorScan(sectorId: string): Promise<void> {
     const ships = await this.shipManager.getAvailableShips();
     if (ships.length === 0) {
-      throw new Error('No ships available for scanning');
+      throw new Error("No ships available for scanning");
     }
 
     const operation = new ScanOperation(sectorId, ships[0]);
     this.activeScans.set(operation.id, operation);
 
     await this.shipManager.assignShip(ships[0], operation);
-    this.publishEvent(this.createEvent(ExplorationEvents.SCAN_STARTED, { operation }));
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_STARTED, { operation }),
+    );
   }
 
   protected async onUpdate(deltaTime: number): Promise<void> {
@@ -1429,7 +1503,10 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     }
   }
 
-  private async updateScanOperation(operation: ScanOperation, deltaTime: number): Promise<void> {
+  private async updateScanOperation(
+    operation: ScanOperation,
+    deltaTime: number,
+  ): Promise<void> {
     operation.progress += deltaTime * operation.ship.scanRate;
 
     if (operation.progress >= 100) {
@@ -1442,18 +1519,26 @@ class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     for (const discovery of discoveries) {
       switch (discovery.type) {
-        case 'resource':
-          this.publishEvent(this.createEvent(ExplorationEvents.RESOURCE_DETECTED, { discovery }));
+        case "resource":
+          this.publishEvent(
+            this.createEvent(ExplorationEvents.RESOURCE_DETECTED, {
+              discovery,
+            }),
+          );
           break;
-        case 'anomaly':
-          this.publishEvent(this.createEvent(ExplorationEvents.ANOMALY_DETECTED, { discovery }));
+        case "anomaly":
+          this.publishEvent(
+            this.createEvent(ExplorationEvents.ANOMALY_DETECTED, { discovery }),
+          );
           break;
       }
     }
 
     this.activeScans.delete(operation.id);
     await this.shipManager.releaseShip(operation.ship);
-    this.publishEvent(this.createEvent(ExplorationEvents.SCAN_COMPLETED, { operation }));
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_COMPLETED, { operation }),
+    );
   }
 }
 ```
@@ -1563,30 +1648,30 @@ export const DataAnalysisSystem: React.FC = () => {
 interface TestInfrastructure {
   frameworks: {
     unit_testing: {
-      framework: 'Jest';
+      framework: "Jest";
       features: [
-        'Component testing with React Testing Library',
-        'Manager service testing',
-        'Context testing',
-        'Event system testing',
+        "Component testing with React Testing Library",
+        "Manager service testing",
+        "Context testing",
+        "Event system testing",
       ];
     };
     integration_testing: {
-      framework: 'Jest + Custom Test Runners';
+      framework: "Jest + Custom Test Runners";
       features: [
-        'System boundary testing',
-        'Cross-component interaction testing',
-        'Event propagation testing',
-        'State management testing',
+        "System boundary testing",
+        "Cross-component interaction testing",
+        "Event propagation testing",
+        "State management testing",
       ];
     };
     performance_testing: {
-      framework: 'Custom Performance Test Suite';
+      framework: "Custom Performance Test Suite";
       features: [
-        'Component render performance',
-        'State update performance',
-        'Event system performance',
-        'Resource flow optimization testing',
+        "Component render performance",
+        "State update performance",
+        "Event system performance",
+        "Resource flow optimization testing",
       ];
     };
   };
@@ -1594,42 +1679,42 @@ interface TestInfrastructure {
   test_types: {
     unit_tests: {
       coverage: {
-        target: '90%';
-        current: '85%';
-        critical_components: '95%';
+        target: "90%";
+        current: "85%";
+        critical_components: "95%";
       };
       focus_areas: [
-        'Individual component logic',
-        'Manager method behavior',
-        'Context state management',
-        'Event handling',
+        "Individual component logic",
+        "Manager method behavior",
+        "Context state management",
+        "Event handling",
       ];
     };
     integration_tests: {
       coverage: {
-        target: '85%';
-        current: '70%';
-        critical_paths: '90%';
+        target: "85%";
+        current: "70%";
+        critical_paths: "90%";
       };
       focus_areas: [
-        'Component interaction flows',
-        'System boundary communication',
-        'Event propagation chains',
-        'State synchronization',
+        "Component interaction flows",
+        "System boundary communication",
+        "Event propagation chains",
+        "State synchronization",
       ];
     };
     performance_tests: {
       metrics: {
-        render_time: '< 16ms';
-        state_update: '< 50ms';
-        event_propagation: '< 100ms';
-        resource_flow: '< 200ms';
+        render_time: "< 16ms";
+        state_update: "< 50ms";
+        event_propagation: "< 100ms";
+        resource_flow: "< 200ms";
       };
       focus_areas: [
-        'UI render performance',
-        'State update efficiency',
-        'Event system throughput',
-        'Resource calculation optimization',
+        "UI render performance",
+        "State update efficiency",
+        "Event system throughput",
+        "Resource calculation optimization",
       ];
     };
   };
@@ -1641,7 +1726,7 @@ interface TestInfrastructure {
 #### Unit Testing
 
 ```typescript
-describe('ResourceManager', () => {
+describe("ResourceManager", () => {
   let resourceManager: ResourceManager;
   let eventBus: EventBus<ResourceEvent>;
 
@@ -1650,8 +1735,8 @@ describe('ResourceManager', () => {
     resourceManager = new ResourceManager(eventBus);
   });
 
-  describe('addResource', () => {
-    it('should emit RESOURCE_ADDED event when adding new resource', async () => {
+  describe("addResource", () => {
+    it("should emit RESOURCE_ADDED event when adding new resource", async () => {
       const eventSpy = jest.fn();
       eventBus.subscribe(ResourceEvents.RESOURCE_ADDED, eventSpy);
 
@@ -1668,11 +1753,11 @@ describe('ResourceManager', () => {
             resourceType: ResourceType.IRON,
             amount: 100,
           }),
-        })
+        }),
       );
     });
 
-    it('should update existing resource when adding to same location', async () => {
+    it("should update existing resource when adding to same location", async () => {
       const location = { x: 0, y: 0 };
 
       await resourceManager.addResource({
@@ -1692,7 +1777,7 @@ describe('ResourceManager', () => {
         expect.objectContaining({
           type: ResourceType.IRON,
           amount: 150,
-        })
+        }),
       );
     });
   });
@@ -1702,12 +1787,16 @@ describe('ResourceManager', () => {
 #### Integration Testing
 
 ```typescript
-describe('Resource System Integration', () => {
+describe("Resource System Integration", () => {
   let system: TestSystem;
 
   beforeEach(async () => {
     system = await TestSystem.create({
-      components: ['ResourceManager', 'ResourceFlowManager', 'ResourceVisualization'],
+      components: [
+        "ResourceManager",
+        "ResourceFlowManager",
+        "ResourceVisualization",
+      ],
     });
   });
 
@@ -1715,7 +1804,7 @@ describe('Resource System Integration', () => {
     await system.cleanup();
   });
 
-  it('should update visualization when resource flow changes', async () => {
+  it("should update visualization when resource flow changes", async () => {
     // Arrange
     const source = await system.resourceManager.addResource({
       type: ResourceType.IRON,
@@ -1739,7 +1828,7 @@ describe('Resource System Integration', () => {
     await system.tick(1000); // Simulate 1 second
 
     // Assert
-    const visualization = await system.getComponent('ResourceVisualization');
+    const visualization = await system.getComponent("ResourceVisualization");
     const flowLine = visualization.getFlowLine(source.id, destination.id);
 
     expect(flowLine).toBeDefined();

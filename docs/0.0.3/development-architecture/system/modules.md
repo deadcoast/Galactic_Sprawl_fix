@@ -18,18 +18,18 @@ The Module System provides a flexible and extensible architecture for managing g
 // src/types/modules/ModuleTypes.ts
 
 export enum ModuleType {
-  PRODUCER = 'PRODUCER',
-  CONSUMER = 'CONSUMER',
-  PROCESSOR = 'PROCESSOR',
-  STORAGE = 'STORAGE',
-  UTILITY = 'UTILITY',
+  PRODUCER = "PRODUCER",
+  CONSUMER = "CONSUMER",
+  PROCESSOR = "PROCESSOR",
+  STORAGE = "STORAGE",
+  UTILITY = "UTILITY",
 }
 
 export enum ModuleStatus {
-  INACTIVE = 'INACTIVE',
-  ACTIVE = 'ACTIVE',
-  ERROR = 'ERROR',
-  UPGRADING = 'UPGRADING',
+  INACTIVE = "INACTIVE",
+  ACTIVE = "ACTIVE",
+  ERROR = "ERROR",
+  UPGRADING = "UPGRADING",
 }
 
 export interface ModuleConfig {
@@ -76,7 +76,7 @@ export class ModuleManager extends BaseManager<ModuleEvent> {
   private resourceManager: ResourceManager;
 
   constructor(eventBus: EventBus, resourceManager: ResourceManager) {
-    super('ModuleManager', eventBus);
+    super("ModuleManager", eventBus);
     this.modules = new Map();
     this.dependencies = new DependencyGraph();
     this.resourceManager = resourceManager;
@@ -103,7 +103,9 @@ export class ModuleManager extends BaseManager<ModuleEvent> {
     const module = this.getModule(moduleId);
 
     if (!this.canActivateModule(moduleId)) {
-      throw new Error(`Cannot activate module ${moduleId}: dependencies not met`);
+      throw new Error(
+        `Cannot activate module ${moduleId}: dependencies not met`,
+      );
     }
 
     await this.startModule(module);
@@ -251,13 +253,11 @@ export const ModuleComponent: React.FC<ModuleProps> = ({
 ### Resource System Integration
 
 1. **Resource Requirements**
-
    - Modules specify input/output requirements
    - Resource flows are established
    - Thresholds are monitored
 
 2. **Resource Optimization**
-
    - Flow rates are adjusted
    - Resources are balanced
    - Efficiency is maximized
@@ -270,13 +270,11 @@ export const ModuleComponent: React.FC<ModuleProps> = ({
 ### Event System Integration
 
 1. **Module Events**
-
    - Creation/destruction events
    - Status change events
    - Upgrade events
 
 2. **Resource Events**
-
    - Input/output events
    - Threshold events
    - Flow optimization events
@@ -289,13 +287,11 @@ export const ModuleComponent: React.FC<ModuleProps> = ({
 ### UI Integration
 
 1. **Module Display**
-
    - Status visualization
    - Resource flow display
    - Upgrade options
 
 2. **Interaction Handling**
-
    - Module activation
    - Upgrade selection
    - Configuration changes
@@ -308,13 +304,11 @@ export const ModuleComponent: React.FC<ModuleProps> = ({
 ## Performance Optimization
 
 1. **Module Updates**
-
    - Batch processing
    - Priority scheduling
    - Efficient state updates
 
 2. **Resource Management**
-
    - Optimized flow calculations
    - Efficient resource distribution
    - Memory management
@@ -327,13 +321,11 @@ export const ModuleComponent: React.FC<ModuleProps> = ({
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Module creation
    - State management
    - Event handling
 
 2. **Integration Tests**
-
    - Resource flow
    - Module interaction
    - System coordination

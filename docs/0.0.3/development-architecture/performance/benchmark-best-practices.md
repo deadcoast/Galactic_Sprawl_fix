@@ -44,7 +44,9 @@ interface BenchmarkResult {
 ### 3. Benchmark Implementation
 
 ```typescript
-async function runBenchmark(scenario: BenchmarkScenario): Promise<BenchmarkResult> {
+async function runBenchmark(
+  scenario: BenchmarkScenario,
+): Promise<BenchmarkResult> {
   console.warn(`Running benchmark: ${scenario.name}`);
 
   // Capture memory usage before the test
@@ -59,7 +61,8 @@ async function runBenchmark(scenario: BenchmarkScenario): Promise<BenchmarkResul
   const memoryAfter = process.memoryUsage?.() || { heapUsed: 0 };
 
   // Calculate memory usage difference in MB
-  const memoryUsageMB = (memoryAfter.heapUsed - memoryBefore.heapUsed) / (1024 * 1024);
+  const memoryUsageMB =
+    (memoryAfter.heapUsed - memoryBefore.heapUsed) / (1024 * 1024);
 
   // Return benchmark results
   return {
@@ -166,7 +169,7 @@ Use the Vitest bench functionality to run benchmarks:
 
 ```typescript
 export default {
-  name: 'ResourceFlowManager Performance Benchmarks',
+  name: "ResourceFlowManager Performance Benchmarks",
   async run() {
     await runAllBenchmarks();
   },
@@ -185,13 +188,13 @@ Format benchmark results clearly:
 
 ```typescript
 // Print results in a table format
-console.warn('\nPerformance Benchmark Results:');
-console.warn('-------------------------------------------------------------');
+console.warn("\nPerformance Benchmark Results:");
+console.warn("-------------------------------------------------------------");
 console.warn(
-  '| Scenario                    | Time (ms) | Nodes | Conns | Transfers | Memory (MB) |'
+  "| Scenario                    | Time (ms) | Nodes | Conns | Transfers | Memory (MB) |",
 );
 console.warn(
-  '|------------------------------|-----------|-------|-------|-----------|-------------|'
+  "|------------------------------|-----------|-------|-------|-----------|-------------|",
 );
 
 for (const [name, result] of Object.entries(results)) {
@@ -199,14 +202,16 @@ for (const [name, result] of Object.entries(results)) {
     `| ${name.padEnd(28)} | ${result.executionTimeMs.toFixed(2).padStart(9)} | ${result.nodesProcessed
       .toString()
       .padStart(
-        5
+        5,
       )} | ${result.connectionsProcessed.toString().padStart(5)} | ${result.transfersGenerated
       .toString()
-      .padStart(9)} | ${result.memoryUsageMB?.toFixed(2).padStart(11) || 'N/A'.padStart(11)} |`
+      .padStart(
+        9,
+      )} | ${result.memoryUsageMB?.toFixed(2).padStart(11) || "N/A".padStart(11)} |`,
   );
 }
 
-console.warn('-------------------------------------------------------------');
+console.warn("-------------------------------------------------------------");
 ```
 
 ## Best Practices for Benchmark Design
@@ -247,13 +252,11 @@ The following system components have benchmark coverage:
 Planned benchmark coverage for other systems:
 
 1. **Event System**: Measure event processing throughput and latency
-
    - Test different event batch sizes
    - Measure event filtering performance
    - Test subscription mechanism overhead
 
 2. **Combat System**: Measure combat resolution performance
-
    - Test with different numbers of units
    - Test with different weapon types and effects
    - Measure pathfinding performance
@@ -276,13 +279,16 @@ The codebase includes dedicated utilities for test performance optimization in `
 Running tests in parallel can significantly reduce overall test execution time, especially for tests that involve I/O operations or timeouts.
 
 ```typescript
-import { executeTestsInParallel, parallelDescribe } from '../utils/testPerformanceUtils';
+import {
+  executeTestsInParallel,
+  parallelDescribe,
+} from "../utils/testPerformanceUtils";
 
 // Execute individual tasks in parallel
 const results = await executeTestsInParallel(
   [
     {
-      name: 'task1',
+      name: "task1",
       task: async () => {
         // Task implementation
         return result;
@@ -295,17 +301,17 @@ const results = await executeTestsInParallel(
     continueOnError: false, // Whether to continue if a task fails
     taskTimeout: 5000, // Timeout for each task in milliseconds
     logProgress: false, // Whether to log progress
-  }
+  },
 );
 
 // Or use parallelDescribe for a more declarative approach
 parallelDescribe(
-  'Parallel Test Suite',
+  "Parallel Test Suite",
   {
-    'test 1': async () => {
+    "test 1": async () => {
       // Test implementation
     },
-    'test 2': async () => {
+    "test 2": async () => {
       // Test implementation
     },
     // More tests...
@@ -313,7 +319,7 @@ parallelDescribe(
   {
     concurrency: 4,
     logProgress: false,
-  }
+  },
 );
 ```
 
@@ -325,21 +331,21 @@ For operations that are resource-intensive but produce the same result for the s
 import {
   optimizeResourceIntensiveOperation,
   clearOperationCache,
-} from '../utils/testPerformanceUtils';
+} from "../utils/testPerformanceUtils";
 
 // Cache the result of an expensive operation
 const result = await optimizeResourceIntensiveOperation(
-  'unique-operation-id',
+  "unique-operation-id",
   () => expensiveOperation(),
   {
     cacheResult: true, // Whether to cache the result
     cacheTTL: 60000, // Time-to-live for cached results in milliseconds
-  }
+  },
 );
 
 // Clear the cache when needed
 clearOperationCache(); // Clear all cached operations
-clearOperationCache('unique-operation-id'); // Clear a specific operation
+clearOperationCache("unique-operation-id"); // Clear a specific operation
 ```
 
 #### Lazy Initialization
@@ -347,7 +353,7 @@ clearOperationCache('unique-operation-id'); // Clear a specific operation
 Lazy initialization can improve performance by only creating resources when they are actually needed.
 
 ```typescript
-import { createLazyTestValue } from '../utils/testPerformanceUtils';
+import { createLazyTestValue } from "../utils/testPerformanceUtils";
 
 // Create a lazily initialized value
 const lazyDatabase = createLazyTestValue(() => {
@@ -367,7 +373,7 @@ lazyDatabase.reset();
 Running setup operations in parallel can reduce test initialization time.
 
 ```typescript
-import { parallelSetup } from '../utils/testPerformanceUtils';
+import { parallelSetup } from "../utils/testPerformanceUtils";
 
 // Run setup operations in parallel
 const { database, cache, auth } = await parallelSetup({
@@ -382,12 +388,12 @@ const { database, cache, auth } = await parallelSetup({
 Skip expensive setup operations when they're not needed for a particular test.
 
 ```typescript
-import { conditionalSetup } from '../utils/testPerformanceUtils';
+import { conditionalSetup } from "../utils/testPerformanceUtils";
 
 // Only run setup if needed
 const database = conditionalSetup(
   () => setupExpensiveDatabase(),
-  () => needsDatabase()
+  () => needsDatabase(),
 );
 ```
 
@@ -396,7 +402,7 @@ const database = conditionalSetup(
 Measure memory usage during test execution to identify memory-intensive tests.
 
 ```typescript
-import { measureMemoryUsage } from '../utils/testPerformanceUtils';
+import { measureMemoryUsage } from "../utils/testPerformanceUtils";
 
 // Measure memory usage
 const { result, memoryUsageMB } = await measureMemoryUsage(async () => {
@@ -427,7 +433,7 @@ The Vitest configuration can be optimized for performance with the following set
 export default defineConfig({
   test: {
     // Run tests in parallel
-    pool: 'threads',
+    pool: "threads",
     poolOptions: {
       threads: {
         // Use a pool of worker threads
@@ -442,7 +448,7 @@ export default defineConfig({
     // Avoid unnecessary file watching
     watch: false,
     // Optimize for CI environments
-    environment: 'node',
+    environment: "node",
     // Increase timeout for slow tests
     testTimeout: 10000,
     // Retry failed tests
@@ -466,7 +472,7 @@ npx vitest --reporter verbose
 2. **Use Custom Performance Reporters**: Create custom reporters to track test performance over time.
 
 ```typescript
-import { createPerformanceReporter } from '../utils/testUtils';
+import { createPerformanceReporter } from "../utils/testUtils";
 
 const reporter = createPerformanceReporter();
 
@@ -478,13 +484,13 @@ afterAll(() => {
   reporter.printReport();
 });
 
-it('should be fast', () => {
+it("should be fast", () => {
   const startTime = performance.now();
 
   // Test implementation
 
   const endTime = performance.now();
-  reporter.record('test name', endTime - startTime);
+  reporter.record("test name", endTime - startTime);
 });
 ```
 

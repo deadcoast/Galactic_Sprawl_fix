@@ -15,21 +15,21 @@ Type guards are functions that perform runtime checks to verify that values conf
  * Validates that a value is a non-null object
  */
 export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 /**
  * Validates that a value is a string
  */
 export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 /**
  * Validates that a value is a number
  */
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 ```
 
@@ -45,7 +45,10 @@ export function isBaseEvent(event: unknown): event is BaseEvent {
   if (!isObject(event)) return false;
 
   return (
-    'type' in event && isString(event.type) && 'timestamp' in event && isNumber(event.timestamp)
+    "type" in event &&
+    isString(event.type) &&
+    "timestamp" in event &&
+    isNumber(event.timestamp)
   );
 }
 
@@ -55,7 +58,7 @@ export function isBaseEvent(event: unknown): event is BaseEvent {
 export function validateEventData<T extends EventType>(
   event: BaseEvent,
   expectedType: T,
-  validator: (data: unknown) => data is EventDataMap[T]
+  validator: (data: unknown) => data is EventDataMap[T],
 ): event is TypedEvent<T> {
   if (event.type !== expectedType) return false;
 
@@ -73,7 +76,7 @@ The system supports schema-based validation for complex data structures, allowin
  */
 export type ValidationSchema = {
   [key: string]: {
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    type: "string" | "number" | "boolean" | "object" | "array";
     required?: boolean;
     validator?: (value: unknown) => boolean;
   };
@@ -82,7 +85,10 @@ export type ValidationSchema = {
 /**
  * Validates an object against a schema
  */
-export function validateSchema(obj: unknown, schema: ValidationSchema): boolean {
+export function validateSchema(
+  obj: unknown,
+  schema: ValidationSchema,
+): boolean {
   if (!isObject(obj)) return false;
 
   for (const [key, rules] of Object.entries(schema)) {
@@ -98,8 +104,8 @@ export function validateSchema(obj: unknown, schema: ValidationSchema): boolean 
 
     // Validate type
     if (value !== null) {
-      if (rules.type === 'array' && !Array.isArray(value)) return false;
-      if (rules.type !== 'array' && typeof value !== rules.type) return false;
+      if (rules.type === "array" && !Array.isArray(value)) return false;
+      if (rules.type !== "array" && typeof value !== rules.type) return false;
     }
 
     // Run custom validator if provided
@@ -169,7 +175,7 @@ const resourceUpdatedEvent: TypedEvent<EventType.RESOURCE_UPDATED> = {
     resourceType: ResourceType.MINERALS,
     amount: 100,
     delta: 10,
-    reason: 'mining',
+    reason: "mining",
     location: { x: 10, y: 20 },
   },
 };
@@ -183,15 +189,15 @@ const moduleCreatedEvent: TypedEvent<EventType.MODULE_CREATED> = {
   timestamp: Date.now(),
   data: {
     module: {
-      id: 'module-1',
-      name: 'Mining Module',
-      type: 'mineral',
+      id: "module-1",
+      name: "Mining Module",
+      type: "mineral",
       position: { x: 10, y: 20 },
       isActive: true,
       level: 1,
-      status: 'active',
+      status: "active",
     },
-    buildingId: 'building-1',
+    buildingId: "building-1",
   },
 };
 ```
@@ -203,10 +209,10 @@ const moduleStatusChangedEvent: TypedEvent<EventType.MODULE_STATUS_CHANGED> = {
   type: EventType.MODULE_STATUS_CHANGED,
   timestamp: Date.now(),
   data: {
-    moduleId: 'module-1',
-    oldStatus: 'inactive',
-    newStatus: 'active',
-    reason: 'user_activated',
+    moduleId: "module-1",
+    oldStatus: "inactive",
+    newStatus: "active",
+    reason: "user_activated",
   },
 };
 ```
@@ -217,26 +223,38 @@ const moduleStatusChangedEvent: TypedEvent<EventType.MODULE_STATUS_CHANGED> = {
 
 ```typescript
 // Import validation utilities
-import { isBaseEvent, validateEventData, isResourceUpdateEventData } from './validation';
-import { EventType } from './EventTypes';
+import {
+  isBaseEvent,
+  validateEventData,
+  isResourceUpdateEventData,
+} from "./validation";
+import { EventType } from "./EventTypes";
 
 // Handler function with validation
 function handleEvent(event: unknown): void {
   // First validate that it's a base event
   if (!isBaseEvent(event)) {
-    console.error('Invalid event format:', event);
+    console.error("Invalid event format:", event);
     return;
   }
 
   // Handle specific event types with proper validation
   if (event.type === EventType.RESOURCE_UPDATED) {
     // Validate the specific data structure for this event type
-    if (validateEventData(event, EventType.RESOURCE_UPDATED, isResourceUpdateEventData)) {
+    if (
+      validateEventData(
+        event,
+        EventType.RESOURCE_UPDATED,
+        isResourceUpdateEventData,
+      )
+    ) {
       // Now TypeScript knows this is a properly typed resource update event
       const { resourceType, amount, delta } = event.data;
-      console.log(`Resource ${resourceType} updated to ${amount} (delta: ${delta})`);
+      console.log(
+        `Resource ${resourceType} updated to ${amount} (delta: ${delta})`,
+      );
     } else {
-      console.error('Invalid resource update event data:', event);
+      console.error("Invalid resource update event data:", event);
     }
   }
 
@@ -249,26 +267,27 @@ function handleEvent(event: unknown): void {
 ```typescript
 // Define a schema for module configuration
 const moduleConfigSchema: ValidationSchema = {
-  type: { type: 'string', required: true },
-  name: { type: 'string', required: true },
-  level: { type: 'number', required: true },
-  isActive: { type: 'boolean', required: true },
+  type: { type: "string", required: true },
+  name: { type: "string", required: true },
+  level: { type: "number", required: true },
+  isActive: { type: "boolean", required: true },
   position: {
-    type: 'object',
+    type: "object",
     required: true,
-    validator: value => isObject(value) && 'x' in value && 'y' in value,
+    validator: (value) => isObject(value) && "x" in value && "y" in value,
   },
   attachments: {
-    type: 'array',
+    type: "array",
     required: false,
-    validator: value => Array.isArray(value) && value.every(item => isObject(item)),
+    validator: (value) =>
+      Array.isArray(value) && value.every((item) => isObject(item)),
   },
 };
 
 // Use validation in a function
 function createModule(config: unknown): void {
   if (!validateSchema(config, moduleConfigSchema)) {
-    console.error('Invalid module configuration:', config);
+    console.error("Invalid module configuration:", config);
     return;
   }
 
@@ -304,10 +323,10 @@ function validateWithOptional(obj: unknown): boolean {
   if (!isObject(obj)) return false;
 
   // Required properties
-  if (!('id' in obj && isString(obj.id))) return false;
+  if (!("id" in obj && isString(obj.id))) return false;
 
   // Optional properties with type checking when present
-  if ('metadata' in obj && obj.metadata !== undefined) {
+  if ("metadata" in obj && obj.metadata !== undefined) {
     if (!isObject(obj.metadata)) return false;
   }
 
@@ -323,15 +342,15 @@ function validateNestedStructure(obj: unknown): boolean {
   if (!isObject(obj)) return false;
 
   // Validate top-level properties
-  if (!('config' in obj && isObject(obj.config))) return false;
+  if (!("config" in obj && isObject(obj.config))) return false;
 
   // Validate nested properties
   const config = obj.config;
-  if (!('settings' in config && isObject(config.settings))) return false;
+  if (!("settings" in config && isObject(config.settings))) return false;
 
   // Validate deeply nested properties
   const settings = config.settings;
-  if ('advanced' in settings) {
+  if ("advanced" in settings) {
     if (!isObject(settings.advanced)) return false;
   }
 
@@ -344,12 +363,14 @@ function validateNestedStructure(obj: unknown): boolean {
 ```typescript
 // Validate arrays of specific types
 function validateStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every(item => typeof item === 'string');
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === "string")
+  );
 }
 
 function validateObjectArray<T>(
   value: unknown,
-  validator: (item: unknown) => item is T
+  validator: (item: unknown) => item is T,
 ): value is T[] {
   return Array.isArray(value) && value.every(validator);
 }

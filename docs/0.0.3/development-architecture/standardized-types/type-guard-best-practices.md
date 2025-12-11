@@ -13,7 +13,7 @@ Wrap type guards in helper functions that provide additional functionality:
 ```typescript
 // Type guard function
 function isValidEventType(type: string): type is EventType {
-  return ['EVENT_1', 'EVENT_2', 'EVENT_3'].includes(type);
+  return ["EVENT_1", "EVENT_2", "EVENT_3"].includes(type);
 }
 
 // Helper function that uses the type guard
@@ -31,14 +31,14 @@ const validateEventType = (eventType: string): boolean => {
 Create dedicated test cases that verify the type guard works correctly:
 
 ```typescript
-describe('Event Type Validation', () => {
-  it('should validate valid event types', () => {
-    expect(validateEventType('EVENT_1')).toBe(true);
-    expect(validateEventType('EVENT_2')).toBe(true);
+describe("Event Type Validation", () => {
+  it("should validate valid event types", () => {
+    expect(validateEventType("EVENT_1")).toBe(true);
+    expect(validateEventType("EVENT_2")).toBe(true);
   });
 
-  it('should reject invalid event types', () => {
-    expect(validateEventType('INVALID_EVENT')).toBe(false);
+  it("should reject invalid event types", () => {
+    expect(validateEventType("INVALID_EVENT")).toBe(false);
   });
 });
 ```
@@ -71,22 +71,25 @@ Here's a real-world example from our codebase:
 
 ```typescript
 // Define custom event types for testing
-type _CustomModuleEventType = ModuleEventType | 'SHIP_ASSIGNED' | 'RESOURCE_LEVEL_CHANGED';
+type _CustomModuleEventType =
+  | ModuleEventType
+  | "SHIP_ASSIGNED"
+  | "RESOURCE_LEVEL_CHANGED";
 
 // Helper function to validate if an event type is a valid custom module event type
 function isValidCustomEventType(type: string): type is _CustomModuleEventType {
   // Check if it's one of the standard module event types
   const standardEventTypes = [
-    'RESOURCE_PRODUCED',
-    'RESOURCE_CONSUMED',
-    'RESOURCE_UPDATED',
-    'SHIP_ASSIGNED',
-    'RESOURCE_TRANSFERRED',
+    "RESOURCE_PRODUCED",
+    "RESOURCE_CONSUMED",
+    "RESOURCE_UPDATED",
+    "SHIP_ASSIGNED",
+    "RESOURCE_TRANSFERRED",
   ];
   return (
     standardEventTypes.includes(type) ||
-    type === 'SHIP_ASSIGNED' ||
-    type === 'RESOURCE_LEVEL_CHANGED'
+    type === "SHIP_ASSIGNED" ||
+    type === "RESOURCE_LEVEL_CHANGED"
   );
 }
 
@@ -100,31 +103,31 @@ const validateEventType = (eventType: string): boolean => {
 };
 
 // Test cases for the type guard
-describe('Event Type Validation', () => {
-  it('should validate standard module event types', () => {
+describe("Event Type Validation", () => {
+  it("should validate standard module event types", () => {
     // Test standard event types
-    expect(validateEventType('RESOURCE_PRODUCED')).toBe(true);
-    expect(validateEventType('RESOURCE_CONSUMED')).toBe(true);
-    expect(validateEventType('RESOURCE_UPDATED')).toBe(true);
-    expect(validateEventType('RESOURCE_TRANSFERRED')).toBe(true);
-    expect(validateEventType('SHIP_ASSIGNED')).toBe(true);
+    expect(validateEventType("RESOURCE_PRODUCED")).toBe(true);
+    expect(validateEventType("RESOURCE_CONSUMED")).toBe(true);
+    expect(validateEventType("RESOURCE_UPDATED")).toBe(true);
+    expect(validateEventType("RESOURCE_TRANSFERRED")).toBe(true);
+    expect(validateEventType("SHIP_ASSIGNED")).toBe(true);
   });
 
-  it('should validate custom event types', () => {
+  it("should validate custom event types", () => {
     // Test custom event types
-    expect(validateEventType('RESOURCE_LEVEL_CHANGED')).toBe(true);
+    expect(validateEventType("RESOURCE_LEVEL_CHANGED")).toBe(true);
   });
 
-  it('should reject invalid event types', () => {
+  it("should reject invalid event types", () => {
     // Test invalid event types
-    expect(validateEventType('INVALID_EVENT_TYPE')).toBe(false);
-    expect(validateEventType('UNKNOWN_EVENT')).toBe(false);
+    expect(validateEventType("INVALID_EVENT_TYPE")).toBe(false);
+    expect(validateEventType("UNKNOWN_EVENT")).toBe(false);
   });
 });
 
 // Using the validation in test setup
 const shipAssignedEvent: ShipAssignedEvent = {
-  type: 'SHIP_ASSIGNED',
+  type: "SHIP_ASSIGNED",
   // ... other properties
 };
 

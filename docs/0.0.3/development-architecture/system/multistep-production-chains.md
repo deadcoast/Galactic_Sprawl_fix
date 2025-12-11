@@ -45,7 +45,7 @@ interface ChainStatus {
   currentStep: number;
   totalSteps: number;
   startTime: number;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
+  status: "pending" | "in-progress" | "completed" | "failed";
   stepResults: StepResult[];
   error?: string;
 }
@@ -258,12 +258,12 @@ Chains can be triggered by automation rules:
 // Create a chain with two steps
 const chainStatus = chainProcessor.startChain([
   {
-    converterId: 'smelter-1',
-    recipeId: 'iron-ore-to-iron-ingot',
+    converterId: "smelter-1",
+    recipeId: "iron-ore-to-iron-ingot",
   },
   {
-    converterId: 'forge-1',
-    recipeId: 'iron-ingot-to-iron-plate',
+    converterId: "forge-1",
+    recipeId: "iron-ingot-to-iron-plate",
   },
 ]);
 
@@ -280,17 +280,17 @@ chainProcessor.processChainStep(chainStatus.chainId, 1);
 // Create a chain with custom output routing
 const chainStatus = chainProcessor.startChain([
   {
-    converterId: 'refinery-1',
-    recipeId: 'crude-oil-processing',
+    converterId: "refinery-1",
+    recipeId: "crude-oil-processing",
     outputDestinations: [
-      { resourceId: 'petroleum-gas', nodeId: 'storage-tank-1' },
-      { resourceId: 'heavy-oil', nodeId: 'storage-tank-2' },
+      { resourceId: "petroleum-gas", nodeId: "storage-tank-1" },
+      { resourceId: "heavy-oil", nodeId: "storage-tank-2" },
     ],
   },
   {
-    converterId: 'chemical-plant-1',
-    recipeId: 'plastic-bar',
-    inputOverrides: [{ resourceId: 'petroleum-gas', quantity: 20 }],
+    converterId: "chemical-plant-1",
+    recipeId: "plastic-bar",
+    inputOverrides: [{ resourceId: "petroleum-gas", quantity: 20 }],
   },
 ]);
 ```

@@ -8,8 +8,8 @@
 interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  type: "rockBreaker" | "voidDredger";
+  status: "idle" | "mining" | "returning" | "maintenance";
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -41,8 +41,8 @@ interface MiningShipInfo {
 export interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  type: "rockBreaker" | "voidDredger";
+  status: "idle" | "mining" | "returning" | "maintenance";
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -109,8 +109,8 @@ The Mining System includes comprehensive type definitions for mining operations.
 export interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  type: "rockBreaker" | "voidDredger";
+  status: "idle" | "mining" | "returning" | "maintenance";
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -183,7 +183,7 @@ export class MiningResourceIntegration {
     id: string,
     type: ResourceType,
     position: Position,
-    efficiency: number = 1.0
+    efficiency: number = 1.0,
   ): void {
     // Implementation...
   }
@@ -219,8 +219,16 @@ interface MiningEventMap {
   taskAssigned: { task: MiningTask };
   taskCompleted: { task: MiningTask };
   taskFailed: { task: MiningTask; reason: string };
-  shipStatusChanged: { shipId: string; oldStatus: ShipStatus; newStatus: ShipStatus };
-  resourceCollected: { shipId: string; resourceType: ResourceType; amount: number };
+  shipStatusChanged: {
+    shipId: string;
+    oldStatus: ShipStatus;
+    newStatus: ShipStatus;
+  };
+  resourceCollected: {
+    shipId: string;
+    resourceType: ResourceType;
+    amount: number;
+  };
 }
 
 type MiningEvents = {
@@ -236,10 +244,10 @@ The Mining System includes a task management system for assigning and tracking m
 // src/managers/mining/MiningShipManagerImpl.ts
 
 enum TaskStatus {
-  QUEUED = 'queued',
-  IN_PROGRESS = 'in-progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
+  QUEUED = "queued",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
 }
 
 interface MiningTask {

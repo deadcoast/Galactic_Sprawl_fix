@@ -18,19 +18,19 @@ The Exploration System manages all aspects of space exploration and discovery in
 // src/types/exploration/ExplorationTypes.ts
 
 export enum SectorType {
-  UNEXPLORED = 'UNEXPLORED',
-  ASTEROID_FIELD = 'ASTEROID_FIELD',
-  NEBULA = 'NEBULA',
-  PLANETARY_SYSTEM = 'PLANETARY_SYSTEM',
-  DEEP_SPACE = 'DEEP_SPACE',
+  UNEXPLORED = "UNEXPLORED",
+  ASTEROID_FIELD = "ASTEROID_FIELD",
+  NEBULA = "NEBULA",
+  PLANETARY_SYSTEM = "PLANETARY_SYSTEM",
+  DEEP_SPACE = "DEEP_SPACE",
 }
 
 export enum DiscoveryType {
-  RESOURCE_DEPOSIT = 'RESOURCE_DEPOSIT',
-  ALIEN_ARTIFACT = 'ALIEN_ARTIFACT',
-  ANOMALY = 'ANOMALY',
-  DERELICT = 'DERELICT',
-  SPATIAL_PHENOMENON = 'SPATIAL_PHENOMENON',
+  RESOURCE_DEPOSIT = "RESOURCE_DEPOSIT",
+  ALIEN_ARTIFACT = "ALIEN_ARTIFACT",
+  ANOMALY = "ANOMALY",
+  DERELICT = "DERELICT",
+  SPATIAL_PHENOMENON = "SPATIAL_PHENOMENON",
 }
 
 export interface Sector {
@@ -73,7 +73,7 @@ export class ExplorationManager extends BaseManager<ExplorationEvent> {
   private sectorGenerator: SectorGenerator;
 
   constructor(eventBus: EventBus, config: ExplorationConfig) {
-    super('ExplorationManager', eventBus);
+    super("ExplorationManager", eventBus);
     this.sectors = new Map();
     this.vessels = new Map();
     this.discoveryAnalyzer = new DiscoveryAnalyzer(config.analysis);
@@ -103,7 +103,10 @@ export class ExplorationManager extends BaseManager<ExplorationEvent> {
     return analysis;
   }
 
-  public async dispatchVessel(vesselId: string, destination: Vector3D): Promise<void> {
+  public async dispatchVessel(
+    vesselId: string,
+    destination: Vector3D,
+  ): Promise<void> {
     const vessel = this.getVessel(vesselId);
     const route = await this.calculateRoute(vessel.position, destination);
 
@@ -128,7 +131,10 @@ export class ExplorationManager extends BaseManager<ExplorationEvent> {
     }
   }
 
-  private async handleResourceDiscovery(sector: Sector, discovery: Discovery): Promise<void> {
+  private async handleResourceDiscovery(
+    sector: Sector,
+    discovery: Discovery,
+  ): Promise<void> {
     const deposit = await this.analyzeResourceDeposit(discovery);
     sector.resources.push(deposit);
 
@@ -185,7 +191,10 @@ export class DiscoveryAnalyzer {
     }
   }
 
-  private async executeAnalysisStep(analysis: Analysis, step: AnalysisStep): Promise<void> {
+  private async executeAnalysisStep(
+    analysis: Analysis,
+    step: AnalysisStep,
+  ): Promise<void> {
     const startTime = performance.now();
 
     try {
@@ -259,13 +268,11 @@ export const ExplorationMap: React.FC<ExplorationMapProps> = ({
 ### Resource System Integration
 
 1. **Resource Discovery**
-
    - Resource deposit detection
    - Quality analysis
    - Extraction planning
 
 2. **Resource Management**
-
    - Deposit tracking
    - Extraction coordination
    - Flow optimization
@@ -278,13 +285,11 @@ export const ExplorationMap: React.FC<ExplorationMapProps> = ({
 ### Module System Integration
 
 1. **Exploration Modules**
-
    - Scanner modules
    - Analysis modules
    - Extraction modules
 
 2. **Module Coordination**
-
    - Resource allocation
    - Task scheduling
    - Status monitoring
@@ -297,13 +302,11 @@ export const ExplorationMap: React.FC<ExplorationMapProps> = ({
 ### Event System Integration
 
 1. **Exploration Events**
-
    - Sector updates
    - Discovery events
    - Analysis progress
 
 2. **Vessel Events**
-
    - Movement updates
    - Status changes
    - Mission events
@@ -316,13 +319,11 @@ export const ExplorationMap: React.FC<ExplorationMapProps> = ({
 ## Performance Optimization
 
 1. **Sector Management**
-
    - Spatial partitioning
    - Sector streaming
    - Memory optimization
 
 2. **Analysis Processing**
-
    - Batch processing
    - Priority queue
    - Parallel analysis
@@ -335,13 +336,11 @@ export const ExplorationMap: React.FC<ExplorationMapProps> = ({
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Sector generation
    - Discovery analysis
    - Path finding
 
 2. **Integration Tests**
-
    - Resource integration
    - Module coordination
    - Event handling

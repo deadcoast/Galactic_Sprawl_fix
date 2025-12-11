@@ -33,9 +33,9 @@ The test files for tools have several issues with mocking:
 
    ```javascript
    // Improved readline mock
-   vi.mock('readline', () => ({
+   vi.mock("readline", () => ({
      createInterface: vi.fn(() => ({
-       question: vi.fn((query, callback) => callback('y')),
+       question: vi.fn((query, callback) => callback("y")),
        close: vi.fn(),
        on: vi.fn(),
        pause: vi.fn(),
@@ -64,7 +64,7 @@ The test files for tools have several issues with mocking:
    const mockReadFileSync = vi.fn();
 
    // Mock the modules with both named and default exports
-   vi.mock('fs', async () => {
+   vi.mock("fs", async () => {
      return {
        default: {
          existsSync: mockExistSync,
@@ -99,13 +99,13 @@ The test files for tools have several issues with mocking:
    };
 
    const mockProcess = {
-     argv: ['node', 'script.js'],
+     argv: ["node", "script.js"],
      exit: vi.fn(),
      stdout: { write: vi.fn() },
    };
 
-   vi.stubGlobal('console', mockConsole);
-   vi.stubGlobal('process', mockProcess);
+   vi.stubGlobal("console", mockConsole);
+   vi.stubGlobal("process", mockProcess);
    ```
 
 ### Lessons Learned
@@ -147,7 +147,7 @@ The test file had several issues:
 1. Simplified the test approach to focus on core functionality:
 
    ```javascript
-   describe('analyze-lint-errors.js', () => {
+   describe("analyze-lint-errors.js", () => {
      // Mock process and console
      const originalProcess = globalThis.process;
      const originalConsole = globalThis.console;
@@ -181,7 +181,7 @@ The test file had several issues:
 2. Properly mocked node:timers using the importOriginal approach:
 
    ```javascript
-   vi.mock('node:timers', async importOriginal => {
+   vi.mock("node:timers", async (importOriginal) => {
      const actual = await importOriginal();
      return {
        ...actual,
@@ -206,13 +206,13 @@ The test file had several issues:
    let endCallback;
 
    mockProcess.stdin.on.mockImplementation((event, callback) => {
-     if (event === 'data') dataCallback = callback;
-     if (event === 'end') endCallback = callback;
+     if (event === "data") dataCallback = callback;
+     if (event === "end") endCallback = callback;
      return mockProcess.stdin;
    });
 
    // Import the module
-   await import('../../../tools/analyze-lint-errors.js');
+   await import("../../../tools/analyze-lint-errors.js");
 
    // Call the callbacks directly
    dataCallback(sampleData);
@@ -222,19 +222,21 @@ The test file had several issues:
 4. Focused on testing only the most critical functionality:
 
    ```javascript
-   it('should respect the --debug flag', async () => {
+   it("should respect the --debug flag", async () => {
      // Set argv to include --debug
-     mockProcess.argv = ['node', 'analyze-lint-errors.js', '--debug'];
+     mockProcess.argv = ["node", "analyze-lint-errors.js", "--debug"];
 
      // ... setup and execution ...
 
      // Check if debug logs were output
-     expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('[DEBUG]'));
+     expect(mockConsole.error).toHaveBeenCalledWith(
+       expect.stringContaining("[DEBUG]"),
+     );
    });
 
-   it('should respect the --timeout flag', async () => {
+   it("should respect the --timeout flag", async () => {
      // Set argv to include --timeout=1000
-     mockProcess.argv = ['node', 'analyze-lint-errors.js', '--timeout=1000'];
+     mockProcess.argv = ["node", "analyze-lint-errors.js", "--timeout=1000"];
 
      // ... setup and execution ...
 
@@ -288,8 +290,8 @@ The E2E tests are using a static port for the WebSocket server, causing conflict
 
    ```typescript
    // playwright.config.ts
-   import { defineConfig } from '@playwright/test';
-   import { getCurrentPort } from './src/tests/e2e/test-setup';
+   import { defineConfig } from "@playwright/test";
+   import { getCurrentPort } from "./src/tests/e2e/test-setup";
 
    export default defineConfig({
      // ...
@@ -298,7 +300,7 @@ The E2E tests are using a static port for the WebSocket server, causing conflict
      },
      // ...
      webServer: {
-       command: 'npm run dev',
+       command: "npm run dev",
        port: getCurrentPort(),
        reuseExistingServer: !process.env.CI,
      },
@@ -346,14 +348,14 @@ The test for error handling in update callbacks is throwing an error as expected
 1. Modify the test to properly catch and verify the error:
 
    ```typescript
-   it('should handle errors in update callbacks', () => {
+   it("should handle errors in update callbacks", () => {
      // Set up a spy to track error handling
      const errorHandlerSpy = vi.fn();
      gameLoopManager.setErrorHandler(errorHandlerSpy);
 
      // Register a callback that will throw an error
-     gameLoopManager.registerUpdate('error-update', () => {
-       throw new Error('Test error');
+     gameLoopManager.registerUpdate("error-update", () => {
+       throw new Error("Test error");
      });
 
      // Run the game loop
@@ -362,13 +364,13 @@ The test for error handling in update callbacks is throwing an error as expected
      // Verify the error was handled
      expect(errorHandlerSpy).toHaveBeenCalledWith(
        expect.objectContaining({
-         message: 'Test error',
-         updateId: 'error-update',
-       })
+         message: "Test error",
+         updateId: "error-update",
+       }),
      );
 
      // Clean up
-     gameLoopManager.unregisterUpdate('error-update');
+     gameLoopManager.unregisterUpdate("error-update");
    });
    ```
 
@@ -432,7 +434,7 @@ Optimization result: {
 
    ```typescript
    // Before: Just logging the result
-   console.log('Optimization result:', result);
+   console.log("Optimization result:", result);
 
    // After: Adding proper assertions
    expect(result).toBeDefined();
@@ -451,7 +453,9 @@ Optimization result: {
 
    // After: Adding null check
    expect(result.performanceMetrics).toBeDefined();
-   const metrics = result.performanceMetrics as NonNullable<typeof result.performanceMetrics>;
+   const metrics = result.performanceMetrics as NonNullable<
+     typeof result.performanceMetrics
+   >;
    expect(metrics.nodesProcessed).toBe(2);
    ```
 
@@ -509,18 +513,18 @@ The test is attempting to use the `moduleEventBusMock` from the setup file, but 
    };
 
    // Use async factory function with importOriginal
-   vi.mock('../../../lib/modules/ModuleEvents', async () => {
+   vi.mock("../../../lib/modules/ModuleEvents", async () => {
      return {
        moduleEventBus: moduleEventBusMock,
        ModuleEventType: {
-         RESOURCE_UPDATE: 'resource:update',
-         MODULE_ACTIVATED: 'module:activated',
-         MODULE_DEACTIVATED: 'module:deactivated',
+         RESOURCE_UPDATE: "resource:update",
+         MODULE_ACTIVATED: "module:activated",
+         MODULE_DEACTIVATED: "module:deactivated",
        },
        ModuleEvent: class ModuleEvent {
          constructor(
            public type: string,
-           public data: unknown
+           public data: unknown,
          ) {}
        },
      };
@@ -538,19 +542,19 @@ The test is attempting to use the `moduleEventBusMock` from the setup file, but 
    };
 
    // Then mock the modules
-   vi.mock('../../../lib/modules/ModuleEvents', async () => ({
+   vi.mock("../../../lib/modules/ModuleEvents", async () => ({
      moduleEventBus: moduleEventBusMock,
      // other exports...
    }));
 
    // Then import the modules under test
-   import { ResourceThresholdManager } from '../../../managers/resource/ResourceThresholdManager';
+   import { ResourceThresholdManager } from "../../../managers/resource/ResourceThresholdManager";
    ```
 
 3. Use `vi.doMock` instead of `vi.mock` to avoid hoisting:
 
    ```typescript
-   import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+   import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
    // Define mock
    const moduleEventBusMock = {
@@ -560,7 +564,7 @@ The test is attempting to use the `moduleEventBusMock` from the setup file, but 
    };
 
    // Use doMock to avoid hoisting
-   vi.doMock('../../../lib/modules/ModuleEvents', () => ({
+   vi.doMock("../../../lib/modules/ModuleEvents", () => ({
      moduleEventBus: moduleEventBusMock,
      // other exports...
    }));
@@ -569,7 +573,7 @@ The test is attempting to use the `moduleEventBusMock` from the setup file, but 
    beforeEach(async () => {
      // Import dynamically to ensure mocks are applied
      const { ResourceThresholdManager } = await import(
-       '../../../managers/resource/ResourceThresholdManager'
+       "../../../managers/resource/ResourceThresholdManager"
      );
      thresholdManager = new ResourceThresholdManager(100);
    });
@@ -613,7 +617,9 @@ Multiple E2E tests are trying to use the same WebSocket server port, causing con
      }
 
      private static generateRandomPort(): number {
-       return Math.floor(Math.random() * (this.MAX_PORT - this.MIN_PORT) + this.MIN_PORT);
+       return Math.floor(
+         Math.random() * (this.MAX_PORT - this.MIN_PORT) + this.MIN_PORT,
+       );
      }
 
      static reset(): void {
@@ -626,7 +632,7 @@ Multiple E2E tests are trying to use the same WebSocket server port, causing con
 
    ```typescript
    // In test setup
-   import { PortManager } from '../utils/portManager';
+   import { PortManager } from "../utils/portManager";
 
    beforeEach(() => {
      // Get a unique port for this test
@@ -690,31 +696,31 @@ The exploration system tests were failing with the following errors:
 
 ```typescript
 // src/tests/components/exploration/ExplorationManager.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createTestEnvironment } from "../../utils/exploration/explorationTestUtils";
 
 // Mock the createTestEnvironment function
-vi.mock('../../utils/exploration/explorationTestUtils', () => ({
+vi.mock("../../utils/exploration/explorationTestUtils", () => ({
   createTestEnvironment: vi.fn(() => ({
     explorationManager: {
-      createStarSystem: vi.fn(system => ({ ...system })),
+      createStarSystem: vi.fn((system) => ({ ...system })),
       assignShipToSystem: vi.fn((shipId, systemId) => true),
-      getSystemById: vi.fn(systemId => ({
+      getSystemById: vi.fn((systemId) => ({
         id: systemId,
-        name: 'Alpha Centauri',
-        status: 'discovered',
-        assignedShips: ['ship-1'],
+        name: "Alpha Centauri",
+        status: "discovered",
+        assignedShips: ["ship-1"],
       })),
       // ... other methods
     },
     shipManager: {
-      createShip: vi.fn(ship => ({ ...ship })),
-      getShipById: vi.fn(shipId => ({
+      createShip: vi.fn((ship) => ({ ...ship })),
+      getShipById: vi.fn((shipId) => ({
         id: shipId,
-        name: shipId === 'ship-1' ? 'Explorer 1' : 'Explorer 2',
-        type: 'exploration',
-        status: shipId === 'ship-1' ? 'assigned' : 'idle',
-        assignedTo: shipId === 'ship-1' ? 'system-1' : undefined,
+        name: shipId === "ship-1" ? "Explorer 1" : "Explorer 2",
+        type: "exploration",
+        status: shipId === "ship-1" ? "assigned" : "idle",
+        assignedTo: shipId === "ship-1" ? "system-1" : undefined,
       })),
     },
   })),
@@ -724,23 +730,23 @@ vi.mock('../../utils/exploration/explorationTestUtils', () => ({
 2. Implemented the ship assignment test with proper setup and assertions:
 
 ```typescript
-it('should handle ship assignment', async () => {
+it("should handle ship assignment", async () => {
   // Create a more robust setup
   const { explorationManager, shipManager } = createTestEnvironment();
 
   // Create test ships with proper properties
   const ship1 = shipManager.createShip({
-    id: 'ship-1',
-    name: 'Explorer 1',
-    type: 'exploration',
-    status: 'idle',
+    id: "ship-1",
+    name: "Explorer 1",
+    type: "exploration",
+    status: "idle",
   });
 
   // Create a test star system
   const system = explorationManager.createStarSystem({
-    id: 'system-1',
-    name: 'Alpha Centauri',
-    status: 'discovered',
+    id: "system-1",
+    name: "Alpha Centauri",
+    status: "discovered",
   });
 
   // Assign ship to system
@@ -748,8 +754,10 @@ it('should handle ship assignment', async () => {
 
   // Verify assignment
   expect(result).toBe(true);
-  expect(explorationManager.getSystemById(system.id).assignedShips).toContain(ship1.id);
-  expect(shipManager.getShipById(ship1.id).status).toBe('assigned');
+  expect(explorationManager.getSystemById(system.id).assignedShips).toContain(
+    ship1.id,
+  );
+  expect(shipManager.getShipById(ship1.id).status).toBe("assigned");
   expect(shipManager.getShipById(ship1.id).assignedTo).toBe(system.id);
 });
 ```
@@ -757,24 +765,24 @@ it('should handle ship assignment', async () => {
 3. Fixed the search and filtering test by implementing efficient mocking and increasing the timeout:
 
 ```typescript
-it('should handle search and filtering', async () => {
+it("should handle search and filtering", async () => {
   // Create test data with a reasonable size
   const systems = Array.from({ length: 20 }, (_, i) => ({
     id: `system-${i}`,
     name: `System ${i}`,
-    type: i % 3 === 0 ? 'binary' : 'single',
-    resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
-    status: i % 4 === 0 ? 'unexplored' : 'explored',
+    type: i % 3 === 0 ? "binary" : "single",
+    resources: i % 2 === 0 ? ["minerals", "energy"] : ["gas"],
+    status: i % 4 === 0 ? "unexplored" : "explored",
   }));
 
   // Add systems to the manager
   const { explorationManager } = createTestEnvironment();
-  systems.forEach(system => explorationManager.addStarSystem(system));
+  systems.forEach((system) => explorationManager.addStarSystem(system));
 
   // Test search by name
-  const nameResults = explorationManager.searchSystems({ name: 'System 1' });
+  const nameResults = explorationManager.searchSystems({ name: "System 1" });
   expect(nameResults).toHaveLength(1);
-  expect(nameResults[0].id).toBe('system-1');
+  expect(nameResults[0].id).toBe("system-1");
 
   // ... other test cases
 }, 10000); // Increase timeout to 10 seconds
@@ -814,23 +822,19 @@ export function createTestEnvironment() {
 ## Next Steps
 
 1. **Create a common mocking utility** for frequently used modules:
-
    - Create a `src/tests/utils/mockUtils.ts` file with standard mock implementations
    - Document the usage patterns for these mocks
 
 2. **Implement dynamic port allocation** for all services in tests:
-
    - Extend the PortManager to handle multiple service types
    - Add configuration options for port ranges
 
 3. **Improve test isolation**:
-
    - Create a global reset function for all managers
    - Implement proper cleanup between tests
    - Add teardown functions for all test suites
 
 4. **Add more comprehensive E2E tests**:
-
    - Create tests for critical user flows
    - Implement proper test fixtures for E2E tests
    - Add visual regression testing
@@ -839,7 +843,6 @@ export function createTestEnvironment() {
    - Update all test-related documentation
    - Create examples of proper test setup and teardown
    - Document best practices for mocking in test files
-
 
 ## Test Fixes - March 2025
 
@@ -877,10 +880,10 @@ const createTestEnvironment = vi.fn(() => ({
 }));
 
 // After (fixed code)
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createTestEnvironment } from "../../utils/exploration/explorationTestUtils";
 
-describe('ExplorationManager', () => {
+describe("ExplorationManager", () => {
   // Test implementation using the actual createTestEnvironment function
 });
 ```
@@ -921,10 +924,10 @@ The test was using a mocked implementation of `createTestEnvironment` from the u
 
 ```typescript
 // Before (using mocks)
-import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+import { createTestEnvironment } from "../../utils/exploration/explorationTestUtils";
 
-describe('ExplorationManager', () => {
-  it('should handle ship assignment', async () => {
+describe("ExplorationManager", () => {
+  it("should handle ship assignment", async () => {
     const { explorationManager, shipManager } = createTestEnvironment();
     // Test with mock implementations
   });
@@ -934,8 +937,8 @@ describe('ExplorationManager', () => {
 import {
   ExplorationManagerImpl,
   type StarSystem,
-} from '../../../managers/exploration/ExplorationManagerImpl';
-import { ShipManagerImpl } from '../../../managers/ships/ShipManagerImpl';
+} from "../../../managers/exploration/ExplorationManagerImpl";
+import { ShipManagerImpl } from "../../../managers/ships/ShipManagerImpl";
 
 // Create a factory function for test setup with actual implementations
 function createTestEnvironmentWithActualImplementations() {
@@ -948,9 +951,10 @@ function createTestEnvironmentWithActualImplementations() {
   };
 }
 
-describe('ExplorationManager', () => {
-  it('should handle ship assignment', async () => {
-    const { explorationManager, shipManager } = createTestEnvironmentWithActualImplementations();
+describe("ExplorationManager", () => {
+  it("should handle ship assignment", async () => {
+    const { explorationManager, shipManager } =
+      createTestEnvironmentWithActualImplementations();
     // Test with actual implementations
   });
 });
@@ -959,7 +963,6 @@ describe('ExplorationManager', () => {
 **Implementation Details:**
 
 1. Created `ExplorationManagerImpl` class with the following methods:
-
    - `createStarSystem`: Creates a new star system
    - `getSystemById`: Gets a star system by ID
    - `addStarSystem`: Adds an existing star system
@@ -967,7 +970,6 @@ describe('ExplorationManager', () => {
    - `searchSystems`: Searches for star systems based on criteria
 
 2. Created `ShipManagerImpl` class with the following methods:
-
    - `createShip`: Creates a new ship
    - `getShipById`: Gets a ship by ID
    - `updateShipStatus`: Updates a ship's status
@@ -979,14 +981,14 @@ describe('ExplorationManager', () => {
 3. Fixed type issues in the test by ensuring proper type casting when adding star systems:
 
 ```typescript
-systems.forEach(system =>
+systems.forEach((system) =>
   explorationManager.addStarSystem({
     id: system.id,
     name: system.name,
     type: system.type as string, // Ensure type is always a string
     resources: system.resources as string[], // Ensure resources is always a string array
     status: system.status,
-  })
+  }),
 );
 ```
 
@@ -1019,7 +1021,6 @@ This approach violates our "no mocking" policy and makes the tests less reliable
 Completely reimplemented the test to use actual implementations instead of mocks:
 
 1. Removed all mocks, including:
-
    - Removed the framer-motion mock to use the actual library implementation
    - Removed the useResourceTracking mock to use the actual GameContext
 
@@ -1083,7 +1084,7 @@ function ResourceInitializer({
   beforeEach(() => {
     if (gameContext) {
       gameContext.dispatch({
-        type: 'UPDATE_RESOURCES',
+        type: "UPDATE_RESOURCES",
         resources: {
           minerals,
           energy,
@@ -1186,13 +1187,13 @@ The test was attempting to mock the `node:timers` module but was not properly ha
 Used the `importOriginal` parameter in the `vi.mock` function to get the original module and merge it with the mock:
 
 ```javascript
-vi.mock('node:timers', async importOriginal => {
+vi.mock("node:timers", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
     setTimeout: mockSetTimeout,
     clearTimeout: mockClearTimeout,
-    setImmediate: vi.fn(callback => {
+    setImmediate: vi.fn((callback) => {
       callback();
       return 1;
     }),
@@ -1200,7 +1201,7 @@ vi.mock('node:timers', async importOriginal => {
       ...actual.default,
       setTimeout: mockSetTimeout,
       clearTimeout: mockClearTimeout,
-      setImmediate: vi.fn(callback => {
+      setImmediate: vi.fn((callback) => {
         callback();
         return 1;
       }),
@@ -1233,7 +1234,7 @@ const mockProcess = {
   exit: vi.fn(),
 };
 
-vi.stubGlobal('process', mockProcess);
+vi.stubGlobal("process", mockProcess);
 ```
 
 ### Issue: Assertion Errors in Test Cases
@@ -1257,10 +1258,12 @@ const mockConsole = {
   error: vi.fn(),
 };
 
-vi.stubGlobal('console', mockConsole);
+vi.stubGlobal("console", mockConsole);
 
 // Later in the test
-expect(mockConsole.log).toHaveBeenCalledWith(expect.stringContaining('Found 5 lint errors'));
+expect(mockConsole.log).toHaveBeenCalledWith(
+  expect.stringContaining("Found 5 lint errors"),
+);
 ```
 
 ## setup-linting.test.js Fixes
@@ -1287,7 +1290,7 @@ const mockExistsSync = vi.fn();
 const mockMkdirSync = vi.fn();
 
 // Mock child_process module
-vi.mock('child_process', () => ({
+vi.mock("child_process", () => ({
   execSync: mockExecSync,
   default: {
     execSync: mockExecSync,
@@ -1295,7 +1298,7 @@ vi.mock('child_process', () => ({
 }));
 
 // Mock fs module
-vi.mock('fs', () => ({
+vi.mock("fs", () => ({
   writeFileSync: mockWriteFileSync,
   existsSync: mockExistsSync,
   mkdirSync: mockMkdirSync,
@@ -1323,7 +1326,7 @@ Replaced `setTimeout` with CPU-intensive operations that perform actual work:
 ```typescript
 // Before
 const slowFunction = () => {
-  return new Promise<number>(resolve => {
+  return new Promise<number>((resolve) => {
     setTimeout(() => {
       resolve(42);
     }, 100);
@@ -1339,10 +1342,10 @@ const cpuIntensiveFunction = (iterations: number): number => {
   return result;
 };
 
-it('should measure execution time', () => {
+it("should measure execution time", () => {
   const result = measureExecutionTime(() => cpuIntensiveFunction(10000));
 
-  expect(result.value).toBeTypeOf('number');
+  expect(result.value).toBeTypeOf("number");
   expect(result.executionTime).toBeGreaterThan(0);
 });
 ```
@@ -1452,13 +1455,13 @@ We completely rewrote the tests to use a more flexible approach that matches the
 
 ```typescript
 // Before (problematic code)
-const helpButton = screen.getByRole('button', { name: '' });
+const helpButton = screen.getByRole("button", { name: "" });
 expect(helpButton).toBeInTheDocument();
 
 // After (fixed code)
-const helpButtons = screen.getAllByRole('button');
-const helpButton = Array.from(helpButtons).find(button =>
-  button.querySelector('.lucide-help-circle')
+const helpButtons = screen.getAllByRole("button");
+const helpButton = Array.from(helpButtons).find((button) =>
+  button.querySelector(".lucide-help-circle"),
 );
 expect(helpButton).toBeTruthy();
 ```
@@ -1474,7 +1477,9 @@ expect(efficiencyElement || productionElement).toBeTruthy();
 // After (fixed code)
 const efficiencyElements = screen.queryAllByText(/efficiency/i);
 const productionElements = screen.queryAllByText(/production/i);
-expect(efficiencyElements.length > 0 || productionElements.length > 0).toBeTruthy();
+expect(
+  efficiencyElements.length > 0 || productionElements.length > 0,
+).toBeTruthy();
 ```
 
 5. **Focused on user-visible elements**: Instead of testing implementation details, we focused on testing what users would see and interact with.
@@ -1503,13 +1508,11 @@ After encountering issues with our previous testing approach that relied heavily
 ### Key Changes in Our Testing Approach
 
 1. **Testing Real Components**
-
    - We now test actual components with their real dependencies whenever possible
    - We only mock external APIs or services that are truly necessary
    - This ensures we're testing the actual behavior users will experience
 
 2. **Simplified E2E Tests**
-
    - E2E tests now use the actual application routes and components
    - We've removed simplified HTML pages that were previously used as test fixtures
    - Tests now navigate to real routes and interact with the actual UI
@@ -1556,25 +1559,29 @@ describe('MiningWindow Component', () => {
 E2E tests now use the actual application instead of simplified HTML:
 
 ```typescript
-test.describe('Mining Operations', () => {
+test.describe("Mining Operations", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the mining page of the actual application
-    await page.goto('/mining');
+    await page.goto("/mining");
 
     // Wait for the page to load
     await page.waitForSelector('h1:has-text("Mineral Processing")');
   });
 
-  test('search functionality', async ({ page }) => {
+  test("search functionality", async ({ page }) => {
     // Get the search input from the actual application
     const searchInput = page.locator('input[placeholder*="Search resources"]');
 
     // Search for "Iron"
-    await searchInput.fill('Iron');
+    await searchInput.fill("Iron");
 
     // Verify search results in the actual application
-    await expect(page.locator('.resource-item:has-text("Iron Belt Alpha")')).toBeVisible();
-    await expect(page.locator('.resource-item:has-text("Helium Cloud Beta")')).not.toBeVisible();
+    await expect(
+      page.locator('.resource-item:has-text("Iron Belt Alpha")'),
+    ).toBeVisible();
+    await expect(
+      page.locator('.resource-item:has-text("Helium Cloud Beta")'),
+    ).not.toBeVisible();
   });
 
   // Additional tests for user flows...
@@ -1584,19 +1591,16 @@ test.describe('Mining Operations', () => {
 ### Benefits of the New Approach
 
 1. **More Reliable Tests**
-
    - Tests verify that the actual code works, not just that mocks work
    - Less brittle to implementation changes
    - Better coverage of real user scenarios
 
 2. **Easier Maintenance**
-
    - Fewer mocks to maintain
    - Tests are more straightforward and easier to understand
    - Changes to implementation details don't break tests
 
 3. **Better Developer Experience**
-
    - Tests are more intuitive to write
    - Failures are more meaningful
    - Easier to debug test failures
@@ -1622,21 +1626,18 @@ We've successfully fixed a wide range of test issues across the Galactic Sprawl 
 ### Tool Test Files
 
 1. **Fixed `setup-linting.test.js`**:
-
    - Completely rewrote the test file to use proper ES module mocking
    - Implemented proper mocking for file system operations and child_process
    - Added tests for handling existing configuration files
    - All 7 tests now pass successfully
 
 2. **Fixed `analyze-lint-errors.test.js`**:
-
    - Fixed the `node:timers` mock using the `importOriginal` approach
    - Implemented proper mocking for process.stdin and console
    - Simplified the test approach to focus on critical functionality
    - Both tests now pass successfully
 
 3. **Fixed `run-lint-workflow.test.js`**:
-
    - Updated mocks and fixed assertions to match actual output
    - Fixed readline interface mocking
    - Fixed execSync mocking for command execution
@@ -1644,7 +1645,6 @@ We've successfully fixed a wide range of test issues across the Galactic Sprawl 
    - All 10 tests now pass successfully
 
 4. **Fixed `fix-eslint-by-rule.test.js`**:
-
    - Updated mocks and fixed assertions
    - Fixed console mocking
    - Fixed process.exit mocking
@@ -1661,13 +1661,11 @@ We've successfully fixed a wide range of test issues across the Galactic Sprawl 
 ### Manager Tests
 
 1. **Fixed `GameLoopManager.test.ts`**:
-
    - Fixed error handling in update callbacks
    - Improved test to verify that the game loop continues running despite errors
    - Ensured proper cleanup between tests to prevent interference
 
 2. **Fixed `ResourceFlowManager` Tests**:
-
    - Improved the optimize flows test in ResourceFlowManager.test.ts
    - Fixed batch processing tests by adding resource states and connections
    - Implemented proper cleanup of resources between tests
@@ -1714,21 +1712,18 @@ We've successfully fixed a wide range of test issues across the Galactic Sprawl 
 ## Best Practices Established
 
 1. **Mocking**:
-
    - Use `importOriginal` for partial mocking of Node.js built-in modules
    - Mock both named and default exports
    - Create comprehensive mocks for event-based APIs
    - Use consistent mocking patterns across the codebase
 
 2. **Test Isolation**:
-
    - Ensure proper cleanup between tests
    - Use unique identifiers for test resources
    - Implement dynamic port allocation for services
    - Reset global state between tests
 
 3. **Error Handling**:
-
    - Improve error reporting in tests
    - Add proper assertions for error conditions
    - Implement graceful handling of expected errors
@@ -1765,13 +1760,13 @@ Updated the test to use the actual application routes and components:
 ```typescript
 test.beforeEach(async ({ page }) => {
   // Navigate to the main application
-  await page.goto('/');
+  await page.goto("/");
 
   // Wait for the application to load
-  await page.waitForSelector('.flex.h-screen');
+  await page.waitForSelector(".flex.h-screen");
 
   // Click on the Exploration button in the sidebar (using the Radar icon)
-  await page.locator('button:has(.lucide-radar)').click();
+  await page.locator("button:has(.lucide-radar)").click();
 
   // Wait for the Exploration Hub to load
   await page.waitForSelector('h2:has-text("Exploration Hub")');
@@ -1781,13 +1776,15 @@ test.beforeEach(async ({ page }) => {
 2. Updated the existing tests to verify content and functionality directly from the application:
 
 ```typescript
-test('should display exploration interface', async ({ page }) => {
+test("should display exploration interface", async ({ page }) => {
   // Verify the page content from the actual application
   await expect(page.locator('h2:has-text("Exploration Hub")')).toBeVisible();
-  await expect(page.locator('.star-system-list')).toBeVisible();
+  await expect(page.locator(".star-system-list")).toBeVisible();
 
   // Check for the search input
-  await expect(page.locator('input[placeholder*="Search sectors"]')).toBeVisible();
+  await expect(
+    page.locator('input[placeholder*="Search sectors"]'),
+  ).toBeVisible();
 
   // Check for filter controls
   await expect(page.locator('button:has-text("All Sectors")')).toBeVisible();
@@ -1799,33 +1796,37 @@ test('should display exploration interface', async ({ page }) => {
 3. Added new tests for search and filter functionality:
 
 ```typescript
-test('search functionality', async ({ page }) => {
+test("search functionality", async ({ page }) => {
   // Get the search input from the actual application
   const searchInput = page.locator('input[placeholder*="Search sectors"]');
   await expect(searchInput).toBeVisible();
 
   // Search for "Alpha"
-  await searchInput.fill('Alpha');
+  await searchInput.fill("Alpha");
 
   // Verify search results in the actual application
-  await expect(page.locator('.star-system:has-text("Alpha Sector")')).toBeVisible();
-  await expect(page.locator('.star-system:has-text("Beta Sector")')).not.toBeVisible();
+  await expect(
+    page.locator('.star-system:has-text("Alpha Sector")'),
+  ).toBeVisible();
+  await expect(
+    page.locator('.star-system:has-text("Beta Sector")'),
+  ).not.toBeVisible();
 });
 ```
 
 4. Added a test for the mission log functionality:
 
 ```typescript
-test('should show mission log', async ({ page }) => {
+test("should show mission log", async ({ page }) => {
   // Click the mission log button (History icon)
-  await page.locator('button:has(.lucide-history)').click();
+  await page.locator("button:has(.lucide-history)").click();
 
   // Verify mission log is displayed
-  await expect(page.locator('.mission-log')).toBeVisible();
+  await expect(page.locator(".mission-log")).toBeVisible();
   await expect(page.locator('h3:has-text("Mission Log")')).toBeVisible();
 
   // Check for mission entries
-  await expect(page.locator('.mission-entry')).toBeVisible();
+  await expect(page.locator(".mission-entry")).toBeVisible();
 });
 ```
 
@@ -1929,7 +1930,6 @@ There are several ways to resolve this issue:
    ```
 
 2. **Configure the application to use a different port**:
-
    - Update the `vite.config.ts` file to use a different port:
 
    ```typescript
@@ -1953,7 +1953,6 @@ There are several ways to resolve this issue:
    ```
 
 3. **Use dynamic port allocation**:
-
    - Modify the `playwright.config.ts` to use a dynamic port:
 
    ```typescript
@@ -2004,10 +2003,15 @@ The test is failing because the application is not initializing correctly. This 
    ```typescript
    // Check if the application loaded at all
    const appContent = await page.content();
-   if (appContent.includes('Failed to Initialize Game') || appContent.includes('Error')) {
-     console.log('Game initialization error detected in page content. Taking screenshot...');
+   if (
+     appContent.includes("Failed to Initialize Game") ||
+     appContent.includes("Error")
+   ) {
+     console.log(
+       "Game initialization error detected in page content. Taking screenshot...",
+     );
      await page.screenshot({ path: `game-init-error-${Date.now()}.png` });
-     throw new Error('Game failed to initialize - error found in page content');
+     throw new Error("Game failed to initialize - error found in page content");
    }
    ```
 
@@ -2018,7 +2022,7 @@ The test is failing because the application is not initializing correctly. This 
      'h1:has-text("Exploration")',
      'h2:has-text("Exploration")',
      'h2:has-text("Exploration Hub")',
-     '.exploration-title',
+     ".exploration-title",
      '[data-testid="exploration-heading"]',
    ];
 
@@ -2043,7 +2047,7 @@ The test is failing because the application is not initializing correctly. This 
    await page.screenshot({ path: `initial-state-${Date.now()}.png` });
 
    // Log detailed information about what's on the page
-   const allButtons = await page.locator('button').all();
+   const allButtons = await page.locator("button").all();
    console.log(`Found ${allButtons.length} buttons on the page`);
    for (const button of allButtons) {
      const text = await button.textContent();
@@ -2075,7 +2079,6 @@ E2E tests were failing with "Game failed to initialize" errors due to port confl
 ### Solution
 
 1. Updated port configuration in multiple files:
-
    - Changed port from 3000 to 3001 in `vite.config.ts`
    - Updated port in `playwright.config.ts` to match
    - Set `strictPort: false` to allow fallback if port 3001 is also in use
@@ -2198,31 +2201,33 @@ render(
 
 ```typescript
 // Before (problematic code)
-expect(screen.getByLabelText('Formation Name')).toBeInTheDocument();
+expect(screen.getByLabelText("Formation Name")).toBeInTheDocument();
 
 // After (fixed code)
-expect(screen.getByText('Formation Name')).toBeInTheDocument();
-expect(screen.getByPlaceholderText('Enter formation name')).toBeInTheDocument();
+expect(screen.getByText("Formation Name")).toBeInTheDocument();
+expect(screen.getByPlaceholderText("Enter formation name")).toBeInTheDocument();
 ```
 
 3. **Used more specific selectors for elements that might appear multiple times**:
 
 ```typescript
 // Before (problematic code)
-expect(screen.getByText('Coordinated Scanning')).toBeInTheDocument();
+expect(screen.getByText("Coordinated Scanning")).toBeInTheDocument();
 
 // After (fixed code)
-expect(screen.getByText('Coordinated Scanning', { selector: 'h3' })).toBeInTheDocument();
+expect(
+  screen.getByText("Coordinated Scanning", { selector: "h3" }),
+).toBeInTheDocument();
 ```
 
 4. **Tested what users would actually see and interact with**:
 
 ```typescript
 // Check if the formation name is displayed
-expect(screen.getByText('Alpha Formation')).toBeInTheDocument();
+expect(screen.getByText("Alpha Formation")).toBeInTheDocument();
 
 // Check if the formation type and ship count are displayed
-expect(screen.getByText('exploration • 2 ships')).toBeInTheDocument();
+expect(screen.getByText("exploration • 2 ships")).toBeInTheDocument();
 ```
 
 ### Benefits
@@ -2288,7 +2293,7 @@ const defaultProps: ReconShipCoordinationProps = {
 Then we updated all test cases to use this helper function:
 
 ```typescript
-it('should render the component with correct title', () => {
+it("should render the component with correct title", () => {
   renderReconShipCoordination(defaultProps);
 
   // Test assertions...
@@ -2298,7 +2303,7 @@ it('should render the component with correct title', () => {
 For tests that needed different props, we passed a custom props object:
 
 ```typescript
-it('should render without formations', () => {
+it("should render without formations", () => {
   renderReconShipCoordination({
     ships: mockShips,
     sectors: mockSectors,
@@ -2344,13 +2349,11 @@ The test had not been updated to use the actual implementation approach that we'
 We implemented a test that uses:
 
 1. A simplified custom TestGameProvider that:
-
    - Uses a real reducer pattern matching the GameContext implementation
    - Provides controlled test data for different resource states
    - Includes stub methods for context functions not used by the component
 
 2. Focus on testing the rendered content, not animations:
-
    - Test for the presence of resource labels (minerals, energy, etc.)
    - Test for the correct resource values in different states
    - Test for warning messages when resources are low or critical
@@ -2376,9 +2379,12 @@ function TestGameProvider({
   initialResources?: ResourceState;
 }) {
   // Create a simplified reducer that only handles resource updates
-  const reducer = (state: TestGameState, action: TestGameAction): TestGameState => {
+  const reducer = (
+    state: TestGameState,
+    action: TestGameAction,
+  ): TestGameState => {
     switch (action.type) {
-      case 'UPDATE_RESOURCES':
+      case "UPDATE_RESOURCES":
         return {
           ...state,
           resources: { ...state.resources, ...action.resources },
@@ -2416,31 +2422,35 @@ function TestGameProvider({
   // Provide the context value to the component tree
   return (
     <GameContext.Provider
-      value={contextValue as unknown as Parameters<typeof GameContext.Provider>[0]['value']}
+      value={
+        contextValue as unknown as Parameters<
+          typeof GameContext.Provider
+        >[0]["value"]
+      }
     >
       {children}
     </GameContext.Provider>
   );
 }
 
-describe('ResourceVisualization Component', () => {
-  it('renders with default resource values', () => {
+describe("ResourceVisualization Component", () => {
+  it("renders with default resource values", () => {
     render(
       <TestGameProvider>
         <ResourceVisualization />
-      </TestGameProvider>
+      </TestGameProvider>,
     );
 
     // Check for resource labels
-    expect(screen.getByText('minerals')).toBeInTheDocument();
-    expect(screen.getByText('energy')).toBeInTheDocument();
+    expect(screen.getByText("minerals")).toBeInTheDocument();
+    expect(screen.getByText("energy")).toBeInTheDocument();
 
     // Use getAllByText for values that appear multiple times
     const mineralValues = screen.getAllByText(/1,000/, { exact: false });
     expect(mineralValues.length).toBeGreaterThan(0);
   });
 
-  it('renders with low resource warning', () => {
+  it("renders with low resource warning", () => {
     render(
       <TestGameProvider
         initialResources={{
@@ -2451,11 +2461,11 @@ describe('ResourceVisualization Component', () => {
         }}
       >
         <ResourceVisualization />
-      </TestGameProvider>
+      </TestGameProvider>,
     );
 
     // Check for low minerals warning
-    expect(screen.getByText('Low minerals levels')).toBeInTheDocument();
+    expect(screen.getByText("Low minerals levels")).toBeInTheDocument();
   });
 });
 ```
@@ -2470,7 +2480,6 @@ describe('ResourceVisualization Component', () => {
 ### Lessons Learned
 
 1. When testing components that use animation libraries like framer-motion:
-
    - Focus on testing the content, not the animations
    - Use flexible query methods to handle variations in rendering
    - Don't mock the animation library - instead, test around the animations
@@ -2506,7 +2515,10 @@ export function createTestModuleEvents(): TestModuleEvents {
 
   // Create a real event bus implementation
   const moduleEventBus: ModuleEventBus = {
-    subscribe(type: ModuleEventType, listener: ModuleEventListener): () => void {
+    subscribe(
+      type: ModuleEventType,
+      listener: ModuleEventListener,
+    ): () => void {
       // Real implementation of subscribe
     },
 
@@ -2545,14 +2557,14 @@ We also created a test file `src/tests/factories/createTestModuleEvents.test.ts`
 Tests can now use the test factory instead of mocks:
 
 ```typescript
-import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+import { createTestModuleEvents } from "../factories/createTestModuleEvents";
 
-describe('ModuleManager', () => {
+describe("ModuleManager", () => {
   let testModuleEvents;
 
   beforeEach(() => {
     testModuleEvents = createTestModuleEvents();
-    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+    vi.doMock("../../../lib/modules/ModuleEvents", () => testModuleEvents);
   });
 
   afterEach(() => {
@@ -2560,16 +2572,16 @@ describe('ModuleManager', () => {
     vi.resetModules();
   });
 
-  it('should emit events correctly', () => {
+  it("should emit events correctly", () => {
     const moduleManager = new ModuleManager();
-    moduleManager.createModule({ id: 'test', type: 'mineral' });
+    moduleManager.createModule({ id: "test", type: "mineral" });
 
     // Verify using helper methods
     const events = testModuleEvents.getEmittedEvents(
-      testModuleEvents.ModuleEventType.MODULE_CREATED
+      testModuleEvents.ModuleEventType.MODULE_CREATED,
     );
     expect(events.length).toBe(1);
-    expect(events[0].moduleId).toBe('test');
+    expect(events[0].moduleId).toBe("test");
   });
 });
 ```

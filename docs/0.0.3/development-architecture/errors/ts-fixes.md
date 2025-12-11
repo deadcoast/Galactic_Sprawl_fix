@@ -341,15 +341,15 @@ When implementing an interface in a class, avoid using the definite assignment o
 // BAD
 export class MyClass implements MyInterface {
   // This only satisfies the interface typewise but doesn't provide an implementation
-  public requiredMethod!: MyInterface['requiredMethod'];
+  public requiredMethod!: MyInterface["requiredMethod"];
 }
 
 // GOOD
 export class MyClass implements MyInterface {
   // This properly implements the interface method
   public requiredMethod(
-    params: Parameters<MyInterface['requiredMethod']>[0]
-  ): ReturnType<MyInterface['requiredMethod']> {
+    params: Parameters<MyInterface["requiredMethod"]>[0],
+  ): ReturnType<MyInterface["requiredMethod"]> {
     // Implementation here
   }
 }
@@ -459,7 +459,7 @@ This occurs when you declare variables with `let` or `const` inside a case block
 ```typescript
 // Before - Error
 switch (value) {
-  case 'something':
+  case "something":
     const variable = getValue();
     doSomething(variable);
     break;
@@ -467,7 +467,7 @@ switch (value) {
 
 // After - Fixed
 switch (value) {
-  case 'something': {
+  case "something": {
     const variable = getValue();
     doSomething(variable);
     break;
@@ -599,12 +599,13 @@ This occurs when using generic component types with React.createElement.
 
 ```typescript
 // Before - Error
-p => React.createElement(Component, p);
+(p) => React.createElement(Component, p);
 
 // After - Fixed
-import { JSXElementConstructor } from 'react';
+import { JSXElementConstructor } from "react";
 
-p => React.createElement(Component as unknown as JSXElementConstructor<Props>, p);
+(p) =>
+  React.createElement(Component as unknown as JSXElementConstructor<Props>, p);
 ```
 
 ## React Import Compatibility
@@ -625,11 +626,11 @@ This occurs because React is exported using `export =` syntax, which requires a 
 
 ```typescript
 // Before - Error
-import React, { ComponentType, ReactElement } from 'react';
+import React, { ComponentType, ReactElement } from "react";
 
 // After - Fixed
-import * as React from 'react';
-import { ComponentType, ReactElement } from 'react';
+import * as React from "react";
+import { ComponentType, ReactElement } from "react";
 ```
 
 ## Interface Constraint Satisfaction
@@ -664,7 +665,6 @@ interface EventMap extends Record<string, unknown> {
 ```
 
 2. **Understand the constraint requirements**:
-
    - `Record<string, unknown>` requires that the interface can accept any string key with an unknown value
    - This is often required for event emitters, maps, and other collections that need to be indexed by string keys
 
@@ -675,7 +675,6 @@ interface EventMap extends Record<string, unknown> {
 ## Conclusion
 
 By systematically addressing TypeScript errors using these strategies, we've achieved 100% TypeScript compliance in our codebase. This has improved code quality, maintainability, and developer experience, while reducing the risk of runtime errors.
-
 
 ## TypeScript Error Fixes
 
@@ -896,7 +895,6 @@ Files fixed for unused variables/interfaces:
 Files fixed for component effect issues:
 
 - `src/effects/component_effects/ExplosionEffect.tsx` - Fixed by implementing the unused variables and fixing Canvas component usage:
-
   - Implemented the `target` parameter in the `gsap.to` function to apply animation properties to the target object
   - Added proper animation property application (x, y, z, opacity) to the target object
   - Added logging for animation debugging
@@ -916,7 +914,6 @@ Files fixed for component effect issues:
   - Implemented the unused `camera` variable in the Canvas component to adjust perspective and perspective origin
 
 - `src/effects/component_effects/ShieldEffect.tsx` - Fixed by implementing the unused variables and fixing Canvas component usage:
-
   - Added comprehensive documentation for the `uniforms` parameter in the `shaderMaterial` function, explaining its use for:
     - Controlling shader parameters like time, color, opacity
     - Setting shield color
@@ -948,7 +945,6 @@ Files fixed for component effect issues:
   - Implemented the unused `camera` parameter in the Canvas component to adjust perspective
 
 - `src/effects/component_effects/ShieldImpactEffect.ts` - Fixed by implementing the unused variable and fixing constant assignment issues:
-
   - Implemented the `point` parameter in the `ripplePoints.forEach` method to calculate position
   - Used the point's normalized direction (x,y) to calculate the angle
   - Used the point's coordinates to calculate the position of ripple effects
@@ -963,7 +959,6 @@ Files fixed for component effect issues:
   - Improved the crack generation algorithm to avoid modifying constants
 
 - `src/effects/component_effects/SmokeTrailEffect.tsx` - Fixed by implementing the unused variable and fixing Canvas component usage:
-
   - Added comprehensive documentation for the `camera` parameter in the Canvas component, explaining its future use for:
     - Configuring camera position and field of view
     - Setting up proper perspective for smoke trail effects
@@ -1052,11 +1047,11 @@ Files fixed for EventEmitter type issues:
 - `src/managers/module/ShipHangarManager.ts` - Fixed by adding a type assertion to the event handler in the `setupEventListeners` method:
 
   ```typescript
-  techTreeManager.on('nodeUnlocked', ((event: {
+  techTreeManager.on("nodeUnlocked", ((event: {
     nodeId: string;
     node: { type: string; tier: number };
   }) => {
-    if (event.node.type === 'hangar') {
+    if (event.node.type === "hangar") {
       this.handleTierUpgrade(event.node.tier as Tier);
     }
   }) as (data: unknown) => void);
@@ -1064,8 +1059,8 @@ Files fixed for EventEmitter type issues:
 
 - `src/managers/module/OfficerManager.ts` - Fixed by adding a type assertion to the event handler in the `setupEventListeners` method:
   ```typescript
-  techTreeManager.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
-    if (event.node.type === 'academy') {
+  techTreeManager.on("nodeUnlocked", ((event: TechNodeUnlockedEvent) => {
+    if (event.node.type === "academy") {
       this.handleAcademyUpgrade(event.node.tier as OfficerTier);
     }
   }) as (data: unknown) => void);
@@ -1088,36 +1083,44 @@ Files fixed for React import issues:
     const _currentX = source.x + (target.x - source.x) * progress;
     const _currentY = source.y + (target.y - source.y) * progress;
 
-    return React.createElement('line', {
+    return React.createElement("line", {
       key: index,
       x1: source.x,
       y1: source.y,
       x2: _currentX,
       y2: _currentY,
       stroke: getPatternColor(),
-      strokeWidth: '2',
-      strokeDasharray: '4 4',
-      className: 'opacity-30',
+      strokeWidth: "2",
+      strokeDasharray: "4 4",
+      className: "opacity-30",
     });
   });
 
   // Return the component
-  return React.createElement('div', { className: 'pointer-events-none absolute inset-0' }, [
-    // Formation Lines
-    React.createElement('svg', { className: 'absolute inset-0', key: 'svg' }, formationLines),
-    // Particles
-    ...particleElements,
-  ]);
+  return React.createElement(
+    "div",
+    { className: "pointer-events-none absolute inset-0" },
+    [
+      // Formation Lines
+      React.createElement(
+        "svg",
+        { className: "absolute inset-0", key: "svg" },
+        formationLines,
+      ),
+      // Particles
+      ...particleElements,
+    ],
+  );
   ```
 
 - `src/effects/component_effects/ThrusterEffect.tsx` - Fixed by adding React import and handling module resolution issues:
 
   ```typescript
-  import React, { useRef } from 'react';
+  import React, { useRef } from "react";
   // Mock the @react-three/fiber imports if they can't be found
   // @ts-expect-error - Module resolution issue during type checking, but the module exists at runtime
-  import { Canvas, useFrame } from '@react-three/fiber';
-  import * as THREE from 'three';
+  import { Canvas, useFrame } from "@react-three/fiber";
+  import * as THREE from "three";
 
   // Define mock types if @react-three/fiber is not available
   interface CanvasProps {
@@ -1130,7 +1133,9 @@ Files fixed for React import issues:
   }
 
   // Mock useFrame if it's not available
-  const mockUseFrame = (callback: (state: { clock: { elapsedTime: number } }) => void) => {
+  const mockUseFrame = (
+    callback: (state: { clock: { elapsedTime: number } }) => void,
+  ) => {
     // This is just a type definition, it won't be used at runtime if the real useFrame is available
   };
   ```
@@ -1140,20 +1145,26 @@ Files fixed for React import issues:
   ```typescript
   /** @jsx React.createElement */
   /** @jsxFrag React.Fragment */
-  import React, { useEffect, useRef } from 'react';
-  import * as THREE from 'three';
+  import React, { useEffect, useRef } from "react";
+  import * as THREE from "three";
 
   // Mock imports for modules that can't be resolved
   interface AnimatedPoints {
     (
-      props: React.PropsWithChildren<{ ref?: React.RefObject<THREE.Points>; scale?: number }>
+      props: React.PropsWithChildren<{
+        ref?: React.RefObject<THREE.Points>;
+        scale?: number;
+      }>,
     ): React.ReactElement;
   }
 
   const mockAnimated = {
     points: ((
-      props: React.PropsWithChildren<{ ref?: React.RefObject<THREE.Points>; scale?: number }>
-    ) => React.createElement('points', props)) as AnimatedPoints,
+      props: React.PropsWithChildren<{
+        ref?: React.RefObject<THREE.Points>;
+        scale?: number;
+      }>,
+    ) => React.createElement("points", props)) as AnimatedPoints,
   };
 
   // Mock for react-spring
@@ -1180,7 +1191,9 @@ Files fixed for React import issues:
     };
   }
 
-  const useFrame = (callback: (state: FrameState, delta: number) => void): void => {
+  const useFrame = (
+    callback: (state: FrameState, delta: number) => void,
+  ): void => {
     // This is a mock implementation
     useEffect(() => {
       let frameId: number;
@@ -1202,7 +1215,6 @@ Files fixed for React import issues:
   ```
 
   The key fixes included:
-
   - Creating properly typed mock implementations for @react-spring/three, @react-three/fiber, and gsap
   - Adding missing JSX intrinsic elements for Three.js components
   - Converting all JSX syntax to React.createElement calls
@@ -1215,8 +1227,8 @@ Files fixed for React import issues:
   ```typescript
   /** @jsx React.createElement */
   /** @jsxFrag React.Fragment */
-  import React, { useEffect, useRef } from 'react';
-  import * as THREE from 'three';
+  import React, { useEffect, useRef } from "react";
+  import * as THREE from "three";
 
   // Mock implementations for external libraries
   // Mock for react-spring
@@ -1230,7 +1242,9 @@ Files fixed for React import issues:
     config?: SpringConfig;
   }
 
-  const useSpring = (props: SpringProps): { opacity: { get: () => number } } => {
+  const useSpring = (
+    props: SpringProps,
+  ): { opacity: { get: () => number } } => {
     return {
       opacity: {
         get: () => props.opacity || 0,
@@ -1248,20 +1262,27 @@ Files fixed for React import issues:
   const shaderMaterial = (
     uniforms: Record<string, unknown>,
     vertexShader: string,
-    fragmentShader: string
+    fragmentShader: string,
   ): React.FC<ShaderMaterialProps> => {
     // This is a mock implementation that returns a component
-    return (props: ShaderMaterialProps) => React.createElement('shaderMaterial', props);
+    return (props: ShaderMaterialProps) =>
+      React.createElement("shaderMaterial", props);
   };
 
   // Declare JSX namespace for Three.js elements
   declare global {
     namespace JSX {
       interface IntrinsicElements {
-        sphere: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        sphere: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           args?: [number, number, number];
         };
-        shieldMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        shieldMaterial: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           ref?: React.RefObject<ShieldMaterialType>;
           transparent?: boolean;
           depthWrite?: boolean;
@@ -1269,7 +1290,10 @@ Files fixed for React import issues:
           side?: THREE.Side;
           blending?: THREE.Blending;
         };
-        ambientLight: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        ambientLight: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           intensity?: number;
         };
       }
@@ -1278,7 +1302,6 @@ Files fixed for React import issues:
   ```
 
   The key fixes included:
-
   - Adding JSX pragma comments at the top of the file
   - Creating mock implementations for external libraries (@react-spring/three, @react-three/drei, @react-three/fiber, gsap)
   - Implementing a mock for the shaderMaterial function
@@ -1293,8 +1316,8 @@ Files fixed for React import issues:
   ```typescript
   /** @jsx React.createElement */
   /** @jsxFrag React.Fragment */
-  import React, { useEffect, useRef } from 'react';
-  import * as THREE from 'three';
+  import React, { useEffect, useRef } from "react";
+  import * as THREE from "three";
 
   // Mock for @react-three/fiber
   interface FrameState {
@@ -1327,17 +1350,29 @@ Files fixed for React import issues:
   declare global {
     namespace JSX {
       interface IntrinsicElements {
-        points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        points: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           ref?: React.RefObject<THREE.Points>;
         };
-        bufferGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-        bufferAttribute: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        bufferGeometry: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        >;
+        bufferAttribute: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           attach: string;
           count: number;
           array: Float32Array;
           itemSize: number;
         };
-        shaderMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        shaderMaterial: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        > & {
           attach: string;
           transparent: boolean;
           depthWrite: boolean;
@@ -1352,7 +1387,6 @@ Files fixed for React import issues:
   ```
 
   The key fixes included:
-
   - Adding JSX pragma comments at the top of the file
   - Adding React import at the top of the file
   - Creating mock implementations for @react-three/fiber
@@ -1372,9 +1406,9 @@ Files fixed for type assertion issues:
   const handleModuleDrop = (item: DragItem, point: ModuleAttachmentPoint) => {
     // Add type guard to ensure item.data has the expected structure
     if (
-      item.type === 'module' &&
+      item.type === "module" &&
       point.allowedTypes.includes(item.data.type as ModuleType) &&
-      typeof item.data.type === 'string'
+      typeof item.data.type === "string"
     ) {
       // Use type assertion after validation
       const moduleType = item.data.type as ModuleType;
@@ -1389,9 +1423,9 @@ Files fixed for type assertion issues:
   const handleModuleDrop = (item: DragItem, point: ModuleAttachmentPoint) => {
     // Add type guard to ensure item.data has the expected structure
     if (
-      item.type === 'module' &&
+      item.type === "module" &&
       point.allowedTypes.includes(item.data.type as ModuleType) &&
-      typeof item.data.type === 'string'
+      typeof item.data.type === "string"
     ) {
       // Use type assertion after validation
       const moduleType = item.data.type as ModuleType;
@@ -1639,7 +1673,6 @@ Files fixed for parameter type issues:
 ### src/managers/automation/GlobalAutomationManager.ts
 
 - Fixed the unused `_automationManager` variable in the `GlobalAutomationManager` class:
-
   - Added logging in the initialize method to show the automation manager status
   - Created a public `getAutomationManager` method to access the automation manager for testing and debugging
   - Improved error handling by checking if the automation manager is available
@@ -1659,14 +1692,12 @@ Files fixed for parameter type issues:
 ## New Fixes
 
 - `src/managers/mining/MiningResourceIntegration.ts` - Fixed by implementing the unused `node` parameter in the cleanup method:
-
   - Added detailed logging that uses the node parameter to provide information about the node being unregistered
   - Included the node's type and efficiency in the log message
   - This implementation provides better debugging information during cleanup operations
   - The fix maintains the original functionality while making better use of the available data
 
 - `src/managers/mining/MiningShipManagerImpl.ts` - Fixed by implementing the unused `resourceNodes` variable:
-
   - Added a `registerResourceNode` method to add nodes to the resourceNodes map
   - Added an `unregisterResourceNode` method to remove nodes from the map
   - Added a `getResourceNodes` method to retrieve all registered nodes
@@ -1677,7 +1708,6 @@ Files fixed for parameter type issues:
   - This implementation ensures proper tracking of resource nodes and improves error handling
 
 - `src/managers/game/ResourceManager.ts` - Fixed by implementing the unused `__saveResourceState` method:
-
   - Added functionality to save the complete resource state to localStorage
   - Implemented error handling for localStorage operations
   - Added event emission to notify when state is saved
@@ -1699,7 +1729,6 @@ Files fixed for parameter type issues:
 Files fixed for resource management issues:
 
 - `src/managers/resource/ResourcePerformanceMonitor.ts` - Fixed by implementing the unused `_lastSnapshotTime` variable:
-
   - Added a `getTimeSinceLastSnapshot` method that returns the time elapsed since the last snapshot
   - Added a `getLastSnapshotTime` method to access the timestamp of the last snapshot
   - These methods enable better monitoring of performance snapshot timing
@@ -1707,7 +1736,6 @@ Files fixed for resource management issues:
   - Improved debugging capabilities for resource performance analysis
 
 - `src/managers/resource/ResourceThresholdManager.ts` - Fixed by implementing the unused `_deltaTime` variable:
-
   - Implemented rate-of-change detection for resource thresholds
   - Added calculation of resource consumption/production rates
   - Added logging for significant rate changes
@@ -1716,7 +1744,6 @@ Files fixed for resource management issues:
   - Added early warning system for rapidly changing resource levels
 
 - `src/managers/resource/ResourcePoolManager.ts` - Fixed by implementing the unused `resourceType` parameter:
-
   - Added container type checking to verify if containers can accept specific resource types
   - Implemented detailed logging of resource allocation
   - Enhanced the allocatePriority method to skip containers that can't accept the resource type
@@ -1725,7 +1752,6 @@ Files fixed for resource management issues:
   - Enhanced logging with detailed allocation information
 
 - `src/managers/weapons/WeaponEffectManager.ts` - Fixed by implementing the unused `_getQualityAdjustedParticleCount` method:
-
   - Implemented the method in createBeamEffect, createExplosionEffect, and createContinuousEffect
   - Added quality-based particle count adjustment for different effect types
   - Added logging to track effect creation with adjusted particle counts
@@ -1734,7 +1760,6 @@ Files fixed for resource management issues:
   - Added consistent quality adjustment across all effect types
 
 - `src/utils/events/EventDispatcher.tsx` - Fixed by implementing the unused `__maxHistorySize` variable:
-
   - Implemented a custom history management system that respects the maximum history size
   - Added size limiting to all history retrieval methods
   - Added configuration of the moduleEventBus maxHistorySize
@@ -1758,7 +1783,6 @@ Files fixed for resource management issues:
 Files fixed by adding comprehensive documentation to unused functions and interfaces:
 
 - `src/hooks/factions/useFactionBehavior.ts` - Added detailed documentation to unused functions:
-
   - Added comprehensive documentation for `_convertToWeaponInstance` explaining its future use for:
     - Creating fully configured weapon instances for faction ships
     - Applying faction-specific weapon modifications and bonuses
@@ -1815,7 +1839,6 @@ Files fixed by adding comprehensive documentation to unused functions and interf
     - Supporting dynamic fleet reorganization during combat
 
 - `src/workers/combatWorker.ts` - Added comprehensive documentation to the `__isHazard` function:
-
   - Documented its future use for validating hazard objects in the combat system
   - Explained its role in ensuring type safety when processing hazards in combat calculations
   - Detailed its importance for the upcoming environmental hazards system
@@ -1874,7 +1897,6 @@ We've made substantial progress in fixing TypeScript errors in the codebase:
 ### Key Accomplishments
 
 1. **Resource Management Improvements**:
-
    - Fixed ResourcePerformanceMonitor.ts by adding methods to track snapshot timing
    - Fixed ResourceThresholdManager.ts by implementing rate-of-change detection
    - Fixed ResourcePoolManager.ts by adding container type checking
@@ -1884,14 +1906,12 @@ We've made substantial progress in fixing TypeScript errors in the codebase:
    - Added quality-based particle count adjustment for weapon effects
 
 2. **Event System Enhancements**:
-
    - Fixed EventDispatcher.tsx by implementing a custom history management system
    - Added size limiting to all history retrieval methods
    - Enhanced event filtering with size limits
    - Improved event bus configuration with dynamic history size
 
 3. **Component Effect Files Improvements**:
-
    - Fixed Canvas component usage in all effect files
    - Fixed shaderMaterial property type definitions
    - Fixed constant assignment issues
@@ -1903,7 +1923,6 @@ We've made substantial progress in fixing TypeScript errors in the codebase:
    - Eliminated 'any' type usage with proper type assertions
 
 4. **Documentation Updates**:
-
    - Added comprehensive documentation for unused variables and interfaces
    - Updated TypeScript_Error_Fixes.md with detailed explanations of fixes
    - Updated CodeBase_Mapping_Index.md with newly fixed files
@@ -1911,7 +1930,6 @@ We've made substantial progress in fixing TypeScript errors in the codebase:
    - Added new section on JSX Namespace Declaration Issues to CodeBase_Architecture.md
 
 5. **Type Safety Improvements**:
-
    - Fixed interface property issues in ConditionChecker.ts
    - Added proper type guards and assertions
    - Ensured consistent type definitions across the codebase

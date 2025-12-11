@@ -11,14 +11,12 @@ A new capability has been added to analyze correlations between user behavior pa
 #### Core Components
 
 - **UserBehaviorCorrelationAnalysis Service**
-
   - Analyzes correlations between user interactions and performance metrics
   - Identifies patterns in user behavior (frequent interactions, rapid sequences, complex operations, sustained activity)
   - Calculates statistical correlations using Pearson coefficient
   - Generates insights based on significant correlations
 
 - **UserBehaviorCorrelationView Component**
-
   - Visualizes correlations with interactive heatmaps
   - Displays user behavior patterns and their impact scores
   - Provides filtering and detailed inspection of correlations
@@ -33,21 +31,18 @@ A new capability has been added to analyze correlations between user behavior pa
 #### Key Features
 
 1. **Pattern Recognition**
-
    - Identification of frequent interaction patterns
    - Detection of rapid interaction sequences
    - Analysis of complex operations (combinations of different interaction types)
    - Recognition of sustained activity patterns
 
 2. **Correlation Analysis**
-
    - Statistical correlation between behavior metrics and performance metrics
    - Significance classification (none, weak, moderate, strong)
    - Automated description generation for correlations
    - Filtering by significance level
 
 3. **Visualization**
-
    - Heatmap visualization of correlation coefficients
    - Impact charts for behavior patterns
    - Confidence indicators for detected patterns
@@ -84,14 +79,12 @@ A comprehensive network degradation simulation test suite has been implemented t
 #### Core Components
 
 - **NetworkDegradationSimulator**
-
   - Simulates realistic network conditions (latency, bandwidth limitations, packet loss)
   - Applies degradation to fetch, WebSocket, and XMLHttpRequest
   - Provides predefined network profiles matching real-world scenarios
   - Offers both global and targeted simulation capabilities
 
 - **NetworkDegradationTestSuite**
-
   - Tests API performance under various network conditions
   - Tests resource loading performance with different network profiles
   - Tests user interactions in degraded network environments
@@ -106,20 +99,17 @@ A comprehensive network degradation simulation test suite has been implemented t
 #### Key Features
 
 1. **Network Simulation**
-
    - Realistic simulation of various network conditions
    - Precise control over latency, bandwidth, packet loss, and jitter
    - Simulation of connection stalls and intermittent connectivity
    - Support for common network profiles (Fast WiFi, 4G, 3G, Edge, etc.)
 
 2. **Test Categories**
-
    - API Performance: Tests response times and error rates for API calls
    - Resource Loading: Tests loading times for various resource types
    - User Interactions: Tests interaction responsiveness under network constraints
 
 3. **Result Analysis**
-
    - Classification of performance (Excellent, Good, Fair, Poor, Very Poor)
    - Success rate calculation under different network conditions
    - Time-to-interactive measurement for critical operations
@@ -153,20 +143,17 @@ This implementation completes the "Create network degradation simulation test su
 Planned future enhancements for the performance monitoring system include:
 
 1. **Advanced Testing Scenarios**
-
    - Multi-tab performance impact tests
    - Long session memory usage tracking
    - Background tab performance optimization
 
 2. **Specialized Environment Optimizations**
-
    - Low-end device optimizations
    - Touchscreen-specific performance enhancements
    - High-latency network compensation strategies
    - Battery-aware performance mode
 
 3. **Visualization Performance Improvements**
-
    - GPU acceleration for complex visualizations
    - Rendering priority system for critical UI elements
    - Canvas rendering optimization for resource networks

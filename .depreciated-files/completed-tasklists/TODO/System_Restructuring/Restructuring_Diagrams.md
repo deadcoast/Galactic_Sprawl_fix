@@ -122,17 +122,14 @@ The Resource Flow System handles the movement of resources between producers, co
 The central component that coordinates all resource flows. It has the following responsibilities:
 
 1. **Node Management**
-
    - Registers and unregisters resource nodes (producers, consumers, storage, converters)
    - Tracks node state and capabilities
 
 2. **Connection Management**
-
    - Establishes connections between nodes
    - Controls flow rates between connected nodes
 
 3. **Resource Optimization**
-
    - Calculates optimal flow distributions based on priorities
    - Identifies resource bottlenecks and underutilized resources
    - Applies efficiency modifiers for converter nodes
@@ -200,17 +197,14 @@ Converters are special nodes that can transform resources:
 The ResourceFlowManager includes several optimizations for performance:
 
 1. **Batch Processing**
-
    - Processes large networks in batches to avoid blocking the main thread
    - The batch size is configurable based on network complexity
 
 2. **Resource State Caching**
-
    - Caches resource states with configurable TTL (time-to-live)
    - Invalidates cache entries when states are updated
 
 3. **Incremental Updates**
-
    - Updates only connections that have changed, not the entire network
    - Returns only the changes in the optimization result
 
@@ -259,12 +253,10 @@ The Event System provides a communication mechanism for modules without requirin
 The core event bus that handles event subscription, emission, and history management:
 
 1. **Event Subscription**
-
    - Manages listeners for different event types
    - Provides unsubscribe functions for cleanup
 
 2. **Event Emission**
-
    - Distributes events to registered listeners
    - Adds events to history with size limiting
 
@@ -277,7 +269,6 @@ The core event bus that handles event subscription, emission, and history manage
 A React context provider that integrates the ModuleEventBus with React components:
 
 1. **React Integration**
-
    - Wraps the ModuleEventBus in a React context
    - Manages component lifecycle for subscriptions
 
@@ -346,22 +337,18 @@ The EventDispatcherProvider connects React components to the event system:
 The event system includes several optimizations for performance:
 
 1. **Selective Subscription**
-
    - Components only subscribe to events they need
    - Events are only delivered to interested listeners
 
 2. **History Size Limiting**
-
    - Event history is capped to prevent memory issues
    - History size is configurable based on application needs
 
 3. **Filtered Queries**
-
    - Filtered history queries avoid processing irrelevant events
    - Latest events are tracked by type for instant access
 
 4. **Error Isolation**
-
    - Errors in event listeners don't break the entire system
    - Each listener is called in a try/catch block
 

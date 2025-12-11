@@ -26,15 +26,15 @@ The `D3AnimationFrameManager` provides a centralized system for efficiently coor
 ### Usage Example
 
 ```typescript
-import { animationFrameManager } from '../utils/performance/D3AnimationFrameManager';
+import { animationFrameManager } from "../utils/performance/D3AnimationFrameManager";
 
 // Register an animation
 animationFrameManager.registerAnimation(
   {
-    id: 'network-visualization',
-    name: 'Network Visualization',
-    priority: 'high',
-    type: 'simulation',
+    id: "network-visualization",
+    name: "Network Visualization",
+    priority: "high",
+    type: "simulation",
     duration: 0, // Run indefinitely
     loop: true,
     runWhenHidden: false,
@@ -54,26 +54,25 @@ animationFrameManager.registerAnimation(
     }
 
     return false; // Return true to complete the animation
-  }
+  },
 );
 
 // Start the animation
-animationFrameManager.startAnimation('network-visualization');
+animationFrameManager.startAnimation("network-visualization");
 
 // Pause the animation
-animationFrameManager.pauseAnimation('network-visualization');
+animationFrameManager.pauseAnimation("network-visualization");
 
 // Resume the animation
-animationFrameManager.resumeAnimation('network-visualization');
+animationFrameManager.resumeAnimation("network-visualization");
 
 // Stop the animation
-animationFrameManager.stopAnimation('network-visualization');
+animationFrameManager.stopAnimation("network-visualization");
 ```
 
 ### Best Practices
 
 1. **Use appropriate priorities**:
-
    - `critical`: Essential UI animations that must run smoothly
    - `high`: Primary visualizations that are the main focus
    - `medium`: Secondary visualizations or effects
@@ -95,7 +94,8 @@ animationFrameManager.stopAnimation('network-visualization');
    ```typescript
    // Split work across frames based on remaining budget
    const nodesToUpdate = Math.floor(
-     nodes.length * (frameInfo.remainingFrameBudget / animation.config.frameTimeBudget)
+     nodes.length *
+       (frameInfo.remainingFrameBudget / animation.config.frameTimeBudget),
    );
    updateNodes(nodes.slice(0, nodesToUpdate));
    ```
@@ -106,20 +106,20 @@ animationFrameManager.stopAnimation('network-visualization');
    // Register related animations with the same sync group
    animationFrameManager.registerAnimation(
      {
-       id: 'nodes-animation',
-       syncGroup: 'network-view',
+       id: "nodes-animation",
+       syncGroup: "network-view",
        // other config...
      },
-     nodeAnimationCallback
+     nodeAnimationCallback,
    );
 
    animationFrameManager.registerAnimation(
      {
-       id: 'links-animation',
-       syncGroup: 'network-view',
+       id: "links-animation",
+       syncGroup: "network-view",
        // other config...
      },
-     linkAnimationCallback
+     linkAnimationCallback,
    );
    ```
 
@@ -137,12 +137,12 @@ The `D3BatchedUpdates` system prevents layout thrashing by batching DOM read and
 ### Usage Example
 
 ```typescript
-import { batchedUpdates } from '../utils/performance/D3BatchedUpdates';
+import { batchedUpdates } from "../utils/performance/D3BatchedUpdates";
 
 // Schedule read operations first
-batchedUpdates.read('node-positions', () => {
+batchedUpdates.read("node-positions", () => {
   // Read node positions from the DOM
-  const nodePositions = nodes.map(node => {
+  const nodePositions = nodes.map((node) => {
     const element = document.getElementById(`node-${node.id}`);
     return {
       id: node.id,
@@ -155,20 +155,20 @@ batchedUpdates.read('node-positions', () => {
 });
 
 // Schedule write operations that depend on reads
-batchedUpdates.write('update-links', readResults => {
-  const nodePositions = readResults.get('node-positions');
+batchedUpdates.write("update-links", (readResults) => {
+  const nodePositions = readResults.get("node-positions");
 
   // Update link positions based on node positions
-  links.forEach(link => {
-    const source = nodePositions.find(p => p.id === link.source.id);
-    const target = nodePositions.find(p => p.id === link.target.id);
+  links.forEach((link) => {
+    const source = nodePositions.find((p) => p.id === link.source.id);
+    const target = nodePositions.find((p) => p.id === link.target.id);
 
     // Update link position
     const linkElement = document.getElementById(`link-${link.id}`);
-    linkElement.setAttribute('x1', source.rect.x + source.rect.width / 2);
-    linkElement.setAttribute('y1', source.rect.y + source.rect.height / 2);
-    linkElement.setAttribute('x2', target.rect.x + target.rect.width / 2);
-    linkElement.setAttribute('y2', target.rect.y + target.rect.height / 2);
+    linkElement.setAttribute("x1", source.rect.x + source.rect.width / 2);
+    linkElement.setAttribute("y1", source.rect.y + source.rect.height / 2);
+    linkElement.setAttribute("x2", target.rect.x + target.rect.width / 2);
+    linkElement.setAttribute("y2", target.rect.y + target.rect.height / 2);
   });
 });
 
@@ -182,13 +182,13 @@ batchedUpdates.flush();
 
    ```typescript
    // BAD - causes layout thrashing
-   nodes.forEach(node => {
+   nodes.forEach((node) => {
      const rect = node.getBoundingClientRect(); // Read
      updateNodePosition(node, rect); // Write
    });
 
    // GOOD - separates reads and writes
-   const rects = nodes.map(node => ({
+   const rects = nodes.map((node) => ({
      node,
      rect: node.getBoundingClientRect(),
    }));
@@ -202,7 +202,7 @@ batchedUpdates.flush();
 
    ```typescript
    // This will only run once even if called multiple times in the same frame
-   batchedUpdates.write('update-node-color', () => {
+   batchedUpdates.write("update-node-color", () => {
      updateNodeColors();
    });
    ```
@@ -211,19 +211,19 @@ batchedUpdates.flush();
 
    ```typescript
    batchedUpdates.write(
-     'update-visible-elements',
+     "update-visible-elements",
      () => {
        // Update only visible elements
      },
-     { priority: 'high' }
+     { priority: "high" },
    );
 
    batchedUpdates.write(
-     'update-offscreen-elements',
+     "update-offscreen-elements",
      () => {
        // Update elements that are currently off-screen
      },
-     { priority: 'low' }
+     { priority: "low" },
    );
    ```
 
@@ -241,17 +241,20 @@ The `D3InterpolationCache` provides sophisticated caching for interpolation valu
 ### Usage Example
 
 ```typescript
-import { interpolationCache } from '../utils/performance/D3InterpolationCache';
+import { interpolationCache } from "../utils/performance/D3InterpolationCache";
 
 // Create a cached interpolator
-const cachedInterpolate = interpolationCache.createCachedInterpolator(d3.interpolateRgb, {
-  keyFn: (a, b) => `${a}-${b}`, // Function to generate cache keys
-  maxSize: 100, // Maximum cache size
-  statsTracking: true, // Enable performance stats
-});
+const cachedInterpolate = interpolationCache.createCachedInterpolator(
+  d3.interpolateRgb,
+  {
+    keyFn: (a, b) => `${a}-${b}`, // Function to generate cache keys
+    maxSize: 100, // Maximum cache size
+    statsTracking: true, // Enable performance stats
+  },
+);
 
 // Use the cached interpolator instead of d3.interpolateRgb
-const colorInterpolator = cachedInterpolate('red', 'blue');
+const colorInterpolator = cachedInterpolate("red", "blue");
 elements.forEach((el, i) => {
   const t = i / elements.length;
   el.style.fill = colorInterpolator(t);
@@ -269,9 +272,11 @@ console.log(`Cache hit rate: ${stats.hitRate}%`);
    ```typescript
    // Create cached versions of common interpolators
    const cachedNumberInterpolator = interpolationCache.createCachedInterpolator(
-     d3.interpolateNumber
+     d3.interpolateNumber,
    );
-   const cachedColorInterpolator = interpolationCache.createCachedInterpolator(d3.interpolateRgb);
+   const cachedColorInterpolator = interpolationCache.createCachedInterpolator(
+     d3.interpolateRgb,
+   );
    ```
 
 2. **Use appropriate key functions**:
@@ -307,7 +312,7 @@ The `D3AnimationQualityManager` automatically adjusts animation complexity based
 ### Usage Example
 
 ```typescript
-import { qualityManager } from '../utils/performance/D3AnimationQualityManager';
+import { qualityManager } from "../utils/performance/D3AnimationQualityManager";
 
 // Initialize with default settings
 qualityManager.initialize();
@@ -354,7 +359,7 @@ export interface QualitySettings {
   // Frame rate target
   targetFrameRate: number;
   // Anti-aliasing level
-  antiAliasing: 'none' | 'low' | 'medium' | 'high';
+  antiAliasing: "none" | "low" | "medium" | "high";
   // Enable custom filters and effects
   enableEffects: boolean;
 }
@@ -367,7 +372,7 @@ const LOW_QUALITY: QualitySettings = {
   highDetail: false,
   adaptiveDetail: false,
   targetFrameRate: 30,
-  antiAliasing: 'none',
+  antiAliasing: "none",
   enableEffects: false,
 };
 
@@ -378,7 +383,7 @@ const MEDIUM_QUALITY: QualitySettings = {
   highDetail: false,
   adaptiveDetail: true,
   targetFrameRate: 45,
-  antiAliasing: 'low',
+  antiAliasing: "low",
   enableEffects: false,
 };
 
@@ -389,7 +394,7 @@ const HIGH_QUALITY: QualitySettings = {
   highDetail: true,
   adaptiveDetail: true,
   targetFrameRate: 60,
-  antiAliasing: 'high',
+  antiAliasing: "high",
   enableEffects: true,
 };
 ```
@@ -429,7 +434,9 @@ const HIGH_QUALITY: QualitySettings = {
    const transition = d3
      .select(this)
      .transition()
-     .duration(qualitySettings.enableAnimations ? qualitySettings.animationDuration : 0);
+     .duration(
+       qualitySettings.enableAnimations ? qualitySettings.animationDuration : 0,
+     );
 
    if (qualitySettings.enableEffects) {
      transition.ease(d3.easeCubicInOut);
@@ -452,7 +459,7 @@ The `D3PerformanceProfiler` and `D3AnimationProfiler` provide tools for measurin
 ### Usage Example
 
 ```typescript
-import { createAnimationProfiler } from '../utils/performance/D3AnimationProfiler';
+import { createAnimationProfiler } from "../utils/performance/D3AnimationProfiler";
 
 // Create a profiler for a specific animation
 const profiler = createAnimationProfiler({
@@ -460,15 +467,15 @@ const profiler = createAnimationProfiler({
   detailedMetrics: true,
   trackDomUpdates: true,
   trackInterpolation: true,
-  onComplete: report => {
+  onComplete: (report) => {
     console.log(`Performance Score: ${report.performanceScore}/100`);
     console.log(`Bottlenecks detected: ${report.bottlenecks.length}`);
-    console.log(`Recommendations: ${report.recommendations.join('\n')}`);
+    console.log(`Recommendations: ${report.recommendations.join("\n")}`);
   },
 });
 
 // Start profiling
-profiler.start('network-animation', 'Network Visualization');
+profiler.start("network-animation", "Network Visualization");
 
 // Record frame metrics during animation
 function animationFrame() {
@@ -492,7 +499,7 @@ setTimeout(() => {
 
   // Use report to optimize
   if (report.performanceScore < 70) {
-    report.recommendations.forEach(recommendation => {
+    report.recommendations.forEach((recommendation) => {
       console.log(`Optimization needed: ${recommendation}`);
     });
   }
@@ -523,7 +530,7 @@ interface AnimationPerformanceReport {
   // Identified bottlenecks
   bottlenecks: Array<{
     // Type of bottleneck
-    type: 'interpolation' | 'dom_updates' | 'javascript' | 'rendering';
+    type: "interpolation" | "dom_updates" | "javascript" | "rendering";
     // How severe the bottleneck is (0-1)
     severity: number;
     // Description of the bottleneck
@@ -543,7 +550,7 @@ interface AnimationPerformanceReport {
 
    ```typescript
    // Profile with different data sizes
-   ['small', 'medium', 'large'].forEach(size => {
+   ["small", "medium", "large"].forEach((size) => {
      profiler.start(`network-${size}`);
      renderVisualization(getDataset(size));
      setTimeout(() => profiler.stop(), 3000);
@@ -558,7 +565,7 @@ interface AnimationPerformanceReport {
    simulationTick();
    const endTime = performance.now();
 
-   profiler.recordCustomTiming('simulation-tick', endTime - startTime);
+   profiler.recordCustomTiming("simulation-tick", endTime - startTime);
    ```
 
 3. **Use performance data to implement adaptive optimizations**:
@@ -566,11 +573,11 @@ interface AnimationPerformanceReport {
    function optimizeBasedOnPerformance(report) {
      if (report.performanceScore < 50) {
        // Apply aggressive optimizations
-       qualityManager.setQualityPreset('low');
+       qualityManager.setQualityPreset("low");
      } else if (report.performanceScore < 80) {
-       qualityManager.setQualityPreset('medium');
+       qualityManager.setQualityPreset("medium");
      } else {
-       qualityManager.setQualityPreset('high');
+       qualityManager.setQualityPreset("high");
      }
    }
    ```
@@ -582,11 +589,11 @@ This section provides guidance on integrating multiple optimization techniques t
 ### Combined Optimization Strategy
 
 ```typescript
-import { animationFrameManager } from '../utils/performance/D3AnimationFrameManager';
-import { batchedUpdates } from '../utils/performance/D3BatchedUpdates';
-import { interpolationCache } from '../utils/performance/D3InterpolationCache';
-import { qualityManager } from '../utils/performance/D3AnimationQualityManager';
-import { createAnimationProfiler } from '../utils/performance/D3AnimationProfiler';
+import { animationFrameManager } from "../utils/performance/D3AnimationFrameManager";
+import { batchedUpdates } from "../utils/performance/D3BatchedUpdates";
+import { interpolationCache } from "../utils/performance/D3InterpolationCache";
+import { qualityManager } from "../utils/performance/D3AnimationQualityManager";
+import { createAnimationProfiler } from "../utils/performance/D3AnimationProfiler";
 
 // Initialize core systems
 qualityManager.initialize();
@@ -594,17 +601,19 @@ const qualitySettings = qualityManager.getQualitySettings();
 
 // Create profiler
 const profiler = createAnimationProfiler();
-profiler.start('integrated-visualization');
+profiler.start("integrated-visualization");
 
 // Create cached interpolators
-const cachedColorInterpolator = interpolationCache.createCachedInterpolator(d3.interpolateRgb);
+const cachedColorInterpolator = interpolationCache.createCachedInterpolator(
+  d3.interpolateRgb,
+);
 
 // Register animation with the frame manager
 animationFrameManager.registerAnimation(
   {
-    id: 'visualization-main',
-    name: 'Main Visualization',
-    priority: 'high',
+    id: "visualization-main",
+    name: "Main Visualization",
+    priority: "high",
     frameTimeBudget: 10,
     enableProfiling: true,
   },
@@ -613,16 +622,16 @@ animationFrameManager.registerAnimation(
     profiler.recordFrame();
 
     // Schedule reads
-    batchedUpdates.read('node-positions', () => {
+    batchedUpdates.read("node-positions", () => {
       // Read node positions
       return { positions: readNodePositions() };
     });
 
     // Schedule writes based on quality settings
     batchedUpdates.write(
-      'update-nodes',
-      reads => {
-        const { positions } = reads.get('node-positions');
+      "update-nodes",
+      (reads) => {
+        const { positions } = reads.get("node-positions");
 
         // Adapt rendering based on quality
         const nodeLimit =
@@ -631,31 +640,31 @@ animationFrameManager.registerAnimation(
             : nodes.length;
 
         // Use cached interpolator for colors
-        nodes.slice(0, nodeLimit).forEach(node => {
+        nodes.slice(0, nodeLimit).forEach((node) => {
           node.color = cachedColorInterpolator(node.value, node.category)(0.5);
           updateNodeVisual(node, positions);
         });
       },
-      { priority: 'high' }
+      { priority: "high" },
     );
 
     // Add additional detail only if quality permits
     if (qualitySettings.highDetail && !frameInfo.isFrameOverBudget) {
       batchedUpdates.write(
-        'node-details',
+        "node-details",
         () => {
           renderNodeDetails();
         },
-        { priority: 'low' }
+        { priority: "low" },
       );
     }
 
     return false; // Continue animation
-  }
+  },
 );
 
 // Start the optimized animation
-animationFrameManager.startAnimation('visualization-main');
+animationFrameManager.startAnimation("visualization-main");
 
 // Periodically report performance
 setInterval(() => {
@@ -673,7 +682,6 @@ setInterval(() => {
 ### Best Practices for Integrated Optimizations
 
 1. **Layer optimizations in the right order**:
-
    - Quality settings should be determined first
    - Frame management controls the animation loop
    - Batched updates organize DOM operations
@@ -704,17 +712,17 @@ setInterval(() => {
    function checkPerformance() {
      const report = profiler.generateReport();
 
-     report.bottlenecks.forEach(bottleneck => {
+     report.bottlenecks.forEach((bottleneck) => {
        switch (bottleneck.type) {
-         case 'dom_updates':
+         case "dom_updates":
            // Reduce DOM operations
            reduceUpdateFrequency();
            break;
-         case 'interpolation':
+         case "interpolation":
            // Increase caching
            expandInterpolationCache();
            break;
-         case 'javascript':
+         case "javascript":
            // Simplify calculations
            simplifyAlgorithms();
            break;
@@ -741,18 +749,21 @@ This section provides solutions for common performance issues.
 
 ```typescript
 // 1. Reduce the number of animated elements
-const visibleElements = Math.min(data.length, qualitySettings.maxVisibleElements || 100);
+const visibleElements = Math.min(
+  data.length,
+  qualitySettings.maxVisibleElements || 100,
+);
 
 // 2. Simplify animations during interaction
 function onDrag() {
   // Temporarily disable transitions during drag
-  qualityManager.temporarilyReduceQuality('interaction');
+  qualityManager.temporarilyReduceQuality("interaction");
   // ...drag logic
 }
 
 function onDragEnd() {
   // Restore normal quality
-  qualityManager.restoreQuality('interaction');
+  qualityManager.restoreQuality("interaction");
 }
 
 // 3. Distribute work across frames
@@ -770,7 +781,9 @@ function processInBatches() {
 
   if (currentIndex < data.length) {
     // Schedule next batch
-    animationFrameManager.requestCallback(processInBatches, { priority: 'low' });
+    animationFrameManager.requestCallback(processInBatches, {
+      priority: "low",
+    });
   }
 }
 ```
@@ -789,21 +802,21 @@ function processInBatches() {
 // 1. Use batched updates to separate reads and writes
 function updateLayout() {
   // BAD: Causes thrashing
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     const bounds = node.getBoundingClientRect(); // READ
     updatePosition(node, bounds); // WRITE
   });
 
   // GOOD: Separates reads and writes
-  batchedUpdates.read('node-bounds', () => {
-    return nodes.map(node => ({
+  batchedUpdates.read("node-bounds", () => {
+    return nodes.map((node) => ({
       node,
       bounds: node.getBoundingClientRect(),
     }));
   });
 
-  batchedUpdates.write('update-positions', reads => {
-    const nodeBounds = reads.get('node-bounds');
+  batchedUpdates.write("update-positions", (reads) => {
+    const nodeBounds = reads.get("node-bounds");
     nodeBounds.forEach(({ node, bounds }) => {
       updatePosition(node, bounds);
     });
@@ -843,27 +856,27 @@ function invalidateStyleCache() {
 // 1. Clean up D3 selections
 function cleanupVisualization() {
   // Remove event listeners
-  d3.select('#visualization')
-    .selectAll('.node')
-    .on('mouseover', null)
-    .on('mouseout', null)
-    .on('click', null);
+  d3.select("#visualization")
+    .selectAll(".node")
+    .on("mouseover", null)
+    .on("mouseout", null)
+    .on("click", null);
 
   // Remove elements
-  d3.select('#visualization').selectAll('*').remove();
+  d3.select("#visualization").selectAll("*").remove();
 }
 
 // 2. Dispose animation resources
 function disposeAnimation() {
   // Stop and unregister animation
-  animationFrameManager.stopAnimation('visualization');
-  animationFrameManager.unregisterAnimation('visualization');
+  animationFrameManager.stopAnimation("visualization");
+  animationFrameManager.unregisterAnimation("visualization");
 
   // Clear cached data
   interpolationCache.clear();
 
   // Remove event listeners
-  window.removeEventListener('resize', onResize);
+  window.removeEventListener("resize", onResize);
 }
 
 // 3. Implement component lifecycle cleanup

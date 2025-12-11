@@ -69,17 +69,17 @@ await page.evaluate(({ resource, ship }) => {
 ```typescript
 // Before (causes errors)
 await page.evaluate(() => {
-  const items = document.querySelectorAll('.resource-item');
-  items.forEach(item => {
-    item.style.display = 'none';
+  const items = document.querySelectorAll(".resource-item");
+  items.forEach((item) => {
+    item.style.display = "none";
   });
 });
 
 // After (works correctly)
 await page.evaluate(() => {
-  const items = document.querySelectorAll('.resource-item');
-  items.forEach(item => {
-    (item as HTMLElement).style.display = 'none';
+  const items = document.querySelectorAll(".resource-item");
+  items.forEach((item) => {
+    (item as HTMLElement).style.display = "none";
   });
 });
 ```
@@ -89,13 +89,13 @@ await page.evaluate(() => {
 ```typescript
 // Before (causes errors)
 await page.evaluate(() => {
-  document.querySelector('.resource-name').textContent = 'Iron Deposit';
+  document.querySelector(".resource-name").textContent = "Iron Deposit";
 });
 
 // After (works correctly)
 await page.evaluate(() => {
-  const resourceName = document.querySelector('.resource-name');
-  if (resourceName) resourceName.textContent = 'Iron Deposit';
+  const resourceName = document.querySelector(".resource-name");
+  if (resourceName) resourceName.textContent = "Iron Deposit";
 });
 ```
 
@@ -152,18 +152,20 @@ Replace the `:has-text()` selector with a manual search through elements:
 // Before (causes errors)
 await page.evaluate(
   ({ resource, ship }) => {
-    const resourceItem = document.querySelector(`.resource-item:has-text("${resource}")`);
+    const resourceItem = document.querySelector(
+      `.resource-item:has-text("${resource}")`,
+    );
     if (resourceItem) {
       resourceItem.textContent = `${resource} (Assigned to ${ship})`;
     }
   },
-  { resource: resourceName, ship: shipName }
+  { resource: resourceName, ship: shipName },
 );
 
 // After (works correctly)
 await page.evaluate(
   ({ resource, ship }) => {
-    const items = document.querySelectorAll('.resource-item');
+    const items = document.querySelectorAll(".resource-item");
     let resourceItem = null;
 
     // Find the item with the matching text content
@@ -178,7 +180,7 @@ await page.evaluate(
       resourceItem.textContent = `${resource} (Assigned to ${ship})`;
     }
   },
-  { resource: resourceName, ship: shipName }
+  { resource: resourceName, ship: shipName },
 );
 ```
 
@@ -202,10 +204,14 @@ Use `.first()` to specify that you're only interested in the first matching elem
 
 ```typescript
 // Before (causes errors)
-await expect(page.locator('.resource-item[data-type="mineral"]')).not.toBeVisible();
+await expect(
+  page.locator('.resource-item[data-type="mineral"]'),
+).not.toBeVisible();
 
 // After (works correctly)
-await expect(page.locator('.resource-item[data-type="mineral"]').first()).not.toBeVisible();
+await expect(
+  page.locator('.resource-item[data-type="mineral"]').first(),
+).not.toBeVisible();
 ```
 
 This approach:
@@ -218,18 +224,15 @@ This approach:
 We've successfully fixed several TypeScript errors in our E2E tests:
 
 1. **Template Literal Errors**
-
    - Replaced inline JavaScript in `page.setContent()` with `page.evaluate()` calls
    - Moved JavaScript functionality out of HTML content
 
 2. **DOM Element Type Safety**
-
    - Added type assertions for DOM elements (`as HTMLElement`)
    - Added null checks for DOM elements
    - Used proper TypeScript syntax in `page.evaluate()` calls
 
 3. **Playwright-Specific Selector Issues**
-
    - Replaced `:has-text()` selectors with manual element searches
    - Used `.first()` for locators that match multiple elements
    - Implemented more reliable verification approaches

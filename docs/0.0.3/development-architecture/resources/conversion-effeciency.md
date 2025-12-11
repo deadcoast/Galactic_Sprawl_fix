@@ -28,30 +28,35 @@ class EfficiencyCalculator {
     baseEfficiency: number,
     qualityModifier: number,
     techModifier: number,
-    environmentalModifier: number
+    environmentalModifier: number,
   ): number {
-    return baseEfficiency * qualityModifier * techModifier * environmentalModifier;
+    return (
+      baseEfficiency * qualityModifier * techModifier * environmentalModifier
+    );
   }
 
   public static calculateCompoundEfficiency(efficiencies: number[]): number {
     if (efficiencies.length === 0) return 1.0;
 
     // Calculate compound efficiency
-    return efficiencies.reduce((compound, efficiency) => compound * efficiency, 1.0);
+    return efficiencies.reduce(
+      (compound, efficiency) => compound * efficiency,
+      1.0,
+    );
   }
 
   public static getQualityModifier(resourceQuality: ResourceQuality): number {
     // Quality modifiers range from 0.5 (poor) to 1.5 (exceptional)
     switch (resourceQuality) {
-      case 'poor':
+      case "poor":
         return 0.5;
-      case 'standard':
+      case "standard":
         return 1.0;
-      case 'good':
+      case "good":
         return 1.2;
-      case 'excellent':
+      case "excellent":
         return 1.35;
-      case 'exceptional':
+      case "exceptional":
         return 1.5;
       default:
         return 1.0;
@@ -63,7 +68,9 @@ class EfficiencyCalculator {
     return 1.0 + techLevel * 0.05;
   }
 
-  public static getEnvironmentalModifier(environmentFactors: EnvironmentFactor[]): number {
+  public static getEnvironmentalModifier(
+    environmentFactors: EnvironmentFactor[],
+  ): number {
     // Start with neutral modifier
     let modifier = 1.0;
 
@@ -88,7 +95,7 @@ interface ResourceConversionProcess {
   recipeId: string;
   startTime: number;
   duration: number;
-  status: 'in-progress' | 'completed' | 'failed';
+  status: "in-progress" | "completed" | "failed";
   inputResources: ResourceQuantity[];
   expectedOutputs: ResourceQuantity[];
   expectedByproducts: ResourceQuantity[];
@@ -107,26 +114,22 @@ interface ResourceConversionProcess {
 The efficiency calculation process follows these steps:
 
 1. **Base Efficiency Determination**:
-
    - Each converter has a base efficiency value
    - Higher tier converters have better base efficiency
    - Base efficiency ranges from 0.6 (tier 1) to 1.0 (tier 5)
 
 2. **Quality Modifier Calculation**:
-
    - Input resource quality affects conversion efficiency
    - Poor quality resources reduce efficiency (0.5x)
    - Exceptional quality resources improve efficiency (1.5x)
    - For multiple inputs, a weighted average is used
 
 3. **Technology Modifier Application**:
-
    - Research and technology level provide bonuses
    - Each tech level adds a 5% efficiency bonus
    - Maximum tech bonus is 50% (at level 10)
 
 4. **Environmental Modifier Application**:
-
    - Environmental factors can positively or negatively affect efficiency
    - Hazards typically reduce efficiency
    - Specialized environments can boost efficiency for certain processes
@@ -140,12 +143,10 @@ The efficiency calculation process follows these steps:
 For multi-step production chains, compound efficiency is calculated:
 
 1. **Step Efficiency Calculation**:
-
    - Each step's efficiency is calculated independently
    - All relevant modifiers are applied to each step
 
 2. **Compound Efficiency Calculation**:
-
    - The efficiencies of all steps are multiplied together
    - `compoundEfficiency = efficiency1 * efficiency2 * ... * efficiencyN`
 
@@ -250,18 +251,15 @@ private calculateOutputsWithEfficiency(
 The efficiency system is integrated with the UI to provide feedback to the player:
 
 1. **Efficiency Indicators**:
-
    - Visual indicators show the current efficiency of converters
    - Color coding indicates efficiency levels (red for low, green for high)
    - Tooltips provide detailed breakdown of efficiency factors
 
 2. **Resource Quality Display**:
-
    - Resource quality is displayed in inventory and storage views
    - Quality affects resource value and conversion efficiency
 
 3. **Technology Effects**:
-
    - Research tree shows efficiency bonuses from technologies
    - Technology descriptions include efficiency impacts
 
@@ -276,7 +274,7 @@ The efficiency system is integrated with the UI to provide feedback to the playe
 ```typescript
 // Calculate efficiency for a standard conversion
 const baseEfficiency = 0.8; // Tier 3 converter
-const qualityModifier = EfficiencyCalculator.getQualityModifier('good'); // 1.2
+const qualityModifier = EfficiencyCalculator.getQualityModifier("good"); // 1.2
 const techModifier = EfficiencyCalculator.getTechModifier(5); // 1.25
 const environmentalModifier = 1.0; // Neutral environment
 
@@ -284,7 +282,7 @@ const efficiency = EfficiencyCalculator.calculateEfficiency(
   baseEfficiency,
   qualityModifier,
   techModifier,
-  environmentalModifier
+  environmentalModifier,
 );
 
 // efficiency = 0.8 * 1.2 * 1.25 * 1.0 = 1.2

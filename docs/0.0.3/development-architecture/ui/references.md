@@ -110,7 +110,6 @@ UI COMPONENTS REFERENCES
   Purpose: Display module information and controls
   Dependencies: ModuleManager, ModuleEvents, React, useModuleState
   Features:
-
   - Real-time module status monitoring
   - Module alert system with severity levels
   - Interactive module controls and configuration
@@ -237,7 +236,6 @@ UI COMPONENTS REFERENCES
 ## UI Component Library
 
 - **Button Component**: src/components/ui/Button.tsx
-
   - Purpose: Reusable button component with variant support
   - Dependencies:
     - class-variance-authority (for styling variants)

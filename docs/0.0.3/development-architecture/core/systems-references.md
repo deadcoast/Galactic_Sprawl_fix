@@ -103,7 +103,6 @@ CORE SYSTEMS REFERENCES
 ### Core Systems Architecture
 
 1. Resource Management [~60% Complete]
-
    - Implemented in: src/managers/game/ResourceManager.ts
    - Performance monitoring: src/managers/resource/ResourcePerformanceMonitor.ts
    - Performance monitoring: src/managers/resource/ResourcePerformanceMonitor.ts
@@ -111,7 +110,6 @@ CORE SYSTEMS REFERENCES
    - Mining implementation: src/managers/mining/MiningShipManagerImpl.ts
 
 2. Module Framework [100% Complete]
-
    - Core types: src/types/buildings/ModuleTypes.ts
    - Module manager: src/managers/module/ModuleManager.ts
    - Module events: src/lib/modules/ModuleEvents.ts
@@ -126,7 +124,6 @@ CORE SYSTEMS REFERENCES
    - Framework initialization: src/initialization/moduleFrameworkInit.ts
 
 3. Event System [~80% Complete]
-
    - Event emitter: src/utils/EventEmitter.ts
    - Module events: src/lib/modules/ModuleEvents.ts
    - Combat events: src/managers/combat/combatManager.ts
@@ -141,14 +138,12 @@ CORE SYSTEMS REFERENCES
    - Game Systems Integration: src/initialization/gameSystemsIntegration.ts
 
 4. State Management [~40% Complete]
-
    - Game context: src/contexts/GameContext.tsx
    - Combat state: src/managers/combat/combatManager.ts
    - Fleet AI state: src/hooks/factions/useFleetAI.ts
    - Faction behavior: src/hooks/factions/useFactionBehavior.ts
 
 5. Faction Ship System [~70% Complete]
-
    - Base components:
      - FactionShipBase: src/components/ships/common/FactionShipBase.tsx
      - FactionShipStats: src/components/ships/common/FactionShipStats.tsx
@@ -169,19 +164,16 @@ CORE SYSTEMS REFERENCES
      - WeaponEffects: src/effects/types_effects/WeaponEffects.ts
 
 6. VPR (Visual Progress Representation) View
-
    - Components:
      - VPR View: src/components/ui/VPRStarSystemView.tsx
      - Game Layout: src/components/ui/GameLayout.tsx
 
 7. Civilization Sprawl View [~40% Complete]
-
    - Components:
      - Sprawl View: src/components/ui/SprawlView.tsx
      - Game Layout: src/components/ui/GameLayout.tsx
 
 8. Resource Management System
-
    - Primary Components:
      - Resource Manager: src/managers/game/ResourceManager.ts
        Purpose: Central management of all game resources
@@ -316,7 +308,6 @@ CORE SYSTEMS REFERENCES
 ### Required Libraries & Dependencies
 
 1. Core Technologies
-
    - React/TypeScript
      Purpose: Main development framework
      Used By: All components
@@ -331,7 +322,6 @@ CORE SYSTEMS REFERENCES
      Used By: EventEmitter, all event systems
 
 2. Visualization Libraries
-
    - React-konva
      Purpose: Canvas rendering
      Used By: 2D game elements
@@ -346,7 +336,6 @@ CORE SYSTEMS REFERENCES
      Used By: UI components
 
 3. Animation Libraries
-
    - Framer Motion
      Purpose: Component animations
      Used By: UI transitions
@@ -368,7 +357,6 @@ CORE SYSTEMS REFERENCES
 ### Development Tools
 
 1. Build Tools
-
    - Webpack/Vite
      Purpose: Build system
      Used By: Development pipeline
@@ -380,7 +368,6 @@ CORE SYSTEMS REFERENCES
      Used By: Development workflow, code quality maintenance
 
 2. Testing Tools
-
    - Jest/Testing Library
      Purpose: Unit/Integration testing
      Used By: Test suites
@@ -389,7 +376,6 @@ CORE SYSTEMS REFERENCES
      Used By: UI development
 
 3. Linter Configuration
-
    - ESLint Config: eslint.config.js
      Purpose: Configure ESLint rules for the project
      Used By: All TypeScript/JavaScript files
@@ -404,7 +390,6 @@ CORE SYSTEMS REFERENCES
      Used By: Developers fixing linting issues
 
 4. Linting and Type Safety
-
    - Primary Components:
      - ESLint Configuration: .eslintrc.json
        Purpose: Configure ESLint rules for the project
@@ -442,7 +427,6 @@ CORE SYSTEMS REFERENCES
        Dependencies: ESLint, fs, path
 
 5. Ship Configuration [~75% Complete]
-
    - Core Stats: src/config/ships/shipStats.ts
      Purpose: Base ship statistics configuration
      Used By: All ship implementations
@@ -475,7 +459,6 @@ CORE SYSTEMS REFERENCES
      Dependencies: All ship configuration files
 
 6. Ship Type Relationships
-
    - Base Ship Types:
      Location: src/components/ships/base/
      Dependencies:

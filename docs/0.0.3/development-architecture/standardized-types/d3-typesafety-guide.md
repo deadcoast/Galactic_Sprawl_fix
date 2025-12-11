@@ -29,7 +29,8 @@ We've created a set of generic interfaces for D3 data structures:
 
 ```typescript
 // ✅ Safe: Generic node type
-export interface SimulationNodeDatum<T = unknown> extends d3.SimulationNodeDatum {
+export interface SimulationNodeDatum<T = unknown>
+  extends d3.SimulationNodeDatum {
   id: string;
   x?: number;
   y?: number;
@@ -64,9 +65,9 @@ export const d3Accessors = {
   getX: (node: unknown): number => {
     if (
       node &&
-      typeof node === 'object' &&
-      'x' in node &&
-      typeof (node as RuntimeSimulationNode).x === 'number'
+      typeof node === "object" &&
+      "x" in node &&
+      typeof (node as RuntimeSimulationNode).x === "number"
     ) {
       return (node as RuntimeSimulationNode).x;
     }
@@ -76,9 +77,9 @@ export const d3Accessors = {
   getY: (node: unknown): number => {
     if (
       node &&
-      typeof node === 'object' &&
-      'y' in node &&
-      typeof (node as RuntimeSimulationNode).y === 'number'
+      typeof node === "object" &&
+      "y" in node &&
+      typeof (node as RuntimeSimulationNode).y === "number"
     ) {
       return (node as RuntimeSimulationNode).y;
     }
@@ -94,8 +95,10 @@ We've created utility functions to convert application data models to D3-compati
 ```typescript
 // ✅ Safe: Data conversion with proper typing
 export const d3Converters = {
-  dataPointsToD3Format: <T extends Record<string, unknown>>(dataPoints: DataPoint[]): T[] => {
-    return dataPoints.map(point => {
+  dataPointsToD3Format: <T extends Record<string, unknown>>(
+    dataPoints: DataPoint[],
+  ): T[] => {
+    return dataPoints.map((point) => {
       // Flatten the structure for D3
       const result = {
         id: point.id,
@@ -117,13 +120,13 @@ export const d3Converters = {
 // In D3 simulation tick function:
 
 // ❌ Before: Unsafe type assertions
-link.attr('x1', function (d) {
+link.attr("x1", function (d) {
   const source = d.source as unknown as { x: number; y: number };
   return source.x;
 });
 
 // ✅ After: Safe accessors
-link.attr('x1', function (d) {
+link.attr("x1", function (d) {
   return d3Accessors.getX(d.source);
 });
 ```

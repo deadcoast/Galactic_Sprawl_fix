@@ -40,9 +40,14 @@ export class BaseContextProvider<T extends object> {
     }
   }
 
-  protected setState(updater: ((prevState: T) => T) | Partial<T>, source?: string): void {
+  protected setState(
+    updater: ((prevState: T) => T) | Partial<T>,
+    source?: string,
+  ): void {
     const nextState =
-      typeof updater === 'function' ? updater(this.state) : { ...this.state, ...updater };
+      typeof updater === "function"
+        ? updater(this.state)
+        : { ...this.state, ...updater };
 
     const changes = this.getStateChanges(this.state, nextState);
     if (Object.keys(changes).length === 0) return;
@@ -52,7 +57,7 @@ export class BaseContextProvider<T extends object> {
   }
 
   protected notifySubscribers(changes: Partial<T>, source?: string): void {
-    this.subscribers.forEach(subscriber => {
+    this.subscribers.forEach((subscriber) => {
       try {
         subscriber(changes, this.state, source);
       } catch (error) {
@@ -67,7 +72,7 @@ export class BaseContextProvider<T extends object> {
   }
 
   protected setupEventSubscriptions(eventTypes: EventType[]): void {
-    eventTypes.forEach(eventType => {
+    eventTypes.forEach((eventType) => {
       this.eventBus.subscribe(eventType, this.handleEvent.bind(this));
     });
   }
@@ -108,7 +113,7 @@ export class GameContext extends BaseContextProvider<GameState> {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'GameContext',
+        name: "GameContext",
         initialState: {
           status: GameStatus.IDLE,
           tick: 0,
@@ -124,7 +129,7 @@ export class GameContext extends BaseContextProvider<GameState> {
           EventType.GAME_ENDED,
         ],
       },
-      eventBus
+      eventBus,
     );
   }
 
@@ -174,7 +179,7 @@ export class GameContext extends BaseContextProvider<GameState> {
     const loop = () => {
       if (this.state.paused) return;
 
-      this.setState(prev => ({
+      this.setState((prev) => ({
         tick: prev.tick + 1,
         elapsedTime: Date.now() - prev.startTime,
       }));
@@ -217,7 +222,7 @@ export class ResourceContext extends BaseContextProvider<ResourceState> {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'ResourceContext',
+        name: "ResourceContext",
         initialState: {
           resources: {},
           flows: {},
@@ -233,12 +238,12 @@ export class ResourceContext extends BaseContextProvider<ResourceState> {
           EventType.THRESHOLD_REACHED,
         ],
       },
-      eventBus
+      eventBus,
     );
   }
 
   public addResource(resource: Resource): void {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       resources: {
         ...prev.resources,
         [resource.id]: resource,
@@ -254,7 +259,7 @@ export class ResourceContext extends BaseContextProvider<ResourceState> {
   }
 
   public updateFlow(flow: ResourceFlow): void {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       flows: {
         ...prev.flows,
         [flow.id]: flow,
@@ -267,14 +272,19 @@ export class ResourceContext extends BaseContextProvider<ResourceState> {
   private recalculateResourceRates(): void {
     const { production, consumption } = Object.values(this.state.flows).reduce(
       (acc, flow) => {
-        if (flow.type === 'production') {
-          acc.production[flow.resourceId] = (acc.production[flow.resourceId] || 0) + flow.rate;
+        if (flow.type === "production") {
+          acc.production[flow.resourceId] =
+            (acc.production[flow.resourceId] || 0) + flow.rate;
         } else {
-          acc.consumption[flow.resourceId] = (acc.consumption[flow.resourceId] || 0) + flow.rate;
+          acc.consumption[flow.resourceId] =
+            (acc.consumption[flow.resourceId] || 0) + flow.rate;
         }
         return acc;
       },
-      { production: {}, consumption: {} } as Record<string, Record<string, number>>
+      { production: {}, consumption: {} } as Record<
+        string,
+        Record<string, number>
+      >,
     );
 
     this.setState({ production, consumption });
@@ -310,7 +320,7 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'ModuleContext',
+        name: "ModuleContext",
         initialState: {
           modules: {},
           activeModules: [],
@@ -324,12 +334,12 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
           EventType.MODULE_STATUS_CHANGED,
         ],
       },
-      eventBus
+      eventBus,
     );
   }
 
   public addModule(module: Module): void {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       modules: {
         ...prev.modules,
         [module.id]: module,
@@ -357,7 +367,7 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
       return;
     }
 
-    this.setState(prev => ({
+    this.setState((prev) => ({
       activeModules: [...prev.activeModules, moduleId],
       moduleStatus: {
         ...prev.moduleStatus,
@@ -368,7 +378,9 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
 
   private canActivateModule(moduleId: string): boolean {
     const dependencies = this.state.dependencies[moduleId] || [];
-    return dependencies.every(depId => this.state.moduleStatus[depId] === ModuleStatus.ACTIVE);
+    return dependencies.every(
+      (depId) => this.state.moduleStatus[depId] === ModuleStatus.ACTIVE,
+    );
   }
 
   protected handleEvent(event: ModuleEvent): void {
@@ -390,13 +402,11 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
 ### Manager Integration
 
 1. **State Management**
-
    - Managers access context through hooks
    - State updates trigger event emissions
    - Context changes propagate to managers
 
 2. **Event Handling**
-
    - Context providers listen to relevant events
    - State updates based on events
    - Event propagation to subscribers
@@ -409,13 +419,11 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
 ### UI Integration
 
 1. **Component Access**
-
    - Components use context hooks
    - State changes trigger re-renders
    - Memoization is implemented
 
 2. **State Updates**
-
    - Updates are atomic
    - Changes are propagated efficiently
    - UI stays responsive
@@ -428,13 +436,11 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
 ## Performance Optimization
 
 1. **State Updates**
-
    - Changes are batched
    - Updates are debounced
    - Memory is managed
 
 2. **Subscription Management**
-
    - Efficient subscriber storage
    - Automatic cleanup
    - Memory optimization
@@ -447,13 +453,11 @@ export class ModuleContext extends BaseContextProvider<ModuleState> {
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Test state management
    - Verify event handling
    - Check update propagation
 
 2. **Integration Tests**
-
    - Test context interaction
    - Verify UI updates
    - Check performance

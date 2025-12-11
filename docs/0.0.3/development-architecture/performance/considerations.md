@@ -85,10 +85,12 @@ For large networks with many connections, this operation can become a performanc
 
    ```typescript
    // Get active nodes and connections
-   const activeNodes = Array.from(this.network.nodes.values()).filter(node => node.active);
-   const activeConnections = Array.from(this.network.connections.values()).filter(
-     conn => conn.active
+   const activeNodes = Array.from(this.network.nodes.values()).filter(
+     (node) => node.active,
    );
+   const activeConnections = Array.from(
+     this.network.connections.values(),
+   ).filter((conn) => conn.active);
    ```
 
    - Only active nodes and connections are processed
@@ -165,12 +167,14 @@ For large networks with many connections, this operation can become a performanc
    - Includes performance metrics for monitoring
 
 7. **Performance Metrics Collection**
+
    ```typescript
    const startTime = Date.now();
    // ... perform optimization ...
    const endTime = Date.now();
    const executionTimeMs = endTime - startTime;
    ```
+
    - All operations are timed
    - Node and connection processing counts are tracked
    - Metrics are included in the result for monitoring and debugging
@@ -178,19 +182,16 @@ For large networks with many connections, this operation can become a performanc
 ### Optimization Recommendations
 
 1. **Web Worker Offloading**
-
    - For extremely large networks (>1000 nodes), consider offloading optimization to a Web Worker
    - This prevents blocking the main thread during complex calculations
    - Implementation would require serialization of network state
 
 2. **Spatial Partitioning**
-
    - For geographically distributed networks, implement spatial partitioning
    - Only optimize connections within relevant partitions
    - Reduces the effective network size for each optimization pass
 
 3. **Asynchronous Processing**
-
    - Convert the optimization process to use async/await
    - Break up long-running operations with await setTimeout(0)
    - Allows the main thread to handle other tasks between batches
@@ -221,18 +222,15 @@ For each event emission, the complexity is O(L + min(1, H/maxHistorySize)), wher
 #### Implemented Optimizations
 
 1. **Selective Event Delivery**
-
    - Events are only delivered to subscribed listeners
    - Listeners are stored in type-specific Sets for O(1) lookup
 
 2. **History Size Limiting**
-
    - Event history is capped at a configurable maximum size
    - Oldest events are removed when the limit is reached
    - Prevents unbounded memory growth
 
 3. **Error Isolation**
-
    - Errors in one listener don't prevent other listeners from receiving events
    - Each listener is called within a try/catch block
 
@@ -243,13 +241,11 @@ For each event emission, the complexity is O(L + min(1, H/maxHistorySize)), wher
 ### Optimization Recommendations
 
 1. **Event Batching**
-
    - For high-frequency events, implement event batching
    - Collect events for a short period (e.g., 16ms) before processing
    - Reduces listener invocation overhead
 
 2. **Listener Throttling**
-
    - Add support for throttled listeners that only receive events at a maximum frequency
    - Useful for UI updates that don't need to reflect every event
 
@@ -285,7 +281,6 @@ The render complexity approaches O(N + C + E) in the worst case.
    - Only re-renders when props actually change
 
 2. **Virtual Rendering**
-
    - Only visible nodes and connections are fully rendered
    - Off-screen elements are simplified or not rendered
 
@@ -296,12 +291,10 @@ The render complexity approaches O(N + C + E) in the worst case.
 ### Optimization Recommendations
 
 1. **Canvas Rendering**
-
    - For very large networks (>100 visible nodes), consider switching to Canvas rendering
    - Reduces DOM node count and improves rendering performance
 
 2. **Visibility-Based Optimization**
-
    - Implement progressive detail levels based on zoom level
    - Show less detail for distant or numerous nodes
 
@@ -316,12 +309,10 @@ Effective performance monitoring is essential for identifying bottlenecks and va
 ### Implemented Monitoring
 
 1. **Execution Time Tracking**
-
    - Critical operations track and report execution time
    - Included in operation results for logging and analysis
 
 2. **Operation Metrics**
-
    - Node and connection processing counts are tracked
    - Transfer generation and other key metrics are recorded
 
@@ -332,13 +323,11 @@ Effective performance monitoring is essential for identifying bottlenecks and va
 ### Recommended Enhancements
 
 1. **Real-Time Performance Dashboard**
-
    - Implement a developer-focused performance dashboard
    - Show real-time metrics for critical paths
    - Support filtering and historical comparison
 
 2. **Automated Performance Regression Testing**
-
    - Add performance tests to the CI pipeline
    - Alert on significant performance regressions
 

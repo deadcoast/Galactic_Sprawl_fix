@@ -19,25 +19,25 @@ The Event System provides a centralized mechanism for event handling and distrib
 
 export enum EventType {
   // Resource Events
-  RESOURCE_ADDED = 'RESOURCE_ADDED',
-  RESOURCE_REMOVED = 'RESOURCE_REMOVED',
-  RESOURCE_UPDATED = 'RESOURCE_UPDATED',
-  FLOW_CREATED = 'FLOW_CREATED',
-  FLOW_UPDATED = 'FLOW_UPDATED',
-  FLOWS_OPTIMIZED = 'FLOWS_OPTIMIZED',
-  THRESHOLD_REACHED = 'THRESHOLD_REACHED',
+  RESOURCE_ADDED = "RESOURCE_ADDED",
+  RESOURCE_REMOVED = "RESOURCE_REMOVED",
+  RESOURCE_UPDATED = "RESOURCE_UPDATED",
+  FLOW_CREATED = "FLOW_CREATED",
+  FLOW_UPDATED = "FLOW_UPDATED",
+  FLOWS_OPTIMIZED = "FLOWS_OPTIMIZED",
+  THRESHOLD_REACHED = "THRESHOLD_REACHED",
 
   // Module Events
-  MODULE_CREATED = 'MODULE_CREATED',
-  MODULE_DESTROYED = 'MODULE_DESTROYED',
-  MODULE_UPDATED = 'MODULE_UPDATED',
-  MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED',
+  MODULE_CREATED = "MODULE_CREATED",
+  MODULE_DESTROYED = "MODULE_DESTROYED",
+  MODULE_UPDATED = "MODULE_UPDATED",
+  MODULE_STATUS_CHANGED = "MODULE_STATUS_CHANGED",
 
   // Game Events
-  GAME_STARTED = 'GAME_STARTED',
-  GAME_PAUSED = 'GAME_PAUSED',
-  GAME_RESUMED = 'GAME_RESUMED',
-  GAME_ENDED = 'GAME_ENDED',
+  GAME_STARTED = "GAME_STARTED",
+  GAME_PAUSED = "GAME_PAUSED",
+  GAME_RESUMED = "GAME_RESUMED",
+  GAME_ENDED = "GAME_ENDED",
 }
 
 export interface BaseEvent {
@@ -83,7 +83,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> {
     this.metrics = new EventMetrics();
   }
 
-  public subscribe<E extends T>(eventType: EventType, handler: EventHandler<E>): Unsubscribe {
+  public subscribe<E extends T>(
+    eventType: EventType,
+    handler: EventHandler<E>,
+  ): Unsubscribe {
     const handlers = this.getOrCreateHandlerSet(eventType);
     handlers.add(handler as EventHandler<T>);
 
@@ -112,7 +115,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> {
 
     const startTime = performance.now();
 
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       try {
         handler(event);
       } catch (error) {
@@ -121,7 +124,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> {
       }
     });
 
-    this.metrics.recordDistributionTime(event.type, performance.now() - startTime);
+    this.metrics.recordDistributionTime(
+      event.type,
+      performance.now() - startTime,
+    );
   }
 
   private shouldBatchEvent(event: T): boolean {
@@ -199,7 +205,7 @@ export function useEventSubscription<T extends BaseEvent>(
   eventBus: EventBus<T>,
   eventType: EventType,
   handler: EventHandler<T>,
-  deps: DependencyList = []
+  deps: DependencyList = [],
 ): void {
   useEffect(() => {
     const unsubscribe = eventBus.subscribe(eventType, handler);
@@ -210,14 +216,14 @@ export function useEventSubscription<T extends BaseEvent>(
 export function useEventSubscriptions<T extends BaseEvent>(
   eventBus: EventBus<T>,
   subscriptions: EventSubscription<T>[],
-  deps: DependencyList = []
+  deps: DependencyList = [],
 ): void {
   useEffect(() => {
     const unsubscribes = subscriptions.map(({ eventType, handler }) =>
-      eventBus.subscribe(eventType, handler)
+      eventBus.subscribe(eventType, handler),
     );
 
-    return () => unsubscribes.forEach(unsubscribe => unsubscribe());
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
   }, [eventBus, ...deps]);
 }
 ```
@@ -262,7 +268,7 @@ export class EventDevTools<T extends BaseEvent> {
   }
 
   public removeFilter(filterId: string): void {
-    this.filters = this.filters.filter(f => f.id !== filterId);
+    this.filters = this.filters.filter((f) => f.id !== filterId);
   }
 
   public getMetrics(): EventMetrics {
@@ -270,7 +276,7 @@ export class EventDevTools<T extends BaseEvent> {
   }
 
   private setupEventLogging(): void {
-    this.eventBus.subscribe('*' as EventType, event => {
+    this.eventBus.subscribe("*" as EventType, (event) => {
       if (!this.isRecording) return;
       if (this.shouldLogEvent(event)) {
         this.logEvent(event);
@@ -279,7 +285,7 @@ export class EventDevTools<T extends BaseEvent> {
   }
 
   private shouldLogEvent(event: T): boolean {
-    return this.filters.every(filter => filter.test(event));
+    return this.filters.every((filter) => filter.test(event));
   }
 
   private logEvent(event: T): void {
@@ -297,13 +303,11 @@ export class EventDevTools<T extends BaseEvent> {
 ### Manager Integration
 
 1. **Event Publishing**
-
    - Managers publish events through EventBus
    - Events are typed and validated
    - Events include necessary metadata
 
 2. **Event Subscription**
-
    - Managers subscribe to relevant events
    - Subscriptions are cleaned up properly
    - Event handlers are properly typed
@@ -316,13 +320,11 @@ export class EventDevTools<T extends BaseEvent> {
 ### UI Integration
 
 1. **Component Subscriptions**
-
    - Components use subscription hooks
    - Subscriptions are properly cleaned up
    - Event handlers are memoized
 
 2. **Event Handling**
-
    - UI updates based on events
    - State changes are batched
    - Performance is monitored
@@ -335,13 +337,11 @@ export class EventDevTools<T extends BaseEvent> {
 ## Performance Optimization
 
 1. **Event Batching**
-
    - Similar events are batched
    - Batch size is configurable
    - Batch timing is optimized
 
 2. **Subscription Management**
-
    - Subscriptions are efficiently stored
    - Cleanup is automatic
    - Memory usage is optimized
@@ -354,13 +354,11 @@ export class EventDevTools<T extends BaseEvent> {
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Test event distribution
    - Verify subscription management
    - Check batching behavior
 
 2. **Integration Tests**
-
    - Test manager integration
    - Verify UI updates
    - Check performance metrics

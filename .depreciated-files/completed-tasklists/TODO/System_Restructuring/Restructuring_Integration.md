@@ -29,13 +29,11 @@
 ### 2.1 UI ←→ Context Connection Points
 
 - **GameHUD Component**
-
   - Uses `useGame()` to access game state
   - Uses `useModules()` to manage module building
   - Should dispatch actions to update game state
 
 - **ResourceVisualization Component**
-
   - Uses `useGame()` to access resource data
   - Uses `useResourceRates()` to access production/consumption rates
   - Connected to ThresholdContext through ThresholdIntegration
@@ -50,19 +48,16 @@
 ### 2.2 Context ←→ Manager Connection Points
 
 - **GameContext**
-
   - Initialized with ResourceManager through SystemIntegration
   - State updates synchronized with manager methods
   - Dispatches trigger manager actions
 
 - **ResourceRatesContext**
-
   - Tracks production and consumption rates for all resources
   - Updates in response to resource events from ResourceManager
   - Provides production/consumption data to UI components
 
 - **ThresholdContext**
-
   - Connected to ResourceManager through ThresholdIntegration
   - Manages resource thresholds and generates alerts
   - Triggers resource production/consumption adjustments
@@ -75,7 +70,6 @@
 ### 2.3 Integration ←→ Service Connection Points
 
 - **SystemIntegration Component**
-
   - Bridges between frontend contexts and backend managers
   - Synchronizes resource and module states
   - Broadcasts state changes as events
@@ -98,17 +92,14 @@
 ### 3.2 ResourceFlowManager Responsibilities
 
 1. **Node Management**:
-
    - Registers and unregisters resource nodes (producers, consumers, storage, converters)
    - Tracks node state and capabilities
 
 2. **Connection Management**:
-
    - Establishes connections between nodes
    - Controls flow rates between connected nodes
 
 3. **Resource Optimization**:
-
    - Calculates optimal flow distributions based on priorities
    - Identifies resource bottlenecks and underutilized resources
    - Applies efficiency modifiers for converter nodes
@@ -152,17 +143,14 @@
 ### 3.5 Performance Considerations
 
 1. **Batch Processing**
-
    - Processes large networks in batches to avoid blocking the main thread
    - The batch size is configurable based on network complexity
 
 2. **Resource State Caching**
-
    - Caches resource states with configurable TTL (time-to-live)
    - Invalidates cache entries when states are updated
 
 3. **Incremental Updates**
-
    - Updates only connections that have changed, not the entire network
    - Returns only the changes in the optimization result
 
@@ -175,7 +163,6 @@
 ### 4.1 Core Components and Relationships
 
 1. **ModuleEventBus (Central Component)**
-
    - Manages event subscription, emission, and history
    - Operates as a singleton service
    - Key functions:
@@ -184,7 +171,6 @@
      - Event history maintenance with filtering capabilities
 
 2. **EventDispatcherProvider (React Integration)**
-
    - Wraps ModuleEventBus in a React context
    - Manages component lifecycle for subscriptions
    - Provides specialized hooks for components:
@@ -205,12 +191,10 @@
 The core event bus that handles event subscription, emission, and history management:
 
 1. **Event Subscription**
-
    - Manages listeners for different event types
    - Provides unsubscribe functions for cleanup
 
 2. **Event Emission**
-
    - Distributes events to registered listeners
    - Adds events to history with size limiting
 
@@ -223,7 +207,6 @@ The core event bus that handles event subscription, emission, and history manage
 A React context provider that integrates the ModuleEventBus with React components:
 
 1. **React Integration**
-
    - Wraps the ModuleEventBus in a React context
    - Manages component lifecycle for subscriptions
 
@@ -322,22 +305,18 @@ The following key integration tasks must be prioritized:
 To address the issues identified above, the integration strategy should focus on:
 
 1. **Establishing a Central Game Loop**
-
    - Create a GameLoop class to coordinate all manager updates
    - Implement a consistent tick cycle for predictable state updates
 
 2. **Standardizing Resource Management**
-
    - Designate ResourceManager as the single source of truth for resource changes
    - Ensure all resource updates flow through a consistent pipeline
 
 3. **Connecting Event Systems**
-
    - Standardize event subscription across all UI components
    - Ensure all managers properly emit events for state changes
 
 4. **Fixing Initialization Sequence**
-
    - Create a proper dependency graph for initialization
    - Implement a staged initialization process
 
@@ -433,7 +412,6 @@ To address the issues identified above, the integration strategy should focus on
 - **Dependencies:**
   - TypeScript Enum support
 - **Key Features:**
-
   - Defines `ResourceType` as an enum for better type safety and intellisense support
   - Provides backward compatibility with string-based resource types
   - Implements metadata lookup using typed constants
@@ -454,7 +432,7 @@ import {
   ResourceType,
   ResourceTypeHelpers,
   ResourceStateClass,
-} from 'src/types/resources/StandardizedResourceTypes';
+} from "src/types/resources/StandardizedResourceTypes";
 
 // Using the enum for type safety
 const mineralResource = ResourceType.MINERALS;
