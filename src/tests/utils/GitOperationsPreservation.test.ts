@@ -1,17 +1,17 @@
 /**
  * @file GitOperationsPreservation.test.ts
- * 
+ *
  * Property-based tests for git operations preservation during file reorganization
  * **Feature: root-directory-organization, Property 5: Git Operations Preservation**
  * **Validates: Requirements 3.2**
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as path from 'path';
+import { describe, it, expect, beforeEach } from "vitest";
+import * as path from "path";
 
 export interface GitIgnorePattern {
   pattern: string;
-  type: 'file' | 'directory' | 'glob';
+  type: "file" | "directory" | "glob";
   shouldIgnore: (filePath: string) => boolean;
 }
 
@@ -35,11 +35,14 @@ export class GitOperationsValidator {
    * Parse .gitignore content into patterns
    */
   private parseGitIgnore(content: string): void {
-    const lines = content.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'));
+    const lines = content
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"));
 
-    this.gitIgnorePatterns = lines.map(pattern => this.createPattern(pattern));
+    this.gitIgnorePatterns = lines.map((pattern) =>
+      this.createPattern(pattern),
+    );
   }
 
   /**
@@ -47,26 +50,29 @@ export class GitOperationsValidator {
    */
   private createPattern(pattern: string): GitIgnorePattern {
     // Remove leading slash
-    const normalizedPattern = pattern.startsWith('/') ? pattern.slice(1) : pattern;
-    
+    const normalizedPattern = pattern.startsWith("/")
+      ? pattern.slice(1)
+      : pattern;
+
     return {
       pattern: normalizedPattern,
       type: this.getPatternType(normalizedPattern),
-      shouldIgnore: (filePath: string) => this.matchesPattern(filePath, normalizedPattern)
+      shouldIgnore: (filePath: string) =>
+        this.matchesPattern(filePath, normalizedPattern),
     };
   }
 
   /**
    * Determine the type of gitignore pattern
    */
-  private getPatternType(pattern: string): 'file' | 'directory' | 'glob' {
-    if (pattern.endsWith('/')) {
-      return 'directory';
+  private getPatternType(pattern: string): "file" | "directory" | "glob" {
+    if (pattern.endsWith("/")) {
+      return "directory";
     }
-    if (pattern.includes('*') || pattern.includes('?')) {
-      return 'glob';
+    if (pattern.includes("*") || pattern.includes("?")) {
+      return "glob";
     }
-    return 'file';
+    return "file";
   }
 
   /**
@@ -74,13 +80,16 @@ export class GitOperationsValidator {
    */
   private matchesPattern(filePath: string, pattern: string): boolean {
     // Normalize path separators
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    const normalizedPattern = pattern.replace(/\\/g, '/');
+    const normalizedPath = filePath.replace(/\\/g, "/");
+    const normalizedPattern = pattern.replace(/\\/g, "/");
 
     // Handle directory patterns
-    if (normalizedPattern.endsWith('/')) {
+    if (normalizedPattern.endsWith("/")) {
       const dirPattern = normalizedPattern.slice(0, -1);
-      return normalizedPath.startsWith(dirPattern + '/') || normalizedPath === dirPattern;
+      return (
+        normalizedPath.startsWith(dirPattern + "/") ||
+        normalizedPath === dirPattern
+      );
     }
 
     // Handle exact matches
@@ -89,18 +98,18 @@ export class GitOperationsValidator {
     }
 
     // Handle patterns that should match files in subdirectories
-    if (normalizedPath.endsWith('/' + normalizedPattern)) {
+    if (normalizedPath.endsWith("/" + normalizedPattern)) {
       return true;
     }
 
     // Handle glob patterns (simplified)
-    if (normalizedPattern.includes('*')) {
+    if (normalizedPattern.includes("*")) {
       const regexPattern = normalizedPattern
-        .replace(/\./g, '\\.')
-        .replace(/\*/g, '.*');
-      
+        .replace(/\./g, "\\.")
+        .replace(/\*/g, ".*");
+
       try {
-        const regex = new RegExp('^' + regexPattern + '$');
+        const regex = new RegExp("^" + regexPattern + "$");
         return regex.test(normalizedPath);
       } catch {
         return false;
@@ -114,7 +123,9 @@ export class GitOperationsValidator {
    * Check if a file should be ignored by git
    */
   public shouldIgnoreFile(filePath: string): boolean {
-    return this.gitIgnorePatterns.some(pattern => pattern.shouldIgnore(filePath));
+    return this.gitIgnorePatterns.some((pattern) =>
+      pattern.shouldIgnore(filePath),
+    );
   }
 
   /**
@@ -122,7 +133,7 @@ export class GitOperationsValidator {
    */
   public validateGitOperationsPreservation(
     originalPath: string,
-    newPath: string
+    newPath: string,
   ): { isValid: boolean; reason?: string } {
     const originalIgnored = this.shouldIgnoreFile(originalPath);
     const newIgnored = this.shouldIgnoreFile(newPath);
@@ -135,7 +146,7 @@ export class GitOperationsValidator {
 
     return {
       isValid: false,
-      reason: `Git ignore status changed: ${originalPath} (ignored: ${originalIgnored}) -> ${newPath} (ignored: ${newIgnored})`
+      reason: `Git ignore status changed: ${originalPath} (ignored: ${originalIgnored}) -> ${newPath} (ignored: ${newIgnored})`,
     };
   }
 
@@ -144,13 +155,13 @@ export class GitOperationsValidator {
    */
   public updateGitIgnoreForReorganization(
     fileMovements: Array<{ from: string; to: string }>,
-    newDirectories: string[]
+    newDirectories: string[],
   ): string[] {
     const updatedPatterns: string[] = [];
 
     // Add patterns for new directories that should contain generated files
     for (const dir of newDirectories) {
-      if (dir === 'reports' || dir === 'artifacts') {
+      if (dir === "reports" || dir === "artifacts") {
         updatedPatterns.push(`${dir}/`);
         updatedPatterns.push(`${dir}/*.json`);
         updatedPatterns.push(`${dir}/*.log`);
@@ -171,10 +182,14 @@ export class GitOperationsValidator {
   /**
    * Check if a gitignore pattern is obsolete after reorganization
    */
-  private isPatternObsolete(pattern: string, fileMovements: Array<{ from: string; to: string }>): boolean {
+  private isPatternObsolete(
+    pattern: string,
+    fileMovements: Array<{ from: string; to: string }>,
+  ): boolean {
     // Simple check - if the pattern exactly matches a moved file's old location
-    return fileMovements.some(movement => 
-      movement.from === pattern || movement.from.startsWith(pattern + '/')
+    return fileMovements.some(
+      (movement) =>
+        movement.from === pattern || movement.from.startsWith(pattern + "/"),
     );
   }
 
@@ -185,27 +200,29 @@ export class GitOperationsValidator {
     const issues: string[] = [];
 
     // Check for common git integrity issues
-    const criticalFiles = ['.git', '.gitignore', '.gitattributes'];
-    
+    const criticalFiles = [".git", ".gitignore", ".gitattributes"];
+
     // In a real implementation, we would check if these files exist and are accessible
     // For testing purposes, we'll simulate this
-    const missingCriticalFiles = criticalFiles.filter(file => {
+    const missingCriticalFiles = criticalFiles.filter((file) => {
       // Simulate file existence check
       return false; // Assume all critical files exist for testing
     });
 
     if (missingCriticalFiles.length > 0) {
-      issues.push(`Missing critical git files: ${missingCriticalFiles.join(', ')}`);
+      issues.push(
+        `Missing critical git files: ${missingCriticalFiles.join(", ")}`,
+      );
     }
 
     return {
       isValid: issues.length === 0,
-      issues
+      issues,
     };
   }
 }
 
-describe('GitOperationsValidator Property Tests', () => {
+describe("GitOperationsValidator Property Tests", () => {
   let validator: GitOperationsValidator;
 
   beforeEach(() => {
@@ -235,64 +252,66 @@ Thumbs.db
     validator = new GitOperationsValidator(gitIgnoreContent);
   });
 
-  describe('Property 5: Git Operations Preservation', () => {
+  describe("Property 5: Git Operations Preservation", () => {
     /**
      * **Feature: root-directory-organization, Property 5: Git Operations Preservation**
      * **Validates: Requirements 3.2**
-     * 
-     * For any git operation, the repository should maintain its integrity 
+     *
+     * For any git operation, the repository should maintain its integrity
      * and ignore patterns after reorganization
      */
-    it('should preserve git ignore behavior for any file reorganization', () => {
+    it("should preserve git ignore behavior for any file reorganization", () => {
       // Property: Git ignore status should be preserved or appropriately updated
       // when files are moved during reorganization
-      
+
       const testCases: GitOperationTest[] = [
         // Moving report files to reports directory - should remain ignored
         {
-          originalPath: 'ERRORS.json',
-          newPath: 'reports/ERRORS.json',
+          originalPath: "ERRORS.json",
+          newPath: "reports/ERRORS.json",
           shouldBeIgnored: true,
-          gitIgnorePatterns: ['*.json', 'reports/']
+          gitIgnorePatterns: ["*.json", "reports/"],
         },
         {
-          originalPath: 'WARNINGS.json',
-          newPath: 'reports/WARNINGS.json',
+          originalPath: "WARNINGS.json",
+          newPath: "reports/WARNINGS.json",
           shouldBeIgnored: true,
-          gitIgnorePatterns: ['*.json', 'reports/']
+          gitIgnorePatterns: ["*.json", "reports/"],
         },
         // Moving documentation files - should not be ignored
         {
-          originalPath: 'README.md',
-          newPath: 'docs/README.md',
+          originalPath: "README.md",
+          newPath: "docs/README.md",
           shouldBeIgnored: false,
-          gitIgnorePatterns: ['*.json', 'reports/']
+          gitIgnorePatterns: ["*.json", "reports/"],
         },
         // Moving configuration files - should not be ignored
         {
-          originalPath: '.prettierrc',
-          newPath: 'config/build/.prettierrc',
+          originalPath: ".prettierrc",
+          newPath: "config/build/.prettierrc",
           shouldBeIgnored: false,
-          gitIgnorePatterns: ['*.json', 'reports/']
-        }
+          gitIgnorePatterns: ["*.json", "reports/"],
+        },
       ];
 
       for (const testCase of testCases) {
         // Create validator with specific patterns for this test
         const testValidator = new GitOperationsValidator(
-          testCase.gitIgnorePatterns.join('\n')
+          testCase.gitIgnorePatterns.join("\n"),
         );
 
         // Check original file ignore status
-        const originalIgnored = testValidator.shouldIgnoreFile(testCase.originalPath);
-        
+        const originalIgnored = testValidator.shouldIgnoreFile(
+          testCase.originalPath,
+        );
+
         // Check new file ignore status
         const newIgnored = testValidator.shouldIgnoreFile(testCase.newPath);
 
         // Validate the preservation logic
         const validation = testValidator.validateGitOperationsPreservation(
           testCase.originalPath,
-          testCase.newPath
+          testCase.newPath,
         );
 
         // For files that should be ignored (like reports), ensure they remain ignored
@@ -310,55 +329,63 @@ Thumbs.db
       }
     });
 
-    it('should handle gitignore pattern updates for new directory structure', () => {
+    it("should handle gitignore pattern updates for new directory structure", () => {
       // Property: Gitignore patterns should be updated appropriately for new directories
-      
+
       const fileMovements = [
-        { from: 'ERRORS.json', to: 'reports/ERRORS.json' },
-        { from: 'WARNINGS.json', to: 'reports/WARNINGS.json' },
-        { from: 'test-prettier.js', to: 'reports/test-prettier.js' },
-        { from: '.prettierrc', to: 'config/build/.prettierrc' }
+        { from: "ERRORS.json", to: "reports/ERRORS.json" },
+        { from: "WARNINGS.json", to: "reports/WARNINGS.json" },
+        { from: "test-prettier.js", to: "reports/test-prettier.js" },
+        { from: ".prettierrc", to: "config/build/.prettierrc" },
       ];
 
-      const newDirectories = ['reports', 'config', 'config/build'];
+      const newDirectories = ["reports", "config", "config/build"];
 
       const updatedPatterns = validator.updateGitIgnoreForReorganization(
         fileMovements,
-        newDirectories
+        newDirectories,
       );
 
       // Should include patterns for reports directory
-      expect(updatedPatterns).toContain('reports/');
-      expect(updatedPatterns.some(p => p.includes('reports/'))).toBe(true);
+      expect(updatedPatterns).toContain("reports/");
+      expect(updatedPatterns.some((p) => p.includes("reports/"))).toBe(true);
 
       // Should preserve existing relevant patterns
-      expect(updatedPatterns).toContain('node_modules/');
-      expect(updatedPatterns).toContain('dist/');
+      expect(updatedPatterns).toContain("node_modules/");
+      expect(updatedPatterns).toContain("dist/");
 
       // Validate that the new patterns work correctly
-      const updatedValidator = new GitOperationsValidator(updatedPatterns.join('\n'));
-      
+      const updatedValidator = new GitOperationsValidator(
+        updatedPatterns.join("\n"),
+      );
+
       // Reports should be ignored
-      expect(updatedValidator.shouldIgnoreFile('reports/ERRORS.json')).toBe(true);
-      expect(updatedValidator.shouldIgnoreFile('reports/WARNINGS.json')).toBe(true);
-      
+      expect(updatedValidator.shouldIgnoreFile("reports/ERRORS.json")).toBe(
+        true,
+      );
+      expect(updatedValidator.shouldIgnoreFile("reports/WARNINGS.json")).toBe(
+        true,
+      );
+
       // Config files should not be ignored
-      expect(updatedValidator.shouldIgnoreFile('config/build/.prettierrc')).toBe(false);
+      expect(
+        updatedValidator.shouldIgnoreFile("config/build/.prettierrc"),
+      ).toBe(false);
     });
 
-    it('should preserve repository integrity during reorganization', () => {
+    it("should preserve repository integrity during reorganization", () => {
       // Property: Repository integrity must be maintained during file moves
-      
+
       const integrity = validator.validateRepositoryIntegrity();
-      
+
       // Repository should remain valid
       expect(integrity.isValid).toBe(true);
       expect(integrity.issues).toHaveLength(0);
     });
 
-    it('should handle complex gitignore patterns correctly', () => {
+    it("should handle complex gitignore patterns correctly", () => {
       // Property: Complex gitignore patterns should work correctly after reorganization
-      
+
       const complexGitIgnore = `
 # Build outputs
 dist/
@@ -383,16 +410,16 @@ config/**/temp/
 
       const testFiles = [
         // Should be ignored
-        { path: 'reports/ERRORS.json', shouldIgnore: true },
-        { path: 'reports/test-results.log', shouldIgnore: true },
-        { path: 'config/build/temp/backup.bak', shouldIgnore: true },
-        { path: 'dist/main.js', shouldIgnore: true },
-        { path: '.DS_Store', shouldIgnore: true },
-        
+        { path: "reports/ERRORS.json", shouldIgnore: true },
+        { path: "reports/test-results.log", shouldIgnore: true },
+        { path: "config/build/temp/backup.bak", shouldIgnore: true },
+        { path: "dist/main.js", shouldIgnore: true },
+        { path: ".DS_Store", shouldIgnore: true },
+
         // Should not be ignored
-        { path: 'config/build/.prettierrc', shouldIgnore: false },
-        { path: 'docs/README.md', shouldIgnore: false },
-        { path: 'src/main.ts', shouldIgnore: false }
+        { path: "config/build/.prettierrc", shouldIgnore: false },
+        { path: "docs/README.md", shouldIgnore: false },
+        { path: "src/main.ts", shouldIgnore: false },
       ];
 
       for (const testFile of testFiles) {
@@ -401,18 +428,21 @@ config/**/temp/
       }
     });
 
-    it('should handle edge cases in git operations', () => {
+    it("should handle edge cases in git operations", () => {
       // Property: Git operations should handle edge cases gracefully
-      
+
       const edgeCases = [
         // Empty paths
-        { original: '', new: 'reports/file.json' },
+        { original: "", new: "reports/file.json" },
         // Root level files
-        { original: 'file.json', new: 'reports/file.json' },
+        { original: "file.json", new: "reports/file.json" },
         // Deep nested paths
-        { original: 'very/deep/nested/file.json', new: 'reports/file.json' },
+        { original: "very/deep/nested/file.json", new: "reports/file.json" },
         // Files with special characters
-        { original: 'file-with-dashes.json', new: 'reports/file-with-dashes.json' }
+        {
+          original: "file-with-dashes.json",
+          new: "reports/file-with-dashes.json",
+        },
       ];
 
       for (const edgeCase of edgeCases) {
@@ -420,31 +450,34 @@ config/**/temp/
         expect(() => {
           validator.shouldIgnoreFile(edgeCase.original);
           validator.shouldIgnoreFile(edgeCase.new);
-          validator.validateGitOperationsPreservation(edgeCase.original, edgeCase.new);
+          validator.validateGitOperationsPreservation(
+            edgeCase.original,
+            edgeCase.new,
+          );
         }).not.toThrow();
       }
     });
 
-    it('should maintain consistent ignore behavior across similar files', () => {
+    it("should maintain consistent ignore behavior across similar files", () => {
       // Property: Similar files should have consistent ignore behavior
-      
+
       const similarFiles = [
-        'ERRORS.json',
-        'WARNINGS.json', 
-        'test-results.json',
-        'build-output.json'
+        "ERRORS.json",
+        "WARNINGS.json",
+        "test-results.json",
+        "build-output.json",
       ];
 
-      const newLocation = 'reports/';
+      const newLocation = "reports/";
 
       // All JSON files should have consistent behavior
-      const ignoreStatuses = similarFiles.map(file => ({
+      const ignoreStatuses = similarFiles.map((file) => ({
         original: validator.shouldIgnoreFile(file),
-        moved: validator.shouldIgnoreFile(newLocation + file)
+        moved: validator.shouldIgnoreFile(newLocation + file),
       }));
 
       // All should be ignored (since *.json pattern exists)
-      ignoreStatuses.forEach(status => {
+      ignoreStatuses.forEach((status) => {
         expect(status.original).toBe(true);
         expect(status.moved).toBe(true);
       });

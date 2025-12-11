@@ -8,20 +8,20 @@
 
 /** @type {import('jest').Config} */
 export default {
-  preset: 'ts-jest/presets/js-with-ts-esm',
-  testEnvironment: 'node',
+  preset: "ts-jest/presets/js-with-ts-esm",
+  testEnvironment: "node",
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
+    "^.+\\.tsx?$": [
+      "ts-jest",
       {
         useESM: true,
       },
     ],
   },
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  extensionsToTreatAsEsm: [".ts", ".tsx"],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
-  testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
-  setupFilesAfterEnv: ['<rootDir>/config/testing/jest-setup.js'],
+  testMatch: ["**/tests/**/*.test.ts", "**/tests/**/*.test.tsx"],
+  setupFilesAfterEnv: ["<rootDir>/config/testing/jest-setup.js"],
 };
