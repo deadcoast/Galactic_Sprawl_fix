@@ -5,8 +5,15 @@
  */
 
 import '@testing-library/jest-dom';
-import matchers from '@testing-library/jest-dom/matchers';
 import { expect } from 'vitest';
 
-// Extend Vitest's expect with all of Testing Library's matchers
-expect.extend(matchers);
+// Try to extend Vitest's expect with Testing Library matchers if available
+try {
+  const matchers = await import('@testing-library/jest-dom/matchers');
+  if (matchers && matchers.default) {
+    expect.extend(matchers.default);
+  }
+} catch (error) {
+  // Matchers not available, continue without them
+  console.warn('Testing Library matchers not available:', error);
+}
