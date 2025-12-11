@@ -171,8 +171,7 @@ describe("PathResolver Property Tests", () => {
       for (const [originalFile, referencingFiles] of Object.entries(
         scenario.originalFiles,
       )) {
-        const newPath = scenario.newPaths[originalFile];
-
+        const newPath = scenario.newPaths[originalFile as keyof typeof scenario.newPaths];
         for (const referencingFile of referencingFiles) {
           // Calculate original import
           const originalImport = PathResolver.resolveRelativePath(

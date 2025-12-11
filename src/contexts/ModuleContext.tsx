@@ -785,6 +785,6 @@ export function buildModule(
 }
 
 // Placeholder for handling potential legacy actions if needed
-const handleLegacyAction = useCallback((_action: string, _data: unknown) => {
+const handleLegacyAction = (_action: string, _data: unknown) => {
   errorLoggingService.logWarn(`Received legacy action: ${_action}`, { componentName: 'ModuleContext', action: 'handleLegacyAction', data: _data });
-}, []);
+};

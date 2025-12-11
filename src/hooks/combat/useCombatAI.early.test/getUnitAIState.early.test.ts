@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import "@testing-library/jest-dom";
 import '@testing-library/react';
 import { CombatManager } from '../../../managers/combat/combatManager';

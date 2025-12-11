@@ -82,6 +82,9 @@ describe('ErrorBoundary Component', () => {
     const originalConsoleError = console.error;
     console.error = vi.fn();
 
+    // Get the mocked function
+    const mockLogError = vi.mocked(errorLoggingService.logError);
+
     // Render with component that will throw
     renderWithProviders(
       <ErrorBoundary
@@ -95,8 +98,8 @@ describe('ErrorBoundary Component', () => {
     );
 
     // Check that error was logged
-    expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
-    expect(errorLoggingService.logError).toHaveBeenCalledWith(
+    expect(mockLogError).toHaveBeenCalledTimes(1);
+    expect(mockLogError).toHaveBeenCalledWith(
       expect.any(Error),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,

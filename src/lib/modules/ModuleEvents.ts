@@ -17,6 +17,7 @@ import {
 } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
+import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 
 // Import canonical event bus for bridging
 // Note: Using dynamic import pattern to avoid circular dependency
@@ -25,8 +26,7 @@ import { EventType } from '../../types/events/EventTypes';
 let canonicalEventBus: { emit: (event: any) => void } | null = null;
 =======
 let canonicalEventBus: {
-  emit: (event: StandardizedEvent) => void;
-  emit<T extends Record<string, unknown>>(eventName: string, data: T): void;
+  emit: ((event: StandardizedEvent) => void) & (<T extends Record<string, unknown>>(eventName: string, data: T) => void);
 } | null = null;
 >>>>>>> ca187ce (chore: update dependencies and configure vscode settings)
 
