@@ -9,6 +9,7 @@ The tools implement **Property 1: Build System Integrity** and **Property 2: Dep
 ## Components
 
 ### 1. DependencyMapper (`DependencyMapper.ts`)
+
 - **Purpose**: Analyzes all file dependencies in the project
 - **Features**:
   - Categorizes files into critical, config, documentation, source, and asset types
@@ -17,6 +18,7 @@ The tools implement **Property 1: Build System Integrity** and **Property 2: Dep
   - Validates build system integrity
 
 ### 2. BaselineValidator (`BaselineValidator.ts`)
+
 - **Purpose**: Establishes baseline test results before reorganization
 - **Features**:
   - Runs build, type-check, lint, and test commands
@@ -25,6 +27,7 @@ The tools implement **Property 1: Build System Integrity** and **Property 2: Dep
   - Compares results before/after reorganization
 
 ### 3. ReorganizationValidator (`ReorganizationValidator.ts`)
+
 - **Purpose**: Main orchestrator for pre-reorganization analysis
 - **Features**:
   - Runs complete analysis workflow
@@ -33,47 +36,54 @@ The tools implement **Property 1: Build System Integrity** and **Property 2: Dep
   - Validates reorganization plans
 
 ### 4. Property-Based Tests
+
 - **DependencyMapper.test.ts**: Tests build system integrity properties
 - **PathResolution.test.ts**: Tests dependency resolution preservation properties
 
 ## Usage
 
 ### Command Line Interface
+
 ```bash
 # Run complete pre-reorganization analysis
 node src/utils/dependency-mapping/cli.ts
 ```
 
 ### Programmatic Usage
+
 ```typescript
-import { ReorganizationValidator } from './src/utils/dependency-mapping';
+import { ReorganizationValidator } from "./src/utils/dependency-mapping";
 
 const validator = new ReorganizationValidator();
 const plan = await validator.runCompleteAnalysis();
 const validation = validator.validatePlan(plan);
 
 if (validation.canProceed) {
-  console.log('Ready for reorganization!');
+  console.log("Ready for reorganization!");
 } else {
-  console.log('Blockers:', validation.blockers);
+  console.log("Blockers:", validation.blockers);
 }
 ```
 
 ## Property-Based Testing Results
 
 ### ✅ Property 1: Build System Integrity
+
 **Validates Requirements 1.1, 1.2**
 
 Tests that for any configuration file relocation, the build system continues to function without errors. The tests verify:
+
 - Critical files (package.json, vite.config.ts, etc.) are correctly identified as non-relocatable
 - File categorization is consistent and accurate
 - Build system validation works for various project structures
 - Edge cases are handled gracefully
 
-### ✅ Property 2: Dependency Resolution Preservation  
+### ✅ Property 2: Dependency Resolution Preservation
+
 **Validates Requirements 1.3, 2.1**
 
 Tests that for any file move, all existing import paths and references continue to resolve correctly. The tests verify:
+
 - Path resolution works for basic file moves
 - External imports remain unchanged during reorganization
 - Relative path calculations are accurate
@@ -82,8 +92,9 @@ Tests that for any file move, all existing import paths and references continue 
 ## File Categories
 
 ### Critical Files (Must Stay in Root)
+
 - `package.json` - NPM configuration
-- `vite.config.ts` - Build configuration  
+- `vite.config.ts` - Build configuration
 - `tsconfig*.json` - TypeScript configuration
 - `eslint.config.js` - Linting configuration
 - `playwright.config.ts` - E2E test configuration
@@ -93,12 +104,14 @@ Tests that for any file move, all existing import paths and references continue 
 - `index.html` - Vite entry point
 
 ### Relocatable Files
+
 - **Config**: `.prettierrc*`, `.sourcery.yaml`, `postcss.config.js`, `jest.config.js`, `eslint_baseline.txt`
 - **Documentation**: `*.md` files
 - **Reports**: `ERRORS.json`, `WARNINGS.json`, `test-prettier.js`
 - **Assets**: `.assets/` directory and contents
 
 ### 5. FileClassificationSystem (`FileClassificationSystem.ts`)
+
 - **Purpose**: Complete file classification and validation system
 - **Features**:
   - Classifies files into categories (critical, build, testing, linting, documentation, reports, assets, source)
@@ -110,6 +123,7 @@ Tests that for any file move, all existing import paths and references continue 
   - Provides safety checks for tool configuration accessibility
 
 ### 6. Command Line Interface (`cli.ts`)
+
 - **Purpose**: Interactive analysis and reporting tool
 - **Features**:
   - Runs complete project analysis
@@ -121,20 +135,22 @@ Tests that for any file move, all existing import paths and references continue 
 ## Usage
 
 ### Command Line Interface
+
 ```bash
 # Run complete analysis (when CLI is properly configured)
 npx ts-node src/utils/dependency-mapping/cli.ts
 ```
 
 ### Programmatic Usage
+
 ```typescript
-import { FileClassificationSystem } from './src/utils/dependency-mapping/FileClassificationSystem';
+import { FileClassificationSystem } from "./src/utils/dependency-mapping/FileClassificationSystem";
 
 const system = new FileClassificationSystem();
 const plan = await system.generateReorganizationPlan();
 
-console.log('Relocatable files:', plan.relocatableFiles.length);
-console.log('Critical files:', plan.criticalFiles.length);
+console.log("Relocatable files:", plan.relocatableFiles.length);
+console.log("Critical files:", plan.criticalFiles.length);
 
 // Run validation tests
 const testSuite = system.buildValidationTestSuite();
@@ -144,36 +160,44 @@ const preResults = await system.runValidationTests(testSuite.preMove);
 ## Property-Based Testing Results
 
 ### ✅ Property 1: Build System Integrity
+
 **Validates Requirements 1.1, 1.2**
 
 Tests that for any configuration file relocation, the build system continues to function without errors. The tests verify:
+
 - Critical files (package.json, vite.config.ts, etc.) are correctly identified as non-relocatable
 - File categorization is consistent and accurate
 - Build system validation works for various project structures
 - Edge cases are handled gracefully
 
-### ✅ Property 2: Dependency Resolution Preservation  
+### ✅ Property 2: Dependency Resolution Preservation
+
 **Validates Requirements 1.3, 2.1**
 
 Tests that for any file move, all existing import paths and references continue to resolve correctly. The tests verify:
+
 - Path resolution works for basic file moves
 - External imports remain unchanged during reorganization
 - Relative path calculations are accurate
 - Bidirectional references are preserved
 
 ### ✅ Property 3: Script Execution Continuity
+
 **Validates Requirements 1.4, 2.2**
 
 Tests that for any npm script that references files, the script should execute successfully after reorganization. The tests verify:
+
 - Script file reference extraction is accurate
 - File path updates in scripts work correctly
 - Complex multi-file reorganization preserves script functionality
 - Script structure and command syntax is maintained
 
 ### ✅ Property 4: Tool Configuration Accessibility
+
 **Validates Requirements 2.3, 3.1**
 
 Tests that for any development tool configuration, the tool should locate and use its configuration file after reorganization. The tests verify:
+
 - Tools that require root configuration are correctly identified
 - Relocatable tools can find configurations in subdirectories
 - Configuration move safety is accurately assessed
@@ -182,8 +206,9 @@ Tests that for any development tool configuration, the tool should locate and us
 ## File Categories
 
 ### Critical Files (Must Stay in Root)
+
 - `package.json` - NPM configuration
-- `vite.config.ts` - Build configuration  
+- `vite.config.ts` - Build configuration
 - `tsconfig*.json` - TypeScript configuration
 - `eslint.config.js` - Linting configuration
 - `playwright.config.ts` - E2E test configuration
@@ -192,6 +217,7 @@ Tests that for any development tool configuration, the tool should locate and us
 - `index.html` - Vite entry point
 
 ### Relocatable Files
+
 - **Build Config**: `.prettierrc*`, `.sourcery.yaml`, `postcss.config.js` → `config/build/`
 - **Testing Config**: `vitest.config.ts`, `jest.config.js`, `jest-setup.js` → `config/testing/`
 - **Linting Config**: `eslint_baseline.txt` → `config/linting/`
@@ -204,16 +230,19 @@ Tests that for any development tool configuration, the tool should locate and us
 The system includes comprehensive validation tests for three phases:
 
 ### Pre-Move Tests
+
 - Baseline build verification
 - Type checking validation
 - Lint baseline capture
 - Test suite execution
 
 ### During-Move Tests
+
 - Incremental build validation
 - Incremental type checking
 
 ### Post-Move Tests
+
 - Final build verification
 - Final type checking
 - Lint comparison
@@ -223,6 +252,7 @@ The system includes comprehensive validation tests for three phases:
 ## Rollback System
 
 The system implements atomic operations with full rollback capability:
+
 - Creates backups before any file moves
 - Supports atomic move operations
 - Provides verification of each operation

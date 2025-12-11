@@ -34,7 +34,7 @@ The Galactic Sprawl project currently has an overcrowded root directory with 32+
 #### Acceptance Criteria
 
 1. WHEN I need linting configurations, THE system SHALL provide them in a dedicated linting subdirectory
-2. WHEN I need testing configurations, THE system SHALL provide them in a dedicated testing subdirectory  
+2. WHEN I need testing configurations, THE system SHALL provide them in a dedicated testing subdirectory
 3. WHEN I need build configurations, THE system SHALL provide them in a dedicated build subdirectory
 4. WHEN I need TypeScript configurations, THE system SHALL provide them in a dedicated typescript subdirectory
 5. WHEN tools reference configuration files, THE system SHALL maintain correct relative paths
