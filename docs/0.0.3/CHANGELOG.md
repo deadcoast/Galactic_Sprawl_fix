@@ -1,4 +1,6 @@
-# GALACTIC SPRAWL CODEBASE AUDIT REPORT
+# CHANGELOG 0.0.3: Galactic Sprawl Docs
+
+GALACTIC SPRAWL CODEBASE AUDIT REPORT
 
 **Generated:** 2025-12-10
 **Audit Type:** Full Reconciliation Audit (Strict Preservation Mode)
