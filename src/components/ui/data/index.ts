@@ -233,10 +233,10 @@ export function DataTable<T extends Record<string, unknown>>({
           "tr",
           {
             key: String((row as Record<string, unknown>).id ?? rowIndex),
-            onClick: onRowClick ? () => onRowClick(row) : undefined,
+            onClick: onRowClick ? () => onRowClick(row, rowIndex) : undefined,
             style: { cursor: onRowClick ? "pointer" : "default" },
           },
-          columns.map((col) =>
+          columns.map((col, colIndex) =>
             React.createElement(
               "td",
               {
@@ -248,7 +248,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 },
               },
               col.render
-                ? col.render(row[col.key], row)
+                ? col.render(row[col.key], row, colIndex)
                 : String(row[col.key] ?? ""),
             ),
           ),
@@ -693,7 +693,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                   item.status === "active" ? `0 0 8px ${config.color}` : "none",
               },
             },
-            !isCompact && (item.icon || config.icon),
+            !isCompact && (item.icon ?? config.icon),
           ),
           showConnector &&
             !isLast &&
