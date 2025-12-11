@@ -1,8 +1,8 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from "pixi.js";
 
 // Asset Types
-export type AssetType = 'ship' | 'weapon' | 'effect' | 'ui';
-export type AssetCategory = 'sprite' | 'spritesheet' | 'texture' | 'sound';
+export type AssetType = "ship" | "weapon" | "effect" | "ui";
+export type AssetCategory = "sprite" | "spritesheet" | "texture" | "sound";
 
 interface AssetDefinition {
   name: string;
@@ -24,53 +24,53 @@ export class AssetManager {
   // Asset bundles configuration
   private bundles: AssetBundle[] = [
     {
-      name: 'ships',
+      name: "ships",
       assets: [
         {
-          name: 'klaed_fighter',
-          type: 'ship',
-          category: 'sprite',
+          name: "klaed_fighter",
+          type: "ship",
+          category: "sprite",
           path: "/assets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Fighter - Base.png",
         },
         {
-          name: 'klaed_scout',
-          type: 'ship',
-          category: 'sprite',
+          name: "klaed_scout",
+          type: "ship",
+          category: "sprite",
           path: "/assets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Scout - Base.png",
         },
         {
-          name: 'klaed_bomber',
-          type: 'ship',
-          category: 'sprite',
+          name: "klaed_bomber",
+          type: "ship",
+          category: "sprite",
           path: "/assets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Bomber - Base.png",
         },
         {
-          name: 'klaed_frigate',
-          type: 'ship',
-          category: 'sprite',
+          name: "klaed_frigate",
+          type: "ship",
+          category: "sprite",
           path: "/assets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Frigate - Base.png",
         },
         {
-          name: 'klaed_battlecruiser',
-          type: 'ship',
-          category: 'sprite',
+          name: "klaed_battlecruiser",
+          type: "ship",
+          category: "sprite",
           path: "/assets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Battlecruiser - Base.png",
         },
       ],
     },
     {
-      name: 'ui',
+      name: "ui",
       assets: [
         {
-          name: 'gui_sheet',
-          type: 'ui',
-          category: 'sprite',
-          path: '/assets/GUI_Assets/gui_sheet_64x64.aseprite',
+          name: "gui_sheet",
+          type: "ui",
+          category: "sprite",
+          path: "/assets/GUI_Assets/gui_sheet_64x64.aseprite",
         },
       ],
     },
     {
-      name: 'effects',
+      name: "effects",
       assets: [], // We'll add effects later as needed
     },
   ];
@@ -96,9 +96,9 @@ export class AssetManager {
       // Initialize PIXI Assets
       PIXI.Assets.init({
         manifest: {
-          bundles: this.bundles.map(bundle => ({
+          bundles: this.bundles.map((bundle) => ({
             name: bundle.name,
-            assets: bundle.assets.map(asset => ({
+            assets: bundle.assets.map((asset) => ({
               alias: asset.name,
               src: asset.path,
             })),
@@ -107,21 +107,26 @@ export class AssetManager {
       })
         .then(() => {
           // Load default bundle
-          return PIXI.Assets.loadBundle('default');
+          return PIXI.Assets.loadBundle("default");
         })
-        .then(assets => {
+        .then((assets) => {
           // Process loaded assets
           if (assets) {
             Object.entries(assets).forEach(([name, asset]) => {
-              this.loadedAssets.set(name, asset as PIXI.Texture | PIXI.Spritesheet);
+              this.loadedAssets.set(
+                name,
+                asset as PIXI.Texture | PIXI.Spritesheet,
+              );
             });
             resolve();
           } else {
-            console.warn('[AssetManager] warning: loaded assets is null or undefined');
+            console.warn(
+              "[AssetManager] warning: loaded assets is null or undefined",
+            );
             resolve(); // Still resolve to avoid blocking game initialization
           }
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
         });
     });
@@ -137,7 +142,7 @@ export class AssetManager {
   // Get a texture from a spritesheet
   public getTextureFromSpritesheet(
     spritesheetName: string,
-    frameName: string
+    frameName: string,
   ): PIXI.Texture | undefined {
     const spritesheet = this.loadedAssets.get(spritesheetName);
     if (spritesheet instanceof PIXI.Spritesheet) {
@@ -158,7 +163,7 @@ export class AssetManager {
 
   // Preload a specific bundle
   public async preloadBundle(bundleName: string): Promise<void> {
-    const bundle = this.bundles.find(b => b.name === bundleName);
+    const bundle = this.bundles.find((b) => b.name === bundleName);
     if (!bundle) {
       throw new Error(`Bundle ${bundleName} not found`);
     }
@@ -168,7 +173,7 @@ export class AssetManager {
 
   // Clean up resources
   public destroy(): void {
-    this.loadedAssets.forEach(asset => {
+    this.loadedAssets.forEach((asset) => {
       if (asset instanceof PIXI.Texture) {
         asset.destroy(true);
       } else if (asset instanceof PIXI.Spritesheet) {

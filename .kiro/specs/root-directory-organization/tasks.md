@@ -89,7 +89,7 @@
     - ✅ "allows activating and deactivating modules" - Active module list now updates after activate/deactivate calls
     - ✅ "handles new modules being created" - New modules now appear in UI after manager.createModule()
     - ✅ "handles modules being removed" - Removed modules no longer show in UI after manager.removeModule()
-  - **Technical Implementation**: 
+  - **Technical Implementation**:
     - Added dual event data format support in all event handlers
     - Created atomic ACTIVATE_MODULE and DEACTIVATE_MODULE actions for proper state management
     - Fixed event subscription setup to work with EventBus implementation
