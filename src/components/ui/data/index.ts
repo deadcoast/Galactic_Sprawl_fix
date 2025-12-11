@@ -40,7 +40,7 @@ export function DataTable<T extends Record<string, unknown>>({ columns, data, on
     React.createElement('tbody', null,
       data.map((row, rowIndex) =>
         React.createElement('tr', {
-          key: rowIndex,
+          key: (row as Record<string, unknown>).id ?? rowIndex,
           onClick: onRowClick ? () => onRowClick(row) : undefined,
           style: { cursor: onRowClick ? 'pointer' : 'default' },
         },
