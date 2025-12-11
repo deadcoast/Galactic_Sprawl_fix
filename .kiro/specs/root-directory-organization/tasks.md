@@ -30,18 +30,18 @@
   - **Property 4: Tool Configuration Accessibility**
   - **Validates: Requirements 2.3, 3.1**
 
-- [ ] 3. Execute safe file relocations (documentation and reports)
+- [x] 3. Execute safe file relocations (documentation and reports)
   - Move all .md files to docs/ directory structure
   - Relocate ERRORS.json, WARNINGS.json to reports/ directory
   - Move test-prettier.js to reports/ directory
   - Validate build and development workflows after each move
   - _Requirements: 2.3, 3.1_
 
-- [ ] 3.1 Write property test for git operations preservation
+- [x] 3.1 Write property test for git operations preservation
   - **Property 5: Git Operations Preservation**
   - **Validates: Requirements 3.2**
 
-- [ ] 4. Reorganize configuration files by category
+- [x] 4. Reorganize configuration files by category
   - Create config/ directory with build/, testing/, linting/ subdirectories
   - Move .prettierrc files to config/build/
   - Move .sourcery.yaml to config/build/
