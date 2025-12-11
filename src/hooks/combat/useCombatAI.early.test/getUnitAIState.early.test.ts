@@ -1,75 +1,126 @@
 import { vi } from 'vitest';
 import "@testing-library/jest-dom";
 import '@testing-library/react';
-import { CombatManager } from '../../../managers/combat/combatManager';
-import { getUnitAIState } from '../useCombatAI';
 
-// src/hooks/combat/useCombatAI.getUnitAIState.test.tsx
-// src/hooks/combat/useCombatAI.getUnitAIState.test.tsx
-// --- Mocks for sibling functions in useCombatAI ---
-// jest.mock("../useCombatAI", () => {
-//   const actual = jest.requireActual("../useCombatAI");
-//   return {
-//     ...actual,
-//     convertStatus: jest.fn(),
-//     updateFormation: jest.fn(),
-//     evaluateAI: jest.fn(),
-//     __esModule: true,
-//   };
-// });
+// Mock the BaseManager and related classes to avoid circular dependencies
+vi.mock('../../../lib/managers/BaseManager', () => ({
+  AbstractBaseManager: class MockAbstractBaseManager {
+    constructor() {}
+    initialize() { return Promise.resolve(); }
+    dispose() { return Promise.resolve(); }
+    update() {}
+    getName() { return 'MockManager'; }
+    getStatus() { return 'ready'; }
+    handleError() {}
+  },
+  ManagerStatus: {
+    UNINITIALIZED: 'uninitialized',
+    INITIALIZING: 'initializing',
+    READY: 'ready',
+    ERROR: 'error',
+    DISPOSED: 'disposed',
+  }
+}));
 
-// --- Mock for getCombatManager ---
-jest.mock("../../../managers/ManagerRegistry", () => {
-  const actual = jest.requireActual("../../../managers/ManagerRegistry") as jest.Mocked<typeof import("../../../managers/ManagerRegistry")>;
-  return {
-    ...actual,
-    getCombatManager: jest.fn(),
-    __esModule: true,
-  };
-});
+// Mock the Singleton pattern
+vi.mock('../../../lib/patterns/Singleton', () => ({
+  Singleton: class MockSingleton {
+    static getInstance() {
+      return new this();
+    }
+  }
+}));
 
-// --- Mock for React nested components (none in getUnitAIState, but included for completeness) ---
-jest.mock("react", () => {
-  const actual = jest.requireActual("react") as jest.Mocked<typeof import("react")>;
-  return {
-    ...actual,
-  };
-});
+// Mock the ErrorLoggingService to avoid BaseManager extension issues
+vi.mock('../../../services/logging/ErrorLoggingService', () => ({
+  ErrorLoggingServiceImpl: class MockErrorLoggingService {
+    logError() {}
+    logWarn() {}
+    logInfo() {}
+    logDebug() {}
+  },
+  errorLoggingService: {
+    logError: vi.fn(),
+    logWarn: vi.fn(),
+    logInfo: vi.fn(),
+    logDebug: vi.fn(),
+  },
+  ErrorType: {
+    RUNTIME: 'RUNTIME',
+    NETWORK: 'NETWORK',
+    RESOURCE: 'RESOURCE',
+  },
+  ErrorSeverity: {
+    LOW: 'LOW',
+    MEDIUM: 'MEDIUM',
+    HIGH: 'HIGH',
+    CRITICAL: 'CRITICAL',
+  }
+}));
 
-// --- Mock for React hooks (none except core hooks used in getUnitAIState) ---
+// Mock the CombatManager to avoid BaseManager extension issues
+vi.mock('../../../managers/combat/combatManager', () => ({
+  CombatManager: vi.fn().mockImplementation(() => ({
+    getAllUnits: vi.fn(),
+    getUnitStatus: vi.fn(),
+    getUnitsInRange: vi.fn(),
+    spawnUnit: vi.fn(),
+    destroyUnit: vi.fn(),
+    moveUnit: vi.fn(),
+    rotateUnit: vi.fn(),
+    changeUnitStatus: vi.fn(),
+    damageUnit: vi.fn(),
+    fireWeapon: vi.fn(),
+    engageTarget: vi.fn(),
+    loseTarget: vi.fn(),
+  }))
+}));
+
+// Mock the ManagerRegistry to avoid circular dependencies
+vi.mock("../../../managers/ManagerRegistry", () => ({
+  getCombatManager: vi.fn(() => ({
+    getAllUnits: vi.fn(),
+    getUnitStatus: vi.fn(),
+    getUnitsInRange: vi.fn(),
+    spawnUnit: vi.fn(),
+    destroyUnit: vi.fn(),
+    moveUnit: vi.fn(),
+    rotateUnit: vi.fn(),
+    changeUnitStatus: vi.fn(),
+    damageUnit: vi.fn(),
+    fireWeapon: vi.fn(),
+    engageTarget: vi.fn(),
+    loseTarget: vi.fn(),
+  }))
+}));
+
+// Import after mocking to avoid circular dependency issues
+const { getUnitAIState } = await import('../useCombatAI');
 
 // --- Manual mock for CombatManager class ---
 const mockCombatManager = {
-  getAllUnits: jest.fn(),
-  getUnitStatus: jest.fn(),
-  getUnitsInRange: jest.fn(),
-  spawnUnit: jest.fn(),
-  destroyUnit: jest.fn(),
-  moveUnit: jest.fn(),
-  rotateUnit: jest.fn(),
-  changeUnitStatus: jest.fn(),
-  damageUnit: jest.fn(),
-  fireWeapon: jest.fn(),
-  engageTarget: jest.fn(),
-  loseTarget: jest.fn(),
-} as unknown as jest.Mocked<CombatManager>;
+  getAllUnits: vi.fn(),
+  getUnitStatus: vi.fn(),
+  getUnitsInRange: vi.fn(),
+  spawnUnit: vi.fn(),
+  destroyUnit: vi.fn(),
+  moveUnit: vi.fn(),
+  rotateUnit: vi.fn(),
+  changeUnitStatus: vi.fn(),
+  damageUnit: vi.fn(),
+  fireWeapon: vi.fn(),
+  engageTarget: vi.fn(),
+  loseTarget: vi.fn(),
+};
 
 // --- Setup getCombatManager to return our mock ---
-const mockedGetCombatManager = jest.mocked(
-  require("../../../managers/ManagerRegistry").getCombatManager
-);
-mockedGetCombatManager.mockReturnValue(mockCombatManager as unknown as CombatManager);
+const { getCombatManager } = await import("../../../managers/ManagerRegistry");
+vi.mocked(getCombatManager).mockReturnValue(mockCombatManager as any);
 
 // --- Import sibling mocks for assertion if needed ---
-const mockedConvertStatus = jest.mocked(
-  require("../useCombatAI").convertStatus
-);
-const mockedUpdateFormation = jest.mocked(
-  require("../useCombatAI").updateFormation
-);
-const mockedEvaluateAI = jest.mocked(
-  require("../useCombatAI").evaluateAI
-);
+const mockedConvertStatus = vi.fn();
+const mockedUpdateFormation = vi.fn();
+const mockedEvaluateAI = vi.fn();
 
 // --- Test suite for getUnitAIState ---
 describe('getUnitAIState() getUnitAIState method', () => {
@@ -107,7 +158,7 @@ describe('getUnitAIState() getUnitAIState method', () => {
 
     it('should log a warning to the console', () => {
       // This test aims to verify that a warning is logged when the function is called.
-      const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       getUnitAIState('unit-1');
       expect(spy).toHaveBeenCalledWith(
         'getUnitAIState is a placeholder and cannot access hook state directly.'

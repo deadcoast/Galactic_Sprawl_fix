@@ -15,24 +15,27 @@ import {
 import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
-vi.mock('../../../services/ErrorLoggingService', () => ({
-  ErrorType: {
-    RUNTIME: 'RUNTIME',
-    NETWORK: 'NETWORK',
-    RESOURCE: 'RESOURCE',
-  },
-  ErrorSeverity: {
-    LOW: 'LOW',
-    MEDIUM: 'MEDIUM',
-    HIGH: 'HIGH',
-    CRITICAL: 'CRITICAL',
-  },
-  errorLoggingService: {
-    logError: vi.fn(),
-    clearErrors: vi.fn(),
-    getErrors: vi.fn(),
-  },
-}));
+vi.mock('../../../services/logging/ErrorLoggingService', () => {
+  const mockLogError = vi.fn();
+  return {
+    ErrorType: {
+      RUNTIME: 'RUNTIME',
+      NETWORK: 'NETWORK',
+      RESOURCE: 'RESOURCE',
+    },
+    ErrorSeverity: {
+      LOW: 'LOW',
+      MEDIUM: 'MEDIUM',
+      HIGH: 'HIGH',
+      CRITICAL: 'CRITICAL',
+    },
+    errorLoggingService: {
+      logError: mockLogError,
+      clearErrors: vi.fn(),
+      getErrors: vi.fn(),
+    },
+  };
+});
 
 // Component that throws an error
 const BuggyComponent = ({ shouldThrow = true }) => {
@@ -82,8 +85,9 @@ describe('ErrorBoundary Component', () => {
     const originalConsoleError = console.error;
     console.error = vi.fn();
 
-    // Get the mocked function
-    const mockLogError = vi.mocked(errorLoggingService.logError);
+    // Get the mocked function from the service
+    const mockLogError = errorLoggingService.logError as ReturnType<typeof vi.fn>;
+    mockLogError.mockClear();
 
     // Render with component that will throw
     renderWithProviders(

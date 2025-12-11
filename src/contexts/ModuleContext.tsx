@@ -33,6 +33,8 @@ export enum ModuleActionType {
   REMOVE_MODULE = 'module/removeModule',
   SELECT_MODULE = 'module/selectModule',
   SET_ACTIVE_MODULES = 'module/setActiveModules',
+  ACTIVATE_MODULE = 'module/activateModule',
+  DEACTIVATE_MODULE = 'module/deactivateModule',
   SET_CATEGORIES = 'module/setCategories',
   SET_LOADING = 'module/setLoading',
   SET_ERROR = 'module/setError',
@@ -125,6 +127,16 @@ export const createSetLoadingAction = (isLoading: boolean): ModuleAction => ({
 export const createSetErrorAction = (error: string | null): ModuleAction => ({
   type: ModuleActionType.SET_ERROR,
   payload: { error },
+});
+
+export const createActivateModuleAction = (moduleId: string): ModuleAction => ({
+  type: ModuleActionType.ACTIVATE_MODULE,
+  payload: { moduleId },
+});
+
+export const createDeactivateModuleAction = (moduleId: string): ModuleAction => ({
+  type: ModuleActionType.DEACTIVATE_MODULE,
+  payload: { moduleId },
 });
 
 // Reducer function
@@ -227,6 +239,52 @@ export const moduleReducer = (state: ModuleState, action: ModuleAction): ModuleS
         ...state,
         isLoading: action.payload.isLoading ?? false,
       };
+    case ModuleActionType.ACTIVATE_MODULE:
+      if (!action.payload.moduleId) {
+        return state;
+      }
+      
+      // Add to active modules if not already present and update module status
+      newActiveModuleIds = state.activeModuleIds.includes(action.payload.moduleId)
+        ? state.activeModuleIds
+        : [...state.activeModuleIds, action.payload.moduleId];
+      
+      return {
+        ...state,
+        activeModuleIds: newActiveModuleIds,
+        modules: state.modules[action.payload.moduleId] ? {
+          ...state.modules,
+          [action.payload.moduleId]: {
+            ...state.modules[action.payload.moduleId],
+            status: 'active',
+            isActive: true,
+          },
+        } : state.modules,
+        lastUpdated: Date.now(),
+      };
+      
+    case ModuleActionType.DEACTIVATE_MODULE:
+      if (!action.payload.moduleId) {
+        return state;
+      }
+      
+      // Remove from active modules and update module status
+      newActiveModuleIds = state.activeModuleIds.filter(id => id !== action.payload.moduleId);
+      
+      return {
+        ...state,
+        activeModuleIds: newActiveModuleIds,
+        modules: state.modules[action.payload.moduleId] ? {
+          ...state.modules,
+          [action.payload.moduleId]: {
+            ...state.modules[action.payload.moduleId],
+            status: 'inactive',
+            isActive: false,
+          },
+        } : state.modules,
+        lastUpdated: Date.now(),
+      };
+      
     case ModuleActionType.SET_ERROR:
       return {
         ...state,
@@ -376,16 +434,25 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     // Get initial modules from manager if available
     if (manager) {
       try {
-        const modules = manager.getActiveModules() ?? [];
-        const moduleMap = modules.reduce((acc: Record<string, Module>, module: Module) => {
+        // Try to get all modules first, then active modules
+        const allModules = manager.getModules?.() ?? manager.getAllModules?.() ?? [];
+        const activeModules = manager.getActiveModules?.() ?? [];
+        
+        // Create module map from all modules
+        const moduleMap = allModules.reduce((acc: Record<string, Module>, module: Module) => {
           acc[module.id] = module;
           return acc;
         }, {});
 
+        // Get active module IDs
+        const activeModuleIds = activeModules.length > 0 
+          ? activeModules.map(m => m.id)
+          : manager.getActiveModuleIds?.() ?? [];
+
         return {
           ...initialState,
           modules: moduleMap,
-          activeModuleIds: modules.map(m => m.id),
+          activeModuleIds,
           categories: manager.getModuleCategories?.() ?? [],
           buildings: manager.getBuildings?.() ?? [],
           ...(initialStateOverride ?? {}),
@@ -418,6 +485,14 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
 
     // Module event handlers
     const handleModuleCreated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('module' in event) {
+        const module = event.module as Module;
+        dispatch(createAddModuleAction(module));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (event?.data && typeof event.data === 'object' && 'module' in event.data) {
         // Safely access module property with proper type checking
         const moduleData = event.data;
@@ -429,6 +504,15 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     };
 
     const handleModuleUpdated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && 'updates' in event) {
+        const moduleId = event.moduleId;
+        const updates = event.updates as Partial<Module>;
+        dispatch(createUpdateModuleAction(moduleId, updates));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (
         event?.data &&
         typeof event.data === 'object' &&
@@ -446,6 +530,14 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     };
 
     const handleModuleRemoved = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createRemoveModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
         // Safely access moduleId property with proper type checking
         const eventData = event.data;
@@ -456,7 +548,52 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
     };
 
+    const handleModuleActivated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createActivateModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
+      if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && eventData.moduleId) {
+          const moduleId = eventData.moduleId as string;
+          dispatch(createActivateModuleAction(moduleId));
+        }
+      }
+    };
+
+    const handleModuleDeactivated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createDeactivateModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
+      if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && eventData.moduleId) {
+          const moduleId = eventData.moduleId as string;
+          dispatch(createDeactivateModuleAction(moduleId));
+        }
+      }
+    };
+
     const handleStatusChanged = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && 'status' in event && event.moduleId && event.status) {
+        const moduleId = event.moduleId;
+        const status = event.status as ModuleStatus;
+        dispatch(createUpdateModuleAction(moduleId, { status }));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (
         event?.data &&
         typeof event.data === 'object' &&
@@ -473,30 +610,13 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
     };
 
-    // Set up subscriptions using type-safe wrapper
-    const unsubModuleCreated = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_CREATED,
-      handleModuleCreated
-    );
-
-    const unsubModuleUpdated = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_UPDATED,
-      handleModuleUpdated
-    );
-
-    const unsubModuleRemoved = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_REMOVED,
-      handleModuleRemoved
-    );
-
-    const unsubStatusChanged = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_STATUS_CHANGED,
-      handleStatusChanged
-    );
+    // Set up subscriptions directly using EventType enum values
+    const unsubModuleCreated = moduleEvents.subscribe(EventType.MODULE_CREATED, handleModuleCreated);
+    const unsubModuleUpdated = moduleEvents.subscribe(EventType.MODULE_UPDATED, handleModuleUpdated);
+    const unsubModuleRemoved = moduleEvents.subscribe(EventType.MODULE_REMOVED, handleModuleRemoved);
+    const unsubModuleActivated = moduleEvents.subscribe(EventType.MODULE_ACTIVATED, handleModuleActivated);
+    const unsubModuleDeactivated = moduleEvents.subscribe(EventType.MODULE_DEACTIVATED, handleModuleDeactivated);
+    const unsubStatusChanged = moduleEvents.subscribe(EventType.MODULE_STATUS_CHANGED, handleStatusChanged);
 
     // Clean up subscriptions
     return () => {
@@ -508,6 +628,12 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
       if (unsubModuleRemoved) {
         unsubModuleRemoved();
+      }
+      if (unsubModuleActivated) {
+        unsubModuleActivated();
+      }
+      if (unsubModuleDeactivated) {
+        unsubModuleDeactivated();
       }
       if (unsubStatusChanged) {
         unsubStatusChanged();

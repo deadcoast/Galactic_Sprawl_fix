@@ -286,6 +286,11 @@ class ModuleManagerWrapper implements IModuleManager {
       .filter(Boolean);
   }
 
+  // For compatibility with ModuleProvider initialization
+  getAllModules(): TestModule[] {
+    return this.getModules();
+  }
+
   // Required by IModuleManager
   getModule(id: string): TestModule | undefined {
     return this.modules[id];
@@ -797,7 +802,7 @@ describe('ModuleContext', () => {
   it('provides the initial modules from ModuleManager', () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleList />
         </ModuleProvider>
       </ServiceProvider>
@@ -810,7 +815,7 @@ describe('ModuleContext', () => {
   it('provides the active module IDs from ModuleManager', () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ActiveModulesList />
         </ModuleProvider>
       </ServiceProvider>
@@ -823,7 +828,7 @@ describe('ModuleContext', () => {
   it('allows retrieving a specific module', () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleDetail id="module1" />
         </ModuleProvider>
       </ServiceProvider>
@@ -837,7 +842,7 @@ describe('ModuleContext', () => {
   it('updates modules when they are modified through the ModuleManager', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleDetail id="module1" />
         </ModuleProvider>
       </ServiceProvider>
@@ -858,7 +863,7 @@ describe('ModuleContext', () => {
   it('allows activating and deactivating modules', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleActions id="module2" />
           <ActiveModulesList />
         </ModuleProvider>
@@ -888,7 +893,7 @@ describe('ModuleContext', () => {
   it('updates module status', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleActions id="module1" />
           <ModuleDetail id="module1" />
         </ModuleProvider>
@@ -918,7 +923,7 @@ describe('ModuleContext', () => {
   it('handles new modules being created', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleList />
         </ModuleProvider>
       </ServiceProvider>
@@ -946,7 +951,7 @@ describe('ModuleContext', () => {
   it('handles modules being removed', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleList />
         </ModuleProvider>
       </ServiceProvider>
@@ -1015,7 +1020,7 @@ describe('ModuleContext', () => {
     // Render a component that displays module level
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleDetail id="module1" />
         </ModuleProvider>
       </ServiceProvider>
@@ -1039,7 +1044,7 @@ describe('ModuleContext', () => {
   it('handles attaching modules to buildings', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleDetail id="module1" />
         </ModuleProvider>
       </ServiceProvider>
@@ -1080,7 +1085,7 @@ describe('ModuleContext', () => {
   it('handles detaching modules from buildings', async () => {
     render(
       <ServiceProvider value={serviceRegistry}>
-        <ModuleProvider>
+        <ModuleProvider manager={moduleManager}>
           <ModuleDetail id="module1" />
         </ModuleProvider>
       </ServiceProvider>
