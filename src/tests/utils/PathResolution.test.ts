@@ -164,7 +164,7 @@ describe("PathResolver Property Tests", () => {
           "src/utils/helper.ts": "src/lib/utils/helper.ts",
           "src/components/Button.tsx": "src/ui/components/Button.tsx",
           "src/services/api.ts": "src/lib/services/api.ts",
-        },
+        } as Record<string, string>,
       };
 
       // Test each file's references are preserved
