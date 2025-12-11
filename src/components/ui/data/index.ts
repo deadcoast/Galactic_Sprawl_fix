@@ -293,12 +293,16 @@ export interface MetricProps {
 const formatValue = (value: string | number, format?: MetricProps['format'], precision = 2): string => {
   if (typeof value === 'string') return value;
 
+  // Clamp precision to [0, 20] for Intl.NumberFormat
+  const safePrecision = Math.min(20, Math.max(0, precision));
+
   switch (format) {
     case 'currency':
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: precision,
+        minimumFractionDigits: safePrecision,
+        maximumFractionDigits: safePrecision,
       }).format(value);
     case 'percent':
       return `${(value * 100).toFixed(precision)}%`;
