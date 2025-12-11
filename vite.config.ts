@@ -10,14 +10,13 @@ export default defineConfig({
     {
       name: 'configure-server',
       configureServer(server) {
-        // Serve files from .pixelArtAssets directory
+        // Serve files from assets directory
         server.middlewares.use((req, res, next) => {
           if (req.url?.startsWith('/.pixelArtAssets/')) {
-            req.url = req.url.replace('/.pixelArtAssets/', '/');
             res.setHeader('Content-Type', 'image/png');
             // Using proper type assertion for serveStatic middleware
             return (
-              serveStatic(resolve(__dirname, '.pixelArtAssets')) as unknown as (
+              serveStatic(resolve(__dirname, 'assets')) as unknown as (
                 req: import('http').IncomingMessage,
                 res: import('http').ServerResponse,
                 next: () => void
