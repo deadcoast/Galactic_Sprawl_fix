@@ -67,13 +67,13 @@ GameLayout manages views, which are toggled by:
 
 ```tsx
 // WRONG: importing functions that use hooks
-import { buildModule } from '../../contexts/ModuleContext';
+import { buildModule } from "../../contexts/ModuleContext";
 
 // RIGHT: using the context directly within the component
 const moduleContext = useModules();
 const buildModuleLocally = (moduleType, cost) => {
   moduleContext.dispatch({
-    type: 'CREATE_MODULE',
+    type: "CREATE_MODULE",
     moduleType,
     position,
   });
@@ -90,7 +90,7 @@ const buildModuleLocally = (moduleType, cost) => {
 // Register default buildings with both moduleManager and ModuleContext
 moduleManager.registerBuilding(defaultMothership);
 moduleDispatch({
-  type: 'REGISTER_BUILDING',
+  type: "REGISTER_BUILDING",
   building: defaultMothership,
 });
 ```
@@ -102,7 +102,7 @@ moduleDispatch({
 
 ```tsx
 const handleToggleView = () => {
-  setShowView(prev => !prev);
+  setShowView((prev) => !prev);
   // Hide other views if this one is being shown
   if (!showView) {
     setShowOtherView(false);
@@ -145,13 +145,11 @@ By understanding these files, you'll grasp the core functionality without gettin
 ## Next Steps for Development
 
 1. **Simplify the codebase**:
-
    - Remove unnecessary files and features
    - Focus on making core functionality work properly
    - Only add features once the foundation is solid
 
 2. **Improve feedback**:
-
    - Add more detailed console logging
    - Enhance user notifications
    - Add visual indicators for successful/failed actions

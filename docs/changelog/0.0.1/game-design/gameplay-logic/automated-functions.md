@@ -6,12 +6,10 @@
 Each asset in Galactic Sprawl has an associated Automation Purpose that defines how it behaves autonomously:
 
 - **War:**
-
   - **Behavior:** Automatically attack/defend when enemies are detected.
   - **Example:** War ships dispatch from hangers to intercept enemy vessels without direct input.
 
 - **Recon:**
-
   - **Behavior:** Automates exploration and discovery.
   - **Example:** Recon ships systematically map galaxies, uncover anomalies, and identify new resources or habitable worlds.
 
@@ -22,37 +20,30 @@ Each asset in Galactic Sprawl has an associated Automation Purpose that defines 
 ## In-Game Automated Processes (Extracted from Your Project)
 
 - **Per-System Progress:**
-
   - **Independent Operation:** Each system retains its own state (resources, colonies, ships).
   - **Background Resource Generation:** As systems develop, population and resource metrics increase automatically.
   - **Return Persistence:** When a player revisits a system, all automated progress (upgrades, ships, station modules) remains as previously set.
 
 - **Automated Development & Expansion:**
-
   - **Auto-Colonization:** Advanced systems (via tech tree research/TTR) trigger colonization of nearby star systems automatically.
   - **Food Synthesis/Biodome Crops:** Enhance both colony and habitable world growth without direct input.
   - **Trade Routes Formation:** Automated trade routes form based on system connectivity, visualized by increasing particle density along high-traffic corridors.
 
 - **Mothership & Colony Star Station:**
-
   - **Automated Resource Sharing:** Automatically distribute resources between hubs.
   - **Auto-Upgrades & Notifications:** Modules (like Radar and Ship Hanger) provide real-time status, auto-producing ships or triggering alerts when enemy threats are detected.
 
 - **Ship Hanger:**
-
   - **Auto-Production:** Queued ship builds are produced and dispatched automatically, with War Ships (e.g., Spitflares) intercepting enemies as soon as threats are detected.
 
 - **Officer Academy:**
-
   - **Auto-Assignment:** Automatically assigns trained officers to fleets; officers level up via XP from automated tasks.
 
 - **Mineral Processing Centre:**
-
   - **Threshold-Based Mining:** Once set thresholds (minimum/maximum resource levels) are reached, Mining Ships start or stop extraction automatically.
   - **Master “MINE ALL” Toggle:** Overrides individual settings for full-scale automated mining.
 
 - **Exploration Hub:**
-
   - **Automated Recon Dispatch:** Recon ships are continuously deployed to explore unmapped regions, detect anomalies, and gather exploration data.
 
 - **Automated Fleet Behavior:**
@@ -73,7 +64,6 @@ Develop a self-sustaining, ever-evolving galaxy where star systems, fleets, and 
 
 - **Automated Development:**  
   Systems automatically trigger processes such as:
-
   - **Auto-Colonization:** When thresholds (population, resource levels, or tech tiers) are reached, adjacent systems can be colonized automatically.
   - **Dynamic Trade Routes:** Automatically form between systems to share resources and boost growth.
   - **Background Operations:** Modules like the Mineral Processing Centre, Ship Hanger, and Recon/Mining ship dispatch work continuously, following preset priority rules.
@@ -86,7 +76,6 @@ Develop a self-sustaining, ever-evolving galaxy where star systems, fleets, and 
 ### Component Structure & State Management
 
 - **Component Hierarchy:**
-
   - **Top-Level Container:** `<VPRStarSystemView />` acts as the parent, hosting all automated modules (Mothership, Colony Station, Habitable Worlds, etc.).
   - **Child Components:** Each module (e.g., `<MothershipVPR />`, `<ShipHangerVPR />`, `<ExplorationHubVPR />`) controls its own automation logic, animations, and interactions.
 

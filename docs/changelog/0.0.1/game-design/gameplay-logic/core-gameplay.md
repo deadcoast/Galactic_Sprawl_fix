@@ -338,13 +338,11 @@ Each module includes detailed UI elements and interactivity. The following secti
   - **Interactive Modals:**
     - Clicking on a habitable world brings up a detailed panel with growth graphs, resource export rates, and environmental factors.
 - **Design Methods:**
-
   - Use a dedicated React component that periodically updates growth metrics.
   - Visual progression can be achieved with react-spring for subtle pulsing and expansion effects.
   - Provide detailed modals (on click/hover) for in-depth statistics and growth graphs.
 
 - **Functionality:**
-
   - Represents autonomous planetary growth within colonized systems.
   - Provides additional resource generation and acts as an economic booster via tourism/trade.
 

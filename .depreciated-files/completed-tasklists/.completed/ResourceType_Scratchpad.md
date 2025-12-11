@@ -114,7 +114,7 @@ The deprecation system is implemented in `src/utils/resources/ResourceTypeConver
    ```typescript
    export function warnOnStringResourceTypeUsage(
      stringType: StringResourceType,
-     context?: string
+     context?: string,
    ): void {
      // Implementation varies based on CURRENT_DEPRECATION_PHASE
    }
@@ -187,17 +187,17 @@ Replace imports of string-based `ResourceType` with the enum-based version:
 
 ```typescript
 // Before
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceType } from "../types/resources/ResourceTypes";
 
 // After
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 ```
 
 If you need both types during the transition, use aliases:
 
 ```typescript
-import { ResourceType as StringResourceType } from '../types/resources/ResourceTypes';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType as StringResourceType } from "../types/resources/ResourceTypes";
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 ```
 
 ### Step 2: Replace String Literals with Enum Values
@@ -206,7 +206,7 @@ Replace string literals with their enum equivalents:
 
 ```typescript
 // Before
-const resourceType: ResourceType = 'minerals';
+const resourceType: ResourceType = "minerals";
 
 // After
 const resourceType: ResourceType = ResourceType.MINERALS;
@@ -268,7 +268,7 @@ For code that needs to support both formats during the transition, use the conve
 import {
   ensureEnumResourceType,
   ensureStringResourceType,
-} from '../utils/resources/ResourceTypeConverter';
+} from "../utils/resources/ResourceTypeConverter";
 
 // Convert any resource type to enum format
 const enumType = ensureEnumResourceType(resourceType);
@@ -283,7 +283,7 @@ Replace string comparisons with enum comparisons:
 
 ```typescript
 // Before
-if (resourceType === 'minerals') {
+if (resourceType === "minerals") {
   // ...
 }
 
@@ -300,9 +300,9 @@ Update switch statements to use enum values:
 ```typescript
 // Before
 switch (resourceType) {
-  case 'minerals':
+  case "minerals":
     return 100;
-  case 'energy':
+  case "energy":
     return 50;
   // ...
 }
@@ -323,7 +323,7 @@ switch (resourceType) {
 
 ```typescript
 // Before
-const resourceTypes: ResourceType[] = ['minerals', 'energy', 'gas'];
+const resourceTypes: ResourceType[] = ["minerals", "energy", "gas"];
 
 // After
 const resourceTypes: ResourceType[] = [
@@ -336,11 +336,11 @@ const resourceTypes: ResourceType[] = [
 ### Converting Resource Type Maps
 
 ```typescript
-import { toEnumResourceMap } from '../utils/resources/ResourceTypeConverter';
+import { toEnumResourceMap } from "../utils/resources/ResourceTypeConverter";
 
 // Before
 const resourceMap = new Map<ResourceType, number>();
-resourceMap.set('minerals', 100);
+resourceMap.set("minerals", 100);
 
 // After
 const resourceMap = new Map<ResourceType, number>();
@@ -371,7 +371,10 @@ interface ResourceProps<T extends ResourceType> {
 The standardized resource system includes metadata for each resource type:
 
 ```typescript
-import { ResourceType, ResourceTypeInfo } from '../types/resources/StandardizedResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeInfo,
+} from "../types/resources/StandardizedResourceTypes";
 
 // Get display name
 const displayName = ResourceTypeInfo[ResourceType.MINERALS].displayName;
@@ -394,9 +397,9 @@ const defaultMax = ResourceTypeInfo[ResourceType.GAS].defaultMax;
 When writing tests, use the enum values:
 
 ```typescript
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 
-test('should store resources correctly', () => {
+test("should store resources correctly", () => {
   const result = resourceSystem.storeResource(ResourceType.MINERALS, 100);
   expect(result).toBe(100);
 });
@@ -468,10 +471,10 @@ Replace string-based imports with enum-based imports:
 
 ```typescript
 // Before
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceType } from "../types/resources/ResourceTypes";
 
 // After
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "../types/resources/StandardizedResourceTypes";
 ```
 
 ### 2. Update String Literals to Enum Values
@@ -480,7 +483,7 @@ Replace string literals with enum values:
 
 ```typescript
 // Before
-const resourceType = 'minerals';
+const resourceType = "minerals";
 
 // After
 const resourceType = ResourceType.MINERALS;
@@ -514,10 +517,10 @@ import {
   toStringResourceType,
   ensureEnumResourceType,
   ensureStringResourceType,
-} from '../utils/resources/ResourceTypeConverter';
+} from "../utils/resources/ResourceTypeConverter";
 
 // Convert string to enum
-const enumType = toEnumResourceType('minerals'); // Returns ResourceType.MINERALS
+const enumType = toEnumResourceType("minerals"); // Returns ResourceType.MINERALS
 
 // Convert enum to string
 const stringType = toStringResourceType(ResourceType.MINERALS); // Returns 'minerals'
@@ -532,7 +535,10 @@ function processResource(type: unknown): void {
 ### 5. Use Type Guards for Runtime Checking
 
 ```typescript
-import { isEnumResourceType, isStringResourceType } from '../utils/resources/ResourceTypeConverter';
+import {
+  isEnumResourceType,
+  isStringResourceType,
+} from "../utils/resources/ResourceTypeConverter";
 
 function processResourceType(type: unknown): void {
   if (isEnumResourceType(type)) {
@@ -571,7 +577,7 @@ const resourceAmounts: Record<ResourceType, number> = {
 Use conversion utilities for existing collections:
 
 ```typescript
-import { convertRecordResourceTypes } from '../utils/resources/ResourceTypeConverter';
+import { convertRecordResourceTypes } from "../utils/resources/ResourceTypeConverter";
 
 // Convert a record with string keys to enum keys
 const stringRecord: Record<string, number> = {
@@ -621,7 +627,7 @@ After migration, ensure all tests pass. You may need to update test fixtures and
 During the migration period, we've provided a compatibility layer to handle both string and enum resource types:
 
 ```typescript
-import { createResourceTypeCompatibilityLayer } from '../utils/resources/ResourceTypeMigration';
+import { createResourceTypeCompatibilityLayer } from "../utils/resources/ResourceTypeMigration";
 
 // Original function that expects string resource types
 function processStringResource(type: string): void {
@@ -632,11 +638,11 @@ function processStringResource(type: string): void {
 const processResource = createResourceTypeCompatibilityLayer(
   processStringResource,
   0, // parameter index
-  false // convert to string instead of enum
+  false, // convert to string instead of enum
 );
 
 // Now you can call with either string or enum
-processResource('minerals'); // Works
+processResource("minerals"); // Works
 processResource(ResourceType.MINERALS); // Also works, converts to string
 ```
 

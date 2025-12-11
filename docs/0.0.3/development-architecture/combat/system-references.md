@@ -43,7 +43,7 @@ COMBAT SYSTEM REFERENCES
       visualFeedback?: {
         formationLines: {
           points: [number, number][];
-          style: 'solid' | 'dashed';
+          style: "solid" | "dashed";
           color: string;
           opacity: number;
         }[];
@@ -62,7 +62,6 @@ COMBAT SYSTEM REFERENCES
 - **FormationTacticsPanel.tsx**: src/components/combat/formations/FormationTacticsPanel.tsx
   Purpose: Main component for managing fleet formations and tactics
   Features:
-
   - Formation visualization and selection
   - Tactical behavior configuration
   - Formation effectiveness calculation
@@ -81,7 +80,6 @@ COMBAT SYSTEM REFERENCES
 - **FormationVisualizer.tsx**: src/components/combat/formations/FormationVisualizer.tsx
   Purpose: Visual representation of fleet formations
   Features:
-
   - Renders different formation patterns (spearhead, shield, diamond, arrow, circle, wedge, line, scattered)
   - Color-coded formations based on type (offensive, defensive, balanced)
   - Direction indicator for formation facing
@@ -94,7 +92,6 @@ COMBAT SYSTEM REFERENCES
 - **FormationPresetList.tsx**: src/components/combat/formations/FormationPresetList.tsx
   Purpose: Displays a list of predefined formation patterns for selection
   Features:
-
   - Type-filtered formation presets
   - Visual previews of formation patterns
   - Descriptive text for each formation
@@ -105,7 +102,6 @@ COMBAT SYSTEM REFERENCES
 - **FormationEditor.tsx**: src/components/combat/formations/FormationEditor.tsx
   Purpose: Interface for creating and editing custom formations
   Features:
-
   - Type selection (offensive, defensive, balanced)
   - Pattern selection (spearhead, shield, diamond, etc.)
   - Spacing adjustment
@@ -119,7 +115,6 @@ COMBAT SYSTEM REFERENCES
 - **TacticalBehaviorSelector.tsx**: src/components/combat/formations/TacticalBehaviorSelector.tsx
   Purpose: Interface for selecting tactical behaviors
   Features:
-
   - Categorized behavior options (attack, defense, movement, special)
   - Formation type compatibility filtering
   - Visual representation of behavior effects
@@ -131,7 +126,6 @@ COMBAT SYSTEM REFERENCES
 - **TacticalBonusCard.tsx**: src/components/combat/formations/TacticalBonusCard.tsx
   Purpose: Visual display of formation and tactic bonuses
   Features:
-
   - Color-coded cards based on bonus type (offensive, defensive, utility)
   - Appropriate icons for each bonus type
   - Detailed bonus descriptions
@@ -163,13 +157,11 @@ COMBAT SYSTEM REFERENCES
 ## Combat System Components
 
 - **useCombatAI.ts**: src/hooks/combat/useCombatAI.ts
-
   - Updated to use type conversion functions for CombatUnit objects
   - Accesses health, shield, etc. through the stats property
   - Dependencies: typeConversions.ts, CombatTypes.ts, BehaviorTreeManager.ts
 
 - **ShipClassFactory.ts**: src/factories/ships/ShipClassFactory.ts
-
   - Updated to create manager-style CombatUnit objects and convert them
   - Uses proper WeaponSystem interface for weapon conversion
   - Dependencies: typeConversions.ts, CombatTypes.ts, WeaponTypes.ts
@@ -184,7 +176,6 @@ COMBAT SYSTEM REFERENCES
 - **useCombatSystem.ts**: src/hooks/combat/useCombatSystem.ts
   Purpose: Primary hook for managing fleet formations, tactics, and combat state
   Features:
-
   - Manages combat system state (threat level, active units, active status)
   - Provides functions for updating fleet formations
   - Provides functions for updating tactical behaviors
@@ -274,16 +265,16 @@ CombatTypes.CombatUnit
 
   ```typescript
   export interface FleetFormation {
-    type: 'offensive' | 'defensive' | 'balanced';
+    type: "offensive" | "defensive" | "balanced";
     pattern:
-      | 'spearhead'
-      | 'shield'
-      | 'diamond'
-      | 'arrow'
-      | 'circle'
-      | 'wedge'
-      | 'line'
-      | 'scattered';
+      | "spearhead"
+      | "shield"
+      | "diamond"
+      | "arrow"
+      | "circle"
+      | "wedge"
+      | "line"
+      | "scattered";
     spacing: number;
     facing: number;
     adaptiveSpacing: boolean;
@@ -294,14 +285,22 @@ CombatTypes.CombatUnit
 - **FleetFormation (useFleetAI.ts) - Note: Different property definitions**:
   ```typescript
   interface FleetFormation {
-    type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';
+    type:
+      | "line"
+      | "wedge"
+      | "circle"
+      | "scattered"
+      | "arrow"
+      | "diamond"
+      | "shield"
+      | "spearhead";
     spacing: number;
     facing: number;
-    pattern: 'defensive' | 'offensive' | 'balanced';
+    pattern: "defensive" | "offensive" | "balanced";
     adaptiveSpacing: boolean;
     transitionSpeed?: number;
     subFormations?: {
-      type: FleetFormation['type'];
+      type: FleetFormation["type"];
       units: string[];
     }[];
   }
@@ -363,16 +362,16 @@ When using `useCombatSystem` with `FormationTacticsPanel`, care must be taken to
 
    ```typescript
    interface FleetFormation {
-     type: 'offensive' | 'defensive' | 'balanced';
+     type: "offensive" | "defensive" | "balanced";
      pattern:
-       | 'spearhead'
-       | 'shield'
-       | 'diamond'
-       | 'arrow'
-       | 'circle'
-       | 'wedge'
-       | 'line'
-       | 'scattered';
+       | "spearhead"
+       | "shield"
+       | "diamond"
+       | "arrow"
+       | "circle"
+       | "wedge"
+       | "line"
+       | "scattered";
      // other properties...
    }
    ```
@@ -380,8 +379,16 @@ When using `useCombatSystem` with `FormationTacticsPanel`, care must be taken to
 2. **FleetFormation in useFleetAI.ts**:
    ```typescript
    interface FleetFormation {
-     type: 'spearhead' | 'shield' | 'diamond' | 'arrow' | 'circle' | 'wedge' | 'line' | 'scattered';
-     pattern: 'offensive' | 'defensive' | 'balanced';
+     type:
+       | "spearhead"
+       | "shield"
+       | "diamond"
+       | "arrow"
+       | "circle"
+       | "wedge"
+       | "line"
+       | "scattered";
+     pattern: "offensive" | "defensive" | "balanced";
      // other properties...
    }
    ```
@@ -392,17 +399,17 @@ The mapping solution is implemented in `FormationTacticsPanel.tsx`:
 // Map from fleetAI.formation to CombatTypes.FleetFormation
 const mappedFormation: FleetFormation = {
   // In fleetAI, 'pattern' is what we call 'type' in CombatTypes
-  type: fleetAI.formation.pattern as 'offensive' | 'defensive' | 'balanced',
+  type: fleetAI.formation.pattern as "offensive" | "defensive" | "balanced",
   // In fleetAI, 'type' is what we call 'pattern' in CombatTypes
   pattern: fleetAI.formation.type as
-    | 'spearhead'
-    | 'shield'
-    | 'diamond'
-    | 'arrow'
-    | 'circle'
-    | 'wedge'
-    | 'line'
-    | 'scattered',
+    | "spearhead"
+    | "shield"
+    | "diamond"
+    | "arrow"
+    | "circle"
+    | "wedge"
+    | "line"
+    | "scattered",
   // Other properties map directly
   spacing: fleetAI.formation.spacing,
   facing: fleetAI.formation.facing,

@@ -54,7 +54,12 @@
 
 ```typescript
 // Create shared type definitions
-type D3Selection<T extends Element = SVGElement> = d3.Selection<T, unknown, null, undefined>;
+type D3Selection<T extends Element = SVGElement> = d3.Selection<
+  T,
+  unknown,
+  null,
+  undefined
+>;
 type EventHandler<T = unknown> = (event: T) => void;
 type AsyncOperation<T = unknown> = Promise<T>;
 type ResourceOperation<T> = {

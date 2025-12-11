@@ -17,7 +17,7 @@ To fix this issue, you need to add the missing `getNode()` method to the `Resour
 ```typescript
   /**
    * Get node by ID
-   * 
+   *
    * @param id The ID of the node to retrieve
    * @returns The flow node with the specified ID, or undefined if not found
    */
@@ -35,10 +35,12 @@ Alternatively, as a temporary fix, you can modify the two places in `MiningResou
 const node = this.flowManager.getNode(`mining-ship-${ship.id}`);
 
 // Use:
-const node = this.flowManager.getNodes().find(n => n.id === `mining-ship-${ship.id}`);
+const node = this.flowManager
+  .getNodes()
+  .find((n) => n.id === `mining-ship-${ship.id}`);
 ```
 
-However, adding the `getNode()` method to `ResourceFlowManager` would be a more efficient and cleaner solution. 
+However, adding the `getNode()` method to `ResourceFlowManager` would be a more efficient and cleaner solution.
 
 ## Core Components
 
@@ -58,38 +60,38 @@ The main class responsible for managing all resource-related operations.
 #### Basic Usage
 
 ```typescript
-import { resourceManager } from '../managers/resource/ResourceManager';
+import { resourceManager } from "../managers/resource/ResourceManager";
 
 // Get resource amount
-const minerals = resourceManager.getResourceAmount('minerals');
+const minerals = resourceManager.getResourceAmount("minerals");
 
 // Add resources
-resourceManager.addResource('energy', 100);
+resourceManager.addResource("energy", 100);
 
 // Set production rate
-resourceManager.setResourceProduction('minerals', 10);
+resourceManager.setResourceProduction("minerals", 10);
 
 // Register production
-resourceManager.registerProduction('miner-1', {
-  type: 'minerals',
+resourceManager.registerProduction("miner-1", {
+  type: "minerals",
   amount: 10,
   interval: 1000,
-  conditions: [{ type: 'energy', min: 0.2 }],
+  conditions: [{ type: "energy", min: 0.2 }],
 });
 
 // Register consumption
-resourceManager.registerConsumption('factory-1', {
-  type: 'minerals',
+resourceManager.registerConsumption("factory-1", {
+  type: "minerals",
   amount: 5,
   interval: 2000,
   required: true,
 });
 
 // Set up resource flow
-resourceManager.registerFlow('storage-transfer', {
-  source: 'mine',
-  target: 'storage',
-  resources: [{ type: 'minerals', amount: 10, interval: 5000 }],
+resourceManager.registerFlow("storage-transfer", {
+  source: "mine",
+  target: "storage",
+  resources: [{ type: "minerals", amount: 10, interval: 5000 }],
 });
 ```
 
@@ -98,13 +100,11 @@ resourceManager.registerFlow('storage-transfer', {
 The system includes automatic optimization strategies:
 
 1. **Production Optimization**
-
    - Balances production rates based on demand
    - Maintains optimal buffer levels
    - Adjusts to consumption patterns
 
 2. **Consumption Optimization**
-
    - Reduces resource waste
    - Prioritizes critical consumers
    - Adjusts consumption rates based on availability
@@ -121,7 +121,7 @@ The system includes automatic optimization strategies:
 const metrics = resourceManager.getOptimizationMetrics();
 
 // Check specific resource performance
-const mineralMetrics = resourceManager.getPerformanceMetrics('minerals');
+const mineralMetrics = resourceManager.getPerformanceMetrics("minerals");
 
 // Get overall performance snapshot
 const snapshot = resourceManager.getPerformanceSnapshot();
@@ -140,16 +140,16 @@ The ResourcePerformanceMonitor provides detailed insights into resource manageme
 #### Example: Performance Monitoring
 
 ```typescript
-import { resourcePerformanceMonitor } from '../managers/resource/ResourcePerformanceMonitor';
+import { resourcePerformanceMonitor } from "../managers/resource/ResourcePerformanceMonitor";
 
 // Get resource history
-const history = resourcePerformanceMonitor.getResourceHistory('minerals');
+const history = resourcePerformanceMonitor.getResourceHistory("minerals");
 
 // Get latest performance snapshot
 const snapshot = resourcePerformanceMonitor.getLatestSnapshot();
 console.log(`System Load: ${snapshot.systemLoad * 100}%`);
-console.log('Bottlenecks:', snapshot.bottlenecks);
-console.log('Recommendations:', snapshot.recommendations);
+console.log("Bottlenecks:", snapshot.bottlenecks);
+console.log("Recommendations:", snapshot.recommendations);
 ```
 
 ## Configuration
@@ -190,19 +190,16 @@ TRANSFER_CONFIG: {
 ## Best Practices
 
 1. **Resource Registration**
-
    - Always register productions and consumptions with appropriate intervals
    - Set realistic thresholds for resource flows
    - Use conditions to prevent resource waste
 
 2. **Error Handling**
-
    - Check return values from transfer operations
    - Monitor error events for failed operations
    - Handle resource shortages appropriately
 
 3. **Performance Optimization**
-
    - Monitor performance metrics regularly
    - Address bottlenecks promptly
    - Follow optimization recommendations
@@ -225,9 +222,11 @@ The resource management system emits various events:
 ### Example: Event Handling
 
 ```typescript
-moduleEventBus.on('RESOURCE_SHORTAGE', event => {
+moduleEventBus.on("RESOURCE_SHORTAGE", (event) => {
   const { resourceType, required, available } = event.data;
-  console.log(`Resource shortage: ${resourceType}, needs ${required}, has ${available}`);
+  console.log(
+    `Resource shortage: ${resourceType}, needs ${required}, has ${available}`,
+  );
 });
 ```
 
@@ -236,13 +235,11 @@ moduleEventBus.on('RESOURCE_SHORTAGE', event => {
 Common issues and solutions:
 
 1. **Resource Shortages**
-
    - Check production rates
    - Verify consumption requirements
    - Look for bottlenecks in transfer system
 
 2. **Performance Issues**
-
    - Monitor system load
    - Check for resource bottlenecks
    - Optimize transfer intervals

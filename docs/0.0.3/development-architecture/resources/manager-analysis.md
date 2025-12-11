@@ -29,22 +29,18 @@ private processIntervalId?: number;
 ### Key Interfaces
 
 1. **FlowNetwork**: Represents the entire resource flow network
-
    - `nodes`: Map of node IDs to node objects
    - `connections`: Map of connection IDs to connection objects
    - `resourceStates`: Map of resource types to resource states
 
 2. **FlowNode**: Represents a node in the resource flow network
-
    - Types: producer, consumer, storage, converter
    - Contains resources, capacity, efficiency, and priority information
 
 3. **FlowConnection**: Represents a connection between nodes
-
    - Includes source, target, resource type, and flow rates
 
 4. **ResourceConversionRecipe**: Defines how resources are converted
-
    - Includes inputs, outputs, processing time, and efficiency
 
 5. **ConversionChain**: Represents a sequence of conversion steps

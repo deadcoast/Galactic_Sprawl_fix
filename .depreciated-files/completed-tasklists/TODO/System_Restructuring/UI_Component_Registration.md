@@ -23,7 +23,7 @@ export interface ComponentMetadata {
   id: string;
   type: string;
   eventSubscriptions: string[]; // Event types this component is interested in
-  updatePriority: 'high' | 'medium' | 'low';
+  updatePriority: "high" | "medium" | "low";
   lastUpdated?: number;
   renderCount?: number;
   averageRenderTime?: number;
@@ -60,19 +60,24 @@ export const componentRegistry = new ComponentRegistryService();
 ```typescript
 // src/hooks/ui/useComponentRegistration.ts
 
-import { useEffect, useRef } from 'react';
-import { componentRegistry, ComponentMetadata } from '../../services/ComponentRegistryService';
-import { useComponentProfiler } from './useComponentProfiler';
+import { useEffect, useRef } from "react";
+import {
+  componentRegistry,
+  ComponentMetadata,
+} from "../../services/ComponentRegistryService";
+import { useComponentProfiler } from "./useComponentProfiler";
 
 export interface ComponentRegistrationOptions {
   type: string;
   eventSubscriptions: string[];
-  updatePriority?: 'high' | 'medium' | 'low';
+  updatePriority?: "high" | "medium" | "low";
 }
 
-export function useComponentRegistration(options: ComponentRegistrationOptions): void {
+export function useComponentRegistration(
+  options: ComponentRegistrationOptions,
+): void {
   const componentId = useRef(
-    `${options.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    `${options.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
   ).current;
   const { onRender } = useComponentProfiler(componentId);
 
@@ -82,7 +87,7 @@ export function useComponentRegistration(options: ComponentRegistrationOptions):
       id: componentId,
       type: options.type,
       eventSubscriptions: options.eventSubscriptions,
-      updatePriority: options.updatePriority || 'medium',
+      updatePriority: options.updatePriority || "medium",
     });
 
     // Clean up on unmount
@@ -92,7 +97,7 @@ export function useComponentRegistration(options: ComponentRegistrationOptions):
   // Set up profiling to measure render times
   useEffect(() => {
     return () => {
-      onRender(renderTime => {
+      onRender((renderTime) => {
         componentRegistry.updateComponentMetrics(componentId, renderTime);
       });
     };
@@ -105,8 +110,8 @@ export function useComponentRegistration(options: ComponentRegistrationOptions):
 ```typescript
 // src/services/EventPropagationService.ts
 
-import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { componentRegistry } from './ComponentRegistryService';
+import { moduleEventBus, ModuleEventType } from "../lib/modules/ModuleEvents";
+import { componentRegistry } from "./ComponentRegistryService";
 
 export class EventPropagationService {
   private isInitialized = false;
@@ -116,16 +121,16 @@ export class EventPropagationService {
 
     // Subscribe to all relevant event types
     const eventTypes = [
-      'MODULE_CREATED',
-      'MODULE_UPDATED',
-      'RESOURCE_PRODUCED',
-      'RESOURCE_CONSUMED',
+      "MODULE_CREATED",
+      "MODULE_UPDATED",
+      "RESOURCE_PRODUCED",
+      "RESOURCE_CONSUMED",
       // ... other event types
     ] as ModuleEventType[];
 
     // Register for all events
-    eventTypes.forEach(eventType => {
-      moduleEventBus.subscribe(eventType, event => {
+    eventTypes.forEach((eventType) => {
+      moduleEventBus.subscribe(eventType, (event) => {
         this.propagateEvent(eventType, event);
       });
     });
@@ -147,7 +152,7 @@ export class EventPropagationService {
   private sortByPriority(components: ComponentMetadata[]): ComponentMetadata[] {
     const priorityMap = { high: 0, medium: 1, low: 2 };
     return [...components].sort(
-      (a, b) => priorityMap[a.updatePriority] - priorityMap[b.updatePriority]
+      (a, b) => priorityMap[a.updatePriority] - priorityMap[b.updatePriority],
     );
   }
 }
@@ -161,8 +166,11 @@ export const eventPropagation = new EventPropagationService();
 ```typescript
 // src/hooks/ui/useComponentLifecycle.ts
 
-import { useEffect, useRef } from 'react';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { useEffect, useRef } from "react";
+import {
+  moduleEventBus,
+  ModuleEventType,
+} from "../../lib/modules/ModuleEvents";
 
 export interface ComponentLifecycleOptions {
   onMount?: () => void;
@@ -173,7 +181,9 @@ export interface ComponentLifecycleOptions {
   }>;
 }
 
-export function useComponentLifecycle(options: ComponentLifecycleOptions): void {
+export function useComponentLifecycle(
+  options: ComponentLifecycleOptions,
+): void {
   const isMounted = useRef(false);
 
   useEffect(() => {
@@ -188,13 +198,16 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
     const unsubscribes: Array<() => void> = [];
 
     if (options.eventSubscriptions) {
-      options.eventSubscriptions.forEach(subscription => {
-        const unsubscribe = moduleEventBus.subscribe(subscription.eventType, event => {
-          // Only call the handler if the component is still mounted
-          if (isMounted.current) {
-            subscription.handler(event);
-          }
-        });
+      options.eventSubscriptions.forEach((subscription) => {
+        const unsubscribe = moduleEventBus.subscribe(
+          subscription.eventType,
+          (event) => {
+            // Only call the handler if the component is still mounted
+            if (isMounted.current) {
+              subscription.handler(event);
+            }
+          },
+        );
 
         unsubscribes.push(unsubscribe);
       });
@@ -210,7 +223,7 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
       }
 
       // Unsubscribe from all events
-      unsubscribes.forEach(unsubscribe => unsubscribe());
+      unsubscribes.forEach((unsubscribe) => unsubscribe());
     };
   }, []);
 }
@@ -221,7 +234,7 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
 ```typescript
 // src/services/UIPerformanceMonitor.ts
 
-import { componentRegistry } from './ComponentRegistryService';
+import { componentRegistry } from "./ComponentRegistryService";
 
 export class UIPerformanceMonitor {
   private thresholds = {
@@ -256,13 +269,13 @@ export class UIPerformanceMonitor {
     const frequentUpdaters = report.componentsExceedingRenderCount || [];
 
     // Log performance issues in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       if (slowComponents.length > 0) {
-        console.warn('Components with slow render times:', slowComponents);
+        console.warn("Components with slow render times:", slowComponents);
       }
 
       if (frequentUpdaters.length > 0) {
-        console.warn('Components with too frequent updates:', frequentUpdaters);
+        console.warn("Components with too frequent updates:", frequentUpdaters);
       }
     }
 
@@ -302,41 +315,47 @@ export const uiPerformanceMonitor = new UIPerformanceMonitor();
 ```tsx
 // src/components/ui/ResourceDisplay.tsx
 
-import React, { useEffect, useState } from 'react';
-import { useComponentRegistration } from '../../hooks/ui/useComponentRegistration';
-import { useComponentLifecycle } from '../../hooks/ui/useComponentLifecycle';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import React, { useEffect, useState } from "react";
+import { useComponentRegistration } from "../../hooks/ui/useComponentRegistration";
+import { useComponentLifecycle } from "../../hooks/ui/useComponentLifecycle";
+import { moduleEventBus } from "../../lib/modules/ModuleEvents";
 
 interface ResourceDisplayProps {
   resourceType: string;
 }
 
-export const ResourceDisplay: React.FC<ResourceDisplayProps> = ({ resourceType }) => {
+export const ResourceDisplay: React.FC<ResourceDisplayProps> = ({
+  resourceType,
+}) => {
   const [amount, setAmount] = useState(0);
 
   // Register component with registry
   useComponentRegistration({
-    type: 'ResourceDisplay',
-    eventSubscriptions: ['RESOURCE_PRODUCED', 'RESOURCE_CONSUMED', 'RESOURCE_TRANSFERRED'],
-    updatePriority: 'high',
+    type: "ResourceDisplay",
+    eventSubscriptions: [
+      "RESOURCE_PRODUCED",
+      "RESOURCE_CONSUMED",
+      "RESOURCE_TRANSFERRED",
+    ],
+    updatePriority: "high",
   });
 
   // Set up lifecycle and event handling
   useComponentLifecycle({
     eventSubscriptions: [
       {
-        eventType: 'RESOURCE_PRODUCED',
-        handler: event => {
+        eventType: "RESOURCE_PRODUCED",
+        handler: (event) => {
           if (event.data.resourceType === resourceType) {
-            setAmount(prev => prev + event.data.amount);
+            setAmount((prev) => prev + event.data.amount);
           }
         },
       },
       {
-        eventType: 'RESOURCE_CONSUMED',
-        handler: event => {
+        eventType: "RESOURCE_CONSUMED",
+        handler: (event) => {
           if (event.data.resourceType === resourceType) {
-            setAmount(prev => prev - event.data.amount);
+            setAmount((prev) => prev - event.data.amount);
           }
         },
       },

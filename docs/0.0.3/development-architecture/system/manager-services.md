@@ -55,7 +55,7 @@ export abstract class BaseManager {
   protected abstract onInitialize(): Promise<void>;
 
   protected setupEventSubscriptions(eventTypes: EventType[]): void {
-    eventTypes.forEach(eventType => {
+    eventTypes.forEach((eventType) => {
       this.eventBus.subscribe(eventType, this.handleEvent.bind(this));
     });
   }
@@ -70,7 +70,10 @@ export abstract class BaseManager {
     return context;
   }
 
-  protected registerContext(type: ContextType, context: BaseContextProvider<any>): void {
+  protected registerContext(
+    type: ContextType,
+    context: BaseContextProvider<any>,
+  ): void {
     this.contexts.set(type, context);
   }
 }
@@ -89,7 +92,7 @@ export class ResourceManager extends BaseManager {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'ResourceManager',
+        name: "ResourceManager",
         eventTypes: [
           EventType.RESOURCE_ADDED,
           EventType.RESOURCE_REMOVED,
@@ -99,7 +102,7 @@ export class ResourceManager extends BaseManager {
         ],
         contextTypes: [ContextType.RESOURCE],
       },
-      eventBus
+      eventBus,
     );
 
     this.resourceContext = new ResourceContext(eventBus);
@@ -123,7 +126,7 @@ export class ResourceManager extends BaseManager {
       sourceId,
       targetId,
       rate,
-      type: 'transfer',
+      type: "transfer",
     };
 
     this.resourceContext.updateFlow(flow);
@@ -134,7 +137,7 @@ export class ResourceManager extends BaseManager {
     const flows = Object.values(this.resourceContext.getState().flows);
     const optimizedFlows = this.flowOptimizer.optimizeFlows(flows);
 
-    optimizedFlows.forEach(flow => {
+    optimizedFlows.forEach((flow) => {
       this.resourceContext.updateFlow(flow);
     });
 
@@ -175,7 +178,7 @@ export class ModuleManager extends BaseManager {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'ModuleManager',
+        name: "ModuleManager",
         eventTypes: [
           EventType.MODULE_CREATED,
           EventType.MODULE_DESTROYED,
@@ -184,7 +187,7 @@ export class ModuleManager extends BaseManager {
         ],
         contextTypes: [ContextType.MODULE],
       },
-      eventBus
+      eventBus,
     );
 
     this.moduleContext = new ModuleContext(eventBus);
@@ -219,7 +222,7 @@ export class ModuleManager extends BaseManager {
   private resolveDependencies(module: Module): void {
     const dependencies = this.dependencyResolver.resolveDependencies(
       module,
-      Object.values(this.moduleContext.getState().modules)
+      Object.values(this.moduleContext.getState().modules),
     );
 
     this.moduleContext.updateDependencies(module.id, dependencies);
@@ -231,7 +234,7 @@ export class ModuleManager extends BaseManager {
       .filter(([_, deps]) => deps.includes(moduleId))
       .map(([id]) => id);
 
-    dependentModules.forEach(depId => {
+    dependentModules.forEach((depId) => {
       if (this.canActivateModule(depId)) {
         this.moduleContext.activateModule(depId);
       }
@@ -265,7 +268,7 @@ export class GameManager extends BaseManager {
   constructor(eventBus: EventBus) {
     super(
       {
-        name: 'GameManager',
+        name: "GameManager",
         eventTypes: [
           EventType.GAME_STARTED,
           EventType.GAME_PAUSED,
@@ -274,7 +277,7 @@ export class GameManager extends BaseManager {
         ],
         contextTypes: [ContextType.GAME],
       },
-      eventBus
+      eventBus,
     );
 
     this.gameContext = new GameContext(eventBus);
@@ -317,7 +320,7 @@ export class GameManager extends BaseManager {
       this.moduleManager.update();
       this.checkGameConditions();
     } catch (error) {
-      console.error('Error in game update:', error);
+      console.error("Error in game update:", error);
       this.handleGameError(error);
     }
 
@@ -344,13 +347,11 @@ export class GameManager extends BaseManager {
 ### Context Integration
 
 1. **State Management**
-
    - Managers access context data
    - State updates are coordinated
    - Changes are propagated
 
 2. **Event Handling**
-
    - Events trigger state updates
    - Changes emit events
    - Event flow is managed
@@ -363,13 +364,11 @@ export class GameManager extends BaseManager {
 ### Service Integration
 
 1. **Manager Coordination**
-
    - Managers communicate via events
    - State is synchronized
    - Dependencies are managed
 
 2. **Resource Flow**
-
    - Resources are tracked
    - Flows are optimized
    - Thresholds are monitored
@@ -382,13 +381,11 @@ export class GameManager extends BaseManager {
 ## Performance Optimization
 
 1. **Update Cycle**
-
    - Updates are batched
    - Processing is prioritized
    - Memory is managed
 
 2. **State Management**
-
    - Changes are optimized
    - Updates are efficient
    - Memory is controlled
@@ -401,13 +398,11 @@ export class GameManager extends BaseManager {
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Test manager logic
    - Verify state updates
    - Check event handling
 
 2. **Integration Tests**
-
    - Test manager interaction
    - Verify state coordination
    - Check performance

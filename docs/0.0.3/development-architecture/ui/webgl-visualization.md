@@ -92,19 +92,16 @@ Located at `src/components/ui/visualization/DataHighlightDemo.tsx`, this demo co
 The WebGL visualization system integrates with several existing components:
 
 1. **Resource Visualization**
-
    - Enhanced resource distribution views
    - Improved performance for large resource datasets
    - Interactive highlighting of important resource thresholds
 
 2. **Exploration and Analysis**
-
    - Visual analysis of scan data
    - Anomaly detection visualization
    - Pattern recognition in exploration data
 
 3. **Performance Monitoring**
-
    - System metrics visualization
    - Performance bottleneck highlighting
    - Resource usage patterns
@@ -172,7 +169,7 @@ Custom configuration with animation:
   width={800}
   height={600}
   visualizationType={DataVisualizationShaderType.FLOW}
-  colors={['#003366', '#0066cc', '#0099ff', '#66ccff', '#99ddff']}
+  colors={["#003366", "#0066cc", "#0099ff", "#66ccff", "#99ddff"]}
   animate={true}
   animationSpeed={1.5}
   intensity={0.9}

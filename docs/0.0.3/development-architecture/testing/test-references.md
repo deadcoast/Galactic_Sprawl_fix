@@ -181,7 +181,6 @@ TESTING FRAMEWORK REFERENCES
 - Playwright Configuration: `playwright.config.ts`
   Purpose: Configures Playwright for end-to-end testing
   Features:
-
   - Dynamic port allocation to prevent conflicts
   - Configures browsers (Chromium, Firefox)
   - Sets test directory to `./src/tests/e2e`
@@ -200,7 +199,6 @@ TESTING FRAMEWORK REFERENCES
 - Mining Page: `src/tests/e2e/models/MiningPage.ts`
   Purpose: Page object model for the Mining page
   Features:
-
   - Element locators
   - Navigation methods
   - Action methods (search, filter, select)
@@ -219,7 +217,6 @@ TESTING FRAMEWORK REFERENCES
 - Mining Tests: `src/tests/e2e/mining-simplified.spec.ts`
   Purpose: Tests for the Mining page
   Features:
-
   - Resource display tests
   - Search functionality tests
   - Filtering tests
@@ -228,7 +225,6 @@ TESTING FRAMEWORK REFERENCES
 - Mining Basic Tests: `src/tests/e2e/mining-basic.spec.ts`
   Purpose: Self-contained tests for the Mining page that don't require a server
   Features:
-
   - Uses page.setContent() to create HTML content directly
   - Includes JavaScript functionality in the HTML content
   - Tests resource display, search, filtering, and selection
@@ -237,7 +233,6 @@ TESTING FRAMEWORK REFERENCES
 - Exploration Tests: `src/tests/e2e/exploration.spec.ts`
   Purpose: Tests for the Exploration page
   Features:
-
   - Interface display tests
   - Star system display tests
   - Star system selection tests
@@ -245,7 +240,6 @@ TESTING FRAMEWORK REFERENCES
 - Exploration Basic Tests: `src/tests/e2e/exploration-basic.spec.ts`
   Purpose: Self-contained tests for the Exploration page that don't require a server
   Features:
-
   - Uses page.setContent() to create HTML content directly
   - Includes JavaScript functionality in the HTML content
   - Tests interface display, star system display, and star system selection
@@ -263,7 +257,6 @@ TESTING FRAMEWORK REFERENCES
 - Testing Framework Overview: `CodeBase_Docs/CodeBase_Architecture.md` (Testing section)
   Purpose: Provides an overview of the testing framework and its components
   Features:
-
   - Unit testing approach
   - Integration testing approach
   - End-to-end testing approach
@@ -272,7 +265,6 @@ TESTING FRAMEWORK REFERENCES
 - Self-Contained Test Approach: `CodeBase_Docs/CodeBase_Architecture.md` (Self-Contained Test Approach section)
   Purpose: Documents the self-contained test approach for E2E tests
   Features:
-
   - HTML content generation
   - JavaScript functionality
   - Test interaction
@@ -282,7 +274,6 @@ TESTING FRAMEWORK REFERENCES
 - E2E Test Issues and Solutions: `CodeBase_Docs/CodeBase_Error_Log.md` (E2E Test Self-Contained Approach section)
   Purpose: Documents issues encountered with E2E tests and their solutions
   Features:
-
   - Connection errors
   - WebSocket server conflicts
   - Test isolation issues
@@ -302,7 +293,6 @@ TESTING FRAMEWORK REFERENCES
 - Test Setup: `src/tests/setup.ts`
   Purpose: Provides test setup and teardown utilities for unit and integration tests
   Features:
-
   - WebSocket server management with dynamic port allocation
   - Mock localStorage implementation
   - Global hooks for test setup and teardown
@@ -312,7 +302,6 @@ TESTING FRAMEWORK REFERENCES
 - Test Isolation Examples: `src/tests/examples/testIsolationExample.test.ts`
   Purpose: Demonstrates proper test isolation techniques
   Features:
-
   - Resource manager isolation between tests
   - WebSocket server isolation with proper type checking
   - Multiple manager isolation examples

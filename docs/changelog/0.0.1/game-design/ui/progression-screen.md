@@ -119,7 +119,6 @@ The **Default VPR UI View** is the primary visual screen where players see the c
 ### Exploration Hub & Mineral Processing Centre VPR
 
 - **Exploration Hub:**
-
   - **Visual Representation:** A module that shows recon ship positions and areas mapped vs. unmapped.
   - **Techniques:**
     - Use layered SVG or Canvas maps that update in real time as exploration data is received.
@@ -139,7 +138,6 @@ The **Default VPR UI View** is the primary visual screen where players see the c
 ### Officer Academy & Ship Hanger VPR
 
 - **Officer Academy:**
-
   - **Visual Representation:**
     - An independent module where training simulations or animated squad leader ships fly by.
     - Use subtle looping animations to indicate ongoing training.
@@ -160,7 +158,6 @@ The **Default VPR UI View** is the primary visual screen where players see the c
 ### Additional VPR Elements
 
 - **Population & Development Indicators:**
-
   - **Visual Effects:**
     - Render expanding circular waves around key assets (e.g., the Mothership, Habitable Worlds) to represent population growth.
     - Use particle systems or animated SVG lines to indicate active trade routes.
@@ -183,7 +180,6 @@ The **Default VPR UI View** is the primary visual screen where players see the c
   - Use CSS-in-JS solutions such as styled-components or Emotion for dynamic theming.
   - Define a consistent theme (dark backgrounds, glowing cyan accents, sci-fi fonts) to be shared across components.
 - **Responsive Design:**
-
   - Ensure the star system view scales appropriately on various screen sizes.
   - Use media queries and flexible layouts (CSS Grid or Flexbox) to handle different viewport dimensions.
 

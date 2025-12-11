@@ -7,7 +7,6 @@ AUTOMATION SYSTEM REFERENCES
 ## Core Components
 
 - **Global Automation Manager**: src/managers/automation/GlobalAutomationManager.ts
-
   - Purpose: Manage global automation routines and execution
   - Dependencies: AutomationManager, GameLoopManager, EventCommunication
   - Features:
@@ -17,7 +16,6 @@ AUTOMATION SYSTEM REFERENCES
     - Error handling and recovery
 
 - **Automation Visualization**: src/components/ui/automation/AutomationVisualization.tsx
-
   - Purpose: Visualize and control automation routines
   - Dependencies: GlobalAutomationManager, CSS Styling
   - Features:
@@ -27,7 +25,6 @@ AUTOMATION SYSTEM REFERENCES
     - Error reporting interface
 
 - **Automation CSS**: src/styles/automation.css
-
   - Purpose: Style the automation visualization components
   - Dependencies: None
   - Features:
@@ -37,7 +34,6 @@ AUTOMATION SYSTEM REFERENCES
     - Error highlighting
 
 - **Automation Hook**: src/hooks/automation/useAutomation.ts
-
   - Purpose: React hook for accessing the global automation system
   - Dependencies: GlobalAutomationManager, AutomationManager
   - Features:
@@ -58,7 +54,6 @@ AUTOMATION SYSTEM REFERENCES
 ## Automation Routines
 
 - **Resource Management Routines**:
-
   - Purpose: Automate resource allocation and distribution
   - Features:
     - Resource balancing
@@ -67,7 +62,6 @@ AUTOMATION SYSTEM REFERENCES
     - Shortage prevention
 
 - **Production Routines**:
-
   - Purpose: Automate production facilities
   - Features:
     - Production queue management
@@ -76,7 +70,6 @@ AUTOMATION SYSTEM REFERENCES
     - Maintenance scheduling
 
 - **Combat Routines**:
-
   - Purpose: Automate combat operations
   - Features:
     - Defensive positioning
@@ -115,15 +108,12 @@ GlobalAutomationManager
 ## Automation System Events
 
 - **RoutineRegisteredEvent**: Triggered when a new routine is registered
-
   - Payload: { routineId, routineType, priority }
 
 - **RoutineExecutedEvent**: Triggered when a routine is executed
-
   - Payload: { routineId, executionTime, result }
 
 - **RoutineErrorEvent**: Triggered when a routine encounters an error
-
   - Payload: { routineId, error, recoveryAttempted, recovered }
 
 - **AutomationStatusChangedEvent**: Triggered when the automation system status changes
@@ -132,7 +122,6 @@ GlobalAutomationManager
 ## Automation System Integration
 
 - **Module Integration**:
-
   - Purpose: Integrate automation with module system
   - Features:
     - Module-specific routines
@@ -141,7 +130,6 @@ GlobalAutomationManager
     - Module performance optimization
 
 - **Resource System Integration**:
-
   - Purpose: Integrate automation with resource system
   - Features:
     - Resource flow optimization
@@ -160,7 +148,6 @@ GlobalAutomationManager
 ## Automation System Configuration
 
 - **Global Configuration**:
-
   - Purpose: Configure global automation settings
   - Features:
     - System enable/disable
@@ -179,7 +166,6 @@ GlobalAutomationManager
 ## Automation System Testing
 
 - **Unit Tests**:
-
   - Purpose: Test individual automation components
   - Location: src/tests/automation/
   - Features:
@@ -200,7 +186,6 @@ GlobalAutomationManager
 ## Automation Rule Configuration Files
 
 - **Exploration Rules**: src/config/automation/explorationRules.ts
-
   - Purpose: Define automation rules for exploration activities
   - Dependencies: AutomationManager, ModuleEventType
   - Features:
@@ -212,7 +197,6 @@ GlobalAutomationManager
   - Action Types: Emit event actions to trigger exploration activities
 
 - **Hangar Rules**: src/config/automation/hangarRules.ts
-
   - Purpose: Define automation rules for ship hangar management
   - Dependencies: AutomationManager, ModuleEventType
   - Features:
@@ -224,7 +208,6 @@ GlobalAutomationManager
   - Action Types: Emit event actions to trigger hangar operations
 
 - **Colony Rules**: src/config/automation/colonyRules.ts
-
   - Purpose: Define automation rules for colony management
   - Dependencies: AutomationManager, ModuleEventType
   - Features:
@@ -236,7 +219,6 @@ GlobalAutomationManager
   - Action Types: Emit event actions to trigger colony operations
 
 - **Mining Rules**: src/config/automation/miningRules.ts
-
   - Purpose: Define automation rules for mining operations
   - Dependencies: AutomationManager, ModuleEventType
   - Features:

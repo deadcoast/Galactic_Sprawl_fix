@@ -33,7 +33,6 @@ BUILD CONFIGURATION REFERENCES
 ### Build Configuration
 
 1. TypeScript Configuration
-
    - Main configuration: tsconfig.json
      - Target: ES2020
      - Module: ESNext
@@ -60,7 +59,6 @@ BUILD CONFIGURATION REFERENCES
 ### Build Configuration
 
 1. TypeScript Configuration
-
    - Main configuration: tsconfig.json
      - Target: ES2020
      - Module: ESNext

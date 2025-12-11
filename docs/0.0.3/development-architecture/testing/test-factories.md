@@ -27,23 +27,23 @@ Test factories are a pattern used to create real implementations of components a
 const { moduleEvents, trackEvent } = createTestModuleEvents();
 
 // Register a listener
-moduleEvents.on('moduleAdded', 'mining', event => {
+moduleEvents.on("moduleAdded", "mining", (event) => {
   // Handle event
 });
 
 // Emit an event
 moduleEvents.emit({
-  type: 'moduleAdded',
-  moduleType: 'mining',
-  moduleId: 'mining-1',
+  type: "moduleAdded",
+  moduleType: "mining",
+  moduleId: "mining-1",
   timestamp: Date.now(),
 });
 
 // Verify the event was emitted
 expect(trackEvent).toHaveBeenCalledWith({
-  type: 'moduleAdded',
-  moduleType: 'mining',
-  moduleId: 'mining-1',
+  type: "moduleAdded",
+  moduleType: "mining",
+  moduleId: "mining-1",
   timestamp: expect.any(Number),
 });
 ```
@@ -68,19 +68,19 @@ expect(trackEvent).toHaveBeenCalledWith({
 const resourceManager = createTestResourceManager();
 
 // Initialize resources
-resourceManager.initializeResource('minerals', 100);
-resourceManager.initializeResource('energy', 50);
+resourceManager.initializeResource("minerals", 100);
+resourceManager.initializeResource("energy", 50);
 
 // Add resources
-resourceManager.addResource('minerals', 50);
+resourceManager.addResource("minerals", 50);
 
 // Get resource amount
-const minerals = resourceManager.getResourceAmount('minerals');
+const minerals = resourceManager.getResourceAmount("minerals");
 expect(minerals).toBe(150);
 
 // Track production
-resourceManager.trackProduction('minerals', 10, 'mining-module-1');
-expect(resourceManager.getResourceProduction('minerals')).toBe(10);
+resourceManager.trackProduction("minerals", 10, "mining-module-1");
+expect(resourceManager.getResourceProduction("minerals")).toBe(10);
 ```
 
 ### 3. GameContext Test Factory
@@ -104,7 +104,7 @@ expect(resourceManager.getResourceProduction('minerals')).toBe(10);
 render(
   <TestGameProvider>
     <YourComponent />
-  </TestGameProvider>
+  </TestGameProvider>,
 );
 
 // With custom initial state
@@ -116,7 +116,7 @@ render(
     }}
   >
     <YourComponent />
-  </TestGameProvider>
+  </TestGameProvider>,
 );
 
 // Using helper methods
@@ -128,8 +128,8 @@ function TestComponent() {
 
   // Add a ship
   helpers.addShip({
-    id: 'ship-1',
-    status: 'idle',
+    id: "ship-1",
+    status: "idle",
     experience: 0,
     stealthActive: false,
   });
@@ -163,19 +163,25 @@ const testModuleManager = createTestModuleManager();
 
 // Create a module
 const position = { x: 10, y: 20 };
-const module = testModuleManager.createModule('radar', position);
+const module = testModuleManager.createModule("radar", position);
 
 // Activate the module
 testModuleManager.setModuleActive(module.id, true);
 
 // Create a building with an attachment point
-const attachmentPoint = testModuleManager.createTestAttachmentPoint(position, ['radar']);
-const building = testModuleManager.createTestBuilding('mothership', {
+const attachmentPoint = testModuleManager.createTestAttachmentPoint(position, [
+  "radar",
+]);
+const building = testModuleManager.createTestBuilding("mothership", {
   attachmentPoints: [attachmentPoint],
 });
 
 // Attach the module to the building
-const result = testModuleManager.attachModule(module.id, building.id, attachmentPoint.id);
+const result = testModuleManager.attachModule(
+  module.id,
+  building.id,
+  attachmentPoint.id,
+);
 
 // Verify the attachment was successful
 expect(result).toBe(true);
@@ -197,22 +203,18 @@ This test suite verifies all aspects of the test factory, including:
 ## Best Practices for Using Test Factories
 
 1. **Use actual implementations instead of mocks**
-
    - Test factories provide real implementations that behave like production code
    - This ensures tests verify actual behavior rather than mock interactions
 
 2. **Keep tests isolated**
-
    - Each test should create its own test factory instances
    - This prevents cross-test contamination
 
 3. **Focus on behavior, not implementation details**
-
    - Test what components/functions do, not how they do it
    - Test from the user's perspective
 
 4. **Use helper methods for verification**
-
    - Test factories provide helper methods for verifying behavior
    - This makes tests more readable and maintainable
 
@@ -225,7 +227,6 @@ This test suite verifies all aspects of the test factory, including:
 The following test factories are planned for future implementation:
 
 1. **AutomationManager Test Factory**
-
    - Will provide a real AutomationManager for tests
    - Will support rule registration and management
 

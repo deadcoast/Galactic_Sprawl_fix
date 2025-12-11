@@ -9,7 +9,6 @@ This document tracks system-wide errors that have been identified and fixed in t
 There was confusion with the useGameState hook implementation:
 
 1. The codebase previously had two similar hooks in different locations:
-
    - `src/hooks/useGameState.ts` (now removed)
    - `src/hooks/game/useGameState.ts` (current implementation)
 
@@ -25,13 +24,11 @@ There was confusion with the useGameState hook implementation:
 ### Solution
 
 1. **Standardized hook usage**:
-
    - Removed the duplicate hook implementation
    - Ensured all components use the correct `useGameState` hook from `src/hooks/game/useGameState.ts`
    - Updated GameStateMonitor to use the proper hook
 
 2. **Documentation improvements**:
-
    - Added clear comments to the hook file explaining its purpose
    - Updated CodeBase_Mapping_Index.md to include all hooks with their intended usage
    - Added cross-references between related hooks
@@ -44,13 +41,11 @@ There was confusion with the useGameState hook implementation:
 ### Best Practices for Hook Integration
 
 1. **Before creating a new hook**:
-
    - Search the codebase for existing implementations using grep or semantic search
    - Check the CodeBase_Mapping_Index.md for similar functionality
    - Consider extending an existing hook rather than creating a new one
 
 2. **When using existing hooks**:
-
    - Use the most specific hook available for your use case
    - Follow the established patterns for hook usage
    - Contribute improvements to existing hooks rather than creating duplicates
@@ -86,13 +81,11 @@ This error occurred in multiple test files, particularly in `createTestGameProvi
 We implemented a centralized WebSocket management system in `src/tests/setup.ts`:
 
 1. **Port Management**:
-
    - Created a port range (8000-9000) for test WebSocket servers
    - Implemented functions to allocate unique ports for each server
    - Added registration system to track active WebSocket servers
 
 2. **Global Controls**:
-
    - Added functions to globally enable/disable WebSocket servers
    - Implemented proper cleanup in afterEach and afterAll hooks
    - Added logging to help diagnose WebSocket-related issues
@@ -133,9 +126,9 @@ The test files were not properly mocking all required methods and properties of 
 1. Enhanced the readline interface mock to include all required methods:
 
    ```javascript
-   vi.mock('readline', () => ({
+   vi.mock("readline", () => ({
      createInterface: vi.fn(() => ({
-       question: vi.fn((query, callback) => callback('y')),
+       question: vi.fn((query, callback) => callback("y")),
        close: vi.fn(),
        on: vi.fn(),
        pause: vi.fn(),
@@ -157,10 +150,10 @@ The test files were not properly mocking all required methods and properties of 
 2. Added a mock for the url module with fileURLToPath function:
 
    ```javascript
-   vi.mock('url', () => ({
-     fileURLToPath: vi.fn(url => url.replace('file://', '')),
+   vi.mock("url", () => ({
+     fileURLToPath: vi.fn((url) => url.replace("file://", "")),
      default: {
-       fileURLToPath: vi.fn(url => url.replace('file://', '')),
+       fileURLToPath: vi.fn((url) => url.replace("file://", "")),
      },
    }));
    ```
@@ -168,26 +161,26 @@ The test files were not properly mocking all required methods and properties of 
 3. Enhanced the child_process mock to include spawn and exec:
 
    ```javascript
-   vi.mock('child_process', () => {
+   vi.mock("child_process", () => {
      const mockChildProcess = {
        execSync: vi.fn(),
        exec: vi.fn((cmd, options, callback) => {
-         if (callback) callback(null, 'success', '');
+         if (callback) callback(null, "success", "");
          const mockProcess = {
            stdout: {
              on: vi.fn((event, callback) => {
-               if (event === 'data') callback('mock stdout data');
+               if (event === "data") callback("mock stdout data");
                return mockProcess.stdout;
              }),
            },
            stderr: {
              on: vi.fn((event, callback) => {
-               if (event === 'data') callback('mock stderr data');
+               if (event === "data") callback("mock stderr data");
                return mockProcess.stderr;
              }),
            },
            on: vi.fn((event, callback) => {
-             if (event === 'close') callback(0);
+             if (event === "close") callback(0);
              return mockProcess;
            }),
          };
@@ -208,11 +201,13 @@ The test files were not properly mocking all required methods and properties of 
 
    ```javascript
    // Before
-   expect(mockConsole.log).toHaveBeenCalledWith(expect.stringContaining('USAGE'));
+   expect(mockConsole.log).toHaveBeenCalledWith(
+     expect.stringContaining("USAGE"),
+   );
 
    // After
    expect(mockConsole.log).toHaveBeenCalledWith(
-     expect.stringContaining('Advanced ESLint & Prettier Issue Fixer by Rule')
+     expect.stringContaining("Advanced ESLint & Prettier Issue Fixer by Rule"),
    );
    ```
 
@@ -286,10 +281,10 @@ The test files were using CommonJS-style imports and directly referencing global
 
    ```javascript
    // Before
-   require('../../../tools/setup-linting.js');
+   require("../../../tools/setup-linting.js");
 
    // After
-   await import('../../../tools/setup-linting.js');
+   await import("../../../tools/setup-linting.js");
    ```
 
 2. Created proper mock objects for `console` and `process` at the top of each test file:
@@ -302,7 +297,7 @@ The test files were using CommonJS-style imports and directly referencing global
    };
 
    const mockProcess = {
-     argv: ['node', 'script.js'],
+     argv: ["node", "script.js"],
      exit: vi.fn(),
      stdout: { write: vi.fn() },
    };
@@ -324,12 +319,12 @@ The test files were using CommonJS-style imports and directly referencing global
 
    ```javascript
    // Before
-   it('should test something', () => {
+   it("should test something", () => {
      // test code
    });
 
    // After
-   it('should test something', async () => {
+   it("should test something", async () => {
      // test code
    });
    ```
@@ -362,7 +357,6 @@ The tests were designed to run against a deployed or locally running application
 ### Solution
 
 1. Created self-contained test files that don't require a web server:
-
    - `src/tests/e2e/mining-basic.spec.ts`
    - `src/tests/e2e/exploration-basic.spec.ts`
 
@@ -413,21 +407,29 @@ await page.setContent(`
 
 ```typescript
 // Search for "Iron"
-await page.fill('#search-input', 'Iron');
+await page.fill("#search-input", "Iron");
 
 // Verify search results
-await expect(page.locator('.resource-item:has-text("Iron Deposit")')).toBeVisible();
-await expect(page.locator('.resource-item:has-text("Energy Field")')).not.toBeVisible();
+await expect(
+  page.locator('.resource-item:has-text("Iron Deposit")'),
+).toBeVisible();
+await expect(
+  page.locator('.resource-item:has-text("Energy Field")'),
+).not.toBeVisible();
 ```
 
 5. Fixed locator issues by using `.first()` for locators that match multiple elements:
 
 ```typescript
 // Before (causes error)
-await expect(page.locator('.resource-item[data-type="mineral"]')).not.toBeVisible();
+await expect(
+  page.locator('.resource-item[data-type="mineral"]'),
+).not.toBeVisible();
 
 // After (works correctly)
-await expect(page.locator('.resource-item[data-type="mineral"]').first()).not.toBeVisible();
+await expect(
+  page.locator('.resource-item[data-type="mineral"]').first(),
+).not.toBeVisible();
 ```
 
 ### Results
@@ -508,7 +510,6 @@ export const test = base.extend<CustomFixtures>({
 ```
 
 2. Created well-structured page object models:
-
    - `src/tests/e2e/models/MiningPage.ts`
    - `src/tests/e2e/models/ExplorationPage.ts`
 
@@ -516,8 +517,8 @@ export const test = base.extend<CustomFixtures>({
 
 ```typescript
 // playwright.config.ts
-import { defineConfig } from '@playwright/test';
-import { getCurrentPort } from './src/tests/e2e/test-setup';
+import { defineConfig } from "@playwright/test";
+import { getCurrentPort } from "./src/tests/e2e/test-setup";
 
 export default defineConfig({
   // ...
@@ -529,7 +530,6 @@ export default defineConfig({
 ```
 
 4. Created simplified test files that use the new test setup:
-
    - `src/tests/e2e/mining-simplified.spec.ts`
    - `src/tests/e2e/exploration.spec.ts`
    - `src/tests/e2e/simple-test.spec.ts`
@@ -616,7 +616,7 @@ export async function teardownTest(): Promise<void> {
 2. Updated the Playwright configuration (`playwright.config.ts`) to use the dynamic port:
 
 ```typescript
-import { getCurrentPort } from './src/tests/e2e/test-setup';
+import { getCurrentPort } from "./src/tests/e2e/test-setup";
 
 // ...
 
@@ -624,23 +624,23 @@ export default defineConfig({
   // ...
   projects: [
     {
-      name: 'chromium',
+      name: "chromium",
       use: {
-        ...devices['Desktop Chrome'],
+        ...devices["Desktop Chrome"],
         baseURL: `http://localhost:${getCurrentPort()}`,
       },
     },
     {
-      name: 'firefox',
+      name: "firefox",
       use: {
-        ...devices['Desktop Firefox'],
+        ...devices["Desktop Firefox"],
         baseURL: `http://localhost:${getCurrentPort()}`,
       },
     },
   ],
   // ...
   webServer: {
-    command: 'npm run dev',
+    command: "npm run dev",
     port: getCurrentPort(),
     reuseExistingServer: !process.env.CI,
   },
@@ -650,20 +650,20 @@ export default defineConfig({
 3. Created a simplified test file (`src/tests/e2e/mining-test.spec.ts`) that uses the test setup:
 
 ```typescript
-import { test, expect } from './test-setup';
-import { setupTest, teardownTest } from './test-setup';
+import { test, expect } from "./test-setup";
+import { setupTest, teardownTest } from "./test-setup";
 
-test.describe('Mining Operations', () => {
+test.describe("Mining Operations", () => {
   test.beforeEach(async ({ page }) => {
     await setupTest();
-    await page.goto('/mining');
+    await page.goto("/mining");
   });
 
   test.afterEach(async () => {
     await teardownTest();
   });
 
-  test('should display resource list', async ({ page }) => {
+  test("should display resource list", async ({ page }) => {
     // Test implementation
     // ...
   });
@@ -693,13 +693,11 @@ Performance metrics calculation is not reliable
 ### Cause
 
 1. The memory usage measurement was not accurate because:
-
    - It wasn't properly isolating the memory used by the benchmark function
    - It wasn't forcing garbage collection before and after measurements
    - It wasn't handling cases where the memory API is not available
 
 2. The benchmark results were inconsistent because:
-
    - Each benchmark was only run once, leading to high variability
    - There was no averaging of results across multiple runs
    - The event bus wasn't properly reset between runs
@@ -715,7 +713,7 @@ Performance metrics calculation is not reliable
 
 ```typescript
 async function measureMemoryUsageAccurately(
-  fn: () => Promise<void> | void
+  fn: () => Promise<void> | void,
 ): Promise<number | undefined> {
   // Force garbage collection if available (Node.js only)
   if (global.gc) {
@@ -723,10 +721,11 @@ async function measureMemoryUsageAccurately(
   }
 
   // Check if we have access to memory usage API
-  const hasMemoryAPI = typeof process !== 'undefined' && typeof process.memoryUsage === 'function';
+  const hasMemoryAPI =
+    typeof process !== "undefined" && typeof process.memoryUsage === "function";
 
   if (!hasMemoryAPI) {
-    console.warn('Memory usage API not available, skipping memory measurement');
+    console.warn("Memory usage API not available, skipping memory measurement");
     return undefined;
   }
 
@@ -752,7 +751,9 @@ async function measureMemoryUsageAccurately(
 2. Implemented a more reliable benchmark function that runs multiple iterations and averages the results:
 
 ```typescript
-async function runBenchmarkWithImprovedMetrics(scenario: BenchmarkScenario): Promise<{
+async function runBenchmarkWithImprovedMetrics(
+  scenario: BenchmarkScenario,
+): Promise<{
   emitTimeMs: number;
   retrievalTimeMs: number;
   memoryChangeMB?: number;
@@ -765,7 +766,7 @@ async function runBenchmarkWithImprovedMetrics(scenario: BenchmarkScenario): Pro
   for (let i = 0; i < 3; i++) {
     const emitResult = await measureExecutionTime(async () => {
       // Emit all events
-      events.forEach(event => eventBus.emit(event));
+      events.forEach((event) => eventBus.emit(event));
     });
     emitTimesMs.push(emitResult.executionTimeMs);
 
@@ -774,11 +775,12 @@ async function runBenchmarkWithImprovedMetrics(scenario: BenchmarkScenario): Pro
     listenersTriggered = 0;
 
     // Re-emit events
-    events.forEach(event => eventBus.emit(event));
+    events.forEach((event) => eventBus.emit(event));
   }
 
   // Calculate average emit time
-  const emitTimeMs = emitTimesMs.reduce((a, b) => a + b, 0) / emitTimesMs.length;
+  const emitTimeMs =
+    emitTimesMs.reduce((a, b) => a + b, 0) / emitTimesMs.length;
 
   // ... similar approach for retrieval time ...
 
@@ -812,7 +814,6 @@ largeEventScenario.run = async () => {
 ### Prevention
 
 1. When implementing performance benchmarks:
-
    - Always run multiple iterations and average the results
    - Properly isolate the code being measured
    - Reset the state between runs
@@ -821,14 +822,12 @@ largeEventScenario.run = async () => {
    - Document the benchmark methodology
 
 2. For memory usage measurements:
-
    - Force garbage collection before and after measurements if possible
    - Create isolated environments for each measurement
    - Measure only the specific operation being tested
    - Handle cases where memory APIs are not available
 
 3. For execution time measurements:
-
    - Run multiple iterations to get more reliable results
    - Calculate average, minimum, and maximum times
    - Exclude setup and teardown time from measurements
@@ -898,8 +897,12 @@ Properly utilized the color and vector variables in the particle system:
 2. Used `baseVectorX` and `baseVectorY` to calculate accurate velocity vectors:
 
    ```tsx
-   const vectorX = baseVectorX * Math.cos(angleDeviation) - baseVectorY * Math.sin(angleDeviation);
-   const vectorY = baseVectorX * Math.sin(angleDeviation) + baseVectorY * Math.cos(angleDeviation);
+   const vectorX =
+     baseVectorX * Math.cos(angleDeviation) -
+     baseVectorY * Math.sin(angleDeviation);
+   const vectorY =
+     baseVectorX * Math.sin(angleDeviation) +
+     baseVectorY * Math.cos(angleDeviation);
    ```
 
 3. Integrated these into a more comprehensive particle system with:
@@ -939,7 +942,9 @@ The component was destructuring these variables from the custom hook `useModuleS
    {
      showHistory && (
        <div className="module-status-display__status-transition">
-         <h4 className="module-status-display__section-title">Status Transition</h4>
+         <h4 className="module-status-display__section-title">
+           Status Transition
+         </h4>
          <div className="module-status-display__transition-container">
            {previousStatus && (
              <>
@@ -969,18 +974,24 @@ The component was destructuring these variables from the custom hook `useModuleS
    <div className="module-status-display__controls">
      <h4 className="module-status-display__section-title">Status Controls</h4>
      <div className="module-status-display__status-buttons">
-       {['offline', 'standby', 'active', 'error', 'maintenance'].map(status => (
-         <button
-           key={status}
-           className={`module-status-display__status-button ${
-             currentStatus === status ? 'module-status-display__status-button--active' : ''
-           }`}
-           style={{ borderColor: getStatusColor(status as ExtendedModuleStatus) }}
-           onClick={() => handleStatusChange(status as ExtendedModuleStatus)}
-         >
-           {status}
-         </button>
-       ))}
+       {["offline", "standby", "active", "error", "maintenance"].map(
+         (status) => (
+           <button
+             key={status}
+             className={`module-status-display__status-button ${
+               currentStatus === status
+                 ? "module-status-display__status-button--active"
+                 : ""
+             }`}
+             style={{
+               borderColor: getStatusColor(status as ExtendedModuleStatus),
+             }}
+             onClick={() => handleStatusChange(status as ExtendedModuleStatus)}
+           >
+             {status}
+           </button>
+         ),
+       )}
      </div>
    </div>
    ```
@@ -1020,13 +1031,11 @@ The code contained several type definitions and callback functions that were dec
 Fully implemented all the unused variables and functions:
 
 1. Created a new `renderSearchAndControls()` function that adds UI elements for:
-
    - A search input field that uses `handleSearchChange`
    - A "Mine All" toggle button that uses `handleMineAllToggle`
    - A tier selector (T1, T2, T3) that uses `handleTierChange`
 
 2. Added proper event handling for view mode toggle:
-
    - Updated the view toggle button to use `handleViewChange`
    - Implemented proper typing with `ViewMode` and `FilterOption` types
 
@@ -1041,7 +1050,6 @@ Fully implemented all the unused variables and functions:
    ```
 
 4. Enhanced the handlers with proper logic:
-
    - Added console warnings for development feedback
    - Added comments explaining real-world implementation details
    - Properly connected all state variables to UI elements
@@ -1050,7 +1058,7 @@ Fully implemented all the unused variables and functions:
 
    ```typescript
    const toggleViewMode = () => {
-     const newMode: ViewMode = viewMode === 'map' ? 'grid' : 'map';
+     const newMode: ViewMode = viewMode === "map" ? "grid" : "map";
      handleViewChange(newMode);
      console.warn(`View mode changed to: ${newMode}`);
    };
@@ -1113,16 +1121,16 @@ There were **two conflicting definitions** of `FleetFormation` in the codebase:
 
    ```typescript
    export interface FleetFormation {
-     type: 'offensive' | 'defensive' | 'balanced';
+     type: "offensive" | "defensive" | "balanced";
      pattern:
-       | 'spearhead'
-       | 'shield'
-       | 'diamond'
-       | 'arrow'
-       | 'circle'
-       | 'wedge'
-       | 'line'
-       | 'scattered';
+       | "spearhead"
+       | "shield"
+       | "diamond"
+       | "arrow"
+       | "circle"
+       | "wedge"
+       | "line"
+       | "scattered";
      spacing: number;
      facing: number;
      adaptiveSpacing: boolean;
@@ -1133,14 +1141,22 @@ There were **two conflicting definitions** of `FleetFormation` in the codebase:
 2. **In `src/hooks/factions/useFleetAI.ts`**:
    ```typescript
    interface FleetFormation {
-     type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';
+     type:
+       | "line"
+       | "wedge"
+       | "circle"
+       | "scattered"
+       | "arrow"
+       | "diamond"
+       | "shield"
+       | "spearhead";
      spacing: number;
      facing: number;
-     pattern: 'defensive' | 'offensive' | 'balanced';
+     pattern: "defensive" | "offensive" | "balanced";
      adaptiveSpacing: boolean;
      transitionSpeed?: number;
      subFormations?: {
-       type: FleetFormation['type'];
+       type: FleetFormation["type"];
        units: string[];
      }[];
    }
@@ -1158,17 +1174,17 @@ Created a mapping function that properly transforms between the two formats:
 const initialFormation: FleetFormation = fleetAI.formation
   ? {
       // In fleetAI, 'pattern' is what we call 'type' in our component
-      type: fleetAI.formation.pattern as 'offensive' | 'defensive' | 'balanced',
+      type: fleetAI.formation.pattern as "offensive" | "defensive" | "balanced",
       // In fleetAI, 'type' is what we call 'pattern' in our component
       pattern: fleetAI.formation.type as
-        | 'spearhead'
-        | 'shield'
-        | 'diamond'
-        | 'arrow'
-        | 'circle'
-        | 'wedge'
-        | 'line'
-        | 'scattered',
+        | "spearhead"
+        | "shield"
+        | "diamond"
+        | "arrow"
+        | "circle"
+        | "wedge"
+        | "line"
+        | "scattered",
       spacing: fleetAI.formation.spacing,
       facing: fleetAI.formation.facing,
       adaptiveSpacing: fleetAI.formation.adaptiveSpacing,
@@ -1183,8 +1199,8 @@ We also addressed related errors:
 
    ```typescript
    const handleTacticChange = (tactic: string) => {
-     if (['flank', 'charge', 'kite', 'hold'].includes(tactic)) {
-       setActiveTactic(tactic as 'flank' | 'charge' | 'kite' | 'hold');
+     if (["flank", "charge", "kite", "hold"].includes(tactic)) {
+       setActiveTactic(tactic as "flank" | "charge" | "kite" | "hold");
      }
      if (onTacticChange) {
        onTacticChange(fleetId, tactic);
@@ -1199,16 +1215,16 @@ We also addressed related errors:
      name: string;
      description: string;
      value: number;
-     type: 'offensive' | 'defensive' | 'utility';
+     type: "offensive" | "defensive" | "utility";
    }
    ```
 
 3. Fixed prefix unused variables with underscore to avoid lint warnings:
    ```typescript
-   const [_activeSection, _setActiveSection] = useState<'presets' | 'editor' | 'bonuses'>(
-     'presets'
-   );
-   const [currentBehavior, _setCurrentBehavior] = useState('focused_fire');
+   const [_activeSection, _setActiveSection] = useState<
+     "presets" | "editor" | "bonuses"
+   >("presets");
+   const [currentBehavior, _setCurrentBehavior] = useState("focused_fire");
    ```
 
 ### Prevention
@@ -1235,35 +1251,30 @@ We also addressed related errors:
 We have made significant progress in fixing linting issues across the codebase. The following files have been fixed:
 
 1. **WeaponEffectManager.ts** (17 issues fixed)
-
    - Fixed unused variables by adding underscore prefix
    - Replaced explicit 'any' types with specific interfaces
    - Changed console statements to appropriate log levels
    - Added explicit return types to functions
 
 2. **useFactionBehavior.ts** (16 issues fixed)
-
    - Fixed unused variables by adding underscore prefix
    - Replaced explicit 'any' types with specific interfaces
    - Added explicit return types to functions
    - Standardized function declarations
 
 3. **AsteroidFieldManager.ts** (15 issues fixed)
-
    - Fixed unused variables by adding underscore prefix
    - Replaced explicit 'any' types with specific interfaces
    - Changed console statements to appropriate log levels
    - Added explicit parameter types to functions
 
 4. **eventSystemInit.ts** (13 issues fixed)
-
    - Fixed unused variables by adding underscore prefix
    - Replaced explicit 'any' types with specific interfaces
    - Added explicit return types to functions
    - Created proper interfaces for event payloads
 
 5. **MiningResourceIntegration.ts** (13 issues fixed)
-
    - Created interfaces for `MiningShip`, `ResourceNode`, and `ResourceTransfer`
    - Replaced 'any' with specific types in method parameters and return types
    - Added underscore prefix to unused variables
@@ -1298,31 +1309,34 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
 ### Fixed Files
 
 - `src/utils/modules/moduleValidation.ts`
-
   - **Issue**: Functions using `any` type for parameters in type validation functions
   - **Fix**: Replaced `any` with `unknown` and added proper type assertions using `as Partial<T>` pattern
   - **Example**:
 
   ```typescript
   // Before
-  export function validateModularBuilding(building: any): building is ModularBuilding {
+  export function validateModularBuilding(
+    building: any,
+  ): building is ModularBuilding {
     // Direct property access on 'any' type
-    if (typeof building.id !== 'string') {
+    if (typeof building.id !== "string") {
       return false;
     }
     // ...
   }
 
   // After
-  export function validateModularBuilding(building: unknown): building is ModularBuilding {
-    if (typeof building !== 'object' || building === null) {
+  export function validateModularBuilding(
+    building: unknown,
+  ): building is ModularBuilding {
+    if (typeof building !== "object" || building === null) {
       return false;
     }
 
     // Use type assertion to access properties
     const b = building as Partial<ModularBuilding>;
 
-    if (typeof b.id !== 'string' || b.id.trim() === '') {
+    if (typeof b.id !== "string" || b.id.trim() === "") {
       return false;
     }
     // ...
@@ -1332,7 +1346,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   - **Best Practice**: Use `unknown` instead of `any` for parameters in type guard functions, then use type assertions with `Partial<T>` to safely access properties during validation.
 
 - `src/initialization/gameSystemsIntegration.ts`
-
   - **Issue**: Multiple `any` types used for window properties and event handlers
   - **Fix**:
     - Created proper interfaces for message payloads
@@ -1345,8 +1358,9 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   const resourceManager = (window as any).resourceManager as ResourceManager;
 
   // After
-  const resourceManager = (window as unknown as { resourceManager?: ResourceManager })
-    .resourceManager;
+  const resourceManager = (
+    window as unknown as { resourceManager?: ResourceManager }
+  ).resourceManager;
 
   // Before
   const techUnlockedListener = (data: any) => {
@@ -1373,7 +1387,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   - **Best Practice**: Define proper interfaces for message payloads and use optional chaining (`?.`) for potentially undefined properties.
 
 - `src/managers/game/ResourceManager.ts`
-
   - **Issue**: Using `any` for the `details` property in the `ResourceError` type
   - **Fix**: Replaced `any` with `unknown` for the `details` property in the `ResourceError` type
   - **Example**:
@@ -1382,10 +1395,10 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   // Before
   type ResourceError = {
     code:
-      | 'INVALID_RESOURCE'
-      | 'INSUFFICIENT_RESOURCES'
-      | 'INVALID_TRANSFER'
-      | 'THRESHOLD_VIOLATION';
+      | "INVALID_RESOURCE"
+      | "INSUFFICIENT_RESOURCES"
+      | "INVALID_TRANSFER"
+      | "THRESHOLD_VIOLATION";
     message: string;
     details?: any;
   };
@@ -1393,10 +1406,10 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   // After
   type ResourceError = {
     code:
-      | 'INVALID_RESOURCE'
-      | 'INSUFFICIENT_RESOURCES'
-      | 'INVALID_TRANSFER'
-      | 'THRESHOLD_VIOLATION';
+      | "INVALID_RESOURCE"
+      | "INSUFFICIENT_RESOURCES"
+      | "INVALID_TRANSFER"
+      | "THRESHOLD_VIOLATION";
     message: string;
     details?: unknown;
   };
@@ -1405,7 +1418,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   - **Best Practice**: Use `unknown` instead of `any` to force explicit type checking before using the value.
 
 - `src/managers/module/ModuleStatusManager.ts`
-
   - **Issue**: Multiple `any` types used in event handlers and return types
   - **Fix**:
     - Created a `ModuleAlert` interface to replace `any[]` return type
@@ -1446,7 +1458,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   - **Best Practice**: Use proper type definitions for event handlers and return types, and use type assertions with optional chaining for safe property access.
 
 - `src/components/ui/modules/ModuleStatusDisplay.tsx`, `src/components/ui/modules/ModuleUpgradeDisplay.tsx`, `src/components/ui/modules/SubModuleHUD.tsx`
-
   - **Issue**: Using `any` type for module state variables and unsafe type casting
   - **Fix**:
     - Replaced `useState<any>(null)` with `useState<BaseModule | null>(null)`
@@ -1478,7 +1489,9 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
 
   // After
   const manager = subModuleManager as SubModuleManager;
-  const configs = (manager as unknown as { configs: Map<SubModuleType, SubModuleConfig> }).configs;
+  const configs = (
+    manager as unknown as { configs: Map<SubModuleType, SubModuleConfig> }
+  ).configs;
   ```
 
   - **Best Practice**:
@@ -1492,7 +1505,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
 ### Fixed Files
 
 - `src/hooks/factions/useFleetAI.ts`
-
   - **Issue**: Multiple case blocks with lexical declarations (`const`, `let`) without curly braces
   - **Fix**: Added curly braces around case blocks containing lexical declarations
   - **Example**:
@@ -1519,7 +1531,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   - **Best Practice**: Always use curly braces around case blocks that contain lexical declarations to avoid scope issues.
 
 - `src/managers/game/AutomationManager.ts`
-
   - **Issue**: Multiple case blocks with lexical declarations (`const`, `let`) without curly braces
   - **Fix**: Added curly braces around case blocks containing lexical declarations
   - **Example**:
@@ -1556,7 +1567,6 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
 ### Fixed Files
 
 - `src/managers/game/assetManager.ts`
-
   - **Issue**: Using `async` keyword in promise executor function
   - **Fix**: Removed `async` keyword and used traditional promise handling with `.then()` and `.catch()`
   - **Example**:
@@ -1566,7 +1576,7 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   this.loadPromise = new Promise(async (resolve, reject) => {
     try {
       await Assets.init();
-      await Assets.loadBundle('default');
+      await Assets.loadBundle("default");
       // Process loaded assets
       resolve();
     } catch (error) {
@@ -1577,12 +1587,12 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
   // After
   this.loadPromise = new Promise((resolve, reject) => {
     Assets.init()
-      .then(() => Assets.loadBundle('default'))
+      .then(() => Assets.loadBundle("default"))
       .then(() => {
         // Process loaded assets
         resolve();
       })
-      .catch(error => {
+      .catch((error) => {
         reject(error);
       });
   });
@@ -1598,10 +1608,10 @@ This document tracks the linting issues that have been fixed in the Galactic Spr
 
 ```typescript
 // Before
-console.log('Initializing resource integration with available managers');
+console.log("Initializing resource integration with available managers");
 
 // After
-console.warn('Initializing resource integration with available managers');
+console.warn("Initializing resource integration with available managers");
 ```
 
 **Best Practice**: Use `console.warn` for important system messages that should be visible in production.
@@ -1612,21 +1622,21 @@ console.warn('Initializing resource integration with available managers');
 
 ```typescript
 // Before
-console.debug('[ResourceManager] Initialized with config:', config);
+console.debug("[ResourceManager] Initialized with config:", config);
 console.debug(
-  `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`
+  `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`,
 );
 console.debug(
-  `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
+  `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`,
 );
 
 // After
-console.warn('[ResourceManager] Initialized with config:', config);
+console.warn("[ResourceManager] Initialized with config:", config);
 console.warn(
-  `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`
+  `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`,
 );
 console.warn(
-  `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
+  `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`,
 );
 ```
 
@@ -1635,7 +1645,6 @@ console.warn(
 ### Fixed Files
 
 - `src/hooks/factions/useFleetAI.ts`
-
   - **Issue**: Using `console.log` for officer experience tracking
   - **Fix**: Replaced `console.log` with `console.warn` for officer experience tracking
   - **Example**:
@@ -1657,7 +1666,6 @@ console.warn(
   - **Best Practice**: Use `console.warn` for important messages that should be visible in production, and `console.error` for critical errors.
 
 - `src/managers/game/AutomationManager.ts`
-
   - **Issue**: Using `console.error` for non-critical action execution errors
   - **Fix**: Replaced `console.error` with `console.warn` for action execution errors
   - **Example**:
@@ -1683,7 +1691,6 @@ console.warn(
 ### Fixed Files
 
 - `src/hooks/factions/useFleetAI.ts`
-
   - **Issue**: Unused variables `diamondSize` and `currentIndex` in formation calculation
   - **Fix**: Removed the unused variables completely
   - **Example**:
@@ -1734,25 +1741,24 @@ console.warn(
   - **Best Practice**: Remove unused variables to improve code readability and prevent memory leaks.
 
 - `src/managers/game/AutomationManager.ts`
-
   - **Issue**: Unused imports `BaseModule` and `ModuleType`
   - **Fix**: Removed the unused imports
   - **Example**:
 
   ```typescript
   // Before
-  import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-  import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
-  import { moduleManager } from '../module/ModuleManager';
-  import { resourceManager } from './ResourceManager';
-  import { ModuleEventType } from '../../lib/modules/ModuleEvents';
+  import { moduleEventBus } from "../../lib/modules/ModuleEvents";
+  import { BaseModule, ModuleType } from "../../types/buildings/ModuleTypes";
+  import { moduleManager } from "../module/ModuleManager";
+  import { resourceManager } from "./ResourceManager";
+  import { ModuleEventType } from "../../lib/modules/ModuleEvents";
 
   // After
-  import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-  import { moduleManager } from '../module/ModuleManager';
-  import { resourceManager } from './ResourceManager';
-  import { ModuleEventType, ModuleEvent } from '../../lib/modules/ModuleEvents';
-  import { ResourceType } from '../../types/resources/ResourceTypes';
+  import { moduleEventBus } from "../../lib/modules/ModuleEvents";
+  import { moduleManager } from "../module/ModuleManager";
+  import { resourceManager } from "./ResourceManager";
+  import { ModuleEventType, ModuleEvent } from "../../lib/modules/ModuleEvents";
+  import { ResourceType } from "../../types/resources/ResourceTypes";
   ```
 
   - **Best Practice**: Remove unused imports to improve code readability and reduce bundle size.
@@ -1762,7 +1768,6 @@ console.warn(
 ### Fixed Files
 
 - `src/managers/game/AutomationManager.ts`
-
   - **Issue**: Using `any` types for condition values, action values, and event handlers
   - **Fix**:
     - Created specific interfaces for different condition and action value types
@@ -1776,7 +1781,7 @@ console.warn(
     type: AutomationConditionType;
     target?: string;
     value?: any;
-    operator?: 'equals' | 'not_equals' | 'greater' | 'less' | 'contains';
+    operator?: "equals" | "not_equals" | "greater" | "less" | "contains";
   }
 
   export interface AutomationAction {
@@ -1811,13 +1816,18 @@ console.warn(
       | EventConditionValue
       | StatusConditionValue
       | number;
-    operator?: 'equals' | 'not_equals' | 'greater' | 'less' | 'contains';
+    operator?: "equals" | "not_equals" | "greater" | "less" | "contains";
   }
 
   export interface AutomationAction {
     type: AutomationActionType;
     target?: string;
-    value?: TransferResourcesValue | ResourceActionValue | EmitEventValue | number | string;
+    value?:
+      | TransferResourcesValue
+      | ResourceActionValue
+      | EmitEventValue
+      | number
+      | string;
     delay?: number;
   }
   ```
@@ -1829,25 +1839,21 @@ console.warn(
 The following issues still need to be addressed:
 
 1. TypeScript explicit any errors
-
    - Replace remaining `any` types with proper type definitions
    - Create interfaces for untyped objects
    - Use type guards for runtime type checking
 
 2. Unused variables and imports
-
    - Remove unused variables or prefix with underscore (\_)
    - Clean up unused imports
    - Document imports that appear unused but are required
 
 3. Console statements
-
    - Replace remaining `console.log` with proper logging system
    - Keep only necessary `console.warn` and `console.error` statements
    - Add comments for debug-only console statements
 
 4. React hook dependency warnings
-
    - Add missing dependencies to dependency arrays
    - Extract functions outside of hooks where appropriate
    - Use useCallback/useMemo for functions in dependency arrays
@@ -1974,7 +1980,7 @@ The following issues still need to be addressed:
 - Skip failing tests temporarily with clear comments:
 
   ```typescript
-  it('should optimize flows', () => {
+  it("should optimize flows", () => {
     // SKIP: This test is bypassed due to implementation issues
     // TODO: Fix the optimize flows implementation
     return;
@@ -2037,7 +2043,7 @@ The following issues still need to be addressed:
 - Skip failing tests temporarily with clear comments:
 
   ```typescript
-  it('should optimize flows', () => {
+  it("should optimize flows", () => {
     // SKIP: This test is bypassed due to implementation issues
     // TODO: Fix the optimize flows implementation
     return;
@@ -2067,7 +2073,7 @@ The following issues still need to be addressed:
     converterId: string;
     startTime: number;
     endTime?: number;
-    status: 'pending' | 'in-progress' | 'completed' | 'failed' | 'cancelled';
+    status: "pending" | "in-progress" | "completed" | "failed" | "cancelled";
     inputsConsumed: ResourceAmount[];
     outputsProduced: ResourceAmount[];
     byproductsProduced: ResourceAmount[];
@@ -2091,14 +2097,21 @@ The following issues still need to be addressed:
 
 ```javascript
 // Before (causes linter errors)
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 global.vi = jest;
 global.describe = describe; // Error: 'describe' is not defined
 // More undefined function errors...
 
 // After (fixed)
-import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import {
+  jest,
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 
 global.vi = jest;
 global.describe = describe; // Now properly defined
@@ -2213,7 +2226,9 @@ However, the test was directly accessing properties on `result.performanceMetric
 
 2. Used a type assertion with `NonNullable` to inform TypeScript that we've verified the property exists:
    ```typescript
-   const metrics = result.performanceMetrics as NonNullable<typeof result.performanceMetrics>;
+   const metrics = result.performanceMetrics as NonNullable<
+     typeof result.performanceMetrics
+   >;
    expect(metrics.nodesProcessed).toBe(converterCount * 2);
    ```
 
@@ -2230,12 +2245,10 @@ When working with optional properties:
 ### Errors
 
 1. Type errors:
-
    - `Type '"resource"' is not assignable to type 'ModuleType'`
    - `Type '"converter"' is not assignable to type 'ModuleType'`
 
 2. Object property error:
-
    - `An object literal cannot have multiple properties with the same name`
 
 3. Unused variables warnings:
@@ -2349,10 +2362,17 @@ const handleTacticChange = (fleetId: string, tacticId: string) => {
   }
 
   // Cast tacticId to the specific type expected by useCombatSystem
-  if (tacticId === 'flank' || tacticId === 'charge' || tacticId === 'kite' || tacticId === 'hold') {
+  if (
+    tacticId === "flank" ||
+    tacticId === "charge" ||
+    tacticId === "kite" ||
+    tacticId === "hold"
+  ) {
     combatSystem.updateFleetTactic(fleetId, tacticId);
   } else {
-    console.warn(`Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`);
+    console.warn(
+      `Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`,
+    );
   }
 };
 ```
@@ -2403,9 +2423,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // If asChild is true, we should render the child component with the button's props
     // But since we're not using Slot from @radix-ui/react-slot, we'll just render a button
     return (
-      <button className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
     );
-  }
+  },
 );
 ```
 
@@ -2469,13 +2493,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 ### Prevention
 
 1. **Unused variables**:
-
    - Prefix intentionally unused variables with an underscore (`_`) to indicate they are deliberately not used
    - Add comments explaining why they are kept and their intended future purpose
    - Consider using TypeScript's `_` placeholder for truly unused variables in destructuring patterns
 
 2. **Console statements**:
-
    - Use only `console.warn` for development-time warnings and information
    - Use `console.error` for critical errors that need attention
    - Avoid using `console.log` in production code
@@ -2488,13 +2510,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 ### Best Practices
 
 1. **Intentionally unused variables**:
-
    - Always document why an unused variable is kept in the codebase
    - Use underscore prefix consistently to indicate intent
    - Consider refactoring to remove truly unneeded variables
 
 2. **Development logging**:
-
    - Use `console.warn` for development-time logging
    - Consider implementing a logger that is environment-aware (disabled in production)
    - Add context to log messages to make debugging easier
@@ -2531,16 +2551,17 @@ Implemented the Slot pattern to properly support the `asChild` functionality:
    };
 
    // Add Slot component implementation with improved typing
-   const Slot = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
-     ({ children, ...props }, ref) => {
-       const child = React.Children.only(children) as ElementWithRef;
-       return React.cloneElement(child, {
-         ...props,
-         ...child.props,
-         ref: mergeRefs(ref, child.ref),
-       });
-     }
-   );
+   const Slot = React.forwardRef<
+     HTMLElement,
+     React.HTMLAttributes<HTMLElement>
+   >(({ children, ...props }, ref) => {
+     const child = React.Children.only(children) as ElementWithRef;
+     return React.cloneElement(child, {
+       ...props,
+       ...child.props,
+       ref: mergeRefs(ref, child.ref),
+     });
+   });
    ```
 
 2. Added a helper function for merging refs to properly handle component composition:
@@ -2548,8 +2569,8 @@ Implemented the Slot pattern to properly support the `asChild` functionality:
    ```tsx
    function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
      return (value: T) => {
-       refs.forEach(ref => {
-         if (typeof ref === 'function') {
+       refs.forEach((ref) => {
+         if (typeof ref === "function") {
            ref(value);
          } else if (ref != null) {
            (ref as React.MutableRefObject<T>).current = value;
@@ -2565,11 +2586,15 @@ Implemented the Slot pattern to properly support the `asChild` functionality:
    const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
      ({ className, variant, size, asChild = false, ...props }, ref) => {
        // Use the Slot component when asChild is true
-       const Comp = asChild ? Slot : 'button';
+       const Comp = asChild ? Slot : "button";
        return (
-         <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+         <Comp
+           className={cn(buttonVariants({ variant, size, className }))}
+           ref={ref}
+           {...props}
+         />
        );
-     }
+     },
    );
    ```
 
@@ -2638,7 +2663,10 @@ The `lastTime` variable was initialized and assigned in the `mockUseFrame` funct
 
    ```typescript
    // Use proper type assertion with unknown as intermediate step
-   const clock = state.clock as unknown as { elapsedTime: number; delta: number };
+   const clock = state.clock as unknown as {
+     elapsedTime: number;
+     delta: number;
+   };
    const time = clock.elapsedTime;
 
    // Use a default value for delta if it's not available (for compatibility)
@@ -2738,21 +2766,18 @@ This was causing tests to output warning messages and the functionality was not 
 Implemented comprehensive hazard interaction functionality:
 
 1. Added proper hazard type detection based on hazard ID:
-
    - 'damage': radiation, laser effects
    - 'field': gravity, magnetic effects
    - 'weather': space storms, nebulas
    - 'anomaly': temporal distortions, wormholes
 
 2. Implemented interaction types:
-
    - 'amplify': Increases effect strength
    - 'redirect': Changes direction properties (for homing effects)
    - 'enhance': Extends duration
    - 'transform': Changes fundamental effect properties
 
 3. Added proper effect modification based on interaction type:
-
    - Modifying effect strength, magnitude, and duration
    - Special handling for different effect types (e.g., homing effects)
    - Proper type safety using existing interfaces
@@ -2798,7 +2823,6 @@ Also implemented the `handleImpact` method to properly handle weapon effect impa
 ### Prevention
 
 1. When creating placeholder methods that need future implementation:
-
    - Add a FIXME or TODO comment with specific requirements
    - Add tasks to the project tracking system
    - Add basic implementation that doesn't just log a warning
@@ -2906,11 +2930,11 @@ When configuring the server middleware in vite.config.ts, we were using `@ts-ign
    ```typescript
    // Before
    // @ts-ignore
-   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+   return serveStatic(resolve(__dirname, ".pixelArtAssets"))(req, res, next);
 
    // After
    // @ts-expect-error TS2345
-   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+   return serveStatic(resolve(__dirname, ".pixelArtAssets"))(req, res, next);
    ```
 
 2. However, this created a new linting error because the `@ts-expect-error` directive was unused when the types actually did produce an error. To fix this issue properly, two approaches are possible:
@@ -2918,14 +2942,18 @@ When configuring the server middleware in vite.config.ts, we were using `@ts-ign
    **Option 1: Use a proper type assertion** (preferred for most cases)
 
    ```typescript
-   return (serveStatic(resolve(__dirname, '.pixelArtAssets')) as any)(req, res, next);
+   return (serveStatic(resolve(__dirname, ".pixelArtAssets")) as any)(
+     req,
+     res,
+     next,
+   );
    ```
 
    **Option 2: Add a more specific error code with proper documentation**
 
    ```typescript
    // @ts-expect-error TS2345 - Type mismatch in serveStatic parameters
-   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+   return serveStatic(resolve(__dirname, ".pixelArtAssets"))(req, res, next);
    ```
 
 ### Prevention
@@ -2937,7 +2965,6 @@ When configuring the server middleware in vite.config.ts, we were using `@ts-ign
 3. **Add comments**: Always include a comment explaining why the suppression is necessary.
 
 4. **Consider alternatives**:
-
    - Use proper type assertions with intermediate unknown casting
    - Create appropriate typings for third-party libraries
    - Use proper type declarations (`.d.ts` files) for modules

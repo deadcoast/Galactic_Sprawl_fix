@@ -122,33 +122,33 @@ The integration page combines all components into a unified interface:
 ```typescript
 interface LongSessionMemoryImplementation {
   core_functionality: {
-    memory_snapshots: 'Periodic collection of memory usage data';
-    trend_analysis: 'Statistical analysis of memory growth patterns';
-    leak_detection: 'Algorithms to identify potential memory leaks';
-    visualization: 'Real-time and historical memory usage charts';
-    test_simulation: 'Controlled testing with artificial memory patterns';
+    memory_snapshots: "Periodic collection of memory usage data";
+    trend_analysis: "Statistical analysis of memory growth patterns";
+    leak_detection: "Algorithms to identify potential memory leaks";
+    visualization: "Real-time and historical memory usage charts";
+    test_simulation: "Controlled testing with artificial memory patterns";
   };
 
   integration_requirements: {
     application_hooks: [
-      'Initialize during application bootstrap',
-      'Correlate with application state changes',
-      'Integrate with user session tracking',
-      'Connect to existing performance monitoring',
+      "Initialize during application bootstrap",
+      "Correlate with application state changes",
+      "Integrate with user session tracking",
+      "Connect to existing performance monitoring",
     ];
 
     visualization_components: [
-      'Memory usage trend charts',
-      'Leak detection indicators',
-      'System health scoring',
-      'Comparative benchmark visualizations',
+      "Memory usage trend charts",
+      "Leak detection indicators",
+      "System health scoring",
+      "Comparative benchmark visualizations",
     ];
 
     testing_capabilities: [
-      'Simulated leak detection',
-      'Configurable test scenarios',
-      'Test battery with predefined patterns',
-      'Automated report generation',
+      "Simulated leak detection",
+      "Configurable test scenarios",
+      "Test battery with predefined patterns",
+      "Automated report generation",
     ];
   };
 }
@@ -200,9 +200,9 @@ const memoryTracker = new LongSessionMemoryTracker({
 
 // Start tracking with session info
 memoryTracker.startTracking({
-  userId: 'anonymous-123',
-  sessionId: 'session-456',
-  appVersion: '1.2.3',
+  userId: "anonymous-123",
+  sessionId: "session-456",
+  appVersion: "1.2.3",
 });
 ```
 

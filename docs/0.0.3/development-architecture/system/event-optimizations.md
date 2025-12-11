@@ -37,13 +37,16 @@ Batching can be configured with:
 
 ```typescript
 // Create a batched stream of resource events
-const resourceEvents$ = createBatchedEventStream(['RESOURCE_PRODUCED', 'RESOURCE_CONSUMED'], {
-  timeWindow: 200,
-  maxBatchSize: 50,
-});
+const resourceEvents$ = createBatchedEventStream(
+  ["RESOURCE_PRODUCED", "RESOURCE_CONSUMED"],
+  {
+    timeWindow: 200,
+    maxBatchSize: 50,
+  },
+);
 
 // Subscribe to batched events
-resourceEvents$.subscribe(batch => {
+resourceEvents$.subscribe((batch) => {
   console.warn(`Processing ${batch.size} resource events`);
   // Process events in batch
 });
@@ -69,14 +72,20 @@ Event debouncing and throttling have been implemented to optimize UI updates and
 
 ```typescript
 // Debouncing example - only update UI after resource changes settle
-const { event: latestResourceEvent } = useEventDebouncing(['RESOURCE_UPDATED'], {
-  timeWindow: 300,
-});
+const { event: latestResourceEvent } = useEventDebouncing(
+  ["RESOURCE_UPDATED"],
+  {
+    timeWindow: 300,
+  },
+);
 
 // Throttling example - update position at most once per second
-const { event: shipPositionEvent } = useEventThrottling(['SHIP_POSITION_UPDATED'], {
-  timeWindow: 1000,
-});
+const { event: shipPositionEvent } = useEventThrottling(
+  ["SHIP_POSITION_UPDATED"],
+  {
+    timeWindow: 1000,
+  },
+);
 ```
 
 #### When to Use Each Approach
@@ -129,11 +138,11 @@ const eventFilter = new EventFilter({
 
 // Filter events with multiple criteria
 const filteredEvents = eventFilter.filterEvents(eventHistory, {
-  eventTypes: ['RESOURCE_PRODUCED', 'RESOURCE_CONSUMED'],
-  moduleIds: ['module-123', 'module-456'],
+  eventTypes: ["RESOURCE_PRODUCED", "RESOURCE_CONSUMED"],
+  moduleIds: ["module-123", "module-456"],
   startTime: startTimestamp,
   endTime: endTimestamp,
-  customFilter: event => event.data?.amount > 100,
+  customFilter: (event) => event.data?.amount > 100,
 });
 ```
 
@@ -143,15 +152,18 @@ The `useEventFiltering` and `usePaginatedEventFiltering` hooks in `src/hooks/eve
 
 ```typescript
 // Basic filtering
-const { filteredEvents } = useEventFiltering(eventHistory, { eventTypes: ['MODULE_CREATED'] });
+const { filteredEvents } = useEventFiltering(eventHistory, {
+  eventTypes: ["MODULE_CREATED"],
+});
 
 // Paginated filtering
-const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } = usePaginatedEventFiltering(
-  eventHistory,
-  { moduleIds: ['module-123'] },
-  { useIndexedFiltering: true },
-  25 // page size
-);
+const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } =
+  usePaginatedEventFiltering(
+    eventHistory,
+    { moduleIds: ["module-123"] },
+    { useIndexedFiltering: true },
+    25, // page size
+  );
 ```
 
 #### Performance Impact
@@ -166,19 +178,16 @@ const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } = usePagi
 ### Choosing the Right Optimization Technique
 
 1. **Use batching for high-frequency events that can be processed together**
-
    - Resource updates
    - Position updates for multiple entities
    - Telemetry data
 
 2. **Use debouncing for events where only the final state matters**
-
    - UI input fields
    - Resource calculations after multiple changes
    - Configuration updates
 
 3. **Use throttling for events that need regular updates at a controlled rate**
-
    - Animation frames
    - Progress indicators
    - Continuous user input
@@ -192,13 +201,11 @@ const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } = usePagi
 ### Configuration Guidelines
 
 1. **Batch sizes**
-
    - Smaller batch sizes (50-100 events) for time-sensitive operations
    - Larger batch sizes (500-1000 events) for background processing
    - Consider memory constraints when setting batch sizes
 
 2. **Time windows**
-
    - Shorter windows (50-100ms) for responsive UI updates
    - Longer windows (500-1000ms) for less critical updates
    - Balance between responsiveness and processing efficiency
@@ -211,12 +218,10 @@ const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } = usePagi
 ### Performance Monitoring
 
 1. **Track batch processing times**
-
    - Monitor average and maximum batch processing times
    - Alert on processing time spikes
 
 2. **Monitor memory usage**
-
    - Watch for memory leaks from retained event references
    - Monitor index size for large event histories
 
@@ -228,17 +233,14 @@ const { paginatedEvents, currentPage, totalPages, nextPage, prevPage } = usePagi
 ### Testing Considerations
 
 1. **Test with realistic event volumes**
-
    - Create test scenarios with high event frequencies
    - Test with large event histories
 
 2. **Verify correct event ordering**
-
    - Ensure events within batches maintain correct order
    - Verify that debounced/throttled events behave as expected
 
 3. **Test edge cases**
-
    - Empty event batches
    - Very large batches
    - Rapid event bursts

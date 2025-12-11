@@ -83,7 +83,7 @@ These tests provide high coverage of the ResourceFlowManager's functionality:
 The following parts are mocked in tests:
 
 ```typescript
-vi.mock('../../../utils/resources/resourceValidation', () => ({
+vi.mock("../../../utils/resources/resourceValidation", () => ({
   validateResourceFlow: vi.fn().mockImplementation(() => true),
   validateResourceTransfer: vi.fn().mockImplementation(() => true),
 }));

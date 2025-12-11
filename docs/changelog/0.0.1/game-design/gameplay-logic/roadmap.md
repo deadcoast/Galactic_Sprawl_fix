@@ -5,6 +5,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Project Timeline & Milestones
 
 ### Phase 1: Project Skeleton & Core Setup [Q1]
+
 [X] Review project requirements and architecture
 [X] Create detailed implementation plan
 [ ] Set up initial project structure
@@ -12,6 +13,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Complete basic UI framework
 
 ### Phase 2: HUD & UI Framework [Q1-Q2]
+
 [X] Plan UI component architecture
 [X] Design state management system
 [X] Document UI/UX patterns
@@ -19,6 +21,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Develop module-specific views
 
 ### Phase 3: Core Systems Development [Q2]
+
 [ ] Implement resource management
 [ ] Develop module framework
 [ ] Create event system
@@ -26,6 +29,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Test core mechanics
 
 ### Phase 4: Advanced Features [Q3]
+
 [ ] Implement galaxy navigation
 [ ] Develop combat systems
 [ ] Create faction framework
@@ -33,6 +37,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Test advanced features
 
 ### Phase 5: Polish & Optimization [Q4]
+
 [ ] Optimize performance
 [ ] Enhance visuals
 [ ] Balance gameplay
@@ -42,6 +47,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Implementation Progress
 
 ### Core Systems
+
 - Resource Management: 0%
 - Module Framework: 0%
 - Event System: 0%
@@ -49,6 +55,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - UI Framework: 10%
 
 ### Game Modules
+
 - Mothership: 0%
 - Colony System: 0%
 - Combat System: 0%
@@ -56,6 +63,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Exploration: 0%
 
 ### Advanced Features
+
 - Galaxy Map: 0%
 - Faction AI: 0%
 - Combat AI: 0%
@@ -63,6 +71,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Trading: 0%
 
 ## Current Focus
+
 [X] Review GS-ProjectDevPlan.md
 [X] Update implementation timeline
 [X] Organize development phases
@@ -70,6 +79,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Set up testing framework
 
 ## Next Steps
+
 1. Complete core system architecture
 2. Implement basic UI framework
 3. Develop resource management
@@ -77,6 +87,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 5. Build event handling
 
 ## Notes & Considerations
+
 - Follow modular architecture pattern
 - Maintain strict type safety
 - Implement comprehensive testing
@@ -84,6 +95,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Document all systems thoroughly
 
 ## Dependencies & Requirements
+
 1. Core Technologies
    - TypeScript/React
    - Redux/Context
@@ -103,6 +115,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - State persistence
 
 ## Risk Management
+
 1. Technical Risks
    - Performance bottlenecks
    - State management complexity
@@ -116,6 +129,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Memory profiling tools
 
 ## Quality Assurance
+
 1. Testing Strategy
    - Unit tests for core systems
    - Integration tests for modules
@@ -131,6 +145,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Core Gameplay Implementation Details
 
 ### Global Architecture
+
 1. State Management System
    [ ] Redux/Context implementation
    [ ] Global variable tracking (resources, population, fleet status)
@@ -146,6 +161,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Module-Specific Implementation
 
 #### 1. Mothership Core
+
 1. Core Functionality
    [ ] Global resource tracking system
    [ ] Module attachment framework
@@ -159,6 +175,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Upgrade visual effects
 
 #### 2. Colony Star Station
+
 1. Base Systems
    [ ] Population growth mechanics
    [ ] Resource pool management
@@ -172,6 +189,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Growth rate modifiers
 
 #### 3. Radar Module
+
 1. Core Features
    [ ] Object detection system
    [ ] Scan radius calculation
@@ -185,6 +203,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Alert system UI
 
 #### 4. Ship Hanger
+
 1. Production System
    [ ] Build queue management
    [ ] Ship type definitions
@@ -198,6 +217,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Fleet composition optimization
 
 #### 5. Officer Academy
+
 1. Core Systems
    [ ] Officer data management
    [ ] Training progression system
@@ -211,6 +231,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Fleet integration system
 
 #### 6. Mineral Processing
+
 1. Resource Management
    [ ] Resource type definitions
    [ ] Threshold management system
@@ -224,6 +245,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Resource flow optimization
 
 #### 7. Exploration Hub
+
 1. Core Systems
    [ ] Galaxy mapping system
    [ ] Anomaly detection
@@ -237,6 +259,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Data analysis system
 
 ### Tech Tree Integration
+
 1. Core Systems
    [ ] Upgrade path definition
    [ ] Resource requirement system
@@ -250,6 +273,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Upgrade effect display
 
 ### Experience System
+
 1. Core Mechanics
    [ ] XP calculation system
    [ ] Level progression
@@ -265,6 +289,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Implementation Libraries & Tools
 
 ### Core Technologies
+
 1. State Management
    - Redux Toolkit configuration
    - React Context implementation
@@ -290,6 +315,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Context menu implementation
 
 ## Progress Tracking (Core Gameplay)
+
 - Global Architecture: 0%
 - Module Implementation: 0%
 - Tech Tree Integration: 0%
@@ -299,6 +325,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Automation Systems Implementation
 
 ### Core Automation Framework
+
 1. Automation Purpose (AP) System
    [ ] combat automation behavior system
    [ ] Recon automation behavior system
@@ -312,6 +339,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] System state serialization
 
 ### Automated Development Systems
+
 1. Auto-Colonization
    [ ] Population threshold monitoring
    [ ] Resource level tracking
@@ -327,6 +355,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Component-Specific Automation
 
 #### 1. Mothership Automation
+
 1. Resource Management
    [ ] Automated resource sharing
    [ ] Hub-to-colony distribution
@@ -340,6 +369,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Fleet status tracking
 
 #### 2. Ship Systems Automation
+
 1. combat Ships
    [ ] Spitflare interception logic
    [ ] Star Schooner support system
@@ -359,6 +389,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Resource delivery routing
 
 ### Integration Architecture
+
 1. Component Structure
    [ ] VPRStarSystemView container
    [ ] Module-specific VPR components
@@ -378,6 +409,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Resource cleanup system
 
 ### Scheduling & Updates
+
 1. Core Systems
    [ ] Custom scheduling middlecombate
    [ ] Background update manager
@@ -391,6 +423,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Status change indicators
 
 ## Progress Tracking (Automation)
+
 - Core Framework: 0%
 - Development Systems: 0%
 - Ship Automation: 0%
@@ -398,6 +431,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Scheduling: 0%
 
 ## Required Libraries (Automation-Specific)
+
 1. State Management
    - XState for complex flows
    - Redux-Saga/Thunk for scheduling
@@ -411,6 +445,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - D3.js for data visualization
 
 ## Notes (Automation-Specific)
+
 - Implement proper cleanup for all automated processes
 - Use WebSocket for potential multiplayer expansion
 - Ensure proper state persistence
@@ -420,6 +455,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Progression System Implementation
 
 ### Core Progression Framework
+
 1. Visual Progression Representation (VPR)
    [ ] Asset evolution system
    [ ] Dynamic visual feedback
@@ -441,6 +477,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Module Progression Implementation
 
 #### 1. Mothership Evolution
+
 1. Core Systems
    [ ] Visual evolution stages
    [ ] Module upgrade tracking
@@ -454,6 +491,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Effect system integration
 
 #### 2. Colony Development
+
 1. Growth Systems
    [ ] Population scaling mechanics
    [ ] Module unlock progression
@@ -467,6 +505,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Trade route intensification
 
 #### 3. Ship Progression
+
 1. combat Ships
    [ ] Tier-based upgrades
    [ ] Combat efficiency scaling
@@ -508,6 +547,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Recombatd collection system
 
 ## Progress Tracking (Progression)
+
 - Core Framework: 0%
 - Module Evolution: 0%
 - Ship Progression: 0%
@@ -515,6 +555,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - UI Integration: 0%
 
 ## Required Libraries (Progression-Specific)
+
 1. State Management
    - Redux-Persist for state saving
    - Immer for immutable updates
@@ -528,6 +569,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - React-Spring for UI effects
 
 ## Notes (Progression-Specific)
+
 - Implement proper state persistence
 - Ensure smooth visual transitions
 - Maintain performance with complex animations
@@ -537,6 +579,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Factions & AI Implementation
 
 ### Core Faction Framework
+
 1. Faction Assets & Ship Classes
    [ ] Space Rats (Pirates) - 10 ship classes
    [ ] Lost Nova (Exiles) - 10 ship classes
@@ -553,6 +596,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Ship Class Implementation
 
 #### 1. Space Rats Fleet
+
 1. Core Ships
    [ ] The Rat King (Flagship)
    [ ] Asteroid Marauder
@@ -568,6 +612,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Black Void Buccaneer
 
 #### 2. Lost Nova Fleet
+
 1. Primary Ships
    [ ] Eclipse Scythe
    [ ] Null's Revenge
@@ -583,6 +628,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Forbidden Vanguard
 
 #### 3. Equator Horizon Fleet
+
 1. Ancient Vessels
    [ ] Celestial Arbiter
    [ ] Ethereal Galleon
@@ -640,6 +686,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Alliance benefits/penalties
 
 ## Progress Tracking (Factions & AI)
+
 - Core Framework: 0%
 - Ship Implementation: 0%
 - AI Behaviors: 0%
@@ -647,6 +694,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Diplomacy: 0%
 
 ## Required Libraries (Factions & AI)
+
 1. AI & Behavior
    - Behavior3JS for behavior trees
    - XState for state machines
@@ -660,6 +708,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - i18next for localization
 
 ## Notes (Factions & AI)
+
 - Implement proper faction state persistence
 - Ensure balanced difficulty scaling
 - Maintain clear visual feedback for AI states
@@ -669,6 +718,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Scaling & Visual Enhancements Implementation
 
 ### Auto-Scaling Systems
+
 1. Large-Scale Data Management
    [ ] Resource counter virtualization
    [ ] Star system data caching
@@ -690,6 +740,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Visual Enhancement Framework
 
 #### 1. Background Systems
+
 1. Core Features
    [ ] Multi-layer parallax implementation
    [ ] Dynamic star field generation
@@ -703,6 +754,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Visual state caching
 
 #### 2. Trade & Navigation
+
 1. Star Lanes
    [ ] SVG overlay system
    [ ] Real-time path updates
@@ -716,6 +768,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Route optimization display
 
 #### 3. Colony Visualization
+
 1. Growth Indicators
    [ ] Population density display
    [ ] City light simulation
@@ -757,12 +810,14 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Batch rendering
 
 ## Progress Tracking (Scaling & Visuals)
+
 - Auto-Scaling: 0%
 - Visual Enhancements: 0%
 - Asset Integration: 0%
 - Performance: 0%
 
 ## Required Libraries (Scaling & Visuals)
+
 1. Performance
    - react-window for virtualization
    - Dexie.js for IndexedDB
@@ -782,6 +837,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - CSS Grid/Flexbox for layouts
 
 ## Notes (Scaling & Visuals)
+
 - Implement proper virtualization for large lists
 - Use GPU acceleration where possible
 - Maintain consistent visual language
@@ -791,6 +847,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Ships & Combat Implementation
 
 ### Core Ship Framework
+
 1. combat Ship Assets
    [ ] Spitflare (Tier 1) implementation
    [ ] Star Schooner (Tier 1/2) implementation
@@ -808,6 +865,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Weapon Systems Implementation
 
 #### 1. Core Weapons
+
 1. Machine Guns
    [ ] Base model implementation
    [ ] Plasma Rounds upgrade
@@ -889,6 +947,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Repair mechanics
 
 ## Progress Tracking (Ships & Combat)
+
 - Core Framework: 0%
 - Weapon Systems: 0%
 - Combat Systems: 0%
@@ -896,6 +955,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Enhancement Systems: 0%
 
 ## Required Libraries (Ships & Combat)
+
 1. Physics & Combat
    - Matter.js for physics
    - Three.js for 3D combat
@@ -909,6 +969,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Custom shader system
 
 ## Notes (Ships & Combat)
+
 - Implement proper physics for projectiles
 - Ensure smooth combat animations
 - Balance weapon systems carefully
@@ -918,6 +979,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Tech Tree Implementation
 
 ### Core Tech Tree Framework
+
 1. Visual Structure
    [ ] Tree layout system
    [ ] Interactive node components
@@ -933,6 +995,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Infrastructure & Base Tech
 
 #### 1. Mothership Core Systems
+
 1. Tier 1 Systems
    [ ] Basic radar implementation
    [ ] Basic ship hanger
@@ -954,6 +1017,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Fleet Technologies
 
 #### 1. combat Fleet Tech
+
 1. Weapon Systems
    [ ] Tier 1 basic weapons
    [ ] Tier 2 enhancements
@@ -967,6 +1031,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Reactive systems
 
 #### 2. Recon Fleet Tech
+
 1. Sensor Systems
    [ ] Basic sensor arrays
    [ ] Enhanced modules
@@ -980,6 +1045,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Integration systems
 
 #### 3. Mining Fleet Tech
+
 1. Extraction Systems
    [ ] Standard mining lasers
    [ ] Improved extraction
@@ -1021,6 +1087,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] System synchronization
 
 ## Progress Tracking (Tech Tree)
+
 - Core Framework: 0%
 - Infrastructure Tech: 0%
 - Fleet Technologies: 0%
@@ -1028,6 +1095,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Cross-Domain Systems: 0%
 
 ## Required Libraries (Tech Tree)
+
 1. Visualization
    - react-d3-tree for layouts
    - D3.js for hierarchies
@@ -1041,6 +1109,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - LocalForage for persistence
 
 ## Notes (Tech Tree)
+
 - Implement proper node dependency tracking
 - Ensure clear visual progression feedback
 - Maintain efficient state updates
@@ -1050,6 +1119,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Civilization Sprawl View Implementation
 
 ### Core Map Framework
+
 1. Base Layout
    [ ] 2D map representation system
    [ ] System node visualization
@@ -1065,6 +1135,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Interactive Systems
 
 #### 1. Navigation Controls
+
 1. Core Features
    [ ] Toggle/exit functionality
    [ ] Zoom controls implementation
@@ -1078,6 +1149,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Action menu interface
 
 #### 2. Filtering System
+
 1. Layer Management
    [ ] Trade route toggle
    [ ] Asset highlight filters
@@ -1093,6 +1165,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Visual Feedback Systems
 
 #### 1. Population Indicators
+
 1. Core Visuals
    [ ] Expanding ring system
    [ ] Population glow effects
@@ -1106,6 +1179,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Resource node markers
 
 #### 2. Trade Visualization
+
 1. Route Display
    [ ] Particle stream effects
    [ ] Resource flow animation
@@ -1133,12 +1207,14 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Memory optimization
 
 ## Progress Tracking (Civilization Sprawl View)
+
 - Core Framework: 0%
 - Interactive Systems: 0%
 - Visual Feedback: 0%
 - Environmental Effects: 0%
 
 ## Required Libraries (Civilization Sprawl View)
+
 1. Visualization
    - D3.js for map layout
    - Three.js for effects
@@ -1152,6 +1228,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Custom event system
 
 ## Notes (Civilization Sprawl View)
+
 - Ensure smooth performance with many systems
 - Implement efficient particle systems
 - Maintain clear visual hierarchy
@@ -1161,6 +1238,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Local Galaxy Map Implementation
 
 ### Core Map Framework
+
 1. Map Structure
    [ ] Spiral layout system
    [ ] Star system distribution
@@ -1176,6 +1254,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Navigation System
 
 #### 1. Core Controls
+
 1. Basic Navigation
    [ ] Hotkey system (M key)
    [ ] Zoom functionality
@@ -1189,6 +1268,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Action menu interface
 
 #### 2. Information Display
+
 1. System Tooltips
    [ ] Basic info display
    [ ] Status indicators
@@ -1244,6 +1324,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Memory handling
 
 ## Progress Tracking (Local Galaxy Map)
+
 - Core Framework: 0%
 - Navigation: 0%
 - Colonization: 0%
@@ -1251,6 +1332,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Environmental: 0%
 
 ## Required Libraries (Local Galaxy Map)
+
 1. Core Systems
    - D3.js for map layout
    - Three.js for effects
@@ -1264,6 +1346,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Scene transition manager
 
 ## Notes (Local Galaxy Map)
+
 - Optimize node rendering for large systems
 - Implement smooth transition effects
 - Ensure proper tech tree integration
@@ -1273,6 +1356,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## VPR UI View Implementation
 
 ### Core Component Architecture
+
 1. Base Structure
    [ ] VPRStarSystemView container
    [ ] Component hierarchy setup
@@ -1289,6 +1373,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Visual Components Implementation
 
 #### 1. Star System Backdrop
+
 1. Parallax Background
    [ ] Multi-layer star system
    [ ] Depth effect implementation
@@ -1302,6 +1387,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Theme integration
 
 #### 2. Core Module Visuals
+
 1. Mothership VPR
    [ ] Central structure rendering
    [ ] Evolution animations
@@ -1315,6 +1401,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Status indicators
 
 #### 3. Specialized Modules
+
 1. Exploration & Mining
    [ ] Exploration Hub display
    [ ] Mineral Processing visuals
@@ -1370,6 +1457,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Cache implementation
 
 ## Progress Tracking (VPR UI)
+
 - Core Architecture: 0%
 - Visual Components: 0%
 - Interactive Features: 0%
@@ -1377,10 +1465,11 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Performance: 0%
 
 ## Required Libraries (VPR UI)
+
 1. Core Rendering
    - React-konva for canvas
    - React-three-fiber for 3D
-   [ ] D3.js for layouts
+     [ ] D3.js for layouts
    - SVG.js for vectors
 
 2. Animation
@@ -1396,6 +1485,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Gesture handler
 
 ## Notes (VPR UI)
+
 - Implement efficient canvas rendering
 - Optimize animation performance
 - Maintain consistent visual hierarchy
@@ -1405,6 +1495,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Exploration & Mining UI Implementation
 
 ### Exploration Hub Framework
+
 1. Core Structure
    [ ] ExplorationHub container
    [ ] Filtered map system
@@ -1420,6 +1511,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Exploration Interface
 
 #### 1. Map Visualization
+
 1. Core Display
    [ ] SVG/Canvas map renderer
    [ ] Layer management system
@@ -1433,6 +1525,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Search functionality
 
 #### 2. Data Management
+
 1. Real-Time Updates
    [ ] Ship position tracking
    [ ] Discovery system
@@ -1448,6 +1541,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Mineral Processing Framework
 
 #### 1. Mining Map System
+
 1. Core Features
    [ ] Resource node display
    [ ] Priority management
@@ -1461,6 +1555,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Alert system
 
 #### 2. Control Interface
+
 1. Resource Management
    [ ] Priority level controls
    [ ] Threshold adjustments
@@ -1502,6 +1597,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Alert system
 
 ## Progress Tracking (Exploration & Mining)
+
 - Exploration Hub: 0%
 - Mining Systems: 0%
 - Automation: 0%
@@ -1509,6 +1605,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Performance: 0%
 
 ## Required Libraries (Exploration & Mining)
+
 1. Visualization
    - D3.js for maps
    - Recharts for data
@@ -1522,6 +1619,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - RxJS for streams
 
 ## Notes (Exploration & Mining)
+
 - Implement efficient resource tracking
 - Optimize real-time updates
 - Maintain responsive controls
@@ -1531,6 +1629,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Habitable Worlds Implementation
 
 ### Core Generation System
+
 1. World Generation
    [ ] Automatic spawn system
    [ ] Planet type definitions
@@ -1546,6 +1645,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Agricultural Systems
 
 #### 1. Biodome Implementation
+
 1. Core Features
    [ ] Basic food production
    [ ] Growth cycle system
@@ -1575,6 +1675,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Expansion Mechanics
 
 #### 1. Auto-Colonization
+
 1. Core Logic
    [ ] Population threshold monitoring
    [ ] Resource surplus tracking
@@ -1588,6 +1689,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Growth optimization
 
 #### 2. Visual Feedback
+
 1. UI Elements
    [ ] Expansion notifications
    [ ] Progress indicators
@@ -1643,6 +1745,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Efficiency calculation
 
 ## Progress Tracking (Habitable Worlds)
+
 - Core Generation: 0%
 - Agricultural Systems: 0%
 - Resource Management: 0%
@@ -1652,6 +1755,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Workforce Management: 0%
 
 ## Required Libraries (Habitable Worlds)
+
 1. Core Systems
    - Redux for state management
    - RxJS for event streams
@@ -1665,6 +1769,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - SVG.js for UI elements
 
 ## Notes (Habitable Worlds)
+
 - Implement proper resource balancing
 - Ensure smooth population transitions
 - Maintain clear visual feedback
@@ -1674,6 +1779,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Mothership & Colony UI Implementation
 
 ### Mothership Build Menu
+
 1. Core UI Components
    [ ] MothershipBuildMenu container
    [ ] Upgrade grid/list layout
@@ -1689,6 +1795,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Colony Star Station Interface
 
 #### 1. Map Overview
+
 1. Core Layout
    [ ] ColonyStationMap component
    [ ] Module placement system
@@ -1702,6 +1809,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Status overlays
 
 #### 2. Build Menu System
+
 1. Module Management
    [ ] Attachable module list
    [ ] Resource requirement display
@@ -1757,6 +1865,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Traffic simulation
 
 ## Progress Tracking (Mothership & Colony UI)
+
 - Build Menu: 0%
 - Colony Interface: 0%
 - Trade Systems: 0%
@@ -1764,6 +1873,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Visual Systems: 0%
 
 ## Required Libraries (Mothership & Colony UI)
+
 1. UI Framework
    - Material-UI for components
    - react-konva for canvas
@@ -1777,6 +1887,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Three.js for 3D elements
 
 ## Notes (Mothership & Colony UI)
+
 - Ensure consistent UI hierarchy
 - Implement efficient state management
 - Optimize trade cycle performance
@@ -1786,6 +1897,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Officers Academy & Ship Hanger Implementation
 
 ### Officers Academy Framework
+
 1. Core UI Components
    [ ] OfficerAcademy container
    [ ] Officer card grid/list
@@ -1801,6 +1913,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Officer Management
 
 #### 1. Training System
+
 1. Core Features
    [ ] Training progress tracking
    [ ] XP calculation system
@@ -1814,6 +1927,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Role icons
 
 #### 2. Detail Views
+
 1. Officer Cards
    [ ] Portrait/icon system
    [ ] Stats display
@@ -1829,6 +1943,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Ship Hanger Framework
 
 #### 1. Build Interface
+
 1. Core Components
    [ ] ShipHanger container
    [ ] Ship category navigation
@@ -1842,6 +1957,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Action controls
 
 #### 2. Docking System
+
 1. Visual Elements
    [ ] Bay expansion animation
    [ ] Ship placement system
@@ -1883,6 +1999,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Cleanup routines
 
 ## Progress Tracking (Officers & Ships)
+
 - Academy Framework: 0%
 - Officer Management: 0%
 - Ship Hanger: 0%
@@ -1890,6 +2007,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Performance: 0%
 
 ## Required Libraries (Officers & Ships)
+
 1. UI Components
    - Material-UI for cards
    - React-ProgressBar.js for training
@@ -1903,6 +2021,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - React-Query for data
 
 ## Notes (Officers & Ships)
+
 - Implement consistent interaction patterns
 - Optimize animation performance
 - Handle large datasets efficiently
@@ -1912,6 +2031,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Global UI Implementation
 
 ### State Management Framework
+
 1. Core Architecture
    [ ] Global UIContext setup
    [ ] View state management
@@ -1927,6 +2047,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Animation & Transition System
 
 #### 1. Core Animations
+
 1. Menu Transitions
    [ ] View switching effects
    [ ] Submenu animations
@@ -1982,6 +2103,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] State batching
 
 ## Progress Tracking (Global UI)
+
 - State Management: 0%
 - Animation System: 0%
 - Theme Framework: 0%
@@ -1989,6 +2111,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 - Performance: 0%
 
 ## Required Libraries (Global UI)
+
 1. Core Framework
    - Redux/Context API for state
    - Styled-components/Emotion for styling
@@ -2002,6 +2125,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Immer for immutable updates
 
 ## Notes (Global UI)
+
 - Implement consistent state management
 - Optimize animation performance
 - Maintain responsive design
@@ -2011,6 +2135,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Asset Management Implementation
 
 ### Sprite Management
+
 1. Core System
    [ ] Asset loading pipeline
    [ ] Sprite sheet organization
@@ -2024,6 +2149,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Memory optimization
 
 ### Animation Systems
+
 1. Ship Animations
    [ ] Combat movement
    [ ] Docking sequences
@@ -2037,6 +2163,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Interactive elements
 
 ### Asset Pipeline
+
 1. Build Process
    [ ] Asset bundling
    [ ] Minification
@@ -2052,6 +2179,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Testing Framework Implementation
 
 ### Unit Testing
+
 1. Core Systems
    [ ] Component testing
    [ ] Service testing
@@ -2065,6 +2193,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] CI/CD integration
 
 ### Integration Testing
+
 1. Module Integration
    [ ] Cross-module testing
    [ ] Event system testing
@@ -2078,6 +2207,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Performance impacts
 
 ### Performance Testing
+
 1. Core Metrics
    [ ] Load time tracking
    [ ] Memory profiling
@@ -2091,6 +2221,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] State updates
 
 ### Browser Testing
+
 1. Compatibility
    [ ] Cross-browser testing
    [ ] Mobile responsiveness
@@ -2106,6 +2237,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Documentation Standards
 
 ### Code Documentation
+
 1. Implementation
    [ ] JSDoc standards
    [ ] Type documentation
@@ -2119,6 +2251,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Version control
 
 ### API Documentation
+
 1. Core APIs
    [ ] Endpoint documentation
    [ ] Request/response formats
@@ -2132,6 +2265,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] State management
 
 ### Component Documentation
+
 1. React Components
    [ ] Props documentation
    [ ] State management
@@ -2145,6 +2279,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Accessibility requirements
 
 ### Architecture Documentation
+
 1. System Design
    [ ] Architecture overview
    [ ] Module interactions
@@ -2158,11 +2293,13 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    [ ] Performance optimization
 
 ## Progress Tracking (New Systems)
+
 - Asset Management: 0%
 - Testing Framework: 0%
 - Documentation: 0%
 
 ## Required Libraries (New Systems)
+
 1. Testing
    - Jest for unit testing
    - Testing Library for React
@@ -2176,6 +2313,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
    - Swagger for REST APIs
 
 ## Notes (New Systems)
+
 - Implement comprehensive testing strategy
 - Maintain thorough documentation
 - Optimize asset loading pipeline
@@ -2185,6 +2323,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ## Project Implementation Guide
 
 ### Getting Started
+
 1. Development Environment Setup
    [ ] Install Node.js and npm
    [ ] Set up TypeScript configuration
@@ -2259,6 +2398,7 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 ### Critical Integration Points
 
 1. Resource Flow
+
    ```mermaid
    graph TD
      A[Resource Generation] --> B[Resource Pool]

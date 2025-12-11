@@ -7,13 +7,11 @@ EFFECT SYSTEM REFERENCES
 ## Core Effect Types
 
 - **WeaponEffects.ts**: src/effects/types_effects/WeaponEffects.ts
-
   - Updated to include 'name' and 'description' properties in WeaponEffect interface
   - Ensures type safety for components accessing these properties
   - Dependencies: GameTypes.ts, EffectTypes.ts
 
 - **EffectTypes.ts**: src/effects/types_effects/EffectTypes.ts
-
   - Contains BaseEffect interface with 'name' and 'description' properties
   - Provides type hierarchy for different effect types
   - Dependencies: GameTypes.ts
@@ -26,7 +24,6 @@ EFFECT SYSTEM REFERENCES
 ## Effect Utilities
 
 - **effectUtils.ts**: src/effects/util_effects/effectUtils.ts
-
   - Updated createEffect function to ensure duration is not undefined
   - Provides utility functions for creating different types of effects
   - Dependencies: EffectTypes.ts, WeaponEffects.ts
@@ -40,7 +37,6 @@ EFFECT SYSTEM REFERENCES
 ## Components Using Effects
 
 - **WeaponComponents.tsx**: src/components/weapons/WeaponComponents.tsx
-
   - Uses 'name' and 'description' properties from WeaponEffect
   - Dependencies: WeaponEffects.ts
 
@@ -87,13 +83,11 @@ weaponEffectUtils.createWeaponLike
 ## Effect System Dependencies
 
 1. Core Dependencies:
-
    - GameTypes.Effect: Base effect interface
    - EffectTypes.BaseEffect: Extended effect interface
    - WeaponEffects: Weapon effect types
 
 2. Utility Dependencies:
-
    - effectUtils: Core effect functions
    - weaponEffectUtils: Weapon effect functions
    - typeConversions: Type conversion utilities
@@ -106,7 +100,6 @@ weaponEffectUtils.createWeaponLike
 ## Effect System Components
 
 - **EffectManager**: src/managers/effects/EffectManager.ts
-
   - Purpose: Central manager for all effects
   - Dependencies: EffectTypes, effectUtils
   - Features:
@@ -116,7 +109,6 @@ weaponEffectUtils.createWeaponLike
     - Effect stacking and prioritization
 
 - **EffectRenderer**: src/components/effects/EffectRenderer.tsx
-
   - Purpose: Renders visual effects
   - Dependencies: EffectTypes, VisualEffects
   - Features:
@@ -137,7 +129,6 @@ weaponEffectUtils.createWeaponLike
 ## Effect System Hooks
 
 - **useEffects**: src/hooks/effects/useEffects.ts
-
   - Purpose: React hook for accessing the effect system
   - Dependencies: EffectManager
   - Features:
@@ -158,15 +149,12 @@ weaponEffectUtils.createWeaponLike
 ## Effect System Events
 
 - **EffectAppliedEvent**: Triggered when an effect is applied
-
   - Payload: { effectId, targetId, effect, source }
 
 - **EffectRemovedEvent**: Triggered when an effect is removed
-
   - Payload: { effectId, targetId, effect, reason }
 
 - **EffectUpdatedEvent**: Triggered when an effect is updated
-
   - Payload: { effectId, targetId, oldEffect, newEffect }
 
 - **StatusEffectChangedEvent**: Triggered when a status effect changes
@@ -177,13 +165,11 @@ weaponEffectUtils.createWeaponLike
 ## Core Effect Types
 
 - **WeaponEffects.ts**: src/effects/types_effects/WeaponEffects.ts
-
   - Updated to include 'name' and 'description' properties in WeaponEffect interface
   - Ensures type safety for components accessing these properties
   - Dependencies: GameTypes.ts, EffectTypes.ts
 
 - **EffectTypes.ts**: src/effects/types_effects/EffectTypes.ts
-
   - Contains BaseEffect interface with 'name' and 'description' properties
   - Provides type hierarchy for different effect types
   - Dependencies: GameTypes.ts
@@ -196,7 +182,6 @@ weaponEffectUtils.createWeaponLike
 ## Effect Utilities
 
 - **effectUtils.ts**: src/effects/util_effects/effectUtils.ts
-
   - Updated createEffect function to ensure duration is not undefined
   - Provides utility functions for creating different types of effects
   - Dependencies: EffectTypes.ts, WeaponEffects.ts
@@ -210,7 +195,6 @@ weaponEffectUtils.createWeaponLike
 ## Components Using Effects
 
 - **WeaponComponents.tsx**: src/components/weapons/WeaponComponents.tsx
-
   - Uses 'name' and 'description' properties from WeaponEffect
   - Dependencies: WeaponEffects.ts
 
@@ -257,13 +241,11 @@ weaponEffectUtils.createWeaponLike
 ## Effect System Dependencies
 
 1. Core Dependencies:
-
    - GameTypes.Effect: Base effect interface
    - EffectTypes.BaseEffect: Extended effect interface
    - WeaponEffects: Weapon effect types
 
 2. Utility Dependencies:
-
    - effectUtils: Core effect functions
    - weaponEffectUtils: Weapon effect functions
    - typeConversions: Type conversion utilities

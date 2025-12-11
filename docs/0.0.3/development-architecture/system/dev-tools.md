@@ -141,50 +141,41 @@ Directories with highest counts:
 Recent improvements:
 
 1. **tests/managers/resource/ResourceFlowManager.test.ts**
-
    - Fixed direct access to private properties by using proper API methods
    - Created a ResourceFlow object to indirectly set the resource state
    - Improved test assertions to verify flow optimization results
 
 2. **types/resources/ResourcePoolTypes.ts**
-
    - Replaced 'any' with 'unknown' in type guard functions
    - Updated type guard logic to handle unknown types safely
    - Improved type safety in isPoolDistributionRule and isPoolAllocationResult functions
 
 3. **utils/events/EventFiltering.ts**
-
    - Added underscore prefix to unused 'priority' variables in for loops
    - Improved code readability and linting compliance
 
 4. **workers/combatWorker.ts**
-
    - Replaced 'any' with 'unknown' in isHazard function
    - Added underscore prefix to unused isHazard function
    - Updated type guard logic to handle unknown types safely
    - Improved null checking for unknown type
 
 5. **hooks/modules/useModuleStatus.ts**
-
    - Replaced 'any' with ModuleEvent interface for event parameters
    - Improved type safety in event handling functions
 
 6. **hooks/modules/useModuleUpgrade.ts**
-
    - Added underscore prefix to unused variables
    - Improved type safety in event handling
 
 7. **src/initialization/moduleUpgradeInit.ts**
-
    - Replaced console.log with console.warn for better logging practices
 
 8. **lib/optimization/EntityPool.ts**
-
    - Replaced console.debug with console.warn
    - Added type assertion for entity parameter
 
 9. **lib/utils/EventEmitter.ts**
-
    - Replaced Record<string, any> with Record<string, unknown>
    - Improved type safety in event handling
 

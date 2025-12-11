@@ -71,12 +71,10 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
 Galactic Sprawl uses Playwright for end-to-end testing to ensure the application works correctly from a user's perspective. The setup includes:
 
 1. **Installation**:
-
    - Playwright is installed as a dev dependency: `npm install -D @playwright/test`
    - Browsers are installed using: `npx playwright install`
 
 2. **Configuration**:
-
    - Configuration is defined in `playwright.config.ts` at the project root
    - Test directory is set to `./src/tests/e2e`
    - Global timeout is set to 30 seconds
@@ -95,13 +93,11 @@ Galactic Sprawl uses Playwright for end-to-end testing to ensure the application
 The end-to-end tests follow the Page Object Model (POM) pattern to improve maintainability:
 
 1. **Page Classes**:
-
    - Each major page has a corresponding class (e.g., `MiningPage`)
    - Page classes encapsulate locators and methods for interacting with the page
    - Located in `src/tests/e2e/models/` directory
 
 2. **Key Features**:
-
    - Locators are defined at the class level for reuse
    - Methods for common actions (e.g., `searchFor`, `filterByType`)
    - Helper methods for verification (e.g., `verifyResourceVisible`, `verifyResourceCount`)
@@ -118,14 +114,12 @@ The end-to-end tests follow the Page Object Model (POM) pattern to improve maint
 End-to-end tests are organized by feature area:
 
 1. **Test Files**:
-
    - Located in `src/tests/e2e/` directory
    - Named according to feature (e.g., `mining.spec.ts`)
    - Use `test.describe` blocks to group related tests
    - Use `test.beforeEach` for common setup
 
 2. **Test Cases**:
-
    - Focus on user workflows and critical paths
    - Test individual features as well as complete workflows
    - Include verification steps using Playwright's `expect` assertions
@@ -133,7 +127,7 @@ End-to-end tests are organized by feature area:
 3. **Example Test Structure**:
 
    ```typescript
-   test.describe('Mining Operations', () => {
+   test.describe("Mining Operations", () => {
      let miningPage: MiningPage;
 
      test.beforeEach(async ({ page }) => {
@@ -141,7 +135,7 @@ End-to-end tests are organized by feature area:
        await miningPage.goto();
      });
 
-     test('should display resource list', async ({ page }) => {
+     test("should display resource list", async ({ page }) => {
        await expect(miningPage.resourceList).toBeVisible();
      });
 
@@ -154,31 +148,28 @@ End-to-end tests are organized by feature area:
 To ensure reliable and consistent E2E test execution, Galactic Sprawl implements a robust test isolation strategy that prevents conflicts between test runs:
 
 1. **Dynamic Port Allocation**:
-
    - Each test run uses a unique port for the WebSocket server
    - A utility function `getUniquePort()` generates random ports between 8000-9000
    - The current port is stored in a module-level variable and accessed via `getCurrentPort()`
    - This prevents the "address already in use" errors that occur when multiple tests try to use the same port
 
 2. **Test Setup and Teardown**:
-
    - A dedicated test setup file (`src/tests/e2e/test-setup.ts`) manages the test environment
    - `setupTest()` function configures global error handling and timeouts before each test
    - `teardownTest()` function cleans up resources and resets state after each test
    - These functions are called in the `beforeEach` and `afterEach` hooks of each test file
 
 3. **Playwright Configuration Integration**:
-
    - The `playwright.config.ts` file is updated to use the dynamic port:
 
      ```typescript
-     import { getCurrentPort } from './src/tests/e2e/test-setup';
+     import { getCurrentPort } from "./src/tests/e2e/test-setup";
 
      export default defineConfig({
        // ...
        projects: [
          {
-           name: 'chromium',
+           name: "chromium",
            use: {
              baseURL: `http://localhost:${getCurrentPort()}`,
            },
@@ -186,14 +177,13 @@ To ensure reliable and consistent E2E test execution, Galactic Sprawl implements
          // ...
        ],
        webServer: {
-         command: 'npm run dev',
+         command: "npm run dev",
          port: getCurrentPort(),
        },
      });
      ```
 
 4. **Custom Test Fixtures**:
-
    - Custom fixtures are defined to provide page objects and other test utilities
    - The `baseURL` fixture is overridden to use the dynamic port
    - Page object instances (e.g., `miningPage`) are created once per test and properly typed
@@ -202,8 +192,8 @@ To ensure reliable and consistent E2E test execution, Galactic Sprawl implements
 
    ```typescript
    // src/tests/e2e/test-setup.ts
-   import { test as baseTest, expect, Page } from '@playwright/test';
-   import { MiningPage } from './models/MiningPage';
+   import { test as baseTest, expect, Page } from "@playwright/test";
+   import { MiningPage } from "./models/MiningPage";
 
    // Generate a unique port for each test run
    function getUniquePort(): number {
@@ -252,7 +242,6 @@ To ensure reliable and consistent E2E test execution, Galactic Sprawl implements
    ```
 
 6. **Best Practices**:
-
    - Always use dynamic port allocation for services in tests
    - Implement proper setup and teardown procedures for each test
    - Ensure resources are properly cleaned up after each test run
@@ -266,13 +255,11 @@ This approach ensures that E2E tests can run reliably in various environments, i
 Playwright tests are fully integrated with TypeScript:
 
 1. **Type Safety**:
-
    - Page objects use proper type annotations for Playwright's `Page` and `Locator` types
    - Test files import types from `@playwright/test`
    - Custom helper methods include proper return types and parameter types
 
 2. **Common Type Issues**:
-
    - Ensure proper imports from `@playwright/test` including `Page` type
    - Use built-in Playwright `expect` function rather than test framework assertions
    - Implement proper async/await patterns for all Playwright operations
@@ -287,13 +274,11 @@ Playwright tests are fully integrated with TypeScript:
 Comprehensive documentation for Playwright testing is available:
 
 1. **Setup Guide**:
-
    - Detailed setup instructions in `src/tests/e2e/README.md`
    - Installation steps for Playwright and browsers
    - Configuration options and examples
 
 2. **Best Practices**:
-
    - Page Object Model implementation guidelines
    - Test organization recommendations
    - Performance considerations
@@ -340,7 +325,6 @@ The ship ability system requires proper type definitions to ensure type safety a
 - Created `eslint.config.js` using ESLint v9 format
 - Configured TypeScript parser and rules
 - Enhanced linting tools:
-
   - Added progress bar to `analyze-lint-errors.js` to provide visual feedback during execution
   - Progress bar shows percentage complete and number of files processed
   - Added status messages to indicate different stages of analysis (parsing, analyzing, generating report)
@@ -365,7 +349,6 @@ The ship ability system requires proper type definitions to ensure type safety a
 ### Linting Workflow and Testing
 
 - Comprehensive linting workflow implemented with specialized tools:
-
   - `setup-linting.js` - Initializes and configures ESLint and Prettier
   - `analyze-lint-errors.js` - Analyzes ESLint output to categorize and prioritize errors
   - `fix-eslint-by-rule.js` - Fixes ESLint and Prettier issues by rule name or automatically
@@ -374,7 +357,6 @@ The ship ability system requires proper type definitions to ensure type safety a
   - `run-lint-workflow.js` - Runs all linting tools in the correct order
 
 - Systematic approach to fixing linting issues:
-
   1. Fix @typescript-eslint/no-explicit-any errors first (highest priority)
   2. Fix react-hooks/exhaustive-deps errors
   3. Fix no-console warnings
@@ -383,7 +365,6 @@ The ship ability system requires proper type definitions to ensure type safety a
   6. Verify fixes with type checking and tests
 
 - Current linting status (as of March 1, 2025):
-
   - Total issues: 22 (7 errors, 15 warnings)
   - Main issue types:
     - @typescript-eslint/no-explicit-any: 7 errors
@@ -391,7 +372,6 @@ The ship ability system requires proper type definitions to ensure type safety a
     - no-console: 6 warnings
 
 - Challenges and solutions:
-
   - Automated fix tools timing out on large files: Manually fix issues in problematic files
   - Complex type definitions: Create dedicated interfaces with optional properties
   - Legacy code integration: Prioritize fixing newer code first, then gradually refactor legacy code
@@ -399,7 +379,6 @@ The ship ability system requires proper type definitions to ensure type safety a
   - Private property access in tests: Create proper API methods or use type assertions with unknown
 
 - Best practices established:
-
   - Always use explicit return types for functions
   - Avoid using 'any' type - create interfaces instead
   - Use appropriate console methods based on severity
@@ -426,12 +405,17 @@ When fixing `any` types, we follow these best practices:
    ```typescript
    // Before
    function isValidResource(obj: any): obj is Resource {
-     return obj && typeof obj === 'object' && 'id' in obj;
+     return obj && typeof obj === "object" && "id" in obj;
    }
 
    // After
    function isValidResource(obj: unknown): obj is Resource {
-     return obj !== null && obj !== undefined && typeof obj === 'object' && 'id' in obj;
+     return (
+       obj !== null &&
+       obj !== undefined &&
+       typeof obj === "object" &&
+       "id" in obj
+     );
    }
    ```
 
@@ -464,7 +448,9 @@ When fixing `any` types, we follow these best practices:
    const config = (manager as any).configs.get(type);
 
    // After
-   const config = (manager as unknown as { configs: Map<string, Config> }).configs.get(type);
+   const config = (
+     manager as unknown as { configs: Map<string, Config> }
+   ).configs.get(type);
    ```
 
 4. **Create reusable utility types**: For common patterns, create reusable utility types to avoid repeating `any` types.
@@ -493,7 +479,9 @@ When fixing `any` types, we follow these best practices:
    }
 
    // After
-   function convertMapToRecord<K extends string, V>(map: Map<K, V>): Record<K, V> {
+   function convertMapToRecord<K extends string, V>(
+     map: Map<K, V>,
+   ): Record<K, V> {
      // conversion logic
    }
    ```
@@ -507,14 +495,14 @@ When fixing `any` types, we follow these best practices:
 
    // After (in test file)
    // Register nodes and connections through public API
-   mockNodes.forEach(node => flowManager.registerNode(node));
-   mockConnections.forEach(conn => flowManager.registerConnection(conn));
+   mockNodes.forEach((node) => flowManager.registerNode(node));
+   mockConnections.forEach((conn) => flowManager.registerConnection(conn));
 
    // Or create a flow to set up the internal state
    const flow: ResourceFlow = {
-     sourceId: 'source1',
-     targetId: 'target1',
-     resourceType: 'energy',
+     sourceId: "source1",
+     targetId: "target1",
+     resourceType: "energy",
      amount: 100,
    };
    flowManager.addFlow(flow);
@@ -525,7 +513,7 @@ When fixing `any` types, we follow these best practices:
    ```typescript
    // Before
    function isHazard(obj: any): obj is Hazard {
-     return obj && typeof obj === 'object' && 'id' in obj && 'position' in obj;
+     return obj && typeof obj === "object" && "id" in obj && "position" in obj;
    }
 
    // After
@@ -533,9 +521,9 @@ When fixing `any` types, we follow these best practices:
      return (
        obj !== null &&
        obj !== undefined &&
-       typeof obj === 'object' &&
-       'id' in obj &&
-       'position' in obj
+       typeof obj === "object" &&
+       "id" in obj &&
+       "position" in obj
      );
    }
    ```
@@ -558,16 +546,17 @@ For console statements, we follow these practices to comply with our ESLint conf
 
    ```javascript
    // Before (ESLint error)
-   console.log(`[ResourceFlowManager] Found ${converters.length} active converters in the network`);
+   console.log(
+     `[ResourceFlowManager] Found ${converters.length} active converters in the network`,
+   );
 
    // After (ESLint compliant)
    console.warn(
-     `[ResourceFlowManager] Found ${converters.length} active converters in the network`
+     `[ResourceFlowManager] Found ${converters.length} active converters in the network`,
    );
    ```
 
 2. **Files where console.log statements were replaced with console.warn**:
-
    - `src/lib/ai/shipMovement.ts` - Ship position logging
    - `src/lib/optimization/EntityPool.ts` - Pool expansion logging
    - `src/managers/automation/GlobalAutomationManager.ts` - Automation manager status
@@ -580,13 +569,11 @@ For console statements, we follow these practices to comply with our ESLint conf
    - `src/effects/component_effects/ShieldEffect.tsx` - Shader material debugging
 
 3. **When to use each console method**:
-
    - `console.warn`: For development information, debugging, and non-critical warnings
    - `console.error`: For critical errors, exceptions, and failures that require immediate attention
    - `console.info`: Not currently used, but could be implemented for informational messages in the future
 
 4. **Console statements should be meaningful and provide context**:
-
    - Bad: `console.warn("Error")`
    - Good: `console.warn("[ResourceManager] Failed to allocate resources: Insufficient minerals (requested: 100, available: 50)")`
 
@@ -623,7 +610,6 @@ For console statements, we follow these practices to comply with our ESLint conf
 ### Core Architecture Principles
 
 1. Type Safety & Management
-
    - Use TypeScript strict mode throughout
    - Create specific interfaces for type conflicts
    - Use Omit/Pick for type modifications
@@ -634,7 +620,6 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Use Record<string, T> instead of Map for React Context
 
 2. State Management
-
    - Use React Context for global state
    - Implement proper null checks
    - Use early returns with null checks
@@ -655,7 +640,6 @@ For console statements, we follow these practices to comply with our ESLint conf
 ### Component Architecture
 
 1. Function Organization
-
    - Define callbacks before hook usage
    - Keep related functions together
    - Use useCallback for dependency arrays
@@ -664,7 +648,6 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Maintain consistent naming conventions
 
 2. Effect Management
-
    - Implement proper cleanup in useEffect
    - Handle component lifecycle properly
    - Use proper cleanup for intervals
@@ -673,7 +656,6 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Implement proper animation cleanup
 
 3. Visual Systems
-
    - Use consistent shader patterns
    - Scale effect intensity based on power
    - Maintain proper z-index ordering
@@ -686,28 +668,23 @@ For console statements, we follow these practices to comply with our ESLint conf
    The Tech Tree System is implemented in `src/components/ui/TechTree.tsx` and provides a visual representation of the technology progression in the game.
 
    #### Key Components
-
    1. **TechNode Interface**:
-
       - Extends the imported `ImportedTechNode` from the tech tree manager
       - Adds icon property for visual representation
       - Uses a type-safe approach with `NodeIconsType` for icon references
 
    2. **Visual Components**:
-
       - `TechVisualFeedback`: Renders individual tech nodes with visual feedback
       - `TechConnectionLine`: Renders connections between tech nodes
       - `ResearchProgressIndicator`: Shows research progress for active technologies
       - `TechSynergyIndicator`: Displays synergy effects between technologies
 
    3. **Helper Functions**:
-
       - `_mapToLocalTechNode`: Maps imported tech nodes to local format
       - `getCategoryIcon`: Determines the appropriate icon based on tech category
       - `getTierNodes`: Filters nodes by tier for organized display
 
    4. **State Management**:
-
       - Uses React state for managing tech nodes, connections, and research progress
       - Implements functions for starting research, unlocking nodes, and handling node selection
 
@@ -717,14 +694,11 @@ For console statements, we follow these practices to comply with our ESLint conf
       - Provides filtering by category for focused viewing
 
    #### Best Practices
-
    1. **Type Safety**:
-
       - Uses TypeScript interfaces for clear type definitions
       - Avoids `any` types by using proper interfaces and type aliases
 
    2. **Component Organization**:
-
       - Separates visual components into dedicated files
       - Uses consistent naming conventions for functions and variables
       - Implements clear separation of concerns between data and presentation
@@ -737,7 +711,6 @@ For console statements, we follow these practices to comply with our ESLint conf
 ### System Integration Rules
 
 1. Event System
-
    - Use centralized event bus
    - Implement proper event filtering
    - Handle event emission consistently
@@ -746,7 +719,6 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Handle time-based events properly
 
 2. Resource Management
-
    - Implement proper threshold systems
    - Use proper type safety for resources
    - Handle resource transfers safely
@@ -763,7 +735,6 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Implement performance monitoring with detailed timing information
 
 3. Module System
-
    - Use proper type definitions
    - Implement proper cleanup
    - Handle lifecycle events
@@ -829,7 +800,7 @@ When working with ship abilities in our codebase, we encountered several TypeScr
 
    ```typescript
    // Generate a unique ID for each ability
-   const abilityId = `${ship.id}-${w.name.toLowerCase().replace(/\s+/g, '-')}-ability`;
+   const abilityId = `${ship.id}-${w.name.toLowerCase().replace(/\s+/g, "-")}-ability`;
    ```
 
 3. **Complete All Required Properties for Effect Objects**: When creating effect objects, ensure that all required properties are included, such as `name` and `description` for `DamageEffect` objects.
@@ -837,25 +808,25 @@ When working with ship abilities in our codebase, we encountered several TypeScr
    ```typescript
    // Before (missing 'name' and 'description' properties)
    const weaponEffect: DamageEffect = {
-     id: 'rage-mode-weapon',
-     type: 'damage',
+     id: "rage-mode-weapon",
+     type: "damage",
      duration: 10,
      strength: 1.5,
      magnitude: 1.5,
-     damageType: 'physical',
+     damageType: "physical",
      penetration: 0.3,
    };
 
    // After (with all required properties)
    const weaponEffect: DamageEffect = {
-     id: 'rage-mode-weapon',
-     name: 'Rage Mode Weapon Effect',
-     description: 'Increases weapon damage at the cost of defense',
-     type: 'damage',
+     id: "rage-mode-weapon",
+     name: "Rage Mode Weapon Effect",
+     description: "Increases weapon damage at the cost of defense",
+     type: "damage",
      duration: 10,
      strength: 1.5,
      magnitude: 1.5,
-     damageType: 'physical',
+     damageType: "physical",
      penetration: 0.3,
    };
    ```
@@ -946,11 +917,11 @@ When working with properties that might be undefined in our codebase, we encount
    const isValidPosition = (pos: unknown): pos is Position => {
      return (
        pos !== null &&
-       typeof pos === 'object' &&
-       'x' in pos &&
-       'y' in pos &&
-       typeof pos.x === 'number' &&
-       typeof pos.y === 'number'
+       typeof pos === "object" &&
+       "x" in pos &&
+       "y" in pos &&
+       typeof pos.x === "number" &&
+       typeof pos.y === "number"
      );
    };
 
@@ -965,7 +936,7 @@ When working with properties that might be undefined in our codebase, we encount
 
    ```typescript
    // Before (using potentially undefined object directly)
-   setAutomationEffects(prev => [
+   setAutomationEffects((prev) => [
      ...prev,
      {
        id: `${event.moduleId}-${Date.now()}`,
@@ -978,13 +949,13 @@ When working with properties that might be undefined in our codebase, we encount
    // After (creating a properly typed object)
    const position: Position =
      event.data?.position &&
-     typeof event.data.position === 'object' &&
-     'x' in event.data.position &&
-     'y' in event.data.position
+     typeof event.data.position === "object" &&
+     "x" in event.data.position &&
+     "y" in event.data.position
        ? { x: Number(event.data.position.x), y: Number(event.data.position.y) }
        : { x: 50, y: 50 };
 
-   setAutomationEffects(prev => [
+   setAutomationEffects((prev) => [
      ...prev,
      {
        id: `${event.moduleId}-${Date.now()}`,
@@ -1015,7 +986,7 @@ When working with properties that might be undefined in our codebase, we encount
    const message = event.data?.message;
 
    // After (with default value)
-   const message = event.data?.message || 'No message provided';
+   const message = event.data?.message || "No message provided";
    ```
 
 8. **Early Returns with Null Checks**: Use early returns with null checks to avoid deeply nested conditionals.
@@ -1092,8 +1063,9 @@ When working with type assignments in our codebase, we encountered several TypeS
    const moduleConfigs = (moduleManager as unknown).configs;
 
    // After (proper type assertion)
-   const moduleConfigs = (moduleManager as unknown as { configs: Map<string, ModuleConfig> })
-     .configs;
+   const moduleConfigs = (
+     moduleManager as unknown as { configs: Map<string, ModuleConfig> }
+   ).configs;
    ```
 
 4. **Create Helper Functions for Type Conversions**: When converting between different types, create helper functions to ensure type safety.
@@ -1102,14 +1074,16 @@ When working with type assignments in our codebase, we encountered several TypeS
    // Helper function to convert string to FactionBehaviorConfig
    const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
      return {
-       formation: 'standard',
+       formation: "standard",
        behavior: behavior as FactionBehaviorType,
      };
    };
 
    // Using the helper function
    const tactics =
-     typeof tacticsInput === 'string' ? createFactionBehavior(tacticsInput) : tacticsInput;
+     typeof tacticsInput === "string"
+       ? createFactionBehavior(tacticsInput)
+       : tacticsInput;
    ```
 
 5. **Use Type Guards for Union Types**: When working with union types, use type guards to narrow down the type before using it.
@@ -1117,7 +1091,14 @@ When working with type assignments in our codebase, we encountered several TypeS
    ```typescript
    // Type guard for AutomationEffectType
    const isValidEffectType = (type: string): type is AutomationEffectType => {
-     return ['shield', 'formation', 'engagement', 'repair', 'attack', 'retreat'].includes(type);
+     return [
+       "shield",
+       "formation",
+       "engagement",
+       "repair",
+       "attack",
+       "retreat",
+     ].includes(type);
    };
 
    // Using the type guard
@@ -1196,7 +1177,7 @@ When dealing with underscore-prefixed variables (which indicate intentionally un
        // - Trigger status-specific effects
        // - Update resource consumption based on new status
        // - Notify connected modules of status change
-       console.warn('Module status changed handler to be implemented');
+       console.warn("Module status changed handler to be implemented");
      }
    };
    ```
@@ -1207,23 +1188,23 @@ When dealing with underscore-prefixed variables (which indicate intentionally un
    // Calculate position based on event data or use random positioning as fallback
    const eventPosition = {
      x:
-       typeof event.data === 'object' &&
+       typeof event.data === "object" &&
        event.data !== null &&
-       'position' in event.data &&
-       typeof event.data.position === 'object' &&
+       "position" in event.data &&
+       typeof event.data.position === "object" &&
        event.data.position !== null &&
-       'x' in event.data.position &&
-       typeof event.data.position.x === 'number'
+       "x" in event.data.position &&
+       typeof event.data.position.x === "number"
          ? event.data.position.x
          : Math.random() * 100,
      y:
-       typeof event.data === 'object' &&
+       typeof event.data === "object" &&
        event.data !== null &&
-       'position' in event.data &&
-       typeof event.data.position === 'object' &&
+       "position" in event.data &&
+       typeof event.data.position === "object" &&
        event.data.position !== null &&
-       'y' in event.data.position &&
-       typeof event.data.position.y === 'number'
+       "y" in event.data.position &&
+       typeof event.data.position.y === "number"
          ? event.data.position.y
          : Math.random() * 100,
    };
@@ -1231,16 +1212,16 @@ When dealing with underscore-prefixed variables (which indicate intentionally un
    // Create helper functions that use the variable
    const getEventColor = () => {
      switch (event.type) {
-       case 'exploration':
-         return 'bg-teal-400';
-       case 'combat':
-         return 'bg-red-400';
-       case 'trade':
-         return 'bg-amber-400';
-       case 'diplomacy':
-         return 'bg-purple-400';
+       case "exploration":
+         return "bg-teal-400";
+       case "combat":
+         return "bg-red-400";
+       case "trade":
+         return "bg-amber-400";
+       case "diplomacy":
+         return "bg-purple-400";
        default:
-         return 'bg-teal-400';
+         return "bg-teal-400";
      }
    };
    ```
@@ -1252,14 +1233,14 @@ When dealing with underscore-prefixed variables (which indicate intentionally un
    const _calculateTotals = useCallback(
      (resources: ResourceState[]): ResourceTotals => {
        // Placeholder implementation
-       console.warn('Resource total calculation to be implemented');
+       console.warn("Resource total calculation to be implemented");
        return {
          energy: 0,
          minerals: 0,
          organics: 0,
        };
      },
-     [resources]
+     [resources],
    );
    ```
 
@@ -1409,10 +1390,10 @@ When documenting unused interfaces in TypeScript (typically prefixed with unders
 ```tsx
 // In a parent component
 const [filters, setFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
-const [searchQuery, setSearchQuery] = useState('');
+const [searchQuery, setSearchQuery] = useState("");
 
 // Apply filters to data
-const filteredSectors = sectors.filter(sector => {
+const filteredSectors = sectors.filter((sector) => {
   // Apply filters based on criteria
   // ...
 });
@@ -1424,7 +1405,7 @@ const filteredSectors = sectors.filter(sector => {
   onSearchChange={setSearchQuery}
   onReset={() => {
     setFilters(defaultAdvancedFilters);
-    setSearchQuery('');
+    setSearchQuery("");
   }}
 />;
 ```
@@ -1766,7 +1747,11 @@ A demonstration component `ExplorationDataManagerDemo` is available that showcas
 
 ```tsx
 <ClassificationProvider>
-  <DiscoveryClassification discovery={discoveryData} onClassify={handleClassify} compact={false} />
+  <DiscoveryClassification
+    discovery={discoveryData}
+    onClassify={handleClassify}
+    compact={false}
+  />
 </ClassificationProvider>
 ```
 
@@ -1792,12 +1777,10 @@ A demonstration component `DiscoveryClassificationDemo` is available that showca
 The Discovery Classification system is built on a layered architecture:
 
 1. **Data Layer:**
-
    - `ClassificationTypes.ts` - Core interfaces and types
    - `ClassificationContext.tsx` - State management and data operations
 
 2. **UI Layer:**
-
    - `DiscoveryClassification.tsx` - Main classification interface
    - `DiscoveryClassificationDemo.tsx` - Demo and testing component
 
@@ -1883,12 +1866,10 @@ A demonstration component `ReconShipCoordinationDemo` is available that showcase
 The ReconShipCoordination system is built on a layered architecture:
 
 1. **Data Layer:**
-
    - `ReconShipManagerImpl.ts` - Core implementation of recon ship management and coordination
    - Fleet formation data structures and coordination algorithms
 
 2. **UI Layer:**
-
    - `ReconShipCoordination.tsx` - Main coordination interface
    - `ReconShipCoordinationDemo.tsx` - Demo and testing component
 
@@ -1966,12 +1947,10 @@ A demonstration component `DataAnalysisSystemDemo` is available that showcases t
 The Data Analysis System is built on a layered architecture:
 
 1. **Data Layer:**
-
    - `DataAnalysisTypes.ts` - Core interfaces and types
    - `DataAnalysisContext.tsx` - State management and data operations
 
 2. **UI Layer:**
-
    - `DataAnalysisSystem.tsx` - Main analysis interface
    - `DataAnalysisSystemDemo.tsx` - Demo and testing component
 
@@ -2028,7 +2007,6 @@ The system uses a dataset-based approach where exploration data is organized int
 The Exploration System components had several linting issues that were fixed:
 
 1. **GalaxyMapSystem.tsx**:
-
    - Removed unused interfaces: `CosmicEventState`, `DayNightCycleState`, `ParallaxLayer`
    - Removed unused functions: `renderSectors`, `generateParallaxLayers`, `generateCosmicEvent`
    - Removed unused state variables: `hoveredSectorId`, `setHoveredSectorId`, `parallaxLayers`, `dayNightCycle`, `setDayNightCycle`
@@ -2037,19 +2015,16 @@ The Exploration System components had several linting issues that were fixed:
    - Added helper functions for colors: `getSectorColor` and `getResourceColor`
 
 2. **GalaxyMappingSystem.tsx**:
-
    - Removed unused `cosmicEvents` prop
    - Fixed duplicate `affectedSectorIds` identifier
    - Fixed unused `s` variable in filter function
 
 3. **ReconShipCoordination.tsx**:
-
    - Renamed `_onShareTask` prop to `onShareTask` and made it optional
    - Added implementation for `handleShareTask` function
    - Added UI controls to use the task sharing functionality
 
 4. **ResourceDiscoverySystem.tsx**:
-
    - Added implementation for the unused `quality` prop
    - Created quality settings based on the prop value
    - Used quality settings for processing speed and animations
@@ -2106,13 +2081,13 @@ To improve test consistency and reduce duplication, we've added a fixtures direc
 Example usage in tests:
 
 ```typescript
-import { resourceStates, flowNodes } from '../../fixtures';
+import { resourceStates, flowNodes } from "../../fixtures";
 
-describe('ResourceManager', () => {
-  it('should handle resource state updates', () => {
+describe("ResourceManager", () => {
+  it("should handle resource state updates", () => {
     const manager = new ResourceManager();
-    manager.updateState('energy', resourceStates.standard);
-    expect(manager.getState('energy')).toEqual(resourceStates.standard);
+    manager.updateState("energy", resourceStates.standard);
+    expect(manager.getState("energy")).toEqual(resourceStates.standard);
   });
 });
 ```
@@ -2138,12 +2113,15 @@ Provides utility functions for working with test fixtures:
 Example usage:
 
 ```typescript
-import { createMockResourceManager, createFlowNode } from '../../utils/fixtureUtils';
+import {
+  createMockResourceManager,
+  createFlowNode,
+} from "../../utils/fixtureUtils";
 
-describe('ResourceFlowComponent', () => {
-  it('should render flow nodes correctly', () => {
+describe("ResourceFlowComponent", () => {
+  it("should render flow nodes correctly", () => {
     const mockManager = createMockResourceManager();
-    const customNode = createFlowNode('producer', { efficiency: 0.95 });
+    const customNode = createFlowNode("producer", { efficiency: 0.95 });
 
     // Test with the mock manager and custom node
   });
@@ -2164,14 +2142,14 @@ Provides utilities for testing asynchronous code:
 Example usage:
 
 ```typescript
-import { createMockEventEmitter, waitForConditionAsync } from '../../utils';
+import { createMockEventEmitter, waitForConditionAsync } from "../../utils";
 
-describe('EventHandler', () => {
-  it('should process events asynchronously', async () => {
+describe("EventHandler", () => {
+  it("should process events asynchronously", async () => {
     const mockEmitter = createMockEventEmitter();
     const handler = new EventHandler(mockEmitter);
 
-    mockEmitter.emit('data', { value: 42 });
+    mockEmitter.emit("data", { value: 42 });
 
     await waitForConditionAsync(() => handler.processed === true);
     expect(handler.result).toBe(42);
@@ -2191,15 +2169,15 @@ Provides utilities for performance testing:
 Example usage:
 
 ```typescript
-import { runBenchmark, createPerfReporter } from '../../utils';
+import { runBenchmark, createPerfReporter } from "../../utils";
 
-describe('ResourceCalculator', () => {
-  it('should perform calculations efficiently', () => {
+describe("ResourceCalculator", () => {
+  it("should perform calculations efficiently", () => {
     const calculator = new ResourceCalculator();
 
     const results = runBenchmark(
       () => calculator.calculateOptimalFlow(largeResourceNetwork),
-      100 // Run 100 iterations
+      100, // Run 100 iterations
     );
 
     expect(results.average).toBeLessThan(50); // Should take less than 50ms
@@ -2226,7 +2204,7 @@ import {
   createMockResourceManager,
   waitForConditionAsync,
   runBenchmark,
-} from '../../utils';
+} from "../../utils";
 ```
 
 These enhanced test utilities make it easier to write consistent, reliable tests across the codebase.
@@ -2238,20 +2216,18 @@ These enhanced test utilities make it easier to write consistent, reliable tests
 When writing tests with Vitest, follow these best practices to ensure consistent and maintainable tests:
 
 1. **ES Module Imports**:
-
    - Always use ES module imports instead of CommonJS `require()`
    - For testing modules, use dynamic imports with `await import()`
 
    ```javascript
    // Good
-   await import('../../path/to/module.js');
+   await import("../../path/to/module.js");
 
    // Bad
-   require('../../path/to/module.js');
+   require("../../path/to/module.js");
    ```
 
 2. **Mocking Global Objects**:
-
    - Create mock objects at the top of the test file for better reusability
 
    ```javascript
@@ -2262,21 +2238,20 @@ When writing tests with Vitest, follow these best practices to ensure consistent
    };
 
    const mockProcess = {
-     argv: ['node', 'script.js'],
+     argv: ["node", "script.js"],
      exit: vi.fn(),
      stdout: { write: vi.fn() },
    };
    ```
 
 3. **Using Mock Objects**:
-
    - Use `vi.stubGlobal()` to mock global objects
    - Reference mock objects in assertions instead of global objects
 
    ```javascript
    // Setup
-   vi.stubGlobal('console', mockConsole);
-   vi.stubGlobal('process', mockProcess);
+   vi.stubGlobal("console", mockConsole);
+   vi.stubGlobal("process", mockProcess);
 
    // Assertions
    expect(mockConsole.log).toHaveBeenCalled();
@@ -2284,29 +2259,26 @@ When writing tests with Vitest, follow these best practices to ensure consistent
    ```
 
 4. **Overriding Mock Properties**:
-
    - Use the spread operator to preserve existing mock properties when overriding specific ones
 
    ```javascript
-   vi.stubGlobal('process', {
+   vi.stubGlobal("process", {
      ...mockProcess,
-     argv: ['node', 'script.js', '--flag'],
+     argv: ["node", "script.js", "--flag"],
    });
    ```
 
 5. **Async Test Functions**:
-
    - Make test functions async when using dynamic imports
 
    ```javascript
-   it('should test something', async () => {
-     await import('../../path/to/module.js');
+   it("should test something", async () => {
+     await import("../../path/to/module.js");
      // test assertions
    });
    ```
 
 6. **Resetting Mocks**:
-
    - Reset all mocks before each test to ensure test isolation
 
    ```javascript
@@ -2323,10 +2295,10 @@ When writing tests with Vitest, follow these best practices to ensure consistent
    - Use `mockImplementation` for complex mock behavior
    ```javascript
    mockFunction.mockImplementation((arg1, arg2) => {
-     if (arg1 === 'specific value') {
-       return 'special result';
+     if (arg1 === "specific value") {
+       return "special result";
      }
-     return 'default result';
+     return "default result";
    });
    ```
 
@@ -2345,12 +2317,27 @@ The `createResourceState` function creates customized resource states for testin
 ```typescript
 export function createResourceState(
   resourceType: ResourceType,
-  overrides: Partial<typeof resourceStates.standard> = {}
+  overrides: Partial<typeof resourceStates.standard> = {},
 ) {
   // Apply resource-specific defaults based on type
-  const typeDefaults: Record<ResourceType, Partial<typeof resourceStates.standard>> = {
-    minerals: { production: 10, consumption: 5, max: 1000, current: 100, min: 0 },
-    energy: { production: 20, consumption: 15, max: 2000, current: 200, min: 0 },
+  const typeDefaults: Record<
+    ResourceType,
+    Partial<typeof resourceStates.standard>
+  > = {
+    minerals: {
+      production: 10,
+      consumption: 5,
+      max: 1000,
+      current: 100,
+      min: 0,
+    },
+    energy: {
+      production: 20,
+      consumption: 15,
+      max: 2000,
+      current: 200,
+      min: 0,
+    },
     // ... other resource types
   };
 
@@ -2396,9 +2383,17 @@ export function createFramerMotionMock() {
     __esModule: true,
     motion: {
       div: ({ children, ...props }: MotionComponentProps) =>
-        React.createElement('div', { 'data-testid': 'motion-div', ...props }, children),
+        React.createElement(
+          "div",
+          { "data-testid": "motion-div", ...props },
+          children,
+        ),
       span: ({ children, ...props }: MotionComponentProps) =>
-        React.createElement('span', { 'data-testid': 'motion-span', ...props }, children),
+        React.createElement(
+          "span",
+          { "data-testid": "motion-span", ...props },
+          children,
+        ),
       // Additional components as needed
     },
     AnimatePresence: ({ children }: AnimatePresenceProps) =>
@@ -2410,7 +2405,7 @@ export function createFramerMotionMock() {
     }),
     useCycle: <T>(...args: T[]) => {
       const [current, setCurrent] = React.useState(0);
-      const cycle = () => setCurrent(prev => (prev + 1) % args.length);
+      const cycle = () => setCurrent((prev) => (prev + 1) % args.length);
       return [args[current], cycle] as [T, () => void];
     },
     // Additional hooks as needed
@@ -2421,10 +2416,10 @@ export function createFramerMotionMock() {
 To use this mock in a test file:
 
 ```typescript
-import { createFramerMotionMock } from '../../utils/mockUtils';
+import { createFramerMotionMock } from "../../utils/mockUtils";
 
 // Mock framer-motion to avoid matchMedia issues
-vi.doMock('framer-motion', () => createFramerMotionMock());
+vi.doMock("framer-motion", () => createFramerMotionMock());
 ```
 
 Key benefits of this approach:
@@ -2446,14 +2441,13 @@ This approach was successfully used to fix the ResourceVisualization.snapshot.te
 When writing tests, it's important to follow these best practices for imports and mocking:
 
 1. **Prefer Actual Implementations Over Local Mocks**
-
    - Import and use actual utility functions from shared test utilities when available
    - Only create local mock implementations when the actual implementation doesn't exist or needs to be overridden for specific test cases
    - Example:
 
      ```typescript
      // Good: Import the actual utility function
-     import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+     import { createTestEnvironment } from "../../utils/exploration/explorationTestUtils";
 
      // Bad: Create a local mock that duplicates functionality
      const createTestEnvironment = vi.fn(() => ({
@@ -2462,7 +2456,6 @@ When writing tests, it's important to follow these best practices for imports an
      ```
 
 2. **Centralize Mocks in Utility Files**
-
    - Create reusable mock implementations in centralized utility files
    - Use these shared mocks across multiple test files for consistency
    - Example:
@@ -2474,30 +2467,28 @@ When writing tests, it's important to follow these best practices for imports an
      }
 
      // In test file
-     import { createFramerMotionMock } from '../../utils/mockUtils';
-     vi.doMock('framer-motion', () => createFramerMotionMock());
+     import { createFramerMotionMock } from "../../utils/mockUtils";
+     vi.doMock("framer-motion", () => createFramerMotionMock());
      ```
 
 3. **Mock External Dependencies, Not Test Utilities**
-
    - Mock external libraries and modules that are not part of your codebase
    - Don't mock your own test utilities unless absolutely necessary
    - Example:
 
      ```typescript
      // Good: Mock external library
-     vi.mock('framer-motion', () => ({
+     vi.mock("framer-motion", () => ({
        // Mock implementation...
      }));
 
      // Bad: Mock your own test utility
-     vi.mock('../../utils/testUtils', () => ({
+     vi.mock("../../utils/testUtils", () => ({
        // Mock implementation...
      }));
      ```
 
 4. **Use vi.doMock for Hoisted Mocks**
-
    - Use `vi.doMock` instead of `vi.mock` when you need to avoid hoisting issues
    - This is especially important when the mock depends on variables defined in the test file
    - Example:
@@ -2507,13 +2498,12 @@ When writing tests, it's important to follow these best practices for imports an
      const mockFunction = vi.fn();
 
      // Then use doMock to avoid hoisting issues
-     vi.doMock('module-name', () => ({
+     vi.doMock("module-name", () => ({
        functionName: mockFunction,
      }));
      ```
 
 5. **Maintain Import Statements When Refactoring**
-
    - When refactoring test files, ensure that all necessary imports are maintained
    - Missing imports can lead to undefined errors that are difficult to debug
    - Example of a common error:
@@ -2523,7 +2513,6 @@ When writing tests, it's important to follow these best practices for imports an
      ```
 
 6. **Verify Mock Return Values**
-
    - Ensure that mock functions return appropriate values for the test
    - Use TypeScript to enforce correct return types
    - Example:
@@ -2533,7 +2522,6 @@ When writing tests, it's important to follow these best practices for imports an
      ```
 
 7. **Clean Up Mocks Between Tests**
-
    - Reset or clear mocks in beforeEach or afterEach hooks
    - This prevents test interference and ensures a clean state for each test
    - Example:
@@ -2578,25 +2566,21 @@ We've adopted a simplified testing approach that focuses on testing what users s
 ### Key Principles
 
 1. **Test behavior, not implementation details**
-
    - Focus on what components/functions do, not how they do it
    - Test from the user's perspective
    - Verify that components render correctly and respond to user interactions
 
 2. **Minimize mocks**
-
    - Only mock external dependencies when absolutely necessary
    - Use real implementations whenever possible
    - Avoid mocking React, DOM APIs, or internal utilities
 
 3. **Keep tests simple and focused**
-
    - Each test should verify one specific aspect of functionality
    - Avoid complex setup and teardown procedures
    - Use descriptive test names that clearly indicate what's being tested
 
 4. **Use flexible selectors**
-
    - Prefer selectors that are less likely to change, such as text content, roles, and labels
    - Avoid relying on implementation details like class names or DOM structure
    - Use data-testid attributes sparingly and only for elements that can't be selected otherwise
@@ -2610,12 +2594,12 @@ We've adopted a simplified testing approach that focuses on testing what users s
 
 ```typescript
 // Bad approach - might fail if multiple buttons have no accessible name
-const button = screen.getByRole('button', { name: '' });
+const button = screen.getByRole("button", { name: "" });
 
 // Good approach - get all buttons and find the one with the specific icon
-const buttons = screen.getAllByRole('button');
-const targetButton = Array.from(buttons).find(button =>
-  button.querySelector('.specific-icon-class')
+const buttons = screen.getAllByRole("button");
+const targetButton = Array.from(buttons).find((button) =>
+  button.querySelector(".specific-icon-class"),
 );
 expect(targetButton).toBeTruthy();
 ```
@@ -2639,11 +2623,11 @@ expect(elements.length > 0).toBeTruthy();
 
 ```typescript
 // Bad approach - too dependent on implementation details
-expect(screen.getByTestId('specific-container')).toHaveClass('specific-class');
+expect(screen.getByTestId("specific-container")).toHaveClass("specific-class");
 
 // Good approach - focus on what the user sees
-expect(screen.getByText('Visible Title')).toBeInTheDocument();
-expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+expect(screen.getByText("Visible Title")).toBeInTheDocument();
+expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
 ```
 
 ### Benefits of This Approach
@@ -2661,19 +2645,16 @@ By following these principles, we can create a test suite that provides confiden
 ### Key Principles
 
 1. **Test against real application**
-
    - Use actual application routes and components
    - Avoid simplified HTML pages with `page.setContent()`
    - Test real user flows with proper navigation
 
 2. **Robust error handling**
-
    - Implement checks for game initialization errors
    - Take screenshots when errors occur for debugging
    - Log detailed page content to diagnose issues
 
 3. **Flexible selectors**
-
    - Use selectors that can adapt to UI changes
    - Prefer text-based selectors when possible (e.g., `h1:has-text("Mineral Processing")`)
    - Use longer timeouts for critical elements
@@ -2687,22 +2668,22 @@ By following these principles, we can create a test suite that provides confiden
 ### Example E2E Test
 
 ```typescript
-test('should display exploration interface', async ({ page }) => {
+test("should display exploration interface", async ({ page }) => {
   // Navigate to the actual application
-  await page.goto('http://localhost:3001/');
+  await page.goto("http://localhost:3001/");
 
   try {
     // Wait for the application to load with a generous timeout
-    await page.waitForSelector('.exploration-interface', { timeout: 30000 });
+    await page.waitForSelector(".exploration-interface", { timeout: 30000 });
 
     // Verify expected elements are visible
-    await expect(page.locator('.star-system-list')).toBeVisible();
+    await expect(page.locator(".star-system-list")).toBeVisible();
 
     // Take a screenshot for debugging
-    await page.screenshot({ path: 'exploration-interface.png' });
+    await page.screenshot({ path: "exploration-interface.png" });
 
     // Test user interaction
-    await page.fill('input[placeholder*="Search"]', 'Alpha');
+    await page.fill('input[placeholder*="Search"]', "Alpha");
 
     // Verify search results
     const results = page.locator('.star-system:has-text("Alpha")');
@@ -2711,10 +2692,12 @@ test('should display exploration interface', async ({ page }) => {
   } catch (error) {
     // Check for initialization errors
     const pageContent = await page.content();
-    if (pageContent.includes('Game failed to initialize')) {
-      console.error('Game initialization error detected');
-      await page.screenshot({ path: 'game-init-error.png' });
-      throw new Error('Game failed to initialize - error found in page content');
+    if (pageContent.includes("Game failed to initialize")) {
+      console.error("Game initialization error detected");
+      await page.screenshot({ path: "game-init-error.png" });
+      throw new Error(
+        "Game failed to initialize - error found in page content",
+      );
     }
     throw error;
   }
@@ -2754,10 +2737,10 @@ The ExplorationManager.test.ts file was previously using a mocked implementation
 
 ```typescript
 // Before (using mocks)
-import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+import { createTestEnvironment } from "../../utils/exploration/explorationTestUtils";
 
-describe('ExplorationManager', () => {
-  it('should handle ship assignment', async () => {
+describe("ExplorationManager", () => {
+  it("should handle ship assignment", async () => {
     const { explorationManager, shipManager } = createTestEnvironment();
     // Test with mock implementations
   });
@@ -2767,8 +2750,8 @@ describe('ExplorationManager', () => {
 import {
   ExplorationManagerImpl,
   type StarSystem,
-} from '../../../managers/exploration/ExplorationManagerImpl';
-import { ShipManagerImpl } from '../../../managers/ships/ShipManagerImpl';
+} from "../../../managers/exploration/ExplorationManagerImpl";
+import { ShipManagerImpl } from "../../../managers/ships/ShipManagerImpl";
 
 // Create a factory function for test setup with actual implementations
 function createTestEnvironmentWithActualImplementations() {
@@ -2781,9 +2764,10 @@ function createTestEnvironmentWithActualImplementations() {
   };
 }
 
-describe('ExplorationManager', () => {
-  it('should handle ship assignment', async () => {
-    const { explorationManager, shipManager } = createTestEnvironmentWithActualImplementations();
+describe("ExplorationManager", () => {
+  it("should handle ship assignment", async () => {
+    const { explorationManager, shipManager } =
+      createTestEnvironmentWithActualImplementations();
     // Test with actual implementations
   });
 });
@@ -2946,17 +2930,17 @@ When testing components that use `framer-motion`, we may encounter issues with t
 ### Example: Testing ResourceVisualization
 
 ```tsx
-describe('ResourceVisualization Component', () => {
-  it('renders with default resource values', () => {
+describe("ResourceVisualization Component", () => {
+  it("renders with default resource values", () => {
     render(
       <TestGameProvider>
         <ResourceVisualization />
-      </TestGameProvider>
+      </TestGameProvider>,
     );
 
     // Check for resource labels
-    expect(screen.getByText('minerals')).toBeInTheDocument();
-    expect(screen.getByText('energy')).toBeInTheDocument();
+    expect(screen.getByText("minerals")).toBeInTheDocument();
+    expect(screen.getByText("energy")).toBeInTheDocument();
 
     // Use getAllByText for values that appear multiple times
     const mineralValues = screen.getAllByText(/1,000/, { exact: false });
@@ -2999,7 +2983,10 @@ Instead of mocking the event system, we'll create a real event bus implementatio
 
 ```typescript
 // src/tests/factories/createTestModuleEvents.ts
-import { ModuleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import {
+  ModuleEventBus,
+  ModuleEventType,
+} from "../../lib/modules/ModuleEvents";
 
 export interface TestModuleEvents {
   moduleEventBus: ModuleEventBus;
@@ -3019,7 +3006,7 @@ export function createTestModuleEvents(): TestModuleEvents {
       events.push({ eventType, eventData });
       // Call any registered subscribers
       const subscribers = subscriptions[eventType] || [];
-      subscribers.forEach(callback => callback(eventData));
+      subscribers.forEach((callback) => callback(eventData));
     },
     subscribe: (eventType, callback) => {
       if (!subscriptions[eventType]) {
@@ -3027,17 +3014,23 @@ export function createTestModuleEvents(): TestModuleEvents {
       }
       subscriptions[eventType].push(callback);
       return () => {
-        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+        subscriptions[eventType] = subscriptions[eventType].filter(
+          (cb) => cb !== callback,
+        );
       };
     },
     unsubscribe: (eventType, callback) => {
       if (subscriptions[eventType]) {
-        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+        subscriptions[eventType] = subscriptions[eventType].filter(
+          (cb) => cb !== callback,
+        );
       }
     },
     getHistory: () => [...events],
-    getModuleHistory: moduleId => events.filter(e => e.eventData?.moduleId === moduleId),
-    getEventTypeHistory: eventType => events.filter(e => e.eventType === eventType),
+    getModuleHistory: (moduleId) =>
+      events.filter((e) => e.eventData?.moduleId === moduleId),
+    getEventTypeHistory: (eventType) =>
+      events.filter((e) => e.eventType === eventType),
     clearHistory: () => {
       events.length = 0;
     },
@@ -3052,13 +3045,13 @@ export function createTestModuleEvents(): TestModuleEvents {
     // Test helper methods
     getEmittedEvents: (eventType?: string) => {
       if (eventType) {
-        return events.filter(e => e.eventType === eventType);
+        return events.filter((e) => e.eventType === eventType);
       }
       return [...events];
     },
     clearEvents: () => {
       events.length = 0;
-      Object.keys(subscriptions).forEach(key => {
+      Object.keys(subscriptions).forEach((key) => {
         subscriptions[key] = [];
       });
     },
@@ -3069,9 +3062,9 @@ export function createTestModuleEvents(): TestModuleEvents {
 Usage in tests:
 
 ```typescript
-import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+import { createTestModuleEvents } from "../factories/createTestModuleEvents";
 
-describe('ModuleManager', () => {
+describe("ModuleManager", () => {
   let testModuleEvents;
 
   beforeEach(() => {
@@ -3079,7 +3072,7 @@ describe('ModuleManager', () => {
     testModuleEvents = createTestModuleEvents();
 
     // Use vi.doMock to override the ModuleEvents import
-    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+    vi.doMock("../../../lib/modules/ModuleEvents", () => testModuleEvents);
   });
 
   afterEach(() => {
@@ -3088,17 +3081,17 @@ describe('ModuleManager', () => {
     vi.resetModules();
   });
 
-  it('should emit MODULE_CREATED event when creating a module', () => {
+  it("should emit MODULE_CREATED event when creating a module", () => {
     // Test code using the real ModuleManager and our test event system
     const moduleManager = new ModuleManager();
-    moduleManager.createModule({ id: 'test', type: 'mining' });
+    moduleManager.createModule({ id: "test", type: "mining" });
 
     // Verify events using our helper methods
     const events = testModuleEvents.getEmittedEvents(
-      testModuleEvents.ModuleEventType.MODULE_CREATED
+      testModuleEvents.ModuleEventType.MODULE_CREATED,
     );
     expect(events.length).toBe(1);
-    expect(events[0].eventData.moduleId).toBe('test');
+    expect(events[0].eventData.moduleId).toBe("test");
   });
 });
 ```
@@ -3109,14 +3102,16 @@ Instead of mocking manager services, create real but simplified implementations:
 
 ```typescript
 // src/tests/factories/createTestResourceManager.ts
-import { Resource, ResourceManager } from '../../managers/game/ResourceManager';
+import { Resource, ResourceManager } from "../../managers/game/ResourceManager";
 
-export function createTestResourceManager(initialResources: Resource[] = []): ResourceManager {
+export function createTestResourceManager(
+  initialResources: Resource[] = [],
+): ResourceManager {
   // In-memory storage for resources
   const resources = new Map<string, Resource>();
 
   // Initialize with any provided resources
-  initialResources.forEach(resource => {
+  initialResources.forEach((resource) => {
     resources.set(resource.id, { ...resource });
   });
 
@@ -3145,7 +3140,7 @@ export function createTestResourceManager(initialResources: Resource[] = []): Re
     getAllResources: () => Array.from(resources.values()),
     reset: () => {
       resources.clear();
-      initialResources.forEach(resource => {
+      initialResources.forEach((resource) => {
         resources.set(resource.id, { ...resource });
       });
     },
@@ -3211,15 +3206,15 @@ Test utility functions directly without mocking:
 import {
   validateResourceFlow,
   validateResourceTransfer,
-} from '../../utils/resources/resourceValidation';
+} from "../../utils/resources/resourceValidation";
 
-describe('resourceValidation', () => {
-  describe('validateResourceFlow', () => {
-    it('should validate a valid resource flow', () => {
+describe("resourceValidation", () => {
+  describe("validateResourceFlow", () => {
+    it("should validate a valid resource flow", () => {
       const validFlow = {
-        sourceId: 'source1',
-        targetId: 'target1',
-        resourceType: 'minerals',
+        sourceId: "source1",
+        targetId: "target1",
+        resourceType: "minerals",
         rate: 10,
       };
 
@@ -3228,11 +3223,11 @@ describe('resourceValidation', () => {
       expect(result).toBe(true);
     });
 
-    it('should reject an invalid resource flow', () => {
+    it("should reject an invalid resource flow", () => {
       const invalidFlow = {
-        sourceId: 'source1',
-        targetId: 'target1',
-        resourceType: 'minerals',
+        sourceId: "source1",
+        targetId: "target1",
+        resourceType: "minerals",
         rate: -5, // Negative rate should be invalid
       };
 
@@ -3296,26 +3291,26 @@ This approach aligns with our goal of creating more reliable and maintainable te
 **Before (using mocks):**
 
 ```typescript
-vi.mock('../../../lib/modules/ModuleEvents', () => ({
+vi.mock("../../../lib/modules/ModuleEvents", () => ({
   moduleEventBus: {
     emit: vi.fn(),
     subscribe: vi.fn(),
     unsubscribe: vi.fn(),
   },
   ModuleEventType: {
-    MODULE_CREATED: 'MODULE_CREATED',
+    MODULE_CREATED: "MODULE_CREATED",
   },
 }));
 
-describe('ModuleManager', () => {
-  it('should create a module', () => {
+describe("ModuleManager", () => {
+  it("should create a module", () => {
     const moduleManager = new ModuleManager();
-    moduleManager.createModule({ id: 'test', type: 'mining' });
+    moduleManager.createModule({ id: "test", type: "mining" });
 
     // This only tests that the mock was called, not actual behavior
     expect(moduleEventBus.emit).toHaveBeenCalledWith(
       ModuleEventType.MODULE_CREATED,
-      expect.objectContaining({ moduleId: 'test' })
+      expect.objectContaining({ moduleId: "test" }),
     );
   });
 });
@@ -3324,14 +3319,14 @@ describe('ModuleManager', () => {
 **After (using test factories):**
 
 ```typescript
-import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+import { createTestModuleEvents } from "../factories/createTestModuleEvents";
 
-describe('ModuleManager', () => {
+describe("ModuleManager", () => {
   let testModuleEvents;
 
   beforeEach(() => {
     testModuleEvents = createTestModuleEvents();
-    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+    vi.doMock("../../../lib/modules/ModuleEvents", () => testModuleEvents);
   });
 
   afterEach(() => {
@@ -3339,17 +3334,17 @@ describe('ModuleManager', () => {
     vi.resetModules();
   });
 
-  it('should create a module', () => {
+  it("should create a module", () => {
     const moduleManager = new ModuleManager();
-    moduleManager.createModule({ id: 'test', type: 'mining' });
+    moduleManager.createModule({ id: "test", type: "mining" });
 
     // This tests actual behavior and event data
     const events = testModuleEvents.getEmittedEvents(
-      testModuleEvents.ModuleEventType.MODULE_CREATED
+      testModuleEvents.ModuleEventType.MODULE_CREATED,
     );
     expect(events.length).toBe(1);
-    expect(events[0].eventData.moduleId).toBe('test');
-    expect(events[0].eventData.moduleType).toBe('mining');
+    expect(events[0].eventData.moduleId).toBe("test");
+    expect(events[0].eventData.moduleType).toBe("mining");
   });
 });
 ```
@@ -3365,17 +3360,17 @@ When testing components that use `framer-motion`, we may encounter issues with t
 ### Example: Testing ResourceVisualization
 
 ```tsx
-describe('ResourceVisualization Component', () => {
-  it('renders with default resource values', () => {
+describe("ResourceVisualization Component", () => {
+  it("renders with default resource values", () => {
     render(
       <TestGameProvider>
         <ResourceVisualization />
-      </TestGameProvider>
+      </TestGameProvider>,
     );
 
     // Check for resource labels
-    expect(screen.getByText('minerals')).toBeInTheDocument();
-    expect(screen.getByText('energy')).toBeInTheDocument();
+    expect(screen.getByText("minerals")).toBeInTheDocument();
+    expect(screen.getByText("energy")).toBeInTheDocument();
 
     // Use getAllByText for values that appear multiple times
     const mineralValues = screen.getAllByText(/1,000/, { exact: false });
@@ -3413,13 +3408,11 @@ The test factory pattern is a powerful approach to testing that replaces mocks w
 ### Implemented Test Factories
 
 1. **ModuleEvents Test Factory**
-
    - Creates a real ModuleEventBus with event tracking
    - Provides helper methods for verifying events and listeners
    - Supports all event types and module types
 
 2. **ResourceManager Test Factory**
-
    - Implements all ResourceManager methods with real behavior
    - Supports resource initialization, updates, and tracking
    - Handles production, consumption, and transfer operations
@@ -3433,7 +3426,7 @@ The test factory pattern is a powerful approach to testing that replaces mocks w
 
 ```tsx
 // Test component that uses GameContext
-it('should display resource values', async () => {
+it("should display resource values", async () => {
   // Render with TestGameProvider
   render(
     <TestGameProvider
@@ -3442,12 +3435,12 @@ it('should display resource values', async () => {
       }}
     >
       <ResourceDisplay />
-    </TestGameProvider>
+    </TestGameProvider>,
   );
 
   // Verify initial values
-  expect(screen.getByTestId('minerals')).toHaveTextContent('Minerals: 500');
-  expect(screen.getByTestId('energy')).toHaveTextContent('Energy: 1000');
+  expect(screen.getByTestId("minerals")).toHaveTextContent("Minerals: 500");
+  expect(screen.getByTestId("energy")).toHaveTextContent("Energy: 1000");
 
   // Update resources using helper methods
   render(
@@ -3458,12 +3451,12 @@ it('should display resource values', async () => {
     >
       <ResourceDisplay />
       <ResourceUpdater />
-    </TestGameProvider>
+    </TestGameProvider>,
   );
 
   // Wait for updates and verify
-  await screen.findByText('Minerals: 1000');
-  expect(screen.getByTestId('minerals')).toHaveTextContent('Minerals: 1000');
+  await screen.findByText("Minerals: 1000");
+  expect(screen.getByTestId("minerals")).toHaveTextContent("Minerals: 1000");
 });
 ```
 
@@ -3484,13 +3477,11 @@ When testing components that rely on WebSocket communication, we've implemented 
 ### WebSocket Server Management
 
 1. **Centralized Configuration** (src/tests/setup.ts)
-
    - All WebSocket server creation and management is centralized in the setup.ts file
    - Port allocation uses a defined range (8000-9000) to avoid conflicts
    - Global flags control whether WebSocket servers are enabled or disabled for tests
 
 2. **Global Controls**
-
    - `disableAllWebSocketServers()`: Disables all WebSocket servers for tests that don't need them
    - `enableAllWebSocketServers()`: Re-enables WebSocket servers when needed
    - These functions should be called in beforeAll/afterAll hooks for test suites that need to control WebSockets
@@ -3517,16 +3508,14 @@ When testing components that rely on WebSocket communication, we've implemented 
    ```
 
 2. **Use Dynamic Ports**
-
    - When WebSockets are required, use `getTestWebSocketPort()` to get a unique port
    - Don't hardcode port numbers in tests
 
 3. **Register for Cleanup**
-
    - Always register your WebSocket server for cleanup:
 
    ```typescript
-   const port = getTestWebSocketPort('MyService');
+   const port = getTestWebSocketPort("MyService");
    const server = createMyWebSocketServer(port);
    registerTestWebSocketServer(port, server.close);
    ```
@@ -3560,7 +3549,7 @@ export function createTestModuleEvents(): TestModuleEvents {
       events.push({ eventType, eventData });
       // Call any registered subscribers
       const subscribers = subscriptions[eventType] || [];
-      subscribers.forEach(callback => callback(eventData));
+      subscribers.forEach((callback) => callback(eventData));
     },
     subscribe: (eventType, callback) => {
       if (!subscriptions[eventType]) {
@@ -3568,7 +3557,9 @@ export function createTestModuleEvents(): TestModuleEvents {
       }
       subscriptions[eventType].push(callback);
       return () => {
-        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+        subscriptions[eventType] = subscriptions[eventType].filter(
+          (cb) => cb !== callback,
+        );
       };
     },
     // ... other methods
@@ -3580,13 +3571,13 @@ export function createTestModuleEvents(): TestModuleEvents {
     // Test helper methods
     getEmittedEvents: (eventType?: string) => {
       if (eventType) {
-        return events.filter(e => e.eventType === eventType);
+        return events.filter((e) => e.eventType === eventType);
       }
       return [...events];
     },
     clearEvents: () => {
       events.length = 0;
-      Object.keys(subscriptions).forEach(key => {
+      Object.keys(subscriptions).forEach((key) => {
         subscriptions[key] = [];
       });
     },
@@ -3600,7 +3591,7 @@ The ResourceManager test factory creates a real ResourceManager for tests with i
 
 ```typescript
 export function createTestResourceManager(
-  config: ResourceManagerConfig = DEFAULT_TEST_CONFIG
+  config: ResourceManagerConfig = DEFAULT_TEST_CONFIG,
 ): TestResourceManager {
   // Resource state storage
   const resources = new Map<ResourceType, ResourceState>();
@@ -3670,7 +3661,7 @@ export function createTestModuleManager(): TestModuleManager {
   const moduleManager = new ModuleManager();
 
   // Register default test module configs
-  Object.values(TEST_MODULE_CONFIGS).forEach(config => {
+  Object.values(TEST_MODULE_CONFIGS).forEach((config) => {
     moduleManager.registerModuleConfig(config);
   });
 
@@ -3699,12 +3690,15 @@ export function createTestModuleManager(): TestModuleManager {
     createTestModule(
       type: ModuleType,
       position: Position,
-      overrides?: Partial<BaseModule>
+      overrides?: Partial<BaseModule>,
     ): BaseModule {
       // Implementation
     },
 
-    createTestBuilding(type: BuildingType, overrides?: Partial<ModularBuilding>): ModularBuilding {
+    createTestBuilding(
+      type: BuildingType,
+      overrides?: Partial<ModularBuilding>,
+    ): ModularBuilding {
       // Implementation
     },
   };
@@ -3753,7 +3747,7 @@ export function createTestModuleManager(): TestModuleManager {
   let moduleConfigs = new Map<ModuleType, ModuleConfig>();
 
   // Initialize with default configs
-  Object.values(TEST_MODULE_CONFIGS).forEach(config => {
+  Object.values(TEST_MODULE_CONFIGS).forEach((config) => {
     moduleManager.registerModuleConfig(config);
     moduleConfigs.set(config.type, config);
   });
@@ -3832,7 +3826,6 @@ Playwright tests are fully integrated with TypeScript:
 - Custom helper methods include proper return types and parameter types
 
 2. **Common Type Issues**:
-
    - Ensure proper imports from `@playwright/test` including `Page` type
    - Use built-in Playwright `expect` function rather than test framework assertions
    - Implement proper async/await patterns for all Playwright operations
@@ -3847,13 +3840,11 @@ Playwright tests are fully integrated with TypeScript:
 Comprehensive documentation for Playwright testing is available:
 
 1. **Setup Guide**:
-
    - Detailed setup instructions in `src/tests/e2e/README.md`
    - Installation steps for Playwright and browsers
    - Configuration options and examples
 
 2. **Best Practices**:
-
    - Page Object Model implementation guidelines
    - Test organization recommendations
    - Performance considerations
@@ -3870,7 +3861,6 @@ Comprehensive documentation for Playwright testing is available:
 When testing components or systems that use WebSocket servers, follow these principles to ensure reliable tests:
 
 1. **Proper Type Checking**:
-
    - Always check if WebSocket server creation was successful before using the result
    - Handle the case where WebSocket servers are disabled for testing
    - Use proper TypeScript type guards when destructuring WebSocket server objects
@@ -3879,14 +3869,14 @@ When testing components or systems that use WebSocket servers, follow these prin
 
    ```typescript
    // Example of proper WebSocket server testing
-   it('should create isolated WebSocket servers', () => {
+   it("should create isolated WebSocket servers", () => {
      // Create WebSocket server with null check
      const result1 = createTestWebSocketServer();
      const result2 = createTestWebSocketServer();
 
      // Skip test if WebSocket servers are disabled
      if (!result1 || !result2) {
-       console.log('WebSocket servers are disabled, skipping test');
+       console.log("WebSocket servers are disabled, skipping test");
        return;
      }
 
@@ -3901,7 +3891,6 @@ When testing components or systems that use WebSocket servers, follow these prin
    ```
 
 3. **WebSocket Server Isolation**:
-
    - Use central WebSocket management through the setup file
    - Implement dynamic port allocation to prevent conflicts
    - Enable/disable WebSocket servers globally for different test scenarios
@@ -3918,7 +3907,6 @@ When testing components or systems that use WebSocket servers, follow these prin
 When testing components that require React context providers, follow these guidelines:
 
 1. **Complete Context Implementation**:
-
    - Provide all required properties in the context value
    - Implement actual functionality for required methods instead of using mocks
    - Ensure type safety by satisfying the complete interface
@@ -3959,7 +3947,6 @@ When testing components that require React context providers, follow these guide
    ```
 
 3. **Test Component Isolation**:
-
    - Create simplified components for testing specific behavior
    - Test behavior rather than implementation details
    - Use proper error handling and fallbacks in test components
@@ -4000,7 +3987,6 @@ When working with test code, you may encounter situations where parameters or va
    ```
 
 3. **Common Scenarios for Unused Variables**:
-
    - Interface compatibility requirements
    - Event handlers that don't need the event object
    - Catch blocks where the error is intentionally ignored
@@ -4021,12 +4007,10 @@ When working with test code, you may encounter situations where parameters or va
 The GameHUD component is responsible for providing the user interface for building modules, managing resources, and navigating between different views. There were several issues with the original implementation that prevented the UI from functioning correctly:
 
 1. **Context Usage Issues**
-
    - The original implementation imported and used functions from the ModuleContext directly (`buildModule`, `canBuildModule`), which caused issues because these functions internally used hooks outside of a component function.
    - **Solution**: Instead of importing these functions, we implemented local versions that use the context directly from within the component function.
 
 2. **Module Building Process**
-
    - The module building functionality didn't properly connect to the ModuleContext.
    - **Solution**: We implemented a proper `buildModuleLocally` function that:
      - Finds a suitable building and attachment point
@@ -4035,7 +4019,6 @@ The GameHUD component is responsible for providing the user interface for buildi
      - Provides proper user feedback via notifications
 
 3. **Menu Item Actions**
-
    - The menu item actions weren't properly implemented, causing buttons to be non-responsive.
    - **Solution**: Implemented a `handleBuildModule` function that:
      - Checks if the module can be built
@@ -4045,12 +4028,10 @@ The GameHUD component is responsible for providing the user interface for buildi
      - Activates the correct view based on the module type
 
 4. **View Toggle Issues**
-
    - The view toggle functions in GameLayout weren't properly implemented.
    - **Solution**: Implemented proper handler functions with proper state management and logging.
 
 5. **Debugging Improvements**
-
    - Added comprehensive console logging throughout the UI components to help diagnose issues.
    - Improved error handling with detailed error messages.
 
@@ -4059,7 +4040,6 @@ The GameHUD component is responsible for providing the user interface for buildi
 The GameHUD component has been significantly enhanced with additional features to improve user experience and interface functionality:
 
 1. **Keyboard Shortcut System**
-
    - Implemented a keyboard navigation system for efficient menu access:
      - Alt+M for Mining menu
      - Alt+E for Exploration menu
@@ -4072,7 +4052,6 @@ The GameHUD component has been significantly enhanced with additional features t
    - Keyboard shortcuts are clearly displayed in the UI for better discoverability
 
 2. **Enhanced Resource Display**
-
    - Added real-time extraction rate indicators that show resource flow rate
    - Implemented status icons that visually indicate resource states:
      - Critical (red alert triangle)
@@ -4082,7 +4061,6 @@ The GameHUD component has been significantly enhanced with additional features t
    - Used callbacks for efficient resource status calculations
 
 3. **Tooltip System**
-
    - Implemented an advanced tooltip system that shows:
      - Detailed module information
      - Resource requirements with availability status
@@ -4092,14 +4070,12 @@ The GameHUD component has been significantly enhanced with additional features t
    - Tooltips provide immediate visual feedback on resource sufficiency
 
 4. **Improved User Feedback**
-
    - Enhanced notification messages with specific details about resource shortages
    - Added visual indicators for build status
    - Improved error handling with specific error messages
    - Enhanced visual feedback for user interactions
 
 5. **Implementation Details**
-
    - Used React's `useState` for managing tooltip state
    - Implemented mouse event handlers for tooltip positioning
    - Created reusable utility functions like `getResourceStatus`
@@ -4115,14 +4091,12 @@ These enhancements significantly improve the usability of the GameHUD component,
 The Galactic Sprawl application uses a robust event propagation system to ensure that events from various parts of the system are properly communicated to interested components. The system includes:
 
 1. **EventPropagationService**:
-
    - Centralized service for mapping events between different event systems
    - Handles event transformation and routing
    - Ensures events are properly propagated to all interested components
    - Provides a registration API for defining event mappings
 
 2. **Event Types**:
-
    - `ModuleEventType`: Defined in `src/lib/modules/ModuleEvents.ts`
    - Global events: Handled through the `useGlobalEvents` hook
 
@@ -4135,14 +4109,12 @@ The Galactic Sprawl application uses a robust event propagation system to ensure
 The application implements a comprehensive error handling system to ensure robustness and provide meaningful feedback to users:
 
 1. **IntegrationErrorHandler**:
-
    - React error boundary component for catching and handling errors in integration components
    - Provides fallback UI when errors occur
    - Logs errors to the ErrorLoggingService
    - Attempts recovery from non-fatal errors
 
 2. **ErrorLoggingService**:
-
    - Centralized service for structured error logging
    - Categorizes errors by type and severity
    - Provides deduplication of similar errors
@@ -4158,18 +4130,15 @@ The application implements a comprehensive error handling system to ensure robus
 To simplify the process of UI components registering for and responding to system events, we've implemented custom hooks:
 
 1. **useModuleEvents**:
-
    - Custom hook for subscribing to module events with automatic cleanup
    - Ensures subscriptions are properly cleaned up when components unmount
    - Prevents unnecessary re-subscriptions when dependencies change
 
 2. **useGlobalSystemEvents**:
-
    - Custom hook for subscribing to global game events
    - Provides similar functionality to useModuleEvents but for global events
 
 3. **useMultipleModuleEvents**:
-
    - Helper hook for subscribing to multiple module events at once
    - Simplifies code when components need to listen to multiple event types
 

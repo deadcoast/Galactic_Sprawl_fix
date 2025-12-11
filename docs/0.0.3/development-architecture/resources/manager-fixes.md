@@ -61,7 +61,9 @@ Continue using the workaround in `MiningResourceIntegration.ts` by replacing cal
 const node = this.flowManager.getNode(`mining-ship-${ship.id}`);
 
 // Use:
-const node = this.flowManager.getNodes().find(n => n.id === `mining-ship-${ship.id}`);
+const node = this.flowManager
+  .getNodes()
+  .find((n) => n.id === `mining-ship-${ship.id}`);
 ```
 
 ## Recommendation

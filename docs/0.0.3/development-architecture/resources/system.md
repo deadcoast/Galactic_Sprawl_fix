@@ -18,12 +18,12 @@ The Resource System manages all aspects of resource handling in Galactic Sprawl,
 // src/types/resources/StandardizedResourceTypes.ts
 
 export enum ResourceType {
-  IRON = 'IRON',
-  COPPER = 'COPPER',
-  TITANIUM = 'TITANIUM',
-  ENERGY = 'ENERGY',
-  WATER = 'WATER',
-  OXYGEN = 'OXYGEN',
+  IRON = "IRON",
+  COPPER = "COPPER",
+  TITANIUM = "TITANIUM",
+  ENERGY = "ENERGY",
+  WATER = "WATER",
+  OXYGEN = "OXYGEN",
   // ... other resource types
 }
 
@@ -62,7 +62,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceEvent> {
   private flows: Map<string, ResourceConnection>;
 
   constructor(eventBus: EventBus<ResourceEvent>) {
-    super('ResourceManager', eventBus);
+    super("ResourceManager", eventBus);
     this.resources = new Map();
     this.flows = new Map();
   }
@@ -70,13 +70,17 @@ export class ResourceManager extends AbstractBaseManager<ResourceEvent> {
   public async addResource(resource: Resource): Promise<void> {
     const node = this.createResourceNode(resource);
     this.resources.set(node.id, node);
-    this.publishEvent(this.createEvent(ResourceEvents.RESOURCE_ADDED, { node }));
+    this.publishEvent(
+      this.createEvent(ResourceEvents.RESOURCE_ADDED, { node }),
+    );
   }
 
   public async createFlow(connection: ResourceConnection): Promise<void> {
     this.validateFlow(connection);
     this.flows.set(this.getFlowId(connection), connection);
-    this.publishEvent(this.createEvent(ResourceEvents.FLOW_CREATED, { connection }));
+    this.publishEvent(
+      this.createEvent(ResourceEvents.FLOW_CREATED, { connection }),
+    );
   }
 
   protected async onUpdate(deltaTime: number): Promise<void> {
@@ -90,7 +94,10 @@ export class ResourceManager extends AbstractBaseManager<ResourceEvent> {
     }
   }
 
-  private async processFlow(flow: ResourceConnection, deltaTime: number): Promise<void> {
+  private async processFlow(
+    flow: ResourceConnection,
+    deltaTime: number,
+  ): Promise<void> {
     const amount = flow.rate * deltaTime;
     const sourceNode = this.resources.get(flow.from);
     const targetNode = this.resources.get(flow.to);
@@ -113,7 +120,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceEvent> {
         sourceNode,
         targetNode,
         amount,
-      })
+      }),
     );
   }
 }
@@ -129,7 +136,7 @@ export class ResourceFlowManager extends AbstractBaseManager<ResourceEvent> {
   private optimizer: FlowOptimizer;
 
   constructor(eventBus: EventBus<ResourceEvent>) {
-    super('ResourceFlowManager', eventBus);
+    super("ResourceFlowManager", eventBus);
     this.flowNetwork = new FlowNetwork();
     this.optimizer = new FlowOptimizer();
   }
@@ -139,7 +146,9 @@ export class ResourceFlowManager extends AbstractBaseManager<ResourceEvent> {
     await this.applyOptimization(optimization);
   }
 
-  private async applyOptimization(optimization: FlowOptimization): Promise<void> {
+  private async applyOptimization(
+    optimization: FlowOptimization,
+  ): Promise<void> {
     for (const change of optimization.changes) {
       await this.updateFlow(change);
     }
@@ -148,7 +157,7 @@ export class ResourceFlowManager extends AbstractBaseManager<ResourceEvent> {
       this.createEvent(ResourceEvents.FLOWS_OPTIMIZED, {
         optimization,
         networkState: this.flowNetwork.getState(),
-      })
+      }),
     );
   }
 }
@@ -341,13 +350,11 @@ export const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 The Resource System integrates with the Mining System through:
 
 1. **Resource Detection**
-
    - Mining operations discover new resources
    - Resources are registered with ResourceManager
    - Resource nodes are created in the flow network
 
 2. **Resource Extraction**
-
    - Mining operations extract resources
    - Extraction rates are monitored
    - Resources are added to the flow network
@@ -362,13 +369,11 @@ The Resource System integrates with the Mining System through:
 The Resource System integrates with the Module System through:
 
 1. **Resource Consumption**
-
    - Modules consume resources
    - Consumption rates are tracked
    - Resource flows are optimized
 
 2. **Resource Production**
-
    - Modules produce resources
    - Production rates are tracked
    - Resources are distributed through the network
@@ -381,13 +386,11 @@ The Resource System integrates with the Module System through:
 ## Performance Considerations
 
 1. **Flow Optimization**
-
    - Batch flow updates
    - Use spatial partitioning
    - Implement priority-based updates
 
 2. **UI Performance**
-
    - Memoize expensive calculations
    - Use virtualization for large lists
    - Implement efficient rendering patterns
@@ -400,13 +403,11 @@ The Resource System integrates with the Module System through:
 ## Testing Strategy
 
 1. **Unit Tests**
-
    - Test individual components
    - Verify calculation accuracy
    - Check event handling
 
 2. **Integration Tests**
-
    - Test system boundaries
    - Verify flow optimization
    - Check UI updates

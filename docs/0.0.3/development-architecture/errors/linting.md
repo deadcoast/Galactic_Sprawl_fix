@@ -9,23 +9,18 @@ This document tracks the progress of linting improvements across the codebase. I
 The project uses the following linting tools:
 
 1. **setup-linting.js** - Initializes and configures ESLint and Prettier
-
    - Usage: `node tools/setup-linting.js`
 
 2. **analyze-lint-errors.js** - Analyzes ESLint output to categorize and prioritize errors
-
    - Usage: `npx eslint src --format json | node tools/analyze-lint-errors.js`
 
 3. **fix-eslint-by-rule.js** - Fixes ESLint and Prettier issues by rule name or automatically
-
    - Usage: `node tools/fix-eslint-by-rule.js [rule-name] [directory] [options]`
 
 4. **track-eslint-progress.js** - Records linting status to track progress over time
-
    - Usage: `node tools/track-eslint-progress.js [--details] [--silent]`
 
 5. **chart-lint-progress.js** - Generates ASCII chart showing progress over time
-
    - Usage: `node tools/chart-lint-progress.js [--verbose]`
 
 6. **run-lint-workflow.js** - Runs all linting tools in the correct order
@@ -245,39 +240,33 @@ Main issue types:
 Fixed TypeScript linting errors in the following exploration system components:
 
 1. **GalaxyMapSystem.tsx**:
-
    - Fixed 8 unused variables/interfaces errors
    - Removed unused interfaces: `CosmicEventState`, `DayNightCycleState`, `ParallaxLayer`
    - Removed unused functions: `renderSectors`, `generateParallaxLayers`, `generateCosmicEvent`
    - Added helper functions for colors: `getSectorColor` and `getResourceColor`
 
 2. **GalaxyMappingSystem.tsx**:
-
    - Fixed 1 type mismatch error with `cosmicEvents` prop
    - Fixed 1 duplicate identifier error with `affectedSectorIds`
    - Fixed 1 unused variable error with `s` in filter function
 
 3. **ReconShipCoordination.tsx**:
-
    - Fixed 1 unused variable error with `_onShareTask`
    - Renamed prop to `onShareTask` and made it optional
    - Added implementation for `handleShareTask` function
 
 4. **ResourceDiscoverySystem.tsx**:
-
    - Fixed 1 unused variable error with `quality` prop
    - Added quality settings based on the prop value
    - Used quality settings for processing speed and animations
 
 5. **ResourcePotentialVisualization.tsx**:
-
    - Fixed 1 unused variable error with `quality` prop
    - Fixed 1 unused variable error with `index` in map function
    - Added quality settings for visualization details
    - Used index variable for animation effects
 
 6. **ExplorationSystemIntegration.tsx**:
-
    - Fixed prop name inconsistencies with `GalaxyMapSystem`
 
 7. **ReconShipCoordinationDemo.tsx** and **ReconShipCoordination.test.tsx**:
@@ -412,7 +401,6 @@ All linting issues have been resolved. The next steps could include:
 We implemented a systematic approach to address all linting issues:
 
 1. **Fixed @typescript-eslint/no-explicit-any errors first** (highest priority)
-
    - Replaced with proper type definitions
    - Used unknown type for truly unknown values
    - Created appropriate interfaces for complex objects
@@ -420,19 +408,16 @@ We implemented a systematic approach to address all linting issues:
    - Used generics for flexible typing
 
 2. **Fixed no-console warnings**
-
    - Replaced console.log and console.debug with console.warn for allowed logging
    - Kept console.warn and console.error as they are allowed
    - Considered implementing a proper logging service
 
 3. **Fixed @typescript-eslint/no-unused-vars warnings**
-
    - Prefixed intentionally unused variables with underscore (\_)
    - Removed truly unused variables
    - Used destructuring to extract only needed properties
 
 4. **Tracked progress after each batch of fixes**
-
    - Ran track-eslint-progress.js --details
    - Generated chart with chart-lint-progress.js
    - Analyzed remaining issues
@@ -463,31 +448,26 @@ The following files have been fixed to address linting issues:
 ## Common Issues and Solutions
 
 1. **Unused Variables**
-
    - Issue: Variables defined but never used
    - Solution: Add underscore prefix to indicate intentional non-use
    - Example: `function example(id) {}` → `function example(_id) {}`
 
 2. **Explicit 'any' Types**
-
    - Issue: Use of 'any' type which bypasses TypeScript's type checking
    - Solution: Replace with specific interfaces or types
    - Example: `function process(data: any)` → `function process(data: ProcessData)`
 
 3. **Console Statements**
-
    - Issue: Direct console.log statements in production code
    - Solution: Replace with appropriate logging levels or remove
    - Example: `console.log()` → `console.warn()` or custom logger
 
 4. **Missing Return Types**
-
    - Issue: Functions without explicit return type annotations
    - Solution: Add explicit return types to all functions
    - Example: `function getData()` → `function getData(): DataType`
 
 5. **React Hook Dependencies**
-
    - Issue: Missing dependencies in useEffect/useCallback dependency arrays
    - Solution: Add all referenced variables to dependency arrays
    - Example: `useEffect(() => { doSomething(value); }, [])` → `useEffect(() => { doSomething(value); }, [value])`
@@ -558,38 +538,34 @@ This pattern makes it clear that the variable is intentionally unused, rather th
 Type assertions in TypeScript (using the `as` keyword) bypass the type system's checks, which can lead to runtime errors if the asserted type doesn't match the actual value. The following best practices should be followed when dealing with type assertions:
 
 1. **Avoid direct type assertions when possible**
-
    - Type assertions (`as SomeType`) bypass TypeScript's type checking
    - Use type guards and conditional checks instead
 
 2. **Use type guards for runtime validation**
-
    - Create dedicated type guard functions for complex types
    - Example:
      ```typescript
      function isValidEventType(type: string): type is ModuleEventType {
        return [
-         'MODULE_CREATED',
-         'MODULE_ATTACHED',
-         'MODULE_DETACHED',
+         "MODULE_CREATED",
+         "MODULE_ATTACHED",
+         "MODULE_DETACHED",
          // ... other valid event types ...
        ].includes(type as ModuleEventType);
      }
      ```
 
 3. **Validate object properties before access**
-
    - Check if objects exist and have the expected structure
    - Example:
      ```typescript
-     if (payload && typeof payload === 'object' && 'routineId' in payload) {
+     if (payload && typeof payload === "object" && "routineId" in payload) {
        const routineId = String(payload.routineId);
        // Now use routineId safely
      }
      ```
 
 4. **Use intermediate `unknown` type for conversions**
-
    - When converting between complex types, use `unknown` as an intermediate step
    - Example:
 
@@ -602,7 +578,6 @@ Type assertions in TypeScript (using the `as` keyword) bypass the type system's 
      ```
 
 5. **Add index signatures to interfaces**
-
    - For interfaces that need to satisfy `Record<string, unknown>` constraints
    - Example:
      ```typescript
@@ -627,7 +602,10 @@ Before:
 
 ```typescript
 // Unsafe type assertion
-const payload = message.payload as { routineId?: string; createRoutine?: GlobalRoutine };
+const payload = message.payload as {
+  routineId?: string;
+  createRoutine?: GlobalRoutine;
+};
 
 if (payload.routineId) {
   const routine = this.routines.get(payload.routineId);
@@ -644,10 +622,13 @@ After:
 ```typescript
 // Type guard with property checks
 const payload = message.payload;
-if (payload && typeof payload === 'object') {
-  const routineId = 'routineId' in payload ? String(payload.routineId) : undefined;
+if (payload && typeof payload === "object") {
+  const routineId =
+    "routineId" in payload ? String(payload.routineId) : undefined;
   const createRoutine =
-    'createRoutine' in payload && payload.createRoutine && typeof payload.createRoutine === 'object'
+    "createRoutine" in payload &&
+    payload.createRoutine &&
+    typeof payload.createRoutine === "object"
       ? (payload.createRoutine as GlobalRoutine)
       : undefined;
 
@@ -665,7 +646,6 @@ if (payload && typeof payload === 'object') {
 ### Files Fixed with Type Assertion Improvements
 
 - src/managers/automation/GlobalAutomationManager.ts:
-
   - Replaced unsafe type assertions with proper type guards
   - Added a type guard function to validate ModuleEventType values
   - Improved object property access with proper type checking
@@ -674,14 +654,12 @@ if (payload && typeof payload === 'object') {
   - Fixed all linter errors related to type assertions
 
 - src/managers/combat/combatManager.ts:
-
   - Added type guards for event data objects (FormationUpdateData, EngagementData, UnitActionData, WeaponFireData)
   - Fixed MapIterator error by using Array.from() to convert Map values to arrays before iteration
   - Improved event handling with proper type checking
   - Added defensive programming patterns to prevent runtime errors
 
 - src/managers/mining/MiningResourceIntegration.ts:
-
   - Added type guards for ship objects to safely access ship.id and ship.status properties
   - Added type guards for resource event data to safely access resourceType and delta properties
   - Added type guards for ship registration data to handle event parameters correctly
@@ -689,7 +667,6 @@ if (payload && typeof payload === 'object') {
   - Improved type safety for resource transfer objects
 
 - src/managers/resource/ResourceIntegration.ts:
-
   - Added type guards for event data objects to validate structure before access
   - Implemented a dedicated isValidResourceType type guard function to validate resource types
   - Fixed event subscription methods to use the correct ModuleEventType
@@ -698,7 +675,6 @@ if (payload && typeof payload === 'object') {
   - Added proper validation for all event data properties before use
 
 - src/managers/module/SubModuleManager.ts:
-
   - Added proper type guards for event data objects in all event handlers
   - Replaced unsafe type assertions with property existence checks
   - Fixed event handler methods to safely extract moduleId from event data
@@ -824,11 +800,11 @@ value: {
 
 ```typescript
 // CORRECT
-import { ResourceManager } from '../../managers/game/ResourceManager';
+import { ResourceManager } from "../../managers/game/ResourceManager";
 const resourceManager = new ResourceManager();
 
 // INCORRECT - will cause TypeScript errors if resourceManager is not exported
-import { resourceManager } from '../../managers/game/ResourceManager';
+import { resourceManager } from "../../managers/game/ResourceManager";
 ```
 
 ### Remaining Tasks
@@ -878,8 +854,8 @@ export class AdvancedWeaponEffectManager
   implements _WeaponEvents
 {
   // Add required properties with definite assignment assertion
-  public effectCreated!: _WeaponEvents['effectCreated'];
-  public effectRemoved!: _WeaponEvents['effectRemoved'];
+  public effectCreated!: _WeaponEvents["effectCreated"];
+  public effectRemoved!: _WeaponEvents["effectRemoved"];
   // other properties...
 
   // Add index signature required by interface
@@ -888,7 +864,7 @@ export class AdvancedWeaponEffectManager
   // Create methods that use the interface
   private emitWeaponEvent<K extends keyof _WeaponEvents>(
     eventName: K,
-    data: _WeaponEvents[K]
+    data: _WeaponEvents[K],
   ): void {
     // Implementation...
   }
@@ -896,11 +872,11 @@ export class AdvancedWeaponEffectManager
   // Update existing methods to use the interface
   public createEffect() {
     // ...
-    const eventData: _WeaponEvents['effectCreated'] = {
+    const eventData: _WeaponEvents["effectCreated"] = {
       /* ... */
     };
     this.effectCreated = eventData;
-    this.emitWeaponEvent('effectCreated', eventData);
+    this.emitWeaponEvent("effectCreated", eventData);
     // ...
   }
 }
@@ -1022,23 +998,19 @@ We plan to:
 ### Test Files Linting (2023-07-15)
 
 - Fixed linting errors in `src/tests/tools/fix-typescript-any.test.js`
-
   - Replaced `require()` with dynamic imports
   - Created proper mock objects
   - Fixed import paths
 
 - Fixed linting errors in `src/tests/tools/run-lint-workflow.test.js`
-
   - Corrected import paths
   - Improved mock implementations
 
 - Fixed linting errors in `src/tests/tools/setup-linting.test.js`
-
   - Verified correct import paths
   - Ensured consistent use of mocks
 
 - Fixed linting errors in `src/tests/tools/fix-eslint-by-rule.test.js`
-
   - Replaced `console.warn` with `mockConsole.warn`
   - Properly handled error in catch block
 
@@ -1063,11 +1035,9 @@ We plan to:
 Fixed unused variable linting errors in test factory files:
 
 1. **src/tests/factories/createTestModuleManager.ts**
-
    - Fixed: Renamed unused `error` variable to `_error` in catch block
 
 2. **src/tests/factories/createTestResourceManager.ts**
-
    - Fixed: Renamed unused `level` parameter to `_level` in setStorageEfficiency method
    - Fixed: Renamed unused `deltaTime` parameter to `_deltaTime` in update method
 
@@ -1093,17 +1063,14 @@ This change ensures that our test setup code follows the project's linting rules
 Fixed unused variable linting errors in various test utility files:
 
 1. **src/tests/utils/exploration/explorationTestUtils.ts**
-
    - Fixed: Renamed unused parameters `shipId` and `systemId` to `_shipId` and `_systemId` in the mock implementation of `assignShipToSystem`
    - These parameters are required for interface compatibility with the real `ExplorationManagerImpl` but are not used in the test mock
 
 2. **src/tests/utils/fixtureUtils.ts**
-
    - Fixed: Renamed unused parameter `type` to `_type` in the mock implementation of `getResourceState`
    - The parameter is required for API compatibility but not used in the simplified test implementation
 
 3. **src/tests/utils/testPerformanceUtils.ts**
-
    - Fixed: Made the unused `ModuleImplementation` type useful by applying it to the parameter type of the `mockExpensiveOperations` function
    - This properly documents the expected shape of the mock implementations and improves type safety
 

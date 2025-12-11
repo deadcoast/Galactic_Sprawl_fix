@@ -39,13 +39,11 @@ This roadmap is organized into clear phases and sections to guide you step-by-st
 **Goal:** Establish the game’s foundational structure and set up the initial project environment.
 
 - **Create a New Project:**
-
   - Set up an initial “Gameplay” scene/world with the Mothership as the central hub.
   - Prepare the base **Main Menu UI** for empire naming and banner creation.
   - Create at least one **Game World** (the “local system”) where the Mothership is placed.
 
 - **Empire Naming & Banner Creation:**
-
   - **UI Input:** Add a text field for players to enter an empire name.
   - **Dynamic Text:** Replace placeholders (e.g., `{Galactic_Sprawl}`) with the chosen empire name throughout the UI.
   - **Banner Selection:** Implement a sprite selection or color customization tool for banners.
@@ -68,7 +66,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Consolidate all Visual Progression Representation (VPR) assets into a cohesive “Star System Screen” that dynamically shows the current state of the star system.
 
 - **Core Visual Components:**
-
   - **Star System Backdrop:**
     - Create a parallax star background (using CSS effects or [react-three-fiber](https://github.com/pmndrs/react-three-fiber) for 3D).
     - _Library Suggestion:_ [react-parallax](https://www.npmjs.com/package/react-parallax)
@@ -81,7 +78,6 @@ This section covers all on-screen UI elements and interactive maps that form the
     - Visual cues for population, trade routes, and upgrade transitions (using [react-particles-js](https://www.npmjs.com/package/react-particles-js) or GSAP for complex sequences).
 
 - **Component Architecture & Technical Implementation:**
-
   - **Hierarchy:** A top-level `<VPRStarSystemView />` with child components for each module.
   - **State Management:** Use React Context/Redux for global state (tier levels, resource counts) and local state for individual animations.
   - **Styling & Responsiveness:** Utilize CSS-in-JS (e.g., styled-components) for consistent themes (dark backgrounds, cyan accents).
@@ -98,14 +94,12 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Build the central overlay that gives players access to core gameplay functions via an organized, color-coded submenu system.
 
 - **Structure & Layout:**
-
   - **Container Component:** Create a `HUDContainer` to manage global state and active submenus.
   - **Submenu Components:** Develop separate components for Mining, Exploration, Mothership, and Colony Star Station.
   - **Collapsible Panels:** Implement an accordion-style mechanism so that only one submenu is open at a time.
   - **Theming:** Use unique color schemes (e.g., bronze for Mining, teal for Recon, cyan for Mothership) via a theming solution like styled-components’ ThemeProvider.
 
 - **Scrolling & Custom Scrollbars:**
-
   - Wrap overflow content in a scrollable container.
   - _Library Suggestion:_ [react-scrollbars-custom](https://www.npmjs.com/package/react-scrollbars-custom) for a custom-styled scrollbar (cyan thumb on a dark track).
 
@@ -120,7 +114,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Present a master overview of the player’s empire with stylized visuals that include parallax backgrounds, zone indicators, and interactive system markers.
 
 - **Key Elements:**
-
   - **Sprawl View Button:**
     - Labeled dynamically with the custom empire name (e.g., “Nova Imperium Map”).
     - Hotkey **S** toggles the view.
@@ -167,7 +160,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Create an interactive map of local star systems with travel and colonization options.
 
 - **Map Layout & Visuals:**
-
   - Develop a `<GalaxyMap />` component that renders an SVG or Canvas-based map.
   - Distribute star systems in a spiral pattern using a layout algorithm (e.g., d3-force).
   - Color-code systems based on state (gray for locked, blue for unlocked, red for enemy/faction).
@@ -184,7 +176,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Develop the main build menus and control interfaces for the Mothership and its associated Colony Star Stations.
 
 - **Mothership UI (Build Menu):**
-
   - Create a `<MothershipBuildMenu />` component that displays upgrade icons (Radar, Ship Hanger, Officer Academy, etc.) in a grid or list.
   - Use CSS Grid/Flexbox for layout and incorporate state-dependent button styling (enabled/disabled based on resources).
   - _Library Suggestion:_ Consider a UI framework (e.g., [Material-UI](https://mui.com/)) for consistent styling and use [react-spring](https://www.react-spring.io/) for animated transitions.
@@ -201,7 +192,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Provide dedicated windows for managing galaxy exploration and mineral resource processing.
 
 - **Exploration Hub UI:**
-
   - Build an `<ExplorationHub />` component that displays recon ship positions and exploration progress.
   - Render a filtered, dynamic map (similar to the Galaxy Map) focused on exploration data.
   - Use libraries like [react-d3-graph](https://github.com/danielcaldas/react-d3-graph) or [react-three-fiber](https://github.com/pmndrs/react-three-fiber) for 3D overlays.
@@ -219,7 +209,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Manage the training and deployment of officers and ship construction.
 
 - **Officer Academy UI:**
-
   - Create an `<OfficerAcademy />` component displaying available officers, training progress bars, and animated training sequences.
   - Use [Framer Motion](https://www.framer.com/motion/) for advanced animations and optionally [react-progressbar.js](https://github.com/kimmobrunfeldt/react-progressbar.js) for XP indicators.
 
@@ -257,7 +246,6 @@ This section covers all on-screen UI elements and interactive maps that form the
 **Purpose:** Implement the core mechanics for the Mothership and its basic modules (Tier 1).
 
 - **Mothership Core Logic:**
-
   - Set up resource counters (minerals, population, etc.) and use global or scene-level variables.
   - Add buy/build buttons for initial modules (e.g., Star Station Colony, Radar, Ship Hanger).
 

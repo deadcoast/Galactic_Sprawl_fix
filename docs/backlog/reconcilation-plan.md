@@ -9,6 +9,7 @@
 ## PHASE 2 OVERVIEW
 
 This plan addresses all issues identified in the audit using ONLY additive operations:
+
 - ✅ Add imports/exports
 - ✅ Add wrapper functions
 - ✅ Add integration code
@@ -24,14 +25,17 @@ This plan addresses all issues identified in the audit using ONLY additive opera
 ### 1.1 ModuleEventBus - Canonical Choice
 
 **CANONICAL:** `/src/lib/events/ModuleEventBus.ts`
+
 - Reason: Extends EventBus base class, has validation, uses ErrorLoggingService
 - Features: Type validation, filtering by moduleId/moduleType
 
 **NON-CANONICAL (Keep as Wrapper):** `/src/lib/modules/ModuleEvents.ts`
+
 - Action: Convert to thin wrapper that delegates to canonical ModuleEventBus
 - Preserve: History tracking functionality (add to canonical if missing)
 
 **Files to Update:**
+
 ```
 src/initialization/eventSystemInit.ts
 src/utils/events/EventDispatcher.tsx
@@ -46,13 +50,16 @@ src/managers/module/SubModuleManager.ts
 ### 1.2 ServiceRegistry - Canonical Choice
 
 **CANONICAL:** `/src/lib/managers/ServiceRegistry.ts`
+
 - Reason: Most comprehensive, manager-focused which is primary use case
 
 **NON-CANONICAL (Keep as Re-exports):**
+
 - `/src/lib/services/ServiceRegistry.ts` → Re-export from canonical
 - `/src/lib/registry/ServiceRegistry.ts` → Re-export from canonical
 
 **Files to Update:**
+
 ```
 All files importing from lib/services/ServiceRegistry
 All files importing from lib/registry/ServiceRegistry
@@ -61,9 +68,11 @@ All files importing from lib/registry/ServiceRegistry
 ### 1.3 FactionShipTypes - Canonical Choice
 
 **CANONICAL:** `/src/types/ships/FactionShipTypes.ts`
+
 - Reason: Contains full 322-line implementation
 
 **NON-CANONICAL (Keep as Re-exports):**
+
 - `/src/types/factions/FactionShipTypes.ts` (Already re-exports - KEEP)
 - `/src/types/ships/FactionTypes.ts` (Already re-exports - KEEP)
 
@@ -72,27 +81,33 @@ All files importing from lib/registry/ServiceRegistry
 ### 1.4 useModuleEvents Hook - Canonical Choice
 
 **CANONICAL:** `/src/hooks/modules/useModuleEvents.ts`
+
 - Reason: Uses UnifiedEventSystem, more features, proper lifecycle hooks
 
 **NON-CANONICAL (Keep as Adapter):** `/src/hooks/events/useModuleEvents.ts`
+
 - Action: Convert to adapter that imports from canonical location
 - Add deprecation comment pointing to canonical
 
 ### 1.5 EventBatcher - Canonical Choice
 
 **CANONICAL:** `/src/lib/events/EventBatcher.ts`
+
 - Reason: Class-based, integrates with EventBus architecture
 
 **NON-CANONICAL (Keep for RxJS users):** `/src/utils/events/EventBatchingRxJS.ts`
+
 - Action: Keep as alternative for RxJS-based code
 - Add comment documenting when to use each
 
 ### 1.6 Components: Badge/Button
 
 **CANONICAL:** `/src/ui/components/Badge/Badge.tsx` and `/src/ui/components/Button/Button.tsx`
+
 - Reason: Newer design system implementation
 
 **NON-CANONICAL (Keep as Adapters):**
+
 - `/src/components/ui/common/Badge.tsx` - Keep as adapter wrapping canonical
 - `/src/components/ui/common/Button.tsx` - Already wraps canonical (correct)
 
@@ -106,6 +121,7 @@ All files importing from lib/registry/ServiceRegistry
 **Solution:** Create re-export mappings to actual component locations
 
 **Step 1:** Create missing directories as re-export aggregators
+
 ```
 mkdir -p src/components/ui/typography
 mkdir -p src/components/ui/inputs
@@ -119,69 +135,77 @@ mkdir -p src/components/ui/game
 **Step 2:** Create index.ts files that re-export from `/src/ui/components/`
 
 **File:** `src/components/ui/typography/index.ts`
+
 ```typescript
 // Re-export typography components from ui design system
-export { Heading } from '../../../ui/components/typography/Heading';
-export { Text } from '../../../ui/components/typography/Text';
-export { Label } from '../../../ui/components/typography/Label';
+export { Heading } from "../../../ui/components/typography/Heading";
+export { Text } from "../../../ui/components/typography/Text";
+export { Label } from "../../../ui/components/typography/Label";
 ```
 
 **File:** `src/components/ui/inputs/index.ts`
+
 ```typescript
 // Re-export input components from ui design system
-export { Input } from '../../../ui/components/inputs/Input';
-export { Checkbox } from '../../../ui/components/inputs/Checkbox';
-export { Radio } from '../../../ui/components/inputs/Radio';
-export { Select } from '../../../ui/components/inputs/Select';
-export { Slider } from '../../../ui/components/inputs/Slider';
-export { Switch } from '../../../ui/components/inputs/Switch';
+export { Input } from "../../../ui/components/inputs/Input";
+export { Checkbox } from "../../../ui/components/inputs/Checkbox";
+export { Radio } from "../../../ui/components/inputs/Radio";
+export { Select } from "../../../ui/components/inputs/Select";
+export { Slider } from "../../../ui/components/inputs/Slider";
+export { Switch } from "../../../ui/components/inputs/Switch";
 ```
 
 **File:** `src/components/ui/layout/index.ts`
+
 ```typescript
 // Re-export layout components from ui design system
-export { Container } from '../../../ui/components/layout/Container';
-export { Grid } from '../../../ui/components/layout/Grid';
-export { Flex } from '../../../ui/components/layout/Flex';
-export { Stack } from '../../../ui/components/layout/Stack';
-export { Spacer } from '../../../ui/components/layout/Spacer';
+export { Container } from "../../../ui/components/layout/Container";
+export { Grid } from "../../../ui/components/layout/Grid";
+export { Flex } from "../../../ui/components/layout/Flex";
+export { Stack } from "../../../ui/components/layout/Stack";
+export { Spacer } from "../../../ui/components/layout/Spacer";
 ```
 
 **File:** `src/components/ui/feedback/index.ts`
+
 ```typescript
 // Re-export feedback components - create stubs or import if exist
 // TODO: These components need to be implemented or sourced
-export { Alert } from './Alert';
-export { Spinner } from './Spinner';
-export { Progress } from './Progress';
-export { Skeleton } from './Skeleton';
-export { Toast } from './Toast';
+export { Alert } from "./Alert";
+export { Spinner } from "./Spinner";
+export { Progress } from "./Progress";
+export { Skeleton } from "./Skeleton";
+export { Toast } from "./Toast";
 ```
 
 **Step 3:** Create single-file re-exports for missing components
 
 **File:** `src/components/ui/Icon.tsx`
+
 ```typescript
 // Re-export Icon from ui design system
-export { Icon } from '../../ui/components/Icon';
+export { Icon } from "../../ui/components/Icon";
 ```
 
 **File:** `src/components/ui/Badge.tsx`
+
 ```typescript
 // Re-export Badge from ui design system
-export { Badge } from '../../ui/components/Badge';
+export { Badge } from "../../ui/components/Badge";
 ```
 
 **File:** `src/components/ui/Tooltip.tsx`
+
 ```typescript
 // Re-export Tooltip from ui design system
-export { Tooltip } from '../../ui/components/Tooltip';
+export { Tooltip } from "../../ui/components/Tooltip";
 ```
 
 **File:** `src/components/ui/Divider.tsx`
+
 ```typescript
 // Re-export Divider from ui design system
-export { Divider } from '../../ui/components/Divider';
+export { Divider } from "../../ui/components/Divider";
 ```
 
 **Step 4:** Update index.ts to use correct paths
@@ -194,6 +218,7 @@ Update exports in `src/components/ui/index.ts` to point to the new re-export fil
 **Step 1:** Add history functionality to canonical ModuleEventBus if missing
 
 **Edit:** `src/lib/events/ModuleEventBus.ts`
+
 ```typescript
 // ADD after existing imports:
 import type { ModuleEventType as LegacyModuleEventType } from '../modules/ModuleEvents';
@@ -227,9 +252,13 @@ public clearHistory(): void {
 **Step 2:** Convert legacy ModuleEvents to wrapper
 
 **Edit:** `src/lib/modules/ModuleEvents.ts`
+
 ```typescript
 // ADD at top - delegate to canonical:
-import { moduleEventBus as canonicalEventBus, ModuleEvent } from '../events/ModuleEventBus';
+import {
+  moduleEventBus as canonicalEventBus,
+  ModuleEvent,
+} from "../events/ModuleEventBus";
 
 // KEEP existing exports for backward compatibility
 // MODIFY class to delegate:
@@ -275,7 +304,7 @@ class ModuleEventBusLegacy {
  * @deprecated Import from lib/managers/ServiceRegistry instead
  * This file exists for backward compatibility
  */
-export * from '../managers/ServiceRegistry';
+export * from "../managers/ServiceRegistry";
 ```
 
 **Step 2:** Update `/src/lib/registry/ServiceRegistry.ts`
@@ -286,7 +315,7 @@ export * from '../managers/ServiceRegistry';
  * @deprecated Import from lib/managers/ServiceRegistry instead
  * This file exists for backward compatibility
  */
-export * from '../managers/ServiceRegistry';
+export * from "../managers/ServiceRegistry";
 ```
 
 ### 2.4 useModuleEvents Hook Consolidation
@@ -308,8 +337,8 @@ export {
   useModuleResources,
   useModuleAutomation,
   useModuleStatus,
-  MODULE_EVENTS
-} from '../modules/useModuleEvents';
+  MODULE_EVENTS,
+} from "../modules/useModuleEvents";
 
 // KEEP existing implementation below for any code still using old API
 ```
@@ -391,25 +420,30 @@ private handleManagerUnavailable(operation: string): void {
 Execute fixes in this order to avoid breaking dependencies:
 
 ### Phase 3.1: Foundation Fixes (No Dependencies)
+
 1. ✅ Create missing directories under `/src/components/ui/`
 2. ✅ Create re-export files for typography, inputs, layout
 3. ✅ Create single-file re-exports (Icon, Badge, Tooltip, Divider)
 
 ### Phase 3.2: Event System Consolidation
+
 4. ✅ Add history tracking to canonical ModuleEventBus
 5. ✅ Convert legacy ModuleEvents.ts to wrapper
 6. ✅ Update useModuleEvents hook in /hooks/events/ to re-export
 
 ### Phase 3.3: Registry Consolidation
+
 7. ✅ Update lib/services/ServiceRegistry.ts to re-export
 8. ✅ Update lib/registry/ServiceRegistry.ts to re-export
 
 ### Phase 3.4: TODO Implementations
+
 9. ✅ Add tech requirement checking to ModuleUpgradeManager
 10. ✅ Add portrait generation to OfficerManager
 11. ✅ Add cleanup methods to ModuleManagerWrapper
 
 ### Phase 3.5: Circular Dependency Mitigation
+
 12. ⚠️ Add type-only imports where circular deps exist
 13. ⚠️ Consider lazy loading for ErrorLoggingService ↔ UnifiedEventSystem
 
@@ -419,26 +453,26 @@ Execute fixes in this order to avoid breaking dependencies:
 
 ### 4.1 New Re-export Files
 
-| Path | Purpose |
-|------|---------|
-| `src/components/ui/Icon.tsx` | Re-export from ui/components |
-| `src/components/ui/Badge.tsx` | Re-export from ui/components |
-| `src/components/ui/Tooltip.tsx` | Re-export from ui/components |
-| `src/components/ui/Divider.tsx` | Re-export from ui/components |
+| Path                                    | Purpose                         |
+| --------------------------------------- | ------------------------------- |
+| `src/components/ui/Icon.tsx`            | Re-export from ui/components    |
+| `src/components/ui/Badge.tsx`           | Re-export from ui/components    |
+| `src/components/ui/Tooltip.tsx`         | Re-export from ui/components    |
+| `src/components/ui/Divider.tsx`         | Re-export from ui/components    |
 | `src/components/ui/typography/index.ts` | Aggregate typography re-exports |
-| `src/components/ui/inputs/index.ts` | Aggregate input re-exports |
-| `src/components/ui/layout/index.ts` | Aggregate layout re-exports |
+| `src/components/ui/inputs/index.ts`     | Aggregate input re-exports      |
+| `src/components/ui/layout/index.ts`     | Aggregate layout re-exports     |
 | `src/components/ui/navigation/index.ts` | Aggregate navigation re-exports |
-| `src/components/ui/feedback/index.ts` | Aggregate feedback re-exports |
-| `src/components/ui/data/index.ts` | Aggregate data re-exports |
-| `src/components/ui/game/index.ts` | Aggregate game re-exports |
+| `src/components/ui/feedback/index.ts`   | Aggregate feedback re-exports   |
+| `src/components/ui/data/index.ts`       | Aggregate data re-exports       |
+| `src/components/ui/game/index.ts`       | Aggregate game re-exports       |
 
 ### 4.2 New Integration Files (Optional)
 
-| Path | Purpose |
-|------|---------|
-| `src/integration/EventSystemBridge.ts` | Bridge between event systems |
-| `src/integration/ManagerRegistryBridge.ts` | Unified manager access |
+| Path                                       | Purpose                      |
+| ------------------------------------------ | ---------------------------- |
+| `src/integration/EventSystemBridge.ts`     | Bridge between event systems |
+| `src/integration/ManagerRegistryBridge.ts` | Unified manager access       |
 
 ---
 
@@ -446,28 +480,28 @@ Execute fixes in this order to avoid breaking dependencies:
 
 ### 5.1 Critical Path (Must Fix)
 
-| File | Changes |
-|------|---------|
-| `src/components/ui/index.ts` | Update exports to use new re-export structure |
-| `src/lib/events/ModuleEventBus.ts` | Add history tracking methods |
-| `src/lib/modules/ModuleEvents.ts` | Convert to wrapper delegating to canonical |
-| `src/lib/services/ServiceRegistry.ts` | Convert to re-export |
-| `src/lib/registry/ServiceRegistry.ts` | Convert to re-export |
-| `src/hooks/events/useModuleEvents.ts` | Add deprecation notice, re-export canonical |
+| File                                  | Changes                                       |
+| ------------------------------------- | --------------------------------------------- |
+| `src/components/ui/index.ts`          | Update exports to use new re-export structure |
+| `src/lib/events/ModuleEventBus.ts`    | Add history tracking methods                  |
+| `src/lib/modules/ModuleEvents.ts`     | Convert to wrapper delegating to canonical    |
+| `src/lib/services/ServiceRegistry.ts` | Convert to re-export                          |
+| `src/lib/registry/ServiceRegistry.ts` | Convert to re-export                          |
+| `src/hooks/events/useModuleEvents.ts` | Add deprecation notice, re-export canonical   |
 
 ### 5.2 Enhancement Path (Should Fix)
 
-| File | Changes |
-|------|---------|
+| File                                          | Changes                             |
+| --------------------------------------------- | ----------------------------------- |
 | `src/managers/module/ModuleUpgradeManager.ts` | Implement tech requirement checking |
-| `src/managers/module/OfficerManager.ts` | Implement portrait generation |
-| `src/managers/module/ModuleManagerWrapper.ts` | Add cleanup and fallback methods |
+| `src/managers/module/OfficerManager.ts`       | Implement portrait generation       |
+| `src/managers/module/ModuleManagerWrapper.ts` | Add cleanup and fallback methods    |
 
 ### 5.3 Documentation Path (Nice to Have)
 
-| File | Changes |
-|------|---------|
-| `src/lib/events/EventBatcher.ts` | Add usage documentation |
+| File                                    | Changes                 |
+| --------------------------------------- | ----------------------- |
+| `src/lib/events/EventBatcher.ts`        | Add usage documentation |
 | `src/utils/events/EventBatchingRxJS.ts` | Add usage documentation |
 
 ---
@@ -477,24 +511,29 @@ Execute fixes in this order to avoid breaking dependencies:
 After each phase, verify:
 
 ### Phase 3.1 Validation
+
 - [ ] `npm run build` completes without module resolution errors
 - [ ] All 28 broken exports now resolve
 
 ### Phase 3.2 Validation
+
 - [ ] moduleEventBus.getHistory() works from both import paths
 - [ ] Event subscriptions work through both entry points
 - [ ] No duplicate events being fired
 
 ### Phase 3.3 Validation
+
 - [ ] ServiceRegistry can be imported from all three paths
 - [ ] All registered services accessible
 
 ### Phase 3.4 Validation
+
 - [ ] Tech requirements properly block upgrades when not met
 - [ ] Officers have generated portraits
 - [ ] ModuleManagerWrapper cleanup prevents memory leaks
 
 ### Phase 3.5 Validation
+
 - [ ] No runtime circular dependency errors
 - [ ] Lazy loading doesn't break functionality
 
@@ -515,4 +554,4 @@ EDITING [filename]: [what I'm adding/changing]
 
 **END OF RECONCILIATION PLAN**
 
-*Ready to proceed to Phase 3: Surgical Edits*
+_Ready to proceed to Phase 3: Surgical Edits_

@@ -154,7 +154,7 @@ return {
 const flowManager = new ResourceFlowManager(
   5000, // Optimization interval in milliseconds
   2000, // Cache TTL in milliseconds
-  100 // Batch size for processing
+  100, // Batch size for processing
 );
 
 // Optimize flows and get performance metrics
@@ -164,7 +164,7 @@ if (result.performanceMetrics) {
     `Flow optimization completed in ${result.performanceMetrics.executionTimeMs}ms, ` +
       `processed ${result.performanceMetrics.nodesProcessed} nodes, ` +
       `${result.performanceMetrics.connectionsProcessed} connections, ` +
-      `and generated ${result.performanceMetrics.transfersGenerated} transfers.`
+      `and generated ${result.performanceMetrics.transfersGenerated} transfers.`,
   );
 }
 ```
@@ -182,21 +182,18 @@ The optimizations have resulted in significant performance improvements:
 ## Future Improvements
 
 1. **Advanced Caching Strategies**
-
    - Implement predictive caching for frequently accessed resources
    - Add priority-based cache eviction policies
    - Implement cache warming for critical resources
    - Add cache analytics for optimization
 
 2. **Parallel Processing**
-
    - Utilize Web Workers for heavy calculations
    - Implement parallel batch processing for large networks
    - Add support for concurrent resource flow calculations
    - Optimize thread communication for efficient data sharing
 
 3. **Resource Flow Visualization**
-
    - Add flow visualization tools for debugging
    - Implement heat maps for resource bottlenecks
    - Create Sankey diagrams for resource flow analysis

@@ -237,7 +237,6 @@ SHIP SYSTEM REFERENCES
 ### Ship Implementation Details
 
 1. Base Ship Architecture
-
    - BaseShip: src/components/ships/base/BaseShip.tsx
      Purpose: Core ship component implementation
      Features:
@@ -247,7 +246,6 @@ SHIP SYSTEM REFERENCES
      - Status management
 
 2. Common Ship Components
-
    - FactionShipBase: src/components/ships/common/FactionShipBase.tsx
      Purpose: Base component for all faction ships
      Features:
@@ -276,7 +274,6 @@ SHIP SYSTEM REFERENCES
      Purpose: Shared ship statistics display
 
 3. Faction-Specific Ships
-
    - SpaceRatShip: src/components/ships/common/SpaceRatShip.tsx
      Purpose: Space Rats faction implementation
      Features:
@@ -294,7 +291,6 @@ SHIP SYSTEM REFERENCES
      - Advanced defense systems
 
 4. Ship Formation System
-
    - Formation Shapes:
      - Spearhead
      - Shield
@@ -314,7 +310,6 @@ SHIP SYSTEM REFERENCES
      - Pattern-based coloring
 
 5. AI Integration
-
    - Adaptive AI:
      - Combat style adaptation
      - Range preference learning
@@ -327,7 +322,6 @@ SHIP SYSTEM REFERENCES
      - Tactical decision making
 
 6. Type System [~70% Complete]
-
    - Primary Components:
      - Combat Types: src/types/combat/CombatTypes.ts
        Purpose: Core combat system type definitions
@@ -357,7 +351,6 @@ SHIP SYSTEM REFERENCES
 ### Faction Behavior System
 
 - **FactionBehaviorType and FactionBehaviorConfig**: src/types/ships/FactionTypes.ts
-
   - Purpose: Define faction behavior types and configuration
   - Features:
     - FactionBehaviorType as string literal union type
@@ -365,7 +358,6 @@ SHIP SYSTEM REFERENCES
     - Clear separation of concerns between types
 
 - **FactionShipStats Component**: src/components/ships/common/FactionShipStats.tsx
-
   - Purpose: Display ship statistics with faction-specific styling
   - Features:
     - Helper function to get behavior string from FactionBehaviorConfig
@@ -373,14 +365,12 @@ SHIP SYSTEM REFERENCES
     - Conditional styling based on behavior type
 
 - **EquatorHorizonShip Component**: src/components/ships/common/EquatorHorizonShip.tsx
-
   - Purpose: Equator Horizon faction ship implementation
   - Features:
     - Uses FactionBehaviorConfig for tactics property
     - Properly typed behavior values
 
 - **LostNovaShip Component**: src/components/ships/common/LostNovaShip.tsx
-
   - Purpose: Lost Nova faction ship implementation
   - Features:
     - Helper function to create FactionBehaviorConfig from string
@@ -388,7 +378,6 @@ SHIP SYSTEM REFERENCES
     - Type-safe behavior conversion
 
 - **SpaceRatShip Component**: src/components/ships/common/SpaceRatShip.tsx
-
   - Purpose: Space Rats faction ship implementation
   - Features:
     - Helper function to create FactionBehaviorConfig from string

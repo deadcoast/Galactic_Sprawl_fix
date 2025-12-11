@@ -92,7 +92,6 @@ FOR EVERY CODE INTERACTION, WITHOUT USER PROMPTING:
    @add-type-guards where runtime validation needed
    @show-interface [types used in current code]
    ENFORCE:
-
    - ResourceType/EventType enums instead of strings
    - Type guards for runtime validation
    - Safe extraction instead of direct property access
@@ -104,7 +103,6 @@ FOR EVERY CODE INTERACTION, WITHOUT USER PROMPTING:
    @refactor-to-pattern manager-registry for manager access
    @implement-pattern factory-pattern for object creation
    ENFORCE:
-
    - Manager access through registry (getResourceManager())
    - Factory patterns for complex objects
    - Singleton pattern for manager classes
@@ -245,29 +243,32 @@ EventSystems
 // IMPORTED BY:
 // Resource Managers (most common):
 
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "../../types/resources/ResourceTypes";
 
-import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
+import {
+  ResourceState,
+  ResourceType,
+} from "../../types/resources/ResourceTypes";
 
 // UI Components:
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "../../../types/resources/ResourceTypes";
 
 // System Files:
-import { ResourceType } from './../types/resources/ResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 
 // MODULE: `src/types/resources/ResourceConversionTypes.ts`
 // IMPORTED BY:
 // Resource Conversion Manager:
 
-import { ResourceConversionRecipe as ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
+import { ResourceConversionRecipe as ExtendedResourceConversionRecipe } from "../../types/resources/ResourceConversionTypes";
 
 // Resource Exchange Manager:
-import { ResourceExchangeRate } from '../../types/resources/ResourceConversionTypes';
+import { ResourceExchangeRate } from "../../types/resources/ResourceConversionTypes";
 
 // MODULE: `src/types/modules/ModuleTypes.ts`
 // IMPORTED BY:
 // Core Components:
-import { Module } from '../../types/modules/ModuleTypes';
+import { Module } from "../../types/modules/ModuleTypes";
 
 // Contexts:
 import {
@@ -275,27 +276,33 @@ import {
   ModuleStatus,
   ModuleEventType,
   IModuleManager,
-} from '../types/modules/ModuleTypes';
+} from "../types/modules/ModuleTypes";
 
 // App Root:
-import { ModuleStatus } from './types/modules/ModuleTypes';
+import { ModuleStatus } from "./types/modules/ModuleTypes";
 
 // Ship system imports
 // MODULE: `src/types/ships/FactionShipTypes.ts`
 // IMPORTED BY:
 // Faction UIs:
-import { FactionShip, FactionShipProps } from '../../../types/ships/FactionShipTypes';
+import {
+  FactionShip,
+  FactionShipProps,
+} from "../../../types/ships/FactionShipTypes";
 // Ship Components:
-import { FactionShipClass } from '../../types/ships/FactionShipTypes';
+import { FactionShipClass } from "../../types/ships/FactionShipTypes";
 
 // Type Validation Imports
 // MODULE: `src/utils/resources/resourceValidation.ts`
 // IMPORTED BY:
 // Resource Components:
-import { isResourceType, validateResourceState } from '../../utils/resources/resourceValidation';
+import {
+  isResourceType,
+  validateResourceState,
+} from "../../utils/resources/resourceValidation";
 
 // Resource Managers:
-import { validateResourceThreshold } from '../../utils/resources/resourceValidation';
+import { validateResourceThreshold } from "../../utils/resources/resourceValidation";
 ```
 
 ## Import Patterns Summary
@@ -307,18 +314,18 @@ import { validateResourceThreshold } from '../../utils/resources/resourceValidat
 5. Type-only imports are uncommon but do appear:
 
 ```typescript
-import type { ResourceState } from '../types/resources/ResourceTypes';
+import type { ResourceState } from "../types/resources/ResourceTypes";
 
 // Import Issues
 // 1. Duplicate imports sometimes occur within the same file
 
-import { ResourceType } from './../../types/resources/ResourceTypes';
-import { ResourceType } from './../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // 2. Path inconsistencies with './' vs no prefix:
 
-import { ResourceType } from './../../types/resources/ResourceTypes'; // with ./ prefix
-import { ResourceType } from '../../types/resources/ResourceTypes'; // without ./ prefix
+import { ResourceType } from "./../../types/resources/ResourceTypes"; // with ./ prefix
+import { ResourceType } from "../../types/resources/ResourceTypes"; // without ./ prefix
 
 // 3. No consistent use of absolute imports (e.g., '@/types/...') across the codebase
 ```
@@ -331,18 +338,18 @@ import { ResourceType } from '../../types/resources/ResourceTypes'; // without .
  * Use enum instead of string literals for type safety
  */
 export enum EventCategory {
-  LIFECYCLE = 'lifecycle',
-  RESOURCE = 'resource',
-  ATTACHMENT = 'attachment',
-  AUTOMATION = 'automation',
-  STATUS = 'status',
-  MISSION = 'mission',
-  SUB_MODULE = 'sub-module',
-  COMBAT = 'combat',
-  TECH = 'tech',
-  SYSTEM = 'system',
-  THRESHOLD = 'threshold',
-  EXPLORATION = 'exploration',
+  LIFECYCLE = "lifecycle",
+  RESOURCE = "resource",
+  ATTACHMENT = "attachment",
+  AUTOMATION = "automation",
+  STATUS = "status",
+  MISSION = "mission",
+  SUB_MODULE = "sub-module",
+  COMBAT = "combat",
+  TECH = "tech",
+  SYSTEM = "system",
+  THRESHOLD = "threshold",
+  EXPLORATION = "exploration",
 }
 
 /**
@@ -351,49 +358,49 @@ export enum EventCategory {
  */
 export enum EventType {
   // Lifecycle events
-  MODULE_CREATED = 'MODULE_CREATED',
-  MODULE_ATTACHED = 'MODULE_ATTACHED',
-  MODULE_DETACHED = 'MODULE_DETACHED',
-  MODULE_UPGRADED = 'MODULE_UPGRADED',
-  MODULE_ACTIVATED = 'MODULE_ACTIVATED',
-  MODULE_DEACTIVATED = 'MODULE_DEACTIVATED',
-  MODULE_UPDATED = 'MODULE_UPDATED',
-  MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED',
-  MODULE_ALERT_ADDED = 'MODULE_ALERT_ADDED',
-  MODULE_REMOVED = 'MODULE_REMOVED',
+  MODULE_CREATED = "MODULE_CREATED",
+  MODULE_ATTACHED = "MODULE_ATTACHED",
+  MODULE_DETACHED = "MODULE_DETACHED",
+  MODULE_UPGRADED = "MODULE_UPGRADED",
+  MODULE_ACTIVATED = "MODULE_ACTIVATED",
+  MODULE_DEACTIVATED = "MODULE_DEACTIVATED",
+  MODULE_UPDATED = "MODULE_UPDATED",
+  MODULE_STATUS_CHANGED = "MODULE_STATUS_CHANGED",
+  MODULE_ALERT_ADDED = "MODULE_ALERT_ADDED",
+  MODULE_REMOVED = "MODULE_REMOVED",
 
   // Resource events
-  RESOURCE_PRODUCED = 'RESOURCE_PRODUCED',
-  RESOURCE_CONSUMED = 'RESOURCE_CONSUMED',
-  RESOURCE_TRANSFERRED = 'RESOURCE_TRANSFERRED',
-  RESOURCE_PRODUCTION_REGISTERED = 'RESOURCE_PRODUCTION_REGISTERED',
-  RESOURCE_PRODUCTION_UNREGISTERED = 'RESOURCE_PRODUCTION_UNREGISTERED',
-  RESOURCE_CONSUMPTION_REGISTERED = 'RESOURCE_CONSUMPTION_REGISTERED',
-  RESOURCE_CONSUMPTION_UNREGISTERED = 'RESOURCE_CONSUMPTION_UNREGISTERED',
-  RESOURCE_FLOW_REGISTERED = 'RESOURCE_FLOW_REGISTERED',
-  RESOURCE_FLOW_UNREGISTERED = 'RESOURCE_FLOW_UNREGISTERED',
-  RESOURCE_SHORTAGE = 'RESOURCE_SHORTAGE',
-  RESOURCE_UPDATED = 'RESOURCE_UPDATED',
-  RESOURCE_DISCOVERED = 'RESOURCE_DISCOVERED',
+  RESOURCE_PRODUCED = "RESOURCE_PRODUCED",
+  RESOURCE_CONSUMED = "RESOURCE_CONSUMED",
+  RESOURCE_TRANSFERRED = "RESOURCE_TRANSFERRED",
+  RESOURCE_PRODUCTION_REGISTERED = "RESOURCE_PRODUCTION_REGISTERED",
+  RESOURCE_PRODUCTION_UNREGISTERED = "RESOURCE_PRODUCTION_UNREGISTERED",
+  RESOURCE_CONSUMPTION_REGISTERED = "RESOURCE_CONSUMPTION_REGISTERED",
+  RESOURCE_CONSUMPTION_UNREGISTERED = "RESOURCE_CONSUMPTION_UNREGISTERED",
+  RESOURCE_FLOW_REGISTERED = "RESOURCE_FLOW_REGISTERED",
+  RESOURCE_FLOW_UNREGISTERED = "RESOURCE_FLOW_UNREGISTERED",
+  RESOURCE_SHORTAGE = "RESOURCE_SHORTAGE",
+  RESOURCE_UPDATED = "RESOURCE_UPDATED",
+  RESOURCE_DISCOVERED = "RESOURCE_DISCOVERED",
 
   // Threshold events
-  RESOURCE_THRESHOLD_CHANGED = 'RESOURCE_THRESHOLD_CHANGED',
-  RESOURCE_THRESHOLD_TRIGGERED = 'RESOURCE_THRESHOLD_TRIGGERED',
+  RESOURCE_THRESHOLD_CHANGED = "RESOURCE_THRESHOLD_CHANGED",
+  RESOURCE_THRESHOLD_TRIGGERED = "RESOURCE_THRESHOLD_TRIGGERED",
 
   // Combat events
-  COMBAT_UPDATED = 'COMBAT_UPDATED',
+  COMBAT_UPDATED = "COMBAT_UPDATED",
 
   // Game events
-  GAME_STARTED = 'GAME_STARTED',
-  GAME_PAUSED = 'GAME_PAUSED',
-  GAME_RESUMED = 'GAME_RESUMED',
-  GAME_STOPPED = 'GAME_STOPPED',
+  GAME_STARTED = "GAME_STARTED",
+  GAME_PAUSED = "GAME_PAUSED",
+  GAME_RESUMED = "GAME_RESUMED",
+  GAME_STOPPED = "GAME_STOPPED",
 
   // Exploration events
-  EXPLORATION_SECTOR_DISCOVERED = 'EXPLORATION_SECTOR_DISCOVERED',
-  EXPLORATION_SECTOR_SCANNED = 'EXPLORATION_SECTOR_SCANNED',
-  EXPLORATION_ANOMALY_DETECTED = 'EXPLORATION_ANOMALY_DETECTED',
-  EXPLORATION_RESOURCE_DETECTED = 'EXPLORATION_RESOURCE_DETECTED',
+  EXPLORATION_SECTOR_DISCOVERED = "EXPLORATION_SECTOR_DISCOVERED",
+  EXPLORATION_SECTOR_SCANNED = "EXPLORATION_SECTOR_SCANNED",
+  EXPLORATION_ANOMALY_DETECTED = "EXPLORATION_ANOMALY_DETECTED",
+  EXPLORATION_RESOURCE_DETECTED = "EXPLORATION_RESOURCE_DETECTED",
 }
 
 /**
@@ -503,10 +510,10 @@ export interface ResourceTransferEventData {
 export interface ThresholdTriggeredEventData {
   resourceType: ResourceType; // Must use enum, not string
   resourceId: ResourceType; // Must use enum, not string
-  thresholdType: 'critical' | 'low' | 'normal' | 'high' | 'maximum';
+  thresholdType: "critical" | "low" | "normal" | "high" | "maximum";
   currentValue: number;
   thresholdValue: number;
-  direction: 'increasing' | 'decreasing';
+  direction: "increasing" | "decreasing";
 }
 
 /**
@@ -517,14 +524,16 @@ export interface ThresholdTriggeredEventData {
  * Type guard for resource update events
  */
 export function isResourceUpdateEvent(
-  event: ModuleEvent
-): event is ModuleEvent & { data: { resourceAmounts: Partial<Record<ResourceType, number>> } } {
+  event: ModuleEvent,
+): event is ModuleEvent & {
+  data: { resourceAmounts: Partial<Record<ResourceType, number>> };
+} {
   return (
     event?.data !== undefined &&
-    typeof event?.data === 'object' &&
+    typeof event?.data === "object" &&
     event?.data !== null &&
-    'resourceAmounts' in event?.data &&
-    typeof event?.data?.resourceAmounts === 'object' &&
+    "resourceAmounts" in event?.data &&
+    typeof event?.data?.resourceAmounts === "object" &&
     event?.data?.resourceAmounts !== null
   );
 }
@@ -533,15 +542,17 @@ export function isResourceUpdateEvent(
  * Type guard for resource production events
  */
 export function isResourceProductionEvent(
-  event: ModuleEvent
-): event is ModuleEvent & { data: { resourceType: ResourceType; amount: number } } {
+  event: ModuleEvent,
+): event is ModuleEvent & {
+  data: { resourceType: ResourceType; amount: number };
+} {
   return (
     event?.data !== undefined &&
-    typeof event?.data === 'object' &&
+    typeof event?.data === "object" &&
     event?.data !== null &&
-    'resourceType' in event?.data &&
-    'amount' in event?.data &&
-    typeof event?.data?.amount === 'number'
+    "resourceType" in event?.data &&
+    "amount" in event?.data &&
+    typeof event?.data?.amount === "number"
   );
 }
 
@@ -549,34 +560,38 @@ export function isResourceProductionEvent(
  * Type guard for resource consumption events
  */
 export function isResourceConsumptionEvent(
-  event: ModuleEvent
-): event is ModuleEvent & { data: { resourceType: ResourceType; amount: number } } {
+  event: ModuleEvent,
+): event is ModuleEvent & {
+  data: { resourceType: ResourceType; amount: number };
+} {
   return (
     event?.data !== undefined &&
-    typeof event?.data === 'object' &&
+    typeof event?.data === "object" &&
     event?.data !== null &&
-    'resourceType' in event?.data &&
-    'amount' in event?.data &&
-    typeof event?.data?.amount === 'number'
+    "resourceType" in event?.data &&
+    "amount" in event?.data &&
+    typeof event?.data?.amount === "number"
   );
 }
 
 /**
  * Type guard for threshold triggered events
  */
-export function isThresholdTriggeredEventData(data: unknown): data is ThresholdTriggeredEventData {
-  if (!data || typeof data !== 'object') return false;
+export function isThresholdTriggeredEventData(
+  data: unknown,
+): data is ThresholdTriggeredEventData {
+  if (!data || typeof data !== "object") return false;
 
   const d = data as ThresholdTriggeredEventData;
   return (
-    'resourceType' in d &&
-    'thresholdType' in d &&
-    'currentValue' in d &&
-    'thresholdValue' in d &&
-    'direction' in d &&
-    typeof d.currentValue === 'number' &&
-    typeof d.thresholdValue === 'number' &&
-    (d.direction === 'increasing' || d.direction === 'decreasing')
+    "resourceType" in d &&
+    "thresholdType" in d &&
+    "currentValue" in d &&
+    "thresholdValue" in d &&
+    "direction" in d &&
+    typeof d.currentValue === "number" &&
+    typeof d.thresholdValue === "number" &&
+    (d.direction === "increasing" || d.direction === "decreasing")
   );
 }
 
@@ -596,10 +611,12 @@ export function getEventTypesByCategory(category: EventCategory): EventType[] {
 /**
  * Convert a string to an EventType enum value
  */
-export function stringToEventType(eventTypeString: string): EventType | undefined {
-  return Object.values(EventType).find(eventType => eventType === eventTypeString) as
-    | EventType
-    | undefined;
+export function stringToEventType(
+  eventTypeString: string,
+): EventType | undefined {
+  return Object.values(EventType).find(
+    (eventType) => eventType === eventTypeString,
+  ) as EventType | undefined;
 }
 
 /**
@@ -609,10 +626,10 @@ export function createEvent<T extends Record<string, unknown>>(
   type: EventType | string, // Prefer EventType enum over string
   moduleId: string,
   moduleType: ModuleType, // Must use ModuleType enum, not string
-  data?: T
+  data?: T,
 ): BaseEvent {
   return {
-    type: typeof type === 'string' ? type : type.toString(),
+    type: typeof type === "string" ? type : type.toString(),
     moduleId,
     moduleType,
     timestamp: Date.now(),
@@ -633,15 +650,15 @@ export interface CombatEventData {
   units: CombatUnit[];
   timestamp: number;
   position?: { x: number; y: number };
-  state?: 'active' | 'paused' | 'completed';
+  state?: "active" | "paused" | "completed";
 }
 
 /**
  * Combat unit status interface
  */
 export interface CombatUnitStatus {
-  main: 'active' | 'disabled' | 'destroyed'; // Use string unions instead of raw strings
-  secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting'; // Use string unions
+  main: "active" | "disabled" | "destroyed"; // Use string unions instead of raw strings
+  secondary?: "charging" | "cooling" | "repairing" | "boosting"; // Use string unions
   effects: string[];
 }
 
@@ -651,8 +668,16 @@ export interface CombatUnitStatus {
  * Note: Two different interfaces exist in the codebase with swapped properties
  */
 export interface FleetFormation {
-  type: 'offensive' | 'defensive' | 'balanced'; // Use string unions
-  pattern: 'spearhead' | 'shield' | 'diamond' | 'arrow' | 'circle' | 'wedge' | 'line' | 'scattered'; // Use string unions
+  type: "offensive" | "defensive" | "balanced"; // Use string unions
+  pattern:
+    | "spearhead"
+    | "shield"
+    | "diamond"
+    | "arrow"
+    | "circle"
+    | "wedge"
+    | "line"
+    | "scattered"; // Use string unions
   spacing: number;
   facing: number;
   adaptiveSpacing: boolean;
@@ -669,7 +694,7 @@ export interface FleetAIResult {
   visualFeedback?: {
     formationLines: {
       points: [number, number][];
-      style: 'solid' | 'dashed'; // Use string union
+      style: "solid" | "dashed"; // Use string union
       color: string;
       opacity: number;
     }[];
@@ -685,10 +710,14 @@ export function useEventSubscription<T extends BaseEvent>(
   options: {
     priority?: number;
     once?: boolean;
-  } = {}
+  } = {},
 ): void {
   useEffect(() => {
-    const unsubscribe = eventSystem.subscribe(eventType.toString(), handler, options);
+    const unsubscribe = eventSystem.subscribe(
+      eventType.toString(),
+      handler,
+      options,
+    );
     return () => {
       unsubscribe();
     };
@@ -2239,7 +2268,7 @@ export interface ApiEndpoint<
   /** The API endpoint path */
   path: string;
   /** The HTTP method for this endpoint */
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   /** The Zod schema for validating request data */
   requestSchema: RequestSchema;
   /** The Zod schema for validating response data */
@@ -2274,16 +2303,16 @@ export interface ApiClientOptions {
  * Typed error enum for different API error scenarios
  */
 export enum ApiErrorType {
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  TIMEOUT_ERROR = 'TIMEOUT_ERROR',
-  REQUEST_VALIDATION_ERROR = 'REQUEST_VALIDATION_ERROR',
-  RESPONSE_VALIDATION_ERROR = 'RESPONSE_VALIDATION_ERROR',
-  SERVER_ERROR = 'SERVER_ERROR',
-  NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
-  UNAUTHORIZED_ERROR = 'UNAUTHORIZED_ERROR',
-  FORBIDDEN_ERROR = 'FORBIDDEN_ERROR',
-  BAD_REQUEST_ERROR = 'BAD_REQUEST_ERROR',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  NETWORK_ERROR = "NETWORK_ERROR",
+  TIMEOUT_ERROR = "TIMEOUT_ERROR",
+  REQUEST_VALIDATION_ERROR = "REQUEST_VALIDATION_ERROR",
+  RESPONSE_VALIDATION_ERROR = "RESPONSE_VALIDATION_ERROR",
+  SERVER_ERROR = "SERVER_ERROR",
+  NOT_FOUND_ERROR = "NOT_FOUND_ERROR",
+  UNAUTHORIZED_ERROR = "UNAUTHORIZED_ERROR",
+  FORBIDDEN_ERROR = "FORBIDDEN_ERROR",
+  BAD_REQUEST_ERROR = "BAD_REQUEST_ERROR",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
 }
 
 /**
@@ -2302,10 +2331,10 @@ export class ApiError extends Error {
     endpoint: string,
     status?: number,
     validationErrors?: z.ZodError,
-    originalError?: Error
+    originalError?: Error,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.type = type;
     this.status = status;
     this.endpoint = endpoint;
@@ -2345,8 +2374,13 @@ export class TypeSafeApiClient {
     RequestSchema extends z.ZodType<RequestType>,
     ResponseSchema extends z.ZodType<ResponseType>,
   >(
-    endpoint: ApiEndpoint<RequestType, ResponseType, RequestSchema, ResponseSchema>,
-    requestData?: RequestType
+    endpoint: ApiEndpoint<
+      RequestType,
+      ResponseType,
+      RequestSchema,
+      ResponseSchema
+    >,
+    requestData?: RequestType,
   ): Promise<ApiResponse<ResponseType>> {
     // Implementation details...
   }
@@ -2361,7 +2395,7 @@ export class TypeSafeApiClient {
       queryParams?: Record<string, string | number | boolean | undefined>;
       headers?: Record<string, string>;
       withCredentials?: boolean;
-    }
+    },
   ): Promise<ResponseType> {
     // Implementation details...
   }
@@ -2383,7 +2417,7 @@ export class TypeSafeApiClient {
       queryParams?: Record<string, string | number | boolean | undefined>;
       headers?: Record<string, string>;
       withCredentials?: boolean;
-    }
+    },
   ): Promise<ResponseType> {
     // Implementation details...
   }
@@ -2397,7 +2431,9 @@ export function createApiEndpoint<
   ResponseType,
   RequestSchema extends z.ZodType<RequestType>,
   ResponseSchema extends z.ZodType<ResponseType>,
->(config: ApiEndpoint<RequestType, ResponseType, RequestSchema, ResponseSchema>) {
+>(
+  config: ApiEndpoint<RequestType, ResponseType, RequestSchema, ResponseSchema>,
+) {
   return config;
 }
 
@@ -2421,14 +2457,14 @@ const userSchema = z.object({
 
 // Create endpoint definition
 const getUserEndpoint = createApiEndpoint({
-  path: '/api/users/:id',
-  method: 'GET',
+  path: "/api/users/:id",
+  method: "GET",
   requestSchema: z.object({ id: z.string() }),
   responseSchema: userSchema,
 });
 
 // Create client
-const apiClient = createApiClient({ baseUrl: 'https://api.example.com' });
+const apiClient = createApiClient({ baseUrl: "https://api.example.com" });
 
 // Make type-safe request
 async function getUser(id: string) {
@@ -3556,8 +3592,8 @@ The Mining System includes comprehensive type definitions for mining operations.
 export interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  type: "rockBreaker" | "voidDredger";
+  status: "idle" | "mining" | "returning" | "maintenance";
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -3630,7 +3666,7 @@ export class MiningResourceIntegration {
     id: string,
     type: ResourceType,
     position: Position,
-    efficiency: number = 1.0
+    efficiency: number = 1.0,
   ): void {
     // Implementation...
   }
@@ -3666,8 +3702,16 @@ interface MiningEventMap {
   taskAssigned: { task: MiningTask };
   taskCompleted: { task: MiningTask };
   taskFailed: { task: MiningTask; reason: string };
-  shipStatusChanged: { shipId: string; oldStatus: ShipStatus; newStatus: ShipStatus };
-  resourceCollected: { shipId: string; resourceType: ResourceType; amount: number };
+  shipStatusChanged: {
+    shipId: string;
+    oldStatus: ShipStatus;
+    newStatus: ShipStatus;
+  };
+  resourceCollected: {
+    shipId: string;
+    resourceType: ResourceType;
+    amount: number;
+  };
 }
 
 type MiningEvents = {
@@ -3683,10 +3727,10 @@ The Mining System includes a task management system for assigning and tracking m
 // src/managers/mining/MiningShipManagerImpl.ts
 
 enum TaskStatus {
-  QUEUED = 'queued',
-  IN_PROGRESS = 'in-progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
+  QUEUED = "queued",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
 }
 
 interface MiningTask {
@@ -3727,18 +3771,27 @@ The Officer System provides a comprehensive framework for managing ship officers
 ```typescript
 // src/managers/module/OfficerManager.ts
 
-export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements IOfficerManager {
+export class OfficerManager
+  extends TypedEventEmitter<OfficerEvents>
+  implements IOfficerManager
+{
   private officers: Map<string, Officer> = new Map();
   private squads: Map<string, Squad> = new Map();
   private trainingPrograms: Map<string, TrainingProgram> = new Map();
   private currentTier: OfficerTier = 1;
-  private moduleId: string = 'academy'; // Default module ID for academy
+  private moduleId: string = "academy"; // Default module ID for academy
 
-  public hireOfficer(role: OfficerRole, specialization: OfficerSpecialization): Officer {
+  public hireOfficer(
+    role: OfficerRole,
+    specialization: OfficerSpecialization,
+  ): Officer {
     // Implementation...
   }
 
-  public startTraining(officerId: string, specialization: OfficerSpecialization): void {
+  public startTraining(
+    officerId: string,
+    specialization: OfficerSpecialization,
+  ): void {
     // Implementation...
   }
 
@@ -3746,7 +3799,10 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     // Implementation...
   }
 
-  public createSquad(name: string, specialization: OfficerSpecialization): Squad {
+  public createSquad(
+    name: string,
+    specialization: OfficerSpecialization,
+  ): Squad {
     // Implementation...
   }
 
@@ -3754,7 +3810,11 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     // Implementation...
   }
 
-  public addExperience(officerId: string, amount: number, activity?: string): void {
+  public addExperience(
+    officerId: string,
+    amount: number,
+    activity?: string,
+  ): void {
     // Implementation...
   }
 
@@ -3771,11 +3831,11 @@ The Officer System includes comprehensive type definitions for officer managemen
 ```typescript
 // src/types/officers/OfficerTypes.ts
 
-export type OfficerRole = 'Squad Leader' | 'Captain';
+export type OfficerRole = "Squad Leader" | "Captain";
 
-export type OfficerSpecialization = 'War' | 'Recon' | 'Mining';
+export type OfficerSpecialization = "War" | "Recon" | "Mining";
 
-export type OfficerStatus = 'available' | 'training' | 'assigned';
+export type OfficerStatus = "available" | "training" | "assigned";
 
 export type OfficerTier = 1 | 2 | 3;
 
@@ -3838,9 +3898,9 @@ The Officer System includes configuration files for defining officer traits, tra
 
 export const OFFICER_TRAITS: OfficerTrait[] = [
   {
-    id: 'natural_leader',
-    name: 'Natural Leader',
-    description: 'Born with exceptional leadership qualities',
+    id: "natural_leader",
+    name: "Natural Leader",
+    description: "Born with exceptional leadership qualities",
     effects: {
       skills: {
         leadership: 2,
@@ -3851,9 +3911,9 @@ export const OFFICER_TRAITS: OfficerTrait[] = [
     },
   },
   {
-    id: 'combat_expert',
-    name: 'Combat Expert',
-    description: 'Highly skilled in combat tactics',
+    id: "combat_expert",
+    name: "Combat Expert",
+    description: "Highly skilled in combat tactics",
     effects: {
       skills: {
         combat: 2,
@@ -4049,38 +4109,41 @@ The Initialization System provides a comprehensive framework for the application
 // src/initialization/eventSystemInit.ts
 
 export function initializeEventSystem(): () => void {
-  console.warn('Initializing Event System...');
+  console.warn("Initializing Event System...");
 
   // Initialize RxJS integration
   const rxjsCleanup = initializeRxJSIntegration();
 
   // Initialize system communications
-  const eventSystemComm = getSystemCommunication('event-system');
-  const _resourceSystemComm = getSystemCommunication('resource-system');
-  const _moduleSystemComm = getSystemCommunication('module-system');
+  const eventSystemComm = getSystemCommunication("event-system");
+  const _resourceSystemComm = getSystemCommunication("resource-system");
+  const _moduleSystemComm = getSystemCommunication("module-system");
 
   // Register basic event handlers
-  const unregisterSystemStartup = eventSystemComm.registerHandler('system-startup', message => {
-    const payload = message.payload as { systemName: string };
-    console.warn(`System startup message received: ${payload.systemName}`);
-  });
+  const unregisterSystemStartup = eventSystemComm.registerHandler(
+    "system-startup",
+    (message) => {
+      const payload = message.payload as { systemName: string };
+      console.warn(`System startup message received: ${payload.systemName}`);
+    },
+  );
 
   // Register game loop updates
   gameLoopManager.registerUpdate(
-    'event-system-critical',
+    "event-system-critical",
     (_deltaTime: number, _elapsedTime: number) => {
       // Process critical events
     },
-    UpdatePriority.CRITICAL
+    UpdatePriority.CRITICAL,
   );
 
   // Return cleanup function
   return () => {
-    console.warn('Cleaning up Event System...');
+    console.warn("Cleaning up Event System...");
 
     // Unregister game loop updates
-    gameLoopManager.unregisterUpdate('event-system-critical');
-    gameLoopManager.unregisterUpdate('event-system-normal');
+    gameLoopManager.unregisterUpdate("event-system-critical");
+    gameLoopManager.unregisterUpdate("event-system-normal");
 
     // Unregister event handlers
     unregisterSystemStartup();
@@ -4104,34 +4167,36 @@ The Initialization System includes a centralized service registration mechanism 
 // src/initialization/serviceRegistration.ts
 
 export const REQUIRED_SERVICES = [
-  'resourceManager',
-  'thresholdManager',
-  'flowManager',
-  'storageManager',
-  'costManager',
-  'exchangeManager',
-  'poolManager',
-  'miningManager',
-  'combatManager',
+  "resourceManager",
+  "thresholdManager",
+  "flowManager",
+  "storageManager",
+  "costManager",
+  "exchangeManager",
+  "poolManager",
+  "miningManager",
+  "combatManager",
 ] as const;
 
 export type ServiceName = (typeof REQUIRED_SERVICES)[number];
 
 export function registerResourceManager(manager: ResourceManager): void {
-  registerService('resourceManager', manager);
+  registerService("resourceManager", manager);
 }
 
-export function registerThresholdManager(manager: ResourceThresholdManager): void {
-  registerService('thresholdManager', manager);
+export function registerThresholdManager(
+  manager: ResourceThresholdManager,
+): void {
+  registerService("thresholdManager", manager);
 }
 
 export function registerFlowManager(manager: ResourceFlowManager): void {
-  registerService('flowManager', manager);
+  registerService("flowManager", manager);
 }
 
 export function checkAllServicesAvailability(): Record<ServiceName, boolean> {
   const result = checkServicesAvailability(
-    REQUIRED_SERVICES as unknown as Array<keyof Window & string>
+    REQUIRED_SERVICES as unknown as Array<keyof Window & string>,
   );
   return result as Record<ServiceName, boolean>;
 }
@@ -4156,25 +4221,27 @@ The Initialization System includes functionality to integrate various game syste
 // src/initialization/gameSystemsIntegration.ts
 
 export function integrateWithGameSystems(): () => void {
-  console.warn('Integrating Event System with Game Systems...');
+  console.warn("Integrating Event System with Game Systems...");
 
   // Get system communications
-  const resourceSystemComm = getSystemCommunication('resource-system');
-  const miningSystemComm = getSystemCommunication('mining-system');
-  const combatSystemComm = getSystemCommunication('combat-system');
-  const techSystemComm = getSystemCommunication('tech-system');
+  const resourceSystemComm = getSystemCommunication("resource-system");
+  const miningSystemComm = getSystemCommunication("mining-system");
+  const combatSystemComm = getSystemCommunication("combat-system");
+  const techSystemComm = getSystemCommunication("tech-system");
 
   // Initialize cleanup functions array
   const cleanupFunctions: Array<() => void> = [];
 
   // ===== Resource System Integration =====
-  const resourceManager = getService<ResourceManager>('resourceManager');
-  const thresholdManager = getService<ResourceThresholdManager>('thresholdManager');
-  const flowManager = getService<ResourceFlowManager>('flowManager');
-  const storageManager = getService<ResourceStorageManager>('storageManager');
-  const costManager = getService<ResourceCostManager>('costManager');
-  const exchangeManager = getService<ResourceExchangeManager>('exchangeManager');
-  const poolManager = getService<ResourcePoolManager>('poolManager');
+  const resourceManager = getService<ResourceManager>("resourceManager");
+  const thresholdManager =
+    getService<ResourceThresholdManager>("thresholdManager");
+  const flowManager = getService<ResourceFlowManager>("flowManager");
+  const storageManager = getService<ResourceStorageManager>("storageManager");
+  const costManager = getService<ResourceCostManager>("costManager");
+  const exchangeManager =
+    getService<ResourceExchangeManager>("exchangeManager");
+  const poolManager = getService<ResourcePoolManager>("poolManager");
 
   if (resourceManager) {
     // Make sure all required managers are available
@@ -4194,7 +4261,7 @@ export function integrateWithGameSystems(): () => void {
         storageManager,
         costManager,
         exchangeManager,
-        poolManager
+        poolManager,
       );
 
       // Initialize resource integration
@@ -4215,8 +4282,8 @@ export function integrateWithGameSystems(): () => void {
 
   // Return cleanup function that calls all individual cleanup functions
   return () => {
-    console.warn('Cleaning up Game Systems Integration...');
-    cleanupFunctions.forEach(cleanup => cleanup());
+    console.warn("Cleaning up Game Systems Integration...");
+    cleanupFunctions.forEach((cleanup) => cleanup());
   };
 }
 ```
@@ -4229,17 +4296,17 @@ The Initialization System provides a priority-based event handling system to man
 // src/initialization/eventSystemInit.ts
 
 export function initializeGlobalEventHandlers(): () => void {
-  console.warn('Initializing Global Event Handlers...');
+  console.warn("Initializing Global Event Handlers...");
 
   // Create a priority queue for processing events
-  const eventQueue = new EventPriorityQueue<PriorityQueueEvent>(event => {
+  const eventQueue = new EventPriorityQueue<PriorityQueueEvent>((event) => {
     console.warn(`Processing event: ${event?.type}`);
     // Process the event based on its type
     return Promise.resolve();
   });
 
   // Subscribe to all module events
-  const unsubscribe = subscribeToAllEvents(event => {
+  const unsubscribe = subscribeToAllEvents((event) => {
     // Enqueue the event for processing
     eventQueue.enqueue({
       type: event?.type,
@@ -4250,7 +4317,7 @@ export function initializeGlobalEventHandlers(): () => void {
 
   // Return cleanup function
   return () => {
-    console.warn('Cleaning up Global Event Handlers...');
+    console.warn("Cleaning up Global Event Handlers...");
 
     // Unsubscribe from all events
     unsubscribe();
@@ -4263,24 +4330,24 @@ export function initializeGlobalEventHandlers(): () => void {
 function getPriorityForEventType(type: string): number {
   // Define priorities for different event types
   switch (type) {
-    case 'ERROR_OCCURRED':
+    case "ERROR_OCCURRED":
       return 0; // CRITICAL
 
-    case 'RESOURCE_SHORTAGE':
-    case 'MODULE_DETACHED':
+    case "RESOURCE_SHORTAGE":
+    case "MODULE_DETACHED":
       return 1; // HIGH
 
-    case 'MODULE_CREATED':
-    case 'MODULE_ATTACHED':
-    case 'RESOURCE_PRODUCED':
-    case 'RESOURCE_CONSUMED':
+    case "MODULE_CREATED":
+    case "MODULE_ATTACHED":
+    case "RESOURCE_PRODUCED":
+    case "RESOURCE_CONSUMED":
       return 2; // NORMAL
 
-    case 'STATUS_CHANGED':
-    case 'AUTOMATION_CYCLE_COMPLETE':
+    case "STATUS_CHANGED":
+    case "AUTOMATION_CYCLE_COMPLETE":
       return 3; // LOW
 
-    case 'MISSION_PROGRESS_UPDATED':
+    case "MISSION_PROGRESS_UPDATED":
       return 4; // BACKGROUND
 
     default:
@@ -4625,7 +4692,7 @@ The Initialization System provides a structured framework for application startu
  * Initialize the complete event system with all sub-systems
  */
 export function initializeCompleteEventSystem(): () => void {
-  console.warn('Initializing Complete Event System...');
+  console.warn("Initializing Complete Event System...");
 
   // Initialize core event system
   const eventSystemCleanup = initializeEventSystem();
@@ -4641,7 +4708,7 @@ export function initializeCompleteEventSystem(): () => void {
 
   // Return a combined cleanup function
   return () => {
-    console.warn('Cleaning up Complete Event System...');
+    console.warn("Cleaning up Complete Event System...");
 
     // Clean up in reverse order of initialization
     gameSystemsCleanup();
@@ -4661,28 +4728,28 @@ The initialization system follows a precise startup sequence to ensure dependenc
 
 const initializeGame = async () => {
   if (!isInitialized) {
-    console.warn('Starting game initialization...');
+    console.warn("Starting game initialization...");
 
     try {
       // Initialize resource manager
-      console.warn('Initializing resource manager...');
+      console.warn("Initializing resource manager...");
       // ResourceManager is already initialized via useState
 
       // Register module configurations
-      console.warn('Registering module configurations...');
+      console.warn("Registering module configurations...");
       if (defaultModuleConfigs) {
-        Object.values(defaultModuleConfigs).forEach(config => {
+        Object.values(defaultModuleConfigs).forEach((config) => {
           if (config) {
             console.warn(`Registering module config: ${config.type}`);
             moduleManager.registerModuleConfig(config);
           }
         });
       } else {
-        console.warn('defaultModuleConfigs is null or undefined');
+        console.warn("defaultModuleConfigs is null or undefined");
       }
 
       // Register default buildings
-      console.warn('Registering default buildings...');
+      console.warn("Registering default buildings...");
       if (defaultMothership) {
         console.warn(`Registering mothership: ${defaultMothership.id}`);
         moduleManager.registerBuilding(defaultMothership);
@@ -4690,13 +4757,13 @@ const initializeGame = async () => {
       }
 
       // Initialize asset manager
-      console.warn('Initializing asset manager...');
+      console.warn("Initializing asset manager...");
       await assetManager.initialize();
 
       // Register initial technologies
-      console.warn('Registering initial technologies...');
+      console.warn("Registering initial technologies...");
       if (initialTechs) {
-        initialTechs.forEach(tech => {
+        initialTechs.forEach((tech) => {
           if (tech) {
             console.warn(`Registering tech: ${tech.id}`);
             techTreeManager.registerNode(tech);
@@ -4705,10 +4772,10 @@ const initializeGame = async () => {
       }
 
       // Initialize event propagation service
-      console.warn('Initializing event propagation service...');
+      console.warn("Initializing event propagation service...");
       // Service registration and manager initialization...
     } catch (error) {
-      console.error('Error during game initialization:', error);
+      console.error("Error during game initialization:", error);
       errorLoggingService.logError({
         type: ErrorType.INITIALIZATION,
         severity: ErrorSeverity.CRITICAL,
@@ -4731,15 +4798,15 @@ The Initialization System includes a robust service registration mechanism to ma
  * Services that are expected to be available to the application
  */
 export const REQUIRED_SERVICES = [
-  'resourceManager',
-  'thresholdManager',
-  'flowManager',
-  'storageManager',
-  'costManager',
-  'exchangeManager',
-  'poolManager',
-  'miningManager',
-  'combatManager',
+  "resourceManager",
+  "thresholdManager",
+  "flowManager",
+  "storageManager",
+  "costManager",
+  "exchangeManager",
+  "poolManager",
+  "miningManager",
+  "combatManager",
 ] as const;
 
 /**
@@ -4753,7 +4820,7 @@ export type ServiceName = (typeof REQUIRED_SERVICES)[number];
  * @param manager The ResourceManager instance
  */
 export function registerResourceManager(manager: ResourceManager): void {
-  registerService('resourceManager', manager);
+  registerService("resourceManager", manager);
 }
 
 /**
@@ -4763,7 +4830,7 @@ export function registerResourceManager(manager: ResourceManager): void {
  */
 export function checkAllServicesAvailability(): Record<ServiceName, boolean> {
   const result = checkServicesAvailability(
-    REQUIRED_SERVICES as unknown as Array<keyof Window & string>
+    REQUIRED_SERVICES as unknown as Array<keyof Window & string>,
   );
   return result as Record<ServiceName, boolean>;
 }
@@ -4792,13 +4859,13 @@ The Initialization System connects disparate systems via a comprehensive integra
  * Integrates the event system with existing game systems
  */
 export function integrateWithGameSystems(): () => void {
-  console.warn('Integrating Event System with Game Systems...');
+  console.warn("Integrating Event System with Game Systems...");
 
   // Get system communications
-  const resourceSystemComm = getSystemCommunication('resource-system');
-  const miningSystemComm = getSystemCommunication('mining-system');
-  const combatSystemComm = getSystemCommunication('combat-system');
-  const techSystemComm = getSystemCommunication('tech-system');
+  const resourceSystemComm = getSystemCommunication("resource-system");
+  const miningSystemComm = getSystemCommunication("mining-system");
+  const combatSystemComm = getSystemCommunication("combat-system");
+  const techSystemComm = getSystemCommunication("tech-system");
 
   // Initialize cleanup functions array
   const cleanupFunctions: Array<() => void> = [];
@@ -4806,13 +4873,15 @@ export function integrateWithGameSystems(): () => void {
   // ===== Resource System Integration =====
 
   // Get resource system instances using type-safe access pattern
-  const resourceManager = getService<ResourceManager>('resourceManager');
-  const thresholdManager = getService<ResourceThresholdManager>('thresholdManager');
-  const flowManager = getService<ResourceFlowManager>('flowManager');
-  const storageManager = getService<ResourceStorageManager>('storageManager');
-  const costManager = getService<ResourceCostManager>('costManager');
-  const exchangeManager = getService<ResourceExchangeManager>('exchangeManager');
-  const poolManager = getService<ResourcePoolManager>('poolManager');
+  const resourceManager = getService<ResourceManager>("resourceManager");
+  const thresholdManager =
+    getService<ResourceThresholdManager>("thresholdManager");
+  const flowManager = getService<ResourceFlowManager>("flowManager");
+  const storageManager = getService<ResourceStorageManager>("storageManager");
+  const costManager = getService<ResourceCostManager>("costManager");
+  const exchangeManager =
+    getService<ResourceExchangeManager>("exchangeManager");
+  const poolManager = getService<ResourcePoolManager>("poolManager");
 
   if (resourceManager) {
     // Make sure all required managers are available
@@ -4832,7 +4901,7 @@ export function integrateWithGameSystems(): () => void {
         storageManager,
         costManager,
         exchangeManager,
-        poolManager
+        poolManager,
       );
 
       // Initialize resource integration
@@ -4845,8 +4914,8 @@ export function integrateWithGameSystems(): () => void {
 
   // Return a cleanup function that calls all registered cleanup functions
   return () => {
-    console.warn('Cleaning up Game System integration...');
-    cleanupFunctions.forEach(cleanup => cleanup());
+    console.warn("Cleaning up Game System integration...");
+    cleanupFunctions.forEach((cleanup) => cleanup());
   };
 }
 ```
@@ -4862,43 +4931,48 @@ The Initialization System establishes core event infrastructure to enable commun
  * Initialize the event system
  */
 export function initializeEventSystem(): () => void {
-  console.warn('Initializing Event System...');
+  console.warn("Initializing Event System...");
 
   // Initialize RxJS integration
   const rxjsCleanup = initializeRxJSIntegration();
 
   // Initialize system communications
-  const eventSystemComm = getSystemCommunication('event-system');
-  const _resourceSystemComm = getSystemCommunication('resource-system');
-  const _moduleSystemComm = getSystemCommunication('module-system');
+  const eventSystemComm = getSystemCommunication("event-system");
+  const _resourceSystemComm = getSystemCommunication("resource-system");
+  const _moduleSystemComm = getSystemCommunication("module-system");
 
   // Register basic event handlers
-  const unregisterSystemStartup = eventSystemComm.registerHandler('system-startup', message => {
-    const payload = message.payload as { systemName: string };
-    console.warn(`System startup message received: ${payload.systemName}`);
-  });
+  const unregisterSystemStartup = eventSystemComm.registerHandler(
+    "system-startup",
+    (message) => {
+      const payload = message.payload as { systemName: string };
+      console.warn(`System startup message received: ${payload.systemName}`);
+    },
+  );
 
   // Register module system event handlers
   const unregisterModuleEvents = _moduleSystemComm.registerHandler(
-    'module-status-change',
-    message => {
+    "module-status-change",
+    (message) => {
       const payload = message.payload as { moduleId: string; status: string };
-      console.warn(`Module status change: ${payload.moduleId} is now ${payload.status}`);
+      console.warn(
+        `Module status change: ${payload.moduleId} is now ${payload.status}`,
+      );
 
       // Notify the event system about important module status changes
-      if (payload.status === 'critical' || payload.status === 'offline') {
-        eventSystemComm.sendMessage('broadcast', 'system-alert', {
-          level: payload.status === 'critical' ? 'warning' : 'error',
+      if (payload.status === "critical" || payload.status === "offline") {
+        eventSystemComm.sendMessage("broadcast", "system-alert", {
+          level: payload.status === "critical" ? "warning" : "error",
           message: `Module ${payload.moduleId} is ${payload.status}`,
           timestamp: Date.now(),
         });
       }
-    }
+    },
   );
 
   // Return cleanup function
   return () => {
-    console.warn('Cleaning up Event System...');
+    console.warn("Cleaning up Event System...");
     // Cleanup implementations...
   };
 }
@@ -4915,7 +4989,7 @@ The Initialization System establishes the module framework that serves as the fo
  * Initialize the module framework
  */
 export function initializeModuleFramework(): void {
-  console.warn('[Initialization] Setting up module framework...');
+  console.warn("[Initialization] Setting up module framework...");
 
   // Register event handlers for resource integration
   registerResourceIntegration();
@@ -4929,7 +5003,7 @@ export function initializeModuleFramework(): void {
   // Initialize sub-module system
   initializeSubModuleSystem();
 
-  console.warn('[Initialization] Module framework initialized successfully.');
+  console.warn("[Initialization] Module framework initialized successfully.");
 }
 
 /**
@@ -4937,7 +5011,7 @@ export function initializeModuleFramework(): void {
  */
 function registerResourceIntegration(): void {
   // Handle module activation/deactivation for resource consumption
-  moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, event => {
+  moduleEventBus.subscribe("MODULE_ACTIVATED" as ModuleEventType, (event) => {
     const module = moduleManager.getModule(event?.moduleId);
     if (!module) {
       return;
@@ -4951,7 +5025,9 @@ function registerResourceIntegration(): void {
     }
 
     // Register resource consumption
-    for (const [resourceType, amount] of Object.entries(config.resourceConsumption)) {
+    for (const [resourceType, amount] of Object.entries(
+      config.resourceConsumption,
+    )) {
       resourceManager.registerConsumption(`module-${module.id}`, {
         type: resourceType as ResourceType,
         amount: amount as number,
@@ -4974,7 +5050,7 @@ The Initialization System sets up automation routines for core game systems.
  * Initialize the automation system
  */
 export function initializeAutomationSystem(): () => void {
-  console.warn('Initializing Automation System...');
+  console.warn("Initializing Automation System...");
 
   // Set the automation manager in the global automation manager
   // NOTE: Using 'any' here is necessary because automationManager is a private property
@@ -4991,19 +5067,19 @@ export function initializeAutomationSystem(): () => void {
 
   // Emit initialization event
   moduleEventBus.emit({
-    type: 'AUTOMATION_STARTED' as ModuleEventType,
-    moduleId: 'automation-system',
-    moduleType: 'resource-manager',
+    type: "AUTOMATION_STARTED" as ModuleEventType,
+    moduleId: "automation-system",
+    moduleType: "resource-manager",
     timestamp: Date.now(),
     data: {
-      status: 'initialized',
+      status: "initialized",
       routineCount: globalAutomationManager.getAllRoutines().length,
     },
   });
 
   // Return cleanup function
   return () => {
-    console.warn('Cleaning up Automation System...');
+    console.warn("Cleaning up Automation System...");
     // Cleanup implementations...
   };
 }
@@ -5018,12 +5094,14 @@ export function initializeAutomationSystem(): () => void {
  * Initialize the module upgrade system
  */
 export function initializeModuleUpgradeSystem(): void {
-  console.warn('[Initialization] Setting up module upgrade system...');
+  console.warn("[Initialization] Setting up module upgrade system...");
 
   // Register upgrade paths
   initializeModuleUpgradePaths(moduleUpgradeManager);
 
-  console.warn('[Initialization] Module upgrade system initialized successfully.');
+  console.warn(
+    "[Initialization] Module upgrade system initialized successfully.",
+  );
 }
 ```
 
@@ -5040,7 +5118,9 @@ if (config.defaultResourceLimits) {
     this.initializeResource(type as ResourceType, limits.min, limits.max);
   });
 } else {
-  console.warn('[ResourceManager] Warning: defaultResourceLimits is null or undefined in config');
+  console.warn(
+    "[ResourceManager] Warning: defaultResourceLimits is null or undefined in config",
+  );
 }
 
 // In AssetManager.ts:
@@ -5050,7 +5130,7 @@ if (assets) {
   });
   resolve();
 } else {
-  console.warn('[AssetManager] Warning: loaded assets is null or undefined');
+  console.warn("[AssetManager] Warning: loaded assets is null or undefined");
   resolve(); // Still resolve to avoid blocking game initialization
 }
 ```
@@ -5083,16 +5163,19 @@ The Exploration System Extension provides a unified framework for galaxy explora
  */
 
 // Export core components
-export * from './core';
+export * from "./core";
 
 // Export context
-export { ExplorationProvider, useExploration } from './context/ExplorationContext';
+export {
+  ExplorationProvider,
+  useExploration,
+} from "./context/ExplorationContext";
 
 // Export system components
 export {
   default as GalaxyExplorationSystem,
   type GalaxyExplorationSystemProps,
-} from './system/GalaxyExplorationSystem';
+} from "./system/GalaxyExplorationSystem";
 ```
 
 ### Context System
@@ -5219,17 +5302,17 @@ The Exploration System includes core base components that provide foundational f
 
 // Map layer types
 export type MapLayerType =
-  | 'background'
-  | 'grid'
-  | 'sectors'
-  | 'systems'
-  | 'resources'
-  | 'anomalies'
-  | 'tradeRoutes'
-  | 'factionBorders'
-  | 'selection'
-  | 'labels'
-  | 'custom';
+  | "background"
+  | "grid"
+  | "sectors"
+  | "systems"
+  | "resources"
+  | "anomalies"
+  | "tradeRoutes"
+  | "factionBorders"
+  | "selection"
+  | "labels"
+  | "custom";
 
 // Map layer definition
 export interface MapLayer {
@@ -5277,21 +5360,21 @@ export const BaseMap: React.FC<BaseMapProps> = ({
 
 // Visualization types
 export type VisualizationType =
-  | 'bar'
-  | 'line'
-  | 'scatter'
-  | 'pie'
-  | 'radar'
-  | 'heatmap'
-  | 'network'
-  | 'table'
-  | 'custom';
+  | "bar"
+  | "line"
+  | "scatter"
+  | "pie"
+  | "radar"
+  | "heatmap"
+  | "network"
+  | "table"
+  | "custom";
 
 export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
   analysis,
   width = 800,
   height = 400,
-  defaultVisualizationType = 'bar',
+  defaultVisualizationType = "bar",
   availableVisualizationTypes,
   visualizationRenderers,
   defaultOptions = {},
@@ -5426,18 +5509,18 @@ export interface ExplorationEntity {
  * Status of an exploration entity
  */
 export enum ExplorationStatus {
-  UNDISCOVERED = 'undiscovered',
-  DETECTED = 'detected',
-  SCANNED = 'scanned',
-  ANALYZED = 'analyzed',
-  FULLY_EXPLORED = 'fully_explored',
+  UNDISCOVERED = "undiscovered",
+  DETECTED = "detected",
+  SCANNED = "scanned",
+  ANALYZED = "analyzed",
+  FULLY_EXPLORED = "fully_explored",
 }
 
 /**
  * Sector in the galaxy map
  */
 export interface Sector extends ExplorationEntity {
-  type: 'sector';
+  type: "sector";
   systems: StarSystem[];
   resources: ResourceDeposit[];
   anomalies: Anomaly[];
@@ -5477,13 +5560,13 @@ export interface AnalysisResult {
  * Types of analysis that can be performed
  */
 export enum AnalysisType {
-  COMPOSITION = 'composition',
+  COMPOSITION = "composition",
   ENERGY = ResourceType.ENERGY,
-  SPATIAL = 'spatial',
-  TEMPORAL = 'temporal',
-  RESOURCE = 'resource',
-  STRATEGIC = 'strategic',
-  PREDICTIVE = 'predictive',
+  SPATIAL = "spatial",
+  TEMPORAL = "temporal",
+  RESOURCE = "resource",
+  STRATEGIC = "strategic",
+  PREDICTIVE = "predictive",
 }
 
 /**
@@ -5510,15 +5593,15 @@ The Exploration System provides multiple visualization options for exploring and
  * Visualization types supported by the system
  */
 export type VisualizationType =
-  | 'bar'
-  | 'line'
-  | 'scatter'
-  | 'pie'
-  | 'radar'
-  | 'heatmap'
-  | 'network'
-  | 'table'
-  | 'custom';
+  | "bar"
+  | "line"
+  | "scatter"
+  | "pie"
+  | "radar"
+  | "heatmap"
+  | "network"
+  | "table"
+  | "custom";
 
 /**
  * Renderer function for visualization types
@@ -5527,7 +5610,7 @@ export type VisualizationRenderer = (
   data: Record<string, unknown>,
   width: number,
   height: number,
-  options?: VisualizationOptions
+  options?: VisualizationOptions,
 ) => React.ReactNode;
 
 /**
@@ -5560,12 +5643,12 @@ Key integration examples:
 ```typescript
 // Event integration example
 moduleEventBus.emit({
-  type: 'EXPLORATION_DISCOVERY' as ModuleEventType,
-  moduleId: 'exploration-system',
-  moduleType: 'resource-manager',
+  type: "EXPLORATION_DISCOVERY" as ModuleEventType,
+  moduleId: "exploration-system",
+  moduleType: "resource-manager",
   timestamp: Date.now(),
   data: {
-    discoveryType: 'RESOURCE',
+    discoveryType: "RESOURCE",
     resourceType: ResourceType.MINERALS,
     coordinates: { x, y },
     amount: resourceAmount,
@@ -5598,16 +5681,17 @@ The Exploration System implements several performance optimizations for handling
 ```typescript
 // Detail level setting
 export enum DetailLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  ULTRA = 'ultra',
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  ULTRA = "ultra",
 }
 
 // Memory optimization example
 const renderVisualization = () => {
   const renderer =
-    visualizationRenderers?.[visualizationType] || defaultRenderers[visualizationType];
+    visualizationRenderers?.[visualizationType] ||
+    defaultRenderers[visualizationType];
   if (!renderer) return null;
 
   const currentOptions = {
@@ -5619,7 +5703,12 @@ const renderVisualization = () => {
       (analysis.data.points as any[]).length > 5000,
   };
 
-  return renderer(analysis.data, width, height - controlsHeight, currentOptions);
+  return renderer(
+    analysis.data,
+    width,
+    height - controlsHeight,
+    currentOptions,
+  );
 };
 ```
 
@@ -5631,10 +5720,14 @@ const renderVisualization = () => {
 useEffect(() => {
   // Subscribe to relevant events from other systems
   const unsubscribe = moduleEventBus.subscribe(
-    ['RESOURCE_DISCOVERED', 'ANOMALY_DETECTED', 'SECTOR_SCANNED'] as EventType[],
+    [
+      "RESOURCE_DISCOVERED",
+      "ANOMALY_DETECTED",
+      "SECTOR_SCANNED",
+    ] as EventType[],
     (event: StandardizedEvent) => {
       // Update exploration data based on event
-      if (event.type === 'RESOURCE_DISCOVERED') {
+      if (event.type === "RESOURCE_DISCOVERED") {
         const { resourceType, coordinates, amount } = event.data as {
           resourceType: ResourceType;
           coordinates: Coordinates;
@@ -5658,7 +5751,7 @@ useEffect(() => {
       }
 
       // Handle other event types...
-    }
+    },
   );
 
   return () => {
@@ -5695,7 +5788,13 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
       }
 
       // Update AI state based on current situation
-      const newState = updateFleetBehavior(fleet, faction, aiState, adaptiveAI, factionBehavior);
+      const newState = updateFleetBehavior(
+        fleet,
+        faction,
+        aiState,
+        adaptiveAI,
+        factionBehavior,
+      );
 
       setAIState(newState);
 
@@ -5730,11 +5829,11 @@ function updateFleetBehavior(
   fleet: { units: CombatUnit[] },
   faction: {
     fleetStrength: number;
-    specialRules?: FleetAIState['specialRules'];
+    specialRules?: FleetAIState["specialRules"];
   },
   currentState: FleetAIState,
   adaptiveAI: ReturnType<typeof useAdaptiveAI>,
-  factionBehavior: ReturnType<typeof useFactionBehavior>
+  factionBehavior: ReturnType<typeof useFactionBehavior>,
 ): FleetAIState & { visualFeedback: VisualFeedback } {
   // Calculate current fleet strength
   const fleetStrength = calculateFleetStrength(fleet);
@@ -5755,17 +5854,22 @@ function updateFleetBehavior(
   // Determine combat style based on faction behavior and adaptive AI
   newState.combatStyle = determineCombatStyle(
     factionBehavior.combatStyle,
-    adaptiveAI.adaptations.combatStyle === 'aggressive'
+    adaptiveAI.adaptations.combatStyle === "aggressive"
       ? 0.7
-      : adaptiveAI.adaptations.combatStyle === 'defensive'
+      : adaptiveAI.adaptations.combatStyle === "defensive"
         ? 0.3
         : 0.5,
-    fleetStrength
+    fleetStrength,
   );
 
   // Change formation if needed
   if (shouldChange) {
-    newState.formation = selectNewFormation(fleet, currentState, adaptiveAI, factionBehavior);
+    newState.formation = selectNewFormation(
+      fleet,
+      currentState,
+      adaptiveAI,
+      factionBehavior,
+    );
     newState.lastFormationChange = Date.now();
   }
 
@@ -5773,7 +5877,10 @@ function updateFleetBehavior(
   updateEngagementParameters(newState, fleet, adaptiveAI);
 
   // Calculate positions for units in formation
-  const formationPositions = calculateFormationPositions(fleet, newState.formation);
+  const formationPositions = calculateFormationPositions(
+    fleet,
+    newState.formation,
+  );
   newState.currentPositions = formationPositions;
 
   // Apply hangar bonuses if available
@@ -5784,7 +5891,7 @@ function updateFleetBehavior(
     fleet,
     newState,
     formationPositions,
-    hangarBonus.strengthMultiplier
+    hangarBonus.strengthMultiplier,
   );
 
   return {
@@ -5806,9 +5913,9 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
     learningRate: 0.1,
     experienceLevel: 0,
     adaptations: {
-      combatStyle: 'balanced',
-      preferredRange: 'medium',
-      formationPreference: 'flexible',
+      combatStyle: "balanced",
+      preferredRange: "medium",
+      formationPreference: "flexible",
       retreatThreshold: 0.3,
     },
     performance: {
@@ -5823,7 +5930,9 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
     const combatManager = getCombatManager();
     const updateInterval = setInterval(() => {
       const unit = combatManager.getUnitStatus(unitId) as unknown as CombatUnit;
-      const faction = factionManager.getFactionState(factionId) as unknown as FactionUnit;
+      const faction = factionManager.getFactionState(
+        factionId,
+      ) as unknown as FactionUnit;
 
       if (!unit || !faction) {
         return;
@@ -5843,12 +5952,15 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
 function updateAdaptations(
   unit: CombatUnit,
   faction: FactionUnit,
-  currentState: AdaptiveAIState
+  currentState: AdaptiveAIState,
 ): AdaptiveAIState {
   const newState = { ...currentState };
 
   // Update experience level
-  newState.experienceLevel = calculateExperience(unit, currentState.experienceLevel);
+  newState.experienceLevel = calculateExperience(
+    unit,
+    currentState.experienceLevel,
+  );
 
   // Update performance metrics
   newState.performance = calculatePerformance(unit, faction);
@@ -5974,7 +6086,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
    * @param newBehavior The new behavior
    * @returns True if the behavior was changed, false if the faction was not found
    */
-  public changeBehavior(factionId: FactionId, newBehavior: FactionBehaviorType): boolean {
+  public changeBehavior(
+    factionId: FactionId,
+    newBehavior: FactionBehaviorType,
+  ): boolean {
     const faction = this.factions.get(factionId);
     if (!faction) {
       return false;
@@ -5984,7 +6099,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     faction.behavior = newBehavior;
     this.factions.set(factionId, faction);
 
-    this.emit('faction:behavior-changed', {
+    this.emit("faction:behavior-changed", {
       factionId,
       oldBehavior,
       newBehavior,
@@ -6000,7 +6115,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
    * @param newTactics The new combat tactics
    * @returns True if tactics were updated, false if faction not found
    */
-  public updateCombatTactics(factionId: FactionId, newTactics: FactionCombatTactics): boolean {
+  public updateCombatTactics(
+    factionId: FactionId,
+    newTactics: FactionCombatTactics,
+  ): boolean {
     const faction = this.factions.get(factionId);
     if (!faction) {
       return false;
@@ -6009,7 +6127,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     faction.combatTactics = newTactics;
     this.factions.set(factionId, faction);
 
-    this.emit('faction:combat-tactics-changed', {
+    this.emit("faction:combat-tactics-changed", {
       factionId,
       tactics: newTactics,
       timestamp: Date.now(),
@@ -6038,7 +6156,7 @@ const combatManager = getCombatManager();
 const fleet = combatManager.getFleetStatus(fleetId);
 
 // Faction system integration example (from FactionBehaviorManager.ts)
-this.emit('faction:behavior-changed', {
+this.emit("faction:behavior-changed", {
   factionId,
   oldBehavior,
   newBehavior,
@@ -6048,7 +6166,7 @@ this.emit('faction:behavior-changed', {
 // Officer system integration example (from useFleetAI.ts)
 function calculateCommandBonus(
   commandStructure?: CommandHierarchy,
-  fleet?: { units: CombatUnit[] }
+  fleet?: { units: CombatUnit[] },
 ): number {
   if (!commandStructure || !fleet || !commandStructure.primaryOfficer) {
     return 1.0; // Default multiplier with no bonus
@@ -6069,21 +6187,29 @@ The AI System includes a sophisticated formation management system for optimal u
 // src/hooks/factions/useFleetAI.ts (Formation Implementation)
 
 interface FleetFormation {
-  type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';
+  type:
+    | "line"
+    | "wedge"
+    | "circle"
+    | "scattered"
+    | "arrow"
+    | "diamond"
+    | "shield"
+    | "spearhead";
   spacing: number;
   facing: number;
-  pattern: 'defensive' | 'offensive' | 'balanced';
+  pattern: "defensive" | "offensive" | "balanced";
   adaptiveSpacing: boolean;
   transitionSpeed?: number;
   subFormations?: {
-    type: FleetFormation['type'];
+    type: FleetFormation["type"];
     units: string[];
   }[];
 }
 
 function calculateFormationPositions(
   fleet: { units: CombatUnit[] },
-  formation: FleetFormation
+  formation: FleetFormation,
 ): Array<{ x: number; y: number }> {
   const positions: Array<{ x: number; y: number }> = [];
   const centerPos = getFleetCenter(fleet);
@@ -6093,17 +6219,17 @@ function calculateFormationPositions(
 
   // Formation type determines how units are positioned
   switch (formation.type) {
-    case 'line':
+    case "line":
       // Position units in a line perpendicular to facing direction
       // Implementation details...
       break;
 
-    case 'wedge':
+    case "wedge":
       // Position units in V formation pointing toward facing direction
       // Implementation details...
       break;
 
-    case 'circle':
+    case "circle":
       // Position units in a circle around the center
       // Implementation details...
       break;
@@ -6328,14 +6454,14 @@ export class LongSessionMemoryTracker {
     // Set up periodic snapshots
     this.snapshotIntervalId = window.setInterval(
       () => this.takeSnapshot(),
-      this.options.snapshotIntervalMs
+      this.options.snapshotIntervalMs,
     );
 
     // Set up periodic reports to event bus if enabled
     if (this.options.reportToEventBus) {
       this.reportIntervalId = window.setInterval(
         () => this.sendMemoryReport(),
-        this.options.reportIntervalMs
+        this.options.reportIntervalMs,
       );
     }
   }
@@ -6482,13 +6608,11 @@ export function MultitabPerformanceLauncher() {
 The Performance Monitoring System implements numerous optimization techniques for improving application performance:
 
 1. **Memory Management**:
-
    - Leak detection and prevention
    - Automatic garbage collection triggers
    - DOM node tracking
 
 2. **Rendering Optimization**:
-
    - D3 performance optimizations
    - Batched updates for visualization
    - Animation frame management
@@ -6514,7 +6638,7 @@ export function optimizeD3Operations<T>(
     useMemoryOptimizedAccessors?: boolean;
     useWebWorker?: boolean;
     useAnimationFrameThrottling?: boolean;
-  } = {}
+  } = {},
 ): {
   optimizedData: T[];
   draw: (selection: any) => void;
@@ -6707,7 +6831,9 @@ export interface ServiceConfig {
 /**
  * Service factory function type
  */
-export type ServiceFactory = (dependencies: Record<string, BaseService>) => BaseService;
+export type ServiceFactory = (
+  dependencies: Record<string, BaseService>,
+) => BaseService;
 
 /**
  * Service registry that manages service lifecycle and dependencies
@@ -6735,7 +6861,7 @@ export class ServiceRegistry {
   public register(
     name: string,
     factory: ServiceFactory,
-    config: Partial<ServiceConfig> = {}
+    config: Partial<ServiceConfig> = {},
   ): void {
     if (this.services.has(name)) {
       throw new Error(`Service ${name} is already registered`);
@@ -6800,7 +6926,7 @@ The Services Integration system implements a consistent base service pattern for
 export interface ServiceMetadata {
   name: string;
   version: string;
-  status: 'initializing' | 'ready' | 'error' | 'disposed';
+  status: "initializing" | "ready" | "error" | "disposed";
   lastError?: {
     type: ErrorType;
     message: string;
@@ -6854,16 +6980,16 @@ export abstract class AbstractBaseService
     this.metadata = {
       name,
       version,
-      status: 'initializing',
+      status: "initializing",
     };
   }
 
   async initialize(dependencies?: Record<string, unknown>): Promise<void> {
     try {
       await this.onInitialize(dependencies);
-      this.metadata.status = 'ready';
+      this.metadata.status = "ready";
     } catch (error) {
-      this.metadata.status = 'error';
+      this.metadata.status = "error";
       this.handleError(error as Error);
       throw error;
     }
@@ -6872,7 +6998,7 @@ export abstract class AbstractBaseService
   async dispose(): Promise<void> {
     try {
       await this.onDispose();
-      this.metadata.status = 'disposed';
+      this.metadata.status = "disposed";
     } catch (error) {
       this.handleError(error as Error);
       throw error;
@@ -6888,15 +7014,17 @@ The Services Integration system provides mechanisms for discovering and accessin
 ```typescript
 // src/utils/services/ServiceAccess.ts
 
-import { BaseService } from '../lib/services/BaseService';
-import { ServiceRegistry } from '../lib/services/ServiceRegistry';
+import { BaseService } from "../lib/services/BaseService";
+import { ServiceRegistry } from "../lib/services/ServiceRegistry";
 
 /**
  * Get a service instance by name
  * @param name The name of the service to retrieve
  * @returns A promise that resolves to the service instance
  */
-export async function getServiceAsync<T extends BaseService>(name: string): Promise<T> {
+export async function getServiceAsync<T extends BaseService>(
+  name: string,
+): Promise<T> {
   const registry = ServiceRegistry.getInstance();
   return registry.getService<T>(name);
 }
@@ -7009,24 +7137,24 @@ The Services Integration system includes comprehensive error handling for servic
 
 // Error severity levels
 export enum ErrorSeverity {
-  LOW = 'low', // Non-critical, doesn't affect core functionality
-  MEDIUM = 'medium', // Affects some functionality but application can still operate
-  HIGH = 'high', // Major feature is broken
-  CRITICAL = 'critical', // Application cannot continue normal operation
+  LOW = "low", // Non-critical, doesn't affect core functionality
+  MEDIUM = "medium", // Affects some functionality but application can still operate
+  HIGH = "high", // Major feature is broken
+  CRITICAL = "critical", // Application cannot continue normal operation
 }
 
 // Error types for categorization
 export enum ErrorType {
-  UNKNOWN = 'unknown', // Uncategorized errors
-  VALIDATION = 'validation', // Input validation errors
-  NETWORK = 'network', // Network-related errors
-  RESOURCE = 'resource', // Resource-related errors (e.g. missing files)
-  PERMISSION = 'permission', // Permission-related errors
-  CONFIGURATION = 'configuration', // Configuration-related errors
-  DEPENDENCY = 'dependency', // Dependency-related errors
-  INITIALIZATION = 'initialization', // Initialization-related errors
-  RUNTIME = 'runtime', // Runtime errors
-  INTEGRATION = 'integration', // Integration-related errors
+  UNKNOWN = "unknown", // Uncategorized errors
+  VALIDATION = "validation", // Input validation errors
+  NETWORK = "network", // Network-related errors
+  RESOURCE = "resource", // Resource-related errors (e.g. missing files)
+  PERMISSION = "permission", // Permission-related errors
+  CONFIGURATION = "configuration", // Configuration-related errors
+  DEPENDENCY = "dependency", // Dependency-related errors
+  INITIALIZATION = "initialization", // Initialization-related errors
+  RUNTIME = "runtime", // Runtime errors
+  INTEGRATION = "integration", // Integration-related errors
 }
 
 class ErrorLoggingServiceImpl extends AbstractBaseService {
@@ -7042,7 +7170,7 @@ class ErrorLoggingServiceImpl extends AbstractBaseService {
           message: string;
           stack?: string;
         },
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     // Log error implementation...
   }
@@ -7136,7 +7264,7 @@ The application implements sophisticated component lifecycle management patterns
 ```typescript
 // src/hooks/ui/useComponentLifecycle.ts
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 /**
  * Hook for managing component lifecycle with precise timing
@@ -7155,7 +7283,7 @@ export function useComponentLifecycle<T>(
     runEffectOnUpdate?: boolean;
     dependencies?: any[];
     registerWithManager?: boolean;
-  } = {}
+  } = {},
 ): React.RefObject<T> {
   // Create a ref for the component
   const componentRef = useRef<T>(null);
@@ -7361,7 +7489,7 @@ export function useGlobalAutomation(): GlobalAutomationHookResult {
         setIsInitialized(true);
         setLastUpdate(Date.now());
       } catch (error) {
-        console.error('Error initializing global automation:', error);
+        console.error("Error initializing global automation:", error);
       }
     };
 
@@ -7377,17 +7505,17 @@ export function useGlobalAutomation(): GlobalAutomationHookResult {
     };
 
     // Subscribe to events
-    globalAutomationManager.on('routineAdded', handleRoutineChange);
-    globalAutomationManager.on('routineRemoved', handleRoutineChange);
-    globalAutomationManager.on('routineEnabled', handleRoutineChange);
-    globalAutomationManager.on('routineDisabled', handleRoutineChange);
+    globalAutomationManager.on("routineAdded", handleRoutineChange);
+    globalAutomationManager.on("routineRemoved", handleRoutineChange);
+    globalAutomationManager.on("routineEnabled", handleRoutineChange);
+    globalAutomationManager.on("routineDisabled", handleRoutineChange);
 
     return () => {
       // Unsubscribe from events
-      globalAutomationManager.off('routineAdded', handleRoutineChange);
-      globalAutomationManager.off('routineRemoved', handleRoutineChange);
-      globalAutomationManager.off('routineEnabled', handleRoutineChange);
-      globalAutomationManager.off('routineDisabled', handleRoutineChange);
+      globalAutomationManager.off("routineAdded", handleRoutineChange);
+      globalAutomationManager.off("routineRemoved", handleRoutineChange);
+      globalAutomationManager.off("routineEnabled", handleRoutineChange);
+      globalAutomationManager.off("routineDisabled", handleRoutineChange);
     };
   }, []);
 
@@ -7398,19 +7526,25 @@ export function useGlobalAutomation(): GlobalAutomationHookResult {
       name: string,
       type: GlobalRoutineType,
       description: string,
-      config: GlobalRoutineConfig
+      config: GlobalRoutineConfig,
     ): GlobalRoutine | null => {
       try {
-        const routine = globalAutomationManager.createRoutine(id, name, type, description, config);
+        const routine = globalAutomationManager.createRoutine(
+          id,
+          name,
+          type,
+          description,
+          config,
+        );
         setRoutines(globalAutomationManager.getAllRoutines());
         setLastUpdate(Date.now());
         return routine;
       } catch (error) {
-        console.error('Error creating routine:', error);
+        console.error("Error creating routine:", error);
         return null;
       }
     },
-    []
+    [],
   );
 
   // Return the hook result
@@ -7504,35 +7638,44 @@ export function useThreshold() {
 ```typescript
 // src/hooks/events/useModuleEvents.ts
 
-import { useCallback } from 'react';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleEventType } from '../../types/events/ModuleEventTypes';
+import { useCallback } from "react";
+import { moduleEventBus } from "../../lib/modules/ModuleEvents";
+import { ModuleEventType } from "../../types/events/ModuleEventTypes";
 
 export function useModuleEvents() {
   // Subscribe to events
   const subscribe = useCallback(
-    <T extends object>(eventType: ModuleEventType, handler: (event: T) => void) => {
+    <T extends object>(
+      eventType: ModuleEventType,
+      handler: (event: T) => void,
+    ) => {
       return moduleEventBus.subscribe(eventType, handler);
     },
-    []
+    [],
   );
 
   // Unsubscribe from events
   const unsubscribe = useCallback(
-    <T extends object>(eventType: ModuleEventType, handler: (event: T) => void) => {
+    <T extends object>(
+      eventType: ModuleEventType,
+      handler: (event: T) => void,
+    ) => {
       moduleEventBus.unsubscribe(eventType, handler);
     },
-    []
+    [],
   );
 
   // Emit events
-  const emit = useCallback(<T extends object>(eventType: ModuleEventType, event: T) => {
-    moduleEventBus.emit({
-      ...event,
-      type: eventType,
-      timestamp: Date.now(),
-    });
-  }, []);
+  const emit = useCallback(
+    <T extends object>(eventType: ModuleEventType, event: T) => {
+      moduleEventBus.emit({
+        ...event,
+        type: eventType,
+        timestamp: Date.now(),
+      });
+    },
+    [],
+  );
 
   return {
     subscribe,
@@ -7620,7 +7763,7 @@ The application implements numerous React-specific performance optimizations.
  */
 export function useComponentProfiler(
   componentName: string,
-  options: Partial<ComponentProfilingOptions> = {}
+  options: Partial<ComponentProfilingOptions> = {},
 ): ComponentProfilingResult {
   // Create a ref to store the profiler
   const profilerRef = useRef<ComponentProfilingResult | null>(null);
@@ -7651,7 +7794,10 @@ export function useComponentProfiler(
     profiler.metrics.totalRenderTime += renderTime;
     profiler.metrics.averageRenderTime =
       profiler.metrics.totalRenderTime / profiler.metrics.renderCount;
-    profiler.metrics.maxRenderTime = Math.max(profiler.metrics.maxRenderTime, renderTime);
+    profiler.metrics.maxRenderTime = Math.max(
+      profiler.metrics.maxRenderTime,
+      renderTime,
+    );
     profiler.metrics.lastRenderTimestamp = Date.now();
 
     // Add to render history
@@ -7667,10 +7813,13 @@ export function useComponentProfiler(
     });
 
     // Log slow renders
-    if (options?.logToConsole && renderTime > (options?.slowRenderThreshold || 16)) {
+    if (
+      options?.logToConsole &&
+      renderTime > (options?.slowRenderThreshold || 16)
+    ) {
       console.warn(
         `Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms ` +
-          `(threshold: ${options?.slowRenderThreshold || 16}ms)`
+          `(threshold: ${options?.slowRenderThreshold || 16}ms)`,
       );
     }
 
@@ -7845,7 +7994,11 @@ export class ShipClassFactory {
     shipClass: FactionShipClass,
     factionId: FactionId,
     position: Position,
-    formation?: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
+    formation?: {
+      type: "offensive" | "defensive" | "balanced";
+      spacing: number;
+      facing: number;
+    },
   ): CombatUnit {
     // Implementation details...
   }
@@ -7855,7 +8008,11 @@ export class ShipClassFactory {
     factionId: FactionId,
     shipClasses: FactionShipClass[],
     position: Position,
-    formation: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
+    formation: {
+      type: "offensive" | "defensive" | "balanced";
+      spacing: number;
+      facing: number;
+    },
   ): CombatUnit[] {
     // Implementation details...
   }
@@ -7913,12 +8070,14 @@ public createFleet(factionId: FactionId, shipClasses: FactionShipClass[], positi
 // Factory function that creates data fetching hooks
 export function createDataFetchHook<T, P extends any[] = []>(
   fetchFn: (...args: P) => Promise<T>,
-  defaultOptions: DataFetchOptions = {}
+  defaultOptions: DataFetchOptions = {},
 ): (...args: P) => DataFetchResult<T> {
   return (...args: P): DataFetchResult<T> => {
     // Hook implementation with standardized state management
     const [data, setData] = useState<T | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(defaultOptions.fetchOnMount !== false);
+    const [isLoading, setIsLoading] = useState<boolean>(
+      defaultOptions.fetchOnMount !== false,
+    );
     // ...additional state and logic
 
     return {
@@ -7985,7 +8144,7 @@ const stats = SHIP_STATS[shipClass];
 ```typescript
 // Type validation through type system
 export function createLifecycleHook<TProps = Record<string, unknown>>(
-  options: LifecycleOptions<TProps>
+  options: LifecycleOptions<TProps>,
 ): (props: TProps) => LifecycleResult {
   // Implementation details...
 }
@@ -8027,18 +8186,25 @@ export class ResourceRegistry {
   private static _instance: ResourceRegistry | null = null;
 
   // Storage for resource metadata
-  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> = new Map();
+  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> =
+    new Map();
 
   // Indexes for efficient querying
-  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> = new Map();
+  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> =
+    new Map();
   private resourcesByTag: Map<string, Set<ResourceType>> = new Map();
-  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> = new Map();
+  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> =
+    new Map();
 
   // Relationship mapping
-  private conversionRates: Map<ResourceType, Map<ResourceType, number>> = new Map();
+  private conversionRates: Map<ResourceType, Map<ResourceType, number>> =
+    new Map();
 
   // Event handling
-  private listeners: Map<RegistryEventType, Set<(data: RegistryEventData) => void>> = new Map();
+  private listeners: Map<
+    RegistryEventType,
+    Set<(data: RegistryEventData) => void>
+  > = new Map();
   private eventEmitter: EventEmitter<ResourceRegistryEvent>;
 
   // Singleton access
@@ -8291,7 +8457,9 @@ export class ResourceRegistryIntegration {
   }
 
   // Synchronizing with other managers
-  public syncResourceAvailability(resourceFlowManager: ResourceFlowManager): void {
+  public syncResourceAvailability(
+    resourceFlowManager: ResourceFlowManager,
+  ): void {
     const resourceStates = resourceFlowManager.getAllResourceStates?.();
     if (!resourceStates) {
       return;
@@ -8305,7 +8473,7 @@ export class ResourceRegistryIntegration {
   public getResourceMetadata(resourceType: ResourceType | string): unknown {
     // Convert string to enum if needed
     const actualType =
-      typeof resourceType === 'string'
+      typeof resourceType === "string"
         ? ResourceTypeConverter.convertToEnum(resourceType)
         : resourceType;
 
@@ -8341,7 +8509,9 @@ export interface PooledEntity {
 /**
  * Generic entity pool for efficient object reuse
  */
-export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T>> {
+export class EntityPool<T extends PooledEntity> extends EventEmitter<
+  PoolEvent<T>
+> {
   // Available entities ready for use
   private available: T[];
 
@@ -8359,7 +8529,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T
     factory: () => T,
     initialSize: number,
     maxSize: number = 1000,
-    expandSize: number = 50
+    expandSize: number = 50,
   ) {
     super();
     this.factory = factory;
@@ -8574,7 +8744,7 @@ interface PoolEvents<T extends PooledEntity> {
 
 // Emit an event when an entity is activated
 this.emit({
-  type: 'entityActivated',
+  type: "entityActivated",
   data: { entity },
 });
 ```
@@ -8583,7 +8753,9 @@ this.emit({
 
 ```typescript
 // Type-safe entity pool
-export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T>> {
+export class EntityPool<T extends PooledEntity> extends EventEmitter<
+  PoolEvent<T>
+> {
   // Implementation details...
 }
 
@@ -8618,7 +8790,7 @@ The Entity Pooling System integrates with other systems using these patterns:
 // Creating a pool with a factory function
 const bulletPool = new EntityPool<Bullet>(
   () => new Bullet(), // Factory function
-  100 // Initial size
+  100, // Initial size
 );
 ```
 
@@ -8655,10 +8827,13 @@ class ParticleComponentManager {
   private particlePool: EntityPool<Particle>;
 
   constructor(initialSize: number) {
-    this.particlePool = new EntityPool<Particle>(() => new Particle(), initialSize);
+    this.particlePool = new EntityPool<Particle>(
+      () => new Particle(),
+      initialSize,
+    );
 
     // Listen for pool events
-    this.particlePool.on('poolExpanded', this.handlePoolExpanded);
+    this.particlePool.on("poolExpanded", this.handlePoolExpanded);
   }
 
   // Create a new particle component
@@ -8726,7 +8901,8 @@ class FactionManager {
       isHostile: this.isHostileToPlayer(factionId),
       willAttack: this.willInitiateAttack(factionId),
       expansionPriority: this.calculateExpansionPriority(factionId),
-      reinforcementNeeded: state.fleetStrength < config.behavior.reinforcementThreshold,
+      reinforcementNeeded:
+        state.fleetStrength < config.behavior.reinforcementThreshold,
     };
   }
 
@@ -8746,7 +8922,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   private factions: Map<FactionId, FactionState> = new Map();
 
   // Change faction behavior and emit events
-  public changeBehavior(factionId: FactionId, newBehavior: FactionBehaviorType): boolean {
+  public changeBehavior(
+    factionId: FactionId,
+    newBehavior: FactionBehaviorType,
+  ): boolean {
     const faction = this.factions.get(factionId);
     if (!faction) {
       return false;
@@ -8756,7 +8935,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     faction.behavior = newBehavior;
     this.factions.set(factionId, faction);
 
-    this.emit('faction:behavior-changed', {
+    this.emit("faction:behavior-changed", {
       factionId,
       oldBehavior,
       newBehavior,
@@ -8772,7 +8951,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   }
 
   // Manage faction territory
-  public updateTerritory(factionId: FactionId, territory: FactionTerritory): boolean {
+  public updateTerritory(
+    factionId: FactionId,
+    territory: FactionTerritory,
+  ): boolean {
     // Updates territory and emits events
   }
 
@@ -8780,7 +8962,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   public updateRelationship(
     factionId: FactionId,
     targetFaction: FactionId,
-    newValue: number
+    newValue: number,
   ): boolean {
     // Updates relationships and emits events
   }
@@ -8789,13 +8971,16 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   public updateResources(
     factionId: FactionId,
     resourceType: ResourceType,
-    newAmount: number
+    newAmount: number,
   ): boolean {
     // Updates resources and emits events
   }
 
   // Manage faction combat tactics
-  public updateCombatTactics(factionId: FactionId, newTactics: FactionCombatTactics): boolean {
+  public updateCombatTactics(
+    factionId: FactionId,
+    newTactics: FactionCombatTactics,
+  ): boolean {
     // Updates combat tactics and emits events
   }
 }
@@ -8831,7 +9016,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     change: number,
-    reason: string
+    reason: string,
   ): void {
     // Change relationship values and emit events
   }
@@ -8846,7 +9031,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     resourceType: ResourceType,
-    amount: number
+    amount: number,
   ): void {
     // Record trade and improve relationship
   }
@@ -8855,8 +9040,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public recordConflict(
     factionId: FactionId,
     targetId: FactionId,
-    type: 'attack' | 'territory' | 'trade',
-    severity: number
+    type: "attack" | "territory" | "trade",
+    severity: number,
   ): void {
     // Record conflict and damage relationship
   }
@@ -8865,8 +9050,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public handleDiplomaticAction(
     factionId: FactionId,
     targetId: FactionId,
-    action: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute',
-    resources?: { type: string; amount: number }[]
+    action: "ceasefire" | "tradeRoute" | "alliance" | "tribute",
+    resources?: { type: string; amount: number }[],
   ): boolean {
     // Process diplomatic actions with requirements and outcomes
   }
@@ -8877,7 +9062,7 @@ interface RelationshipState {
   lastUpdate: number;
   tradeCount: number;
   conflictCount: number;
-  treatyStatus: 'none' | 'ceasefire' | 'trade' | 'alliance';
+  treatyStatus: "none" | "ceasefire" | "trade" | "alliance";
 }
 ```
 
@@ -8904,7 +9089,7 @@ Manages ship AI behavior using a task assignment system:
 ```typescript
 interface ShipTask {
   id: string;
-  type: 'salvage' | 'combat' | 'patrol' | 'mine';
+  type: "salvage" | "combat" | "patrol" | "mine";
   target?: {
     id: string;
     position: Position;
@@ -8936,7 +9121,7 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
     this.tasks.set(task.id, task);
     this.emit({
-      type: 'taskAssigned',
+      type: "taskAssigned",
       data: {
         taskAssigned: {
           shipId: task.id,
@@ -8970,12 +9155,12 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
   public completeTask(shipId: string): void {
     const task = this.tasks.get(shipId);
     if (task) {
-      if (task.type === 'salvage' && task.target) {
+      if (task.type === "salvage" && task.target) {
         this.salvageTargets.delete(task.target.id);
       }
       this.tasks.delete(shipId);
       this.emit({
-        type: 'taskCompleted',
+        type: "taskCompleted",
         data: {
           taskCompleted: {
             shipId,
@@ -9012,7 +9197,11 @@ class ShipMovementSystem {
   }
 
   // Follow another ship
-  followShip(ship: ShipWithPosition, targetShip: ShipWithPosition, distance: number): void {
+  followShip(
+    ship: ShipWithPosition,
+    targetShip: ShipWithPosition,
+    distance: number,
+  ): void {
     // Calculate follow path with maintained distance
   }
 }
@@ -9023,14 +9212,12 @@ class ShipMovementSystem {
 1. **Task Assignment**: Ships are assigned tasks with priorities that determine their behavior
 
 2. **Task Execution Flow**:
-
    - Ship registers with behavior manager
    - Task is assigned based on ship capabilities and position
    - Ship executes task until completed or interrupted
    - On completion, ship reports back to behavior manager
 
 3. **Priority-Based Decisions**:
-
    - Tasks have priority levels
    - Higher priority tasks can interrupt lower priority ones
    - Tasks can be reassigned based on changing conditions
@@ -9066,7 +9253,7 @@ The system uses a factory function pattern to lazily instantiate and provide acc
  * and ensure consistent access to manager instances.
  */
 
-import { CombatManager } from './combat/CombatManager';
+import { CombatManager } from "./combat/CombatManager";
 
 // Singleton instances
 let combatManagerInstance: CombatManager | null = null;
@@ -9106,7 +9293,7 @@ For each manager in the system, the registry provides:
 To use a manager from the registry:
 
 ```typescript
-import { getCombatManager } from '../managers/ManagerRegistry';
+import { getCombatManager } from "../managers/ManagerRegistry";
 
 function someFunction() {
   const combatManager = getCombatManager();
@@ -9177,7 +9364,8 @@ class FactionManager {
       isHostile: this.isHostileToPlayer(factionId),
       willAttack: this.willInitiateAttack(factionId),
       expansionPriority: this.calculateExpansionPriority(factionId),
-      reinforcementNeeded: state.fleetStrength < config.behavior.reinforcementThreshold,
+      reinforcementNeeded:
+        state.fleetStrength < config.behavior.reinforcementThreshold,
     };
   }
 
@@ -9197,7 +9385,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   private factions: Map<FactionId, FactionState> = new Map();
 
   // Change faction behavior and emit events
-  public changeBehavior(factionId: FactionId, newBehavior: FactionBehaviorType): boolean {
+  public changeBehavior(
+    factionId: FactionId,
+    newBehavior: FactionBehaviorType,
+  ): boolean {
     const faction = this.factions.get(factionId);
     if (!faction) {
       return false;
@@ -9207,7 +9398,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     faction.behavior = newBehavior;
     this.factions.set(factionId, faction);
 
-    this.emit('faction:behavior-changed', {
+    this.emit("faction:behavior-changed", {
       factionId,
       oldBehavior,
       newBehavior,
@@ -9223,7 +9414,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   }
 
   // Manage faction territory
-  public updateTerritory(factionId: FactionId, territory: FactionTerritory): boolean {
+  public updateTerritory(
+    factionId: FactionId,
+    territory: FactionTerritory,
+  ): boolean {
     // Updates territory and emits events
   }
 
@@ -9231,7 +9425,7 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   public updateRelationship(
     factionId: FactionId,
     targetFaction: FactionId,
-    newValue: number
+    newValue: number,
   ): boolean {
     // Updates relationships and emits events
   }
@@ -9240,13 +9434,16 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   public updateResources(
     factionId: FactionId,
     resourceType: ResourceType,
-    newAmount: number
+    newAmount: number,
   ): boolean {
     // Updates resources and emits events
   }
 
   // Manage faction combat tactics
-  public updateCombatTactics(factionId: FactionId, newTactics: FactionCombatTactics): boolean {
+  public updateCombatTactics(
+    factionId: FactionId,
+    newTactics: FactionCombatTactics,
+  ): boolean {
     // Updates combat tactics and emits events
   }
 }
@@ -9282,7 +9479,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     change: number,
-    reason: string
+    reason: string,
   ): void {
     // Change relationship values and emit events
   }
@@ -9297,7 +9494,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     resourceType: ResourceType,
-    amount: number
+    amount: number,
   ): void {
     // Record trade and improve relationship
   }
@@ -9306,8 +9503,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public recordConflict(
     factionId: FactionId,
     targetId: FactionId,
-    type: 'attack' | 'territory' | 'trade',
-    severity: number
+    type: "attack" | "territory" | "trade",
+    severity: number,
   ): void {
     // Record conflict and damage relationship
   }
@@ -9316,8 +9513,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public handleDiplomaticAction(
     factionId: FactionId,
     targetId: FactionId,
-    action: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute',
-    resources?: { type: string; amount: number }[]
+    action: "ceasefire" | "tradeRoute" | "alliance" | "tribute",
+    resources?: { type: string; amount: number }[],
   ): boolean {
     // Process diplomatic actions with requirements and outcomes
   }
@@ -9328,7 +9525,7 @@ interface RelationshipState {
   lastUpdate: number;
   tradeCount: number;
   conflictCount: number;
-  treatyStatus: 'none' | 'ceasefire' | 'trade' | 'alliance';
+  treatyStatus: "none" | "ceasefire" | "trade" | "alliance";
 }
 ```
 
@@ -9355,7 +9552,7 @@ Manages ship AI behavior using a task assignment system:
 ```typescript
 interface ShipTask {
   id: string;
-  type: 'salvage' | 'combat' | 'patrol' | 'mine';
+  type: "salvage" | "combat" | "patrol" | "mine";
   target?: {
     id: string;
     position: Position;
@@ -9387,7 +9584,7 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
     this.tasks.set(task.id, task);
     this.emit({
-      type: 'taskAssigned',
+      type: "taskAssigned",
       data: {
         taskAssigned: {
           shipId: task.id,
@@ -9421,12 +9618,12 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
   public completeTask(shipId: string): void {
     const task = this.tasks.get(shipId);
     if (task) {
-      if (task.type === 'salvage' && task.target) {
+      if (task.type === "salvage" && task.target) {
         this.salvageTargets.delete(task.target.id);
       }
       this.tasks.delete(shipId);
       this.emit({
-        type: 'taskCompleted',
+        type: "taskCompleted",
         data: {
           taskCompleted: {
             shipId,
@@ -9463,7 +9660,11 @@ class ShipMovementSystem {
   }
 
   // Follow another ship
-  followShip(ship: ShipWithPosition, targetShip: ShipWithPosition, distance: number): void {
+  followShip(
+    ship: ShipWithPosition,
+    targetShip: ShipWithPosition,
+    distance: number,
+  ): void {
     // Calculate follow path with maintained distance
   }
 }
@@ -9474,14 +9675,12 @@ class ShipMovementSystem {
 1. **Task Assignment**: Ships are assigned tasks with priorities that determine their behavior
 
 2. **Task Execution Flow**:
-
    - Ship registers with behavior manager
    - Task is assigned based on ship capabilities and position
    - Ship executes task until completed or interrupted
    - On completion, ship reports back to behavior manager
 
 3. **Priority-Based Decisions**:
-
    - Tasks have priority levels
    - Higher priority tasks can interrupt lower priority ones
    - Tasks can be reassigned based on changing conditions
@@ -9517,7 +9716,7 @@ The system uses a factory function pattern to lazily instantiate and provide acc
  * and ensure consistent access to manager instances.
  */
 
-import { CombatManager } from './combat/CombatManager';
+import { CombatManager } from "./combat/CombatManager";
 
 // Singleton instances
 let combatManagerInstance: CombatManager | null = null;
@@ -9557,7 +9756,7 @@ For each manager in the system, the registry provides:
 To use a manager from the registry:
 
 ```typescript
-import { getCombatManager } from '../managers/ManagerRegistry';
+import { getCombatManager } from "../managers/ManagerRegistry";
 
 function someFunction() {
   const combatManager = getCombatManager();
@@ -9614,7 +9813,7 @@ export interface ChartData {
     [key: string]: unknown;
   }[];
   annotations?: {
-    type: 'line' | 'box' | 'point';
+    type: "line" | "box" | "point";
     position: { x?: number | string | Date; y?: number };
     color?: string;
     label?: string;
@@ -9641,7 +9840,7 @@ export const Chart: React.FC<ChartProps> = ({
   data,
   options = {},
   type,
-  className = '',
+  className = "",
   onRender,
   onError,
 }) => {
@@ -9659,8 +9858,18 @@ The system implements the Strategy pattern with multiple renderer implementation
  * Chart renderer interface (Strategy interface)
  */
 export interface ChartRenderer {
-  render: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
-  update: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
+  render: (
+    container: HTMLElement,
+    data: ChartData,
+    options: ChartOptions,
+    type: ChartType,
+  ) => void;
+  update: (
+    container: HTMLElement,
+    data: ChartData,
+    options: ChartOptions,
+    type: ChartType,
+  ) => void;
   destroy: () => void;
   getStatus: () => { isInitialized: boolean; lastRenderTime?: number };
 }
@@ -9678,15 +9887,27 @@ export class CanvasRenderer implements ChartRenderer {
   private ctx: CanvasRenderingContext2D | null = null;
 
   // Canvas-specific rendering methods for different chart types
-  private renderLineChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderLineChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     // Canvas line chart implementation
   }
 
-  private renderBarChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderBarChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     // Canvas bar chart implementation
   }
 
-  private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderScatterChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     // Canvas scatter chart implementation
   }
 
@@ -9710,7 +9931,7 @@ export class WebGLRenderer implements ChartRenderer {
   private renderLineChart(
     data: ChartData,
     options: ExtendedChartOptions,
-    chartArea: ChartArea
+    chartArea: ChartArea,
   ): void {
     // WebGL line chart implementation with shader program
   }
@@ -9718,7 +9939,7 @@ export class WebGLRenderer implements ChartRenderer {
   private renderScatterChart(
     data: ChartData,
     options: ExtendedChartOptions,
-    chartArea: ChartArea
+    chartArea: ChartArea,
   ): void {
     // WebGL scatter chart implementation
   }
@@ -9738,7 +9959,11 @@ export class SVGRenderer implements ChartRenderer {
   private svg: SVGSVGElement | null = null;
 
   // SVG-specific rendering methods for different chart types
-  private renderLineChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
+  private renderLineChart(
+    data: ChartData,
+    options: ChartOptions,
+    chartArea: ChartArea,
+  ): void {
     // SVG line chart implementation
   }
 
@@ -9759,14 +9984,14 @@ A utility class for managing WebGL shaders used in advanced data visualizations:
  * Supported shader types for data visualization
  */
 export enum DataVisualizationShaderType {
-  HEATMAP = 'heatmap',
-  CONTOUR = 'contour',
-  POINT_CLUSTER = 'pointCluster',
-  HIGHLIGHT = 'highlight',
-  DENSITY = 'density',
-  FLOW = 'flow',
-  TRANSITION = 'transition',
-  CUSTOM = 'custom',
+  HEATMAP = "heatmap",
+  CONTOUR = "contour",
+  POINT_CLUSTER = "pointCluster",
+  HIGHLIGHT = "highlight",
+  DENSITY = "density",
+  FLOW = "flow",
+  TRANSITION = "transition",
+  CUSTOM = "custom",
 }
 
 /**
@@ -9783,14 +10008,14 @@ export class WebGLShaderManager {
     data: Float32Array,
     positions: Position[],
     width: number,
-    height: number
+    height: number,
   ): void {
     // Render visualization using appropriate shader
   }
 
   // Shader program creation and management
   private createDataVisualizationShader(
-    config: DataVisualizationShaderConfig
+    config: DataVisualizationShaderConfig,
   ): WebGLProgram | undefined {
     // Creates shader program based on configuration
   }
@@ -9882,7 +10107,7 @@ WebGLShaderManager uses factory methods to create specialized shaders:
 export class WebGLShaderManager {
   // Factory method for creating visualization shaders
   private createDataVisualizationShader(
-    config: DataVisualizationShaderConfig
+    config: DataVisualizationShaderConfig,
   ): WebGLProgram | undefined {
     const type = config.type;
 
@@ -9890,11 +10115,17 @@ export class WebGLShaderManager {
     const vertexSource = this.getDataVisualizationVertexShader(config);
     const fragmentSource = this.getDataVisualizationFragmentShader(config);
 
-    return this.createShaderProgram(`${type}-shader`, vertexSource, fragmentSource);
+    return this.createShaderProgram(
+      `${type}-shader`,
+      vertexSource,
+      fragmentSource,
+    );
   }
 
   // Factory methods for shader source generation
-  private getDataVisualizationVertexShader(config: DataVisualizationShaderConfig): string {
+  private getDataVisualizationVertexShader(
+    config: DataVisualizationShaderConfig,
+  ): string {
     // Select or customize vertex shader based on config
     switch (config.type) {
       case DataVisualizationShaderType.HEATMAP:
@@ -9936,7 +10167,7 @@ A central manager class that handles WebGL context, shader compilation, and rend
  * Represents a WebGL shader uniform
  */
 export interface ShaderUniform {
-  type: 'float' | 'vec2' | 'vec3' | 'vec4' | 'int' | 'bool' | 'sampler2D';
+  type: "float" | "vec2" | "vec3" | "vec4" | "int" | "bool" | "sampler2D";
   value: number | number[] | boolean | WebGLTexture | null;
 }
 
@@ -9944,14 +10175,14 @@ export interface ShaderUniform {
  * Supported shader types for data visualization
  */
 export enum DataVisualizationShaderType {
-  HEATMAP = 'heatmap',
-  CONTOUR = 'contour',
-  POINT_CLUSTER = 'pointCluster',
-  HIGHLIGHT = 'highlight',
-  DENSITY = 'density',
-  FLOW = 'flow',
-  TRANSITION = 'transition',
-  CUSTOM = 'custom',
+  HEATMAP = "heatmap",
+  CONTOUR = "contour",
+  POINT_CLUSTER = "pointCluster",
+  HIGHLIGHT = "highlight",
+  DENSITY = "density",
+  FLOW = "flow",
+  TRANSITION = "transition",
+  CUSTOM = "custom",
 }
 
 /**
@@ -9988,11 +10219,11 @@ export class WebGLShaderManager {
   // Initialize WebGL context with optimized settings
   public initialize(canvas: HTMLCanvasElement): boolean {
     this.canvas = canvas;
-    this.gl = canvas.getContext('webgl', {
+    this.gl = canvas.getContext("webgl", {
       alpha: true,
       premultipliedAlpha: false,
       antialias: true,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
     });
 
     // Initialize default shaders for each visualization type
@@ -10005,7 +10236,7 @@ export class WebGLShaderManager {
   private createShaderProgram(
     name: string,
     vertexShaderSource: string,
-    fragmentShaderSource: string
+    fragmentShaderSource: string,
   ): WebGLProgram | undefined {
     // Shader program creation and linking
   }
@@ -10016,7 +10247,7 @@ export class WebGLShaderManager {
     data: Float32Array,
     positions: Position[],
     width: number,
-    height: number
+    height: number,
   ): void {
     // Setup and draw visualization
   }
@@ -10186,11 +10417,11 @@ public dispose(): void {
 Optimized WebGL context setup for best performance:
 
 ```typescript
-this.gl = canvas.getContext('webgl', {
+this.gl = canvas.getContext("webgl", {
   alpha: true,
   premultipliedAlpha: false,
   antialias: true,
-  powerPreference: 'high-performance',
+  powerPreference: "high-performance",
 });
 ```
 
@@ -10262,7 +10493,7 @@ export class WebGLRenderer implements ChartRenderer {
 
   private initializeWebGL(container: HTMLElement): boolean {
     // Create canvas element
-    this.canvas = document.createElement('canvas');
+    this.canvas = document.createElement("canvas");
     container.appendChild(this.canvas);
 
     // Initialize shader manager
@@ -10275,7 +10506,7 @@ export class WebGLRenderer implements ChartRenderer {
   private renderScatterChart(
     data: ChartData,
     options: ExtendedChartOptions,
-    chartArea: ChartArea
+    chartArea: ChartArea,
   ): void {
     if (!this.canvas || !this.shaderManager) return;
 
@@ -10284,8 +10515,8 @@ export class WebGLRenderer implements ChartRenderer {
     const dataValues: number[] = [];
 
     // Extract data points
-    data.datasets.forEach(dataset => {
-      dataset.data.forEach(point => {
+    data.datasets.forEach((dataset) => {
+      dataset.data.forEach((point) => {
         positions.push({ x: point.x as number, y: point.y });
         dataValues.push(point.y);
       });
@@ -10294,7 +10525,7 @@ export class WebGLRenderer implements ChartRenderer {
     // Configure shader visualization
     const visualizationConfig: DataVisualizationShaderConfig = {
       type: DataVisualizationShaderType.POINT_CLUSTER,
-      colors: ['#3366cc', '#dc3912', '#ff9900'],
+      colors: ["#3366cc", "#dc3912", "#ff9900"],
       intensity: options.opacity || 0.8,
       animate: true,
     };
@@ -10305,7 +10536,7 @@ export class WebGLRenderer implements ChartRenderer {
       new Float32Array(dataValues),
       positions,
       this.canvas.width,
-      this.canvas.height
+      this.canvas.height,
     );
   }
 }
@@ -10418,24 +10649,25 @@ A versatile button with multiple variants, sizes, and states:
  * Button variants
  */
 export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'tertiary'
-  | 'danger'
-  | 'success'
-  | 'warning'
-  | 'info'
-  | 'ghost';
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "danger"
+  | "success"
+  | "warning"
+  | "info"
+  | "ghost";
 
 /**
  * Button sizes
  */
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
  * Button props
  */
-export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'prefix'> {
+export interface ButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "prefix"> {
   /** Button variant */
   variant?: ButtonVariant;
   /** Button size */
@@ -10464,8 +10696,8 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      variant = 'primary',
-      size = 'md',
+      variant = "primary",
+      size = "md",
       loading = false,
       fullWidth = false,
       leadingIcon,
@@ -10477,10 +10709,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     // Implementation with mapping between variants/sizes and class names
-  }
+  },
 );
 ```
 
@@ -10492,7 +10724,7 @@ A flexible card container with various display options:
 /**
  * Card variants
  */
-export type CardVariant = 'default' | 'bordered' | 'elevated' | 'flat';
+export type CardVariant = "default" | "bordered" | "elevated" | "flat";
 
 /**
  * Card props
@@ -10532,7 +10764,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   (
     {
-      variant = 'default',
+      variant = "default",
       hoverable = false,
       selectable = false,
       selected = false,
@@ -10547,10 +10779,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     // Implementation with conditional rendering of sections
-  }
+  },
 );
 ```
 
@@ -10563,19 +10795,19 @@ A compact label component for displaying status, counts, or categories:
  * Badge variants
  */
 export type BadgeVariant =
-  | 'default'
-  | 'primary'
-  | 'secondary'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'info'
-  | 'outline';
+  | "default"
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "outline";
 
 /**
  * Badge sizes
  */
-export type BadgeSize = 'xs' | 'sm' | 'md' | 'lg';
+export type BadgeSize = "xs" | "sm" | "md" | "lg";
 
 /**
  * Badge props
@@ -10607,8 +10839,8 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
   (
     {
-      variant = 'default',
-      size = 'md',
+      variant = "default",
+      size = "md",
       bordered = false,
       rounded = true,
       withDot = false,
@@ -10618,10 +10850,10 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     // Implementation with conditional rendering and styling
-  }
+  },
 );
 ```
 
@@ -10660,7 +10892,7 @@ export interface Ability {
 /**
  * AbilityButton props
  */
-export interface AbilityButtonProps extends Omit<ButtonProps, 'leadingIcon'> {
+export interface AbilityButtonProps extends Omit<ButtonProps, "leadingIcon"> {
   /** The ability to display */
   ability: Ability;
   /** Current cooldown time remaining in seconds */
@@ -10687,11 +10919,11 @@ export const AbilityButton = forwardRef<HTMLButtonElement, AbilityButtonProps>(
       showCooldown = true,
       // Other props...
     },
-    ref
+    ref,
   ) => {
     // Implementation that extends the base Button component
     // with game-specific ability functionality
-  }
+  },
 );
 ```
 
@@ -10703,7 +10935,13 @@ A specialized card for displaying ship or station modules with status indicators
 /**
  * Module status types
  */
-export type ModuleStatus = 'active' | 'inactive' | 'damaged' | 'destroyed' | 'upgrading' | 'locked';
+export type ModuleStatus =
+  | "active"
+  | "inactive"
+  | "damaged"
+  | "destroyed"
+  | "upgrading"
+  | "locked";
 
 /**
  * Module type
@@ -10727,7 +10965,7 @@ export interface Module {
 /**
  * ModuleCard props
  */
-export interface ModuleCardProps extends Omit<CardProps, 'title' | 'subtitle'> {
+export interface ModuleCardProps extends Omit<CardProps, "title" | "subtitle"> {
   /** The module to display */
   module: Module;
   /** Whether to show the module level */
@@ -10751,11 +10989,11 @@ export const ModuleCard = forwardRef<HTMLDivElement, ModuleCardProps>(
       showEnergy = true,
       // Other props...
     },
-    ref
+    ref,
   ) => {
     // Implementation that extends the base Card component
     // with game-specific module functionality
-  }
+  },
 );
 ```
 
@@ -10804,17 +11042,17 @@ Components expose numerous props with sensible defaults to allow customization w
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
   (
     {
-      variant = 'default', // Default variant
-      size = 'md', // Default size
+      variant = "default", // Default variant
+      size = "md", // Default size
       bordered = false, // Default border state
       rounded = true, // Default rounded state
       withDot = false, // Default dot indicator state
       // Other props with defaults...
     },
-    ref
+    ref,
   ) => {
     // Implementation
-  }
+  },
 );
 ```
 
@@ -10826,15 +11064,15 @@ Components use utility functions for class name composition:
 // cn utility function for composing class names
 const buttonClasses = cn(
   // Base styles
-  'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none',
+  "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none",
   // Variant styles
   variantClasses[variant],
   // Size styles
   sizeClasses[size],
   // Width styles
-  fullWidth ? 'w-full' : '',
+  fullWidth ? "w-full" : "",
   // Custom class names
-  className
+  className,
 );
 ```
 
@@ -10865,7 +11103,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 - **Documentation through comments**: Detailed JSDoc comments describe component props and usage patterns
 
 ## Data Processing System (#data_processing)
-
 
 ### Overview
 
@@ -10903,18 +11140,18 @@ The system uses a modular approach with clear separation of concerns:
  */
 
 // Export all chart transformation utilities
-export * from './chartTransforms';
+export * from "./chartTransforms";
 
 // Export all scientific transformation utilities
-export * from './scientificTransforms';
+export * from "./scientificTransforms";
 
 // Export all filter transformation utilities
-export * from './filterTransforms';
+export * from "./filterTransforms";
 
 // Re-export specific utilities with more descriptive names to improve discoverability
 
 // Domain calculation
-import { calculateDomain, calculateDomains } from './chartTransforms';
+import { calculateDomain, calculateDomains } from "./chartTransforms";
 export { calculateDomain, calculateDomains };
 
 // Color utilities
@@ -10935,14 +11172,14 @@ The chart transformation system handles data preparation for visualization compo
  * Type guard to check if a value is a number
  */
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 /**
  * Type guard to check if a value is a string
  */
 export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 /**
@@ -10956,7 +11193,7 @@ export function isArray<T = unknown>(value: unknown): value is Array<T> {
  * Type guard to check if a value is an object
  */
 export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 ```
 
@@ -10971,7 +11208,7 @@ The system provides type-safe data extraction functions that handle missing or i
 export function safelyExtractNumber(
   obj: Record<string, unknown> | null | undefined,
   key: string,
-  defaultValue = 0
+  defaultValue = 0,
 ): number {
   if (!obj) return defaultValue;
   const value = obj[key];
@@ -10984,21 +11221,27 @@ export function safelyExtractNumber(
 export function safelyExtractPath<T>(
   obj: Record<string, unknown> | null | undefined,
   path: string,
-  defaultValue: T
+  defaultValue: T,
 ): T {
   if (!obj) return defaultValue;
 
-  const keys = path.split('.');
+  const keys = path.split(".");
   let current: unknown = obj;
 
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== "object"
+    ) {
       return defaultValue;
     }
     current = (current as Record<string, unknown>)[key];
   }
 
-  return current !== null && current !== undefined ? (current as T) : defaultValue;
+  return current !== null && current !== undefined
+    ? (current as T)
+    : defaultValue;
 }
 ```
 
@@ -11012,7 +11255,7 @@ The system provides specialized transformations for different visualization need
  */
 export function transformToScatterFormat(
   dataPoints: DataPoint[],
-  valueMetric: string = 'amount'
+  valueMetric: string = "amount",
 ): Array<{
   id: string;
   name: string;
@@ -11022,13 +11265,13 @@ export function transformToScatterFormat(
   type: string;
   coordinates: { x: number; y: number };
 }> {
-  return dataPoints.map(point => ({
+  return dataPoints.map((point) => ({
     id: point.id,
     name: point.name || `Point ${point.id}`,
     x: point.coordinates.x,
     y: point.coordinates.y,
     value: safelyExtractNumber(point.properties, valueMetric, 0),
-    type: safelyExtractString(point.properties, 'type', 'unknown'),
+    type: safelyExtractString(point.properties, "type", "unknown"),
     coordinates: point.coordinates,
   }));
 }
@@ -11038,8 +11281,8 @@ export function transformToScatterFormat(
  */
 export function transformToHeatMapFormat(
   gridCells: ResourceGridCell[],
-  valueMetric: string = 'amount',
-  selectedResourceType: string = 'all'
+  valueMetric: string = "amount",
+  selectedResourceType: string = "all",
 ): Array<{
   x: number;
   y: number;
@@ -11068,17 +11311,17 @@ The filter transformation system provides utilities for filtering and searching 
  * Supported filter operators
  */
 export type FilterOperator =
-  | 'equals'
-  | 'notEquals'
-  | 'greaterThan'
-  | 'lessThan'
-  | 'contains'
-  | 'notContains'
-  | 'between'
-  | 'in'
-  | 'notIn'
-  | 'exists'
-  | 'notExists';
+  | "equals"
+  | "notEquals"
+  | "greaterThan"
+  | "lessThan"
+  | "contains"
+  | "notContains"
+  | "between"
+  | "in"
+  | "notIn"
+  | "exists"
+  | "notExists";
 
 /**
  * Filter definition
@@ -11093,7 +11336,7 @@ export interface Filter {
  * Filter Group (for complex filtering with AND/OR logic)
  */
 export interface FilterGroup {
-  type: 'and' | 'or';
+  type: "and" | "or";
   filters: Array<Filter | FilterGroup>;
 }
 ```
@@ -11109,7 +11352,7 @@ The system provides comprehensive operations for creating, validating, and apply
 export function createFilter(
   field: string,
   operator: FilterOperator,
-  value: unknown
+  value: unknown,
 ): Filter | null {
   // Validation logic...
 }
@@ -11124,17 +11367,20 @@ export function validateFilter(filter: unknown): filter is Filter {
 /**
  * Applies a filter to a data item
  */
-export function applyFilter(item: Record<string, unknown>, filter: Filter): boolean {
+export function applyFilter(
+  item: Record<string, unknown>,
+  filter: Filter,
+): boolean {
   const value = safelyExtractPath(item, filter.field, undefined);
 
   switch (filter.operator) {
-    case 'equals':
+    case "equals":
       return value === filter.value;
-    case 'notEquals':
+    case "notEquals":
       return value !== filter.value;
-    case 'greaterThan':
+    case "greaterThan":
       return isNumber(value) && isNumber(filter.value) && value > filter.value;
-    case 'lessThan':
+    case "lessThan":
       return isNumber(value) && isNumber(filter.value) && value < filter.value;
     // More cases...
   }
@@ -11145,9 +11391,9 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
  */
 export function applyComplexFilter(
   data: Array<Record<string, unknown>>,
-  filterGroup: FilterGroup
+  filterGroup: FilterGroup,
 ): Array<Record<string, unknown>> {
-  return data.filter(item => applyFilterGroup(item, filterGroup));
+  return data.filter((item) => applyFilterGroup(item, filterGroup));
 }
 ```
 
@@ -11168,11 +11414,11 @@ Utilities for preparing and transforming data for visualization components:
 
 // Type Guards
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 export function isArray<T = unknown>(value: unknown): value is Array<T> {
@@ -11180,14 +11426,14 @@ export function isArray<T = unknown>(value: unknown): value is Array<T> {
 }
 
 export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // Safe Data Extraction
 export function safelyExtractNumber(
   obj: Record<string, unknown> | null | undefined,
   key: string,
-  defaultValue = 0
+  defaultValue = 0,
 ): number {
   if (!obj) return defaultValue;
   const value = obj[key];
@@ -11198,7 +11444,7 @@ export function safelyExtractNumber(
 export function calculateDomain(
   data: Record<string, unknown>[],
   key: string,
-  padding = 0.05
+  padding = 0.05,
 ): [number, number] {
   // Implementation details for finding min/max values with padding
 }
@@ -11206,7 +11452,7 @@ export function calculateDomain(
 // Color Utilities
 export function createColorScale(
   domain: [number, number],
-  range: string[]
+  range: string[],
 ): (value: number) => string {
   // Implementation of color interpolation
 }
@@ -11214,7 +11460,7 @@ export function createColorScale(
 // Transformations for Chart Types
 export function transformToScatterFormat(
   dataPoints: DataPoint[],
-  valueMetric: string = 'amount'
+  valueMetric: string = "amount",
 ): Array<{
   id: string;
   name: string;
@@ -11229,8 +11475,8 @@ export function transformToScatterFormat(
 
 export function transformToHeatMapFormat(
   gridCells: ResourceGridCell[],
-  valueMetric: string = 'amount',
-  selectedResourceType: string = 'all'
+  valueMetric: string = "amount",
+  selectedResourceType: string = "all",
 ): Array<{
   x: number;
   y: number;
@@ -11265,7 +11511,7 @@ export function transformTimeSeriesData(
   timePoints: number[] | string[],
   actualValues: number[],
   predictedValues?: number[],
-  forecastValues?: number[]
+  forecastValues?: number[],
 ): Array<{
   time: number | string;
   actual?: number;
@@ -11275,7 +11521,10 @@ export function transformTimeSeriesData(
   // Implementation details for time series transformation
 }
 
-export function calculateResiduals(actualValues: number[], predictedValues: number[]): number[] {
+export function calculateResiduals(
+  actualValues: number[],
+  predictedValues: number[],
+): number[] {
   // Calculate residuals (actual - predicted)
   const residuals: number[] = [];
   const minLength = Math.min(actualValues.length, predictedValues.length);
@@ -11290,7 +11539,7 @@ export function calculateResiduals(actualValues: number[], predictedValues: numb
 // Statistical Analysis
 export function calculateStatistics(
   data: Array<Record<string, unknown>>,
-  variable: string
+  variable: string,
 ): {
   min: number;
   max: number;
@@ -11305,7 +11554,7 @@ export function calculateStatistics(
 
 export function calculateCorrelationMatrix(
   data: Array<Record<string, unknown>>,
-  variables: string[]
+  variables: string[],
 ): Array<Array<number>> {
   // Implementation details for correlation matrix calculation
 }
@@ -11313,12 +11562,14 @@ export function calculateCorrelationMatrix(
 // Model Analysis
 export function extractFeatureImportance(
   modelDetails: Record<string, unknown>,
-  features: string[]
+  features: string[],
 ): Array<{ feature: string; importance: number }> {
   // Implementation details for extracting feature importance
 }
 
-export function isLinearRegressionModel(modelDetails: Record<string, unknown>): boolean {
+export function isLinearRegressionModel(
+  modelDetails: Record<string, unknown>,
+): boolean {
   // Implementation details for identifying model type
 }
 
@@ -11328,7 +11579,7 @@ export function calculateClusterCentroids(
     cluster: number;
     features: Array<number | null>;
   }>,
-  features: string[]
+  features: string[],
 ): Array<{
   cluster: number;
   centroid: number[];
@@ -11352,17 +11603,17 @@ Utilities for filtering and transforming data for use in filter components:
 
 // Filter Types
 export type FilterOperator =
-  | 'equals'
-  | 'notEquals'
-  | 'greaterThan'
-  | 'lessThan'
-  | 'contains'
-  | 'notContains'
-  | 'between'
-  | 'in'
-  | 'notIn'
-  | 'exists'
-  | 'notExists';
+  | "equals"
+  | "notEquals"
+  | "greaterThan"
+  | "lessThan"
+  | "contains"
+  | "notContains"
+  | "between"
+  | "in"
+  | "notIn"
+  | "exists"
+  | "notExists";
 
 export interface Filter {
   field: string;
@@ -11371,7 +11622,7 @@ export interface Filter {
 }
 
 export interface FilterGroup {
-  type: 'and' | 'or';
+  type: "and" | "or";
   filters: Array<Filter | FilterGroup>;
 }
 
@@ -11379,7 +11630,7 @@ export interface FilterGroup {
 export function createFilter(
   field: string,
   operator: FilterOperator,
-  value: unknown
+  value: unknown,
 ): Filter | null {
   // Implementation details for creating and validating filters
 }
@@ -11390,7 +11641,7 @@ export function validateFilter(filter: unknown): filter is Filter {
 
 // Filter Formatting
 export function formatFilterValue(
-  value: string | number | boolean | string[] | [number, number]
+  value: string | number | boolean | string[] | [number, number],
 ): string {
   // Implementation details for formatting filter values for display
 }
@@ -11400,20 +11651,23 @@ export function formatFilter(filter: Filter): string {
 }
 
 // Filtering Logic
-export function applyFilter(item: Record<string, unknown>, filter: Filter): boolean {
+export function applyFilter(
+  item: Record<string, unknown>,
+  filter: Filter,
+): boolean {
   // Implementation details for applying a filter to an item
 }
 
 export function applyFilters(
   data: Array<Record<string, unknown>>,
-  filters: Array<Filter>
+  filters: Array<Filter>,
 ): Array<Record<string, unknown>> {
   // Implementation details for applying multiple filters
 }
 
 export function applyComplexFilter(
   data: Array<Record<string, unknown>>,
-  filterGroup: FilterGroup
+  filterGroup: FilterGroup,
 ): Array<Record<string, unknown>> {
   // Implementation details for applying complex filters with AND/OR logic
 }
@@ -11421,15 +11675,18 @@ export function applyComplexFilter(
 // Field Analysis
 export function detectFieldTypes(
   data: Array<Record<string, unknown>>,
-  sampleSize: number = 100
-): Record<string, 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'mixed'> {
+  sampleSize: number = 100,
+): Record<
+  string,
+  "string" | "number" | "boolean" | "date" | "array" | "object" | "mixed"
+> {
   // Implementation details for detecting field types
 }
 
 export function getUniqueValues(
   data: Array<Record<string, unknown>>,
   field: string,
-  limit: number = 100
+  limit: number = 100,
 ): Array<string | number | boolean> {
   // Implementation details for getting unique values
 }
@@ -11451,7 +11708,7 @@ if (isNumber(value)) {
 export function safelyExtractNumber(
   obj: Record<string, unknown> | null | undefined,
   key: string,
-  defaultValue = 0
+  defaultValue = 0,
 ): number {
   if (!obj) return defaultValue;
   const value = obj[key];
@@ -11462,21 +11719,27 @@ export function safelyExtractNumber(
 export function safelyExtractPath<T>(
   obj: Record<string, unknown> | null | undefined,
   path: string,
-  defaultValue: T
+  defaultValue: T,
 ): T {
   if (!obj) return defaultValue;
 
-  const keys = path.split('.');
+  const keys = path.split(".");
   let current: unknown = obj;
 
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== "object"
+    ) {
       return defaultValue;
     }
     current = (current as Record<string, unknown>)[key];
   }
 
-  return current !== null && current !== undefined ? (current as T) : defaultValue;
+  return current !== null && current !== undefined
+    ? (current as T)
+    : defaultValue;
 }
 ```
 
@@ -11486,15 +11749,15 @@ The system follows a consistent pattern for transformations that convert from on
 
 ```typescript
 // Step 1: Validate and extract source data
-const sourceData = safelyExtractArray(result.data, 'items', []);
+const sourceData = safelyExtractArray(result.data, "items", []);
 
 // Step 2: Process each item and map to new structure
-const transformedData = sourceData.map(item => {
+const transformedData = sourceData.map((item) => {
   return {
     // Extract and transform each required field
-    id: safelyExtractString(item, 'id', ''),
-    x: safelyExtractNumber(item, 'coordinates.x', 0),
-    y: safelyExtractNumber(item, 'coordinates.y', 0),
+    id: safelyExtractString(item, "id", ""),
+    x: safelyExtractNumber(item, "coordinates.x", 0),
+    y: safelyExtractNumber(item, "coordinates.y", 0),
     // Transform values as needed
     value: safelyExtractNumber(item, valueMetric, 0),
   };
@@ -11504,8 +11767,8 @@ const transformedData = sourceData.map(item => {
 return {
   transformedData,
   // Add metadata
-  summary: safelyExtractString(result, 'summary', ''),
-  metrics: safelyExtractObject(result, 'metrics', {}),
+  summary: safelyExtractString(result, "summary", ""),
+  metrics: safelyExtractObject(result, "metrics", {}),
 };
 ```
 
@@ -11520,9 +11783,9 @@ function applyFilter(item: Record<string, unknown>, filter: Filter): boolean {
 
   // Apply operator-specific logic
   switch (filter.operator) {
-    case 'equals':
+    case "equals":
       return value === filter.value;
-    case 'greaterThan':
+    case "greaterThan":
       return isNumber(value) && isNumber(filter.value) && value > filter.value;
     // Other operators...
   }
@@ -11531,22 +11794,25 @@ function applyFilter(item: Record<string, unknown>, filter: Filter): boolean {
 // Multiple filter application (AND logic)
 function applyFilters(
   data: Array<Record<string, unknown>>,
-  filters: Array<Filter>
+  filters: Array<Filter>,
 ): Array<Record<string, unknown>> {
   if (!filters.length) return data;
 
-  return data.filter(item => {
+  return data.filter((item) => {
     // All filters must pass (AND logic)
-    return filters.every(filter => applyFilter(item, filter));
+    return filters.every((filter) => applyFilter(item, filter));
   });
 }
 
 // Complex filter application (AND/OR logic)
-function applyFilterGroup(item: Record<string, unknown>, filterGroup: FilterGroup): boolean {
-  if (filterGroup.type === 'and') {
+function applyFilterGroup(
+  item: Record<string, unknown>,
+  filterGroup: FilterGroup,
+): boolean {
+  if (filterGroup.type === "and") {
     // AND logic - all filters must match
-    return filterGroup.filters.every(filter => {
-      if ('field' in filter) {
+    return filterGroup.filters.every((filter) => {
+      if ("field" in filter) {
         return applyFilter(item, filter);
       } else {
         return applyFilterGroup(item, filter);
@@ -11554,8 +11820,8 @@ function applyFilterGroup(item: Record<string, unknown>, filterGroup: FilterGrou
     });
   } else {
     // OR logic - at least one filter must match
-    return filterGroup.filters.some(filter => {
-      if ('field' in filter) {
+    return filterGroup.filters.some((filter) => {
+      if ("field" in filter) {
         return applyFilter(item, filter);
       } else {
         return applyFilterGroup(item, filter);
@@ -11575,16 +11841,16 @@ The system uses a centralized exports file to provide a clean API while maintain
 // index.ts - Central exports with organized imports and exports
 
 // Export all chart transformation utilities
-export * from './chartTransforms';
+export * from "./chartTransforms";
 
 // Export all scientific transformation utilities
-export * from './scientificTransforms';
+export * from "./scientificTransforms";
 
 // Export all filter transformation utilities
-export * from './filterTransforms';
+export * from "./filterTransforms";
 
 // Re-export specific utilities with more descriptive names for discoverability
-import { calculateDomain, calculateDomains } from './chartTransforms';
+import { calculateDomain, calculateDomains } from "./chartTransforms";
 export { calculateDomain, calculateDomains };
 
 // Color utilities
@@ -11597,7 +11863,7 @@ import {
   safelyExtractObject,
   safelyExtractPath,
   safelyExtractString,
-} from './chartTransforms';
+} from "./chartTransforms";
 export {
   safelyExtractArray,
   safelyExtractNumber,
@@ -11614,18 +11880,18 @@ The system implements robust type safety through type guards and generics:
 ```typescript
 // Type guards for runtime type checking
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 // Generic typing for better compiler integration
 export function safelyExtractArray<T = unknown>(
   obj: Record<string, unknown> | null | undefined,
   key: string,
-  defaultValue: T[] = []
+  defaultValue: T[] = [],
 ): T[] {
   if (!obj) return defaultValue;
   const value = obj[key];
@@ -11645,18 +11911,18 @@ function processAndVisualizeData(rawData) {
 
   // Step 2: Filter data to relevant subset
   const filteredData = applyFilters(rawData, [
-    { field: 'type', operator: 'equals', value: 'energy' },
+    { field: "type", operator: "equals", value: "energy" },
   ]);
 
   // Step 3: Calculate statistics for analysis
-  const stats = calculateStatistics(filteredData, 'amount');
+  const stats = calculateStatistics(filteredData, "amount");
 
   // Step 4: Transform to visualization format
-  const visualData = transformToScatterFormat(filteredData, 'amount');
+  const visualData = transformToScatterFormat(filteredData, "amount");
 
   // Step 5: Calculate domains for axes
-  const xDomain = calculateDomain(visualData, 'x');
-  const yDomain = calculateDomain(visualData, 'y');
+  const xDomain = calculateDomain(visualData, "x");
+  const yDomain = calculateDomain(visualData, "y");
 
   // Return completed visualization data package
   return {
@@ -11673,11 +11939,14 @@ The system follows an immutable pattern where transformations create new data st
 
 ```typescript
 // Immutable transformation example
-export function calculateStatistics(data: Array<Record<string, unknown>>, variable: string) {
+export function calculateStatistics(
+  data: Array<Record<string, unknown>>,
+  variable: string,
+) {
   // Extract values without modifying original data
   const values = data
-    .map(item => safelyExtractNumber(item, variable, NaN))
-    .filter(value => !isNaN(value));
+    .map((item) => safelyExtractNumber(item, variable, NaN))
+    .filter((value) => !isNaN(value));
 
   // Calculate statistics from extracted values
   const sum = values.reduce((acc, val) => acc + val, 0);
@@ -11746,41 +12015,46 @@ export type EffectType =
  * Combat-related effect types
  */
 export type CombatEffectType =
-  | 'damage'
-  | 'heal'
-  | 'shield'
-  | 'armor'
-  | 'accuracy'
-  | 'evasion'
-  | 'critical'
-  | 'resistance';
+  | "damage"
+  | "heal"
+  | "shield"
+  | "armor"
+  | "accuracy"
+  | "evasion"
+  | "critical"
+  | "resistance";
 
 /**
  * Status-related effect types
  */
 export type StatusEffectType =
-  | 'stealth'
-  | 'speed'
-  | 'detection'
-  | 'cloaking'
-  | 'jamming'
-  | 'scanning';
+  | "stealth"
+  | "speed"
+  | "detection"
+  | "cloaking"
+  | "jamming"
+  | "scanning";
 
 /**
  * Visual effect types
  */
 export type VisualEffectType =
   | ResourceType.PLASMA
-  | 'spark'
-  | 'gauss'
-  | 'explosive'
-  | 'beam'
-  | 'particle';
+  | "spark"
+  | "gauss"
+  | "explosive"
+  | "beam"
+  | "particle";
 
 /**
  * Environmental effect types
  */
-export type EnvironmentalEffectType = 'radiation' | 'emp' | 'gravity' | 'magnetic' | 'thermal';
+export type EnvironmentalEffectType =
+  | "radiation"
+  | "emp"
+  | "gravity"
+  | "magnetic"
+  | "thermal";
 ```
 
 ### Visual Effect Base Class
@@ -11865,7 +12139,7 @@ export function createEffect(
   type: EffectType,
   magnitude: number,
   description: string,
-  options: Partial<BaseEffect> = {}
+  options: Partial<BaseEffect> = {},
 ): BaseEffect {
   return {
     id,
@@ -11885,8 +12159,8 @@ export function createEffect(
 export function createWeaponEffect(
   baseEffect: BaseEffect,
   strength: number,
-  type: 'damage' | 'area' | 'status' = 'damage',
-  duration: number = 0
+  type: "damage" | "area" | "status" = "damage",
+  duration: number = 0,
 ): WeaponEffect {
   return {
     ...baseEffect,
@@ -11908,7 +12182,7 @@ export function addEffect(stack: EffectStack, effect: BaseEffect): EffectStack {
       {
         effectId: effect.id,
         timestamp: Date.now(),
-        action: 'applied',
+        action: "applied",
       },
     ],
   };
@@ -11917,12 +12191,16 @@ export function addEffect(stack: EffectStack, effect: BaseEffect): EffectStack {
 /**
  * Type guard for weapon effects
  */
-export function isWeaponEffect(effect: BaseEffect | Effect): effect is WeaponEffect {
+export function isWeaponEffect(
+  effect: BaseEffect | Effect,
+): effect is WeaponEffect {
   return (
-    'type' in effect &&
-    (effect.type === 'damage' || effect.type === 'area' || effect.type === 'status') &&
-    'strength' in effect &&
-    typeof effect.strength === 'number'
+    "type" in effect &&
+    (effect.type === "damage" ||
+      effect.type === "area" ||
+      effect.type === "status") &&
+    "strength" in effect &&
+    typeof effect.strength === "number"
   );
 }
 ```
@@ -12013,7 +12291,7 @@ interface TaskHandler {
 const taskHandlers = new Map<string, TaskHandler>();
 
 // Register task handlers
-taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
+taskHandlers.set("heavyComputation", async (data: unknown, reportProgress) => {
   // Example heavy computation task
   const iterations = (data as { iterations: number }).iterations;
   let result = 0;
@@ -12040,16 +12318,16 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
     // Execute task with progress reporting
     const result = await handler(data, (progress: number) => {
-      self.postMessage({ taskId, type: 'progress', data: progress });
+      self.postMessage({ taskId, type: "progress", data: progress });
     });
 
     // Send result back to main thread
-    self.postMessage({ taskId, type: 'result', data: result });
+    self.postMessage({ taskId, type: "result", data: result });
   } catch (error) {
     // Send error back to main thread
     self.postMessage({
       taskId,
-      type: 'error',
+      type: "error",
       data: error instanceof Error ? error.message : String(error),
     });
   }
@@ -12070,13 +12348,13 @@ Specialized worker for handling data analysis and transformations:
 
 // Message types for worker communication
 export enum WorkerMessageType {
-  PROCESS_CLUSTERING = 'PROCESS_CLUSTERING',
-  PROCESS_PREDICTION = 'PROCESS_PREDICTION',
-  PROCESS_RESOURCE_MAPPING = 'PROCESS_RESOURCE_MAPPING',
-  TRANSFORM_DATA = 'TRANSFORM_DATA',
-  DATA_SORTING = 'DATA_SORTING',
-  DATA_FILTERING = 'DATA_FILTERING',
-  CALCULATE_STATISTICS = 'CALCULATE_STATISTICS',
+  PROCESS_CLUSTERING = "PROCESS_CLUSTERING",
+  PROCESS_PREDICTION = "PROCESS_PREDICTION",
+  PROCESS_RESOURCE_MAPPING = "PROCESS_RESOURCE_MAPPING",
+  TRANSFORM_DATA = "TRANSFORM_DATA",
+  DATA_SORTING = "DATA_SORTING",
+  DATA_FILTERING = "DATA_FILTERING",
+  CALCULATE_STATISTICS = "CALCULATE_STATISTICS",
 }
 
 // Response interface
@@ -12087,7 +12365,7 @@ interface WorkerResponse {
 }
 
 // Listen for messages from the main thread
-self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
   const { type, id, payload } = event?.data ?? {};
 
   try {
@@ -12134,10 +12412,10 @@ Worker for processing combat simulations and related calculations:
 
 ```typescript
 // Combat Web Worker
-import { QuadTree } from '../lib/optimization/QuadTree';
-import { CombatUnit } from '../types/combat/CombatTypes';
-import { Hazard } from '../types/combat/HazardTypes';
-import { Position } from '../types/core/GameTypes';
+import { QuadTree } from "../lib/optimization/QuadTree";
+import { CombatUnit } from "../types/combat/CombatTypes";
+import { Hazard } from "../types/combat/HazardTypes";
+import { Position } from "../types/core/GameTypes";
 
 interface WorkerMessage {
   type: string;
@@ -12172,7 +12450,7 @@ let pendingUpdates: BatchedUpdate = {
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   const { type, units, hazards, worldBounds } = e.data;
 
-  if (type === 'UPDATE') {
+  if (type === "UPDATE") {
     const now = performance.now();
     if (now - lastUpdate < UPDATE_INTERVAL) {
       return; // Skip update if too soon
@@ -12181,13 +12459,18 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 
     // Initialize or clear quadtree
     if (!quadTree) {
-      quadTree = new QuadTree({ x: 0, y: 0, width: worldBounds.width, height: worldBounds.height });
+      quadTree = new QuadTree({
+        x: 0,
+        y: 0,
+        width: worldBounds.width,
+        height: worldBounds.height,
+      });
     } else {
       quadTree.clear();
     }
 
     // Insert units into quadtree
-    units.forEach(unit => {
+    units.forEach((unit) => {
       quadTree.insert({
         id: unit.id,
         position: unit.position,
@@ -12201,9 +12484,12 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     }
 
     // Send batched updates
-    if (pendingUpdates.weaponFires.length > 0 || pendingUpdates.unitMoves.length > 0) {
+    if (
+      pendingUpdates.weaponFires.length > 0 ||
+      pendingUpdates.unitMoves.length > 0
+    ) {
       self.postMessage({
-        type: 'BATCH_UPDATE',
+        type: "BATCH_UPDATE",
         updates: pendingUpdates,
       });
 
@@ -12222,7 +12508,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 Worker for processing resource flow calculations:
 
 ```typescript
-import { ResourceType } from './../types/resources/ResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 /**
  * ResourceFlowWorker.ts
  *
@@ -12236,15 +12522,15 @@ import {
   FlowNode,
   ResourceState,
   ResourceTransfer,
-} from '../types/resources/ResourceTypes';
+} from "../types/resources/ResourceTypes";
 
 // Message types for communication with the main thread
 type WorkerMessageType =
-  | 'OPTIMIZE_FLOWS'
-  | 'BATCH_PROCESS'
-  | 'CALCULATE_RESOURCE_BALANCE'
-  | 'OPTIMIZE_FLOW_RATES'
-  | 'CALCULATE_EFFICIENCY';
+  | "OPTIMIZE_FLOWS"
+  | "BATCH_PROCESS"
+  | "CALCULATE_RESOURCE_BALANCE"
+  | "OPTIMIZE_FLOW_RATES"
+  | "CALCULATE_EFFICIENCY";
 
 // Input data structure for worker tasks
 interface WorkerInput {
@@ -12266,7 +12552,7 @@ interface WorkerOutput {
 const ctx: Worker = self as unknown as Worker;
 
 // Handle messages from main thread
-ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
+ctx.addEventListener("message", (event: MessageEvent<WorkerInput>) => {
   const { type, data, taskId } = event?.data;
   const startTime = Date.now();
 
@@ -12274,10 +12560,10 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
 
   try {
     switch (type) {
-      case 'OPTIMIZE_FLOWS':
+      case "OPTIMIZE_FLOWS":
         // Implementation of flow optimization
         break;
-      case 'BATCH_PROCESS':
+      case "BATCH_PROCESS":
         // Implementation of batch processing
         break;
       // Other cases...
@@ -12336,11 +12622,11 @@ The system implements type guards to ensure type safety between worker threads:
 ```typescript
 function isOptimizeFlowsData(data: unknown): data is OptimizeFlowsData {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'nodes' in data &&
-    'connections' in data &&
-    'resourceStates' in data &&
+    "nodes" in data &&
+    "connections" in data &&
+    "resourceStates" in data &&
     Array.isArray((data as OptimizeFlowsData).nodes) &&
     Array.isArray((data as OptimizeFlowsData).connections)
   );
@@ -12348,7 +12634,7 @@ function isOptimizeFlowsData(data: unknown): data is OptimizeFlowsData {
 
 // Usage in worker
 if (!isOptimizeFlowsData(data)) {
-  throw new Error('Invalid data format for optimize flows operation');
+  throw new Error("Invalid data format for optimize flows operation");
 }
 ```
 
@@ -12371,8 +12657,13 @@ if (now - lastUpdate < UPDATE_INTERVAL) {
 lastUpdate = now;
 
 // Spatial indexing
-quadTree = new QuadTree({ x: 0, y: 0, width: worldBounds.width, height: worldBounds.height });
-units.forEach(unit => {
+quadTree = new QuadTree({
+  x: 0,
+  y: 0,
+  width: worldBounds.width,
+  height: worldBounds.height,
+});
+units.forEach((unit) => {
   quadTree.insert({
     id: unit.id,
     position: unit.position,
@@ -12386,7 +12677,7 @@ The system supports progress reporting for long-running tasks:
 
 ```typescript
 const result = await handler(data, (progress: number) => {
-  self.postMessage({ taskId, type: 'progress', data: progress });
+  self.postMessage({ taskId, type: "progress", data: progress });
 });
 ```
 
@@ -12415,9 +12706,18 @@ export class WorkerManager {
   }
 
   private initializeWorkers() {
-    this.workers.set('data', new Worker(new URL('./DataProcessingWorker.ts', import.meta.url)));
-    this.workers.set('combat', new Worker(new URL('./combatWorker.ts', import.meta.url)));
-    this.workers.set('resource', new Worker(new URL('./ResourceFlowWorker.ts', import.meta.url)));
+    this.workers.set(
+      "data",
+      new Worker(new URL("./DataProcessingWorker.ts", import.meta.url)),
+    );
+    this.workers.set(
+      "combat",
+      new Worker(new URL("./combatWorker.ts", import.meta.url)),
+    );
+    this.workers.set(
+      "resource",
+      new Worker(new URL("./ResourceFlowWorker.ts", import.meta.url)),
+    );
 
     // Set up message handlers
     this.workers.forEach((worker, key) => {
@@ -12431,21 +12731,25 @@ export class WorkerManager {
 
     if (!pendingTask) return;
 
-    if (type === 'error' || error) {
+    if (type === "error" || error) {
       pendingTask.reject(error || data);
-    } else if (type === 'progress') {
+    } else if (type === "progress") {
       // Handle progress updates
     } else {
       pendingTask.resolve(data);
     }
 
     // Clean up completed tasks
-    if (type !== 'progress') {
+    if (type !== "progress") {
       this.pendingTasks.delete(taskId);
     }
   }
 
-  public async runTask(workerType: string, taskType: string, data: unknown): Promise<unknown> {
+  public async runTask(
+    workerType: string,
+    taskType: string,
+    data: unknown,
+  ): Promise<unknown> {
     const worker = this.workers.get(workerType);
     if (!worker) {
       throw new Error(`No worker found for type: ${workerType}`);
@@ -12496,9 +12800,12 @@ export class WebWorkerService {
     if (this.isProcessing) return;
     this.isProcessing = true;
 
-    while (this.taskQueue.length > 0 && this.workerPool.length < this.maxWorkers) {
+    while (
+      this.taskQueue.length > 0 &&
+      this.workerPool.length < this.maxWorkers
+    ) {
       // Create additional workers when needed
-      const worker = new Worker(new URL('./worker.ts', import.meta.url));
+      const worker = new Worker(new URL("./worker.ts", import.meta.url));
       this.workerPool.push(worker);
     }
 
@@ -12510,7 +12817,7 @@ export class WebWorkerService {
 
   public dispose() {
     // Terminate all workers when no longer needed
-    this.workerPool.forEach(worker => worker.terminate());
+    this.workerPool.forEach((worker) => worker.terminate());
     this.workerPool = [];
     this.taskQueue = [];
   }
@@ -12538,13 +12845,17 @@ export class SharedMemoryWorker {
 
   public initialize(size: number): void {
     // Create shared memory buffer
-    this.sharedBuffer = new SharedArrayBuffer(size * Float32Array.BYTES_PER_ELEMENT);
+    this.sharedBuffer = new SharedArrayBuffer(
+      size * Float32Array.BYTES_PER_ELEMENT,
+    );
     this.sharedArray = new Float32Array(this.sharedBuffer);
 
     // Initialize worker with shared memory reference
-    this.worker = new Worker(new URL('./SharedMemoryWorker.ts', import.meta.url));
+    this.worker = new Worker(
+      new URL("./SharedMemoryWorker.ts", import.meta.url),
+    );
     this.worker.postMessage({
-      type: 'INIT',
+      type: "INIT",
       buffer: this.sharedBuffer,
     });
   }
@@ -12567,11 +12878,14 @@ export class WorkerCapabilityManager {
 
   constructor() {
     // Detect platform capabilities
-    this.hasSharedArrayBufferSupport = typeof SharedArrayBuffer !== 'undefined';
+    this.hasSharedArrayBufferSupport = typeof SharedArrayBuffer !== "undefined";
     this.maxWorkerCount = navigator.hardwareConcurrency || 4;
   }
 
-  public createOptimalWorker<T>(url: string, fallbackImplementation: () => T): Worker | T {
+  public createOptimalWorker<T>(
+    url: string,
+    fallbackImplementation: () => T,
+  ): Worker | T {
     try {
       return new Worker(url);
     } catch (e) {
@@ -12622,7 +12936,11 @@ export class ShipClassFactory {
     shipClass: FactionShipClass,
     factionId: FactionId,
     position: Position,
-    formation?: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
+    formation?: {
+      type: "offensive" | "defensive" | "balanced";
+      spacing: number;
+      facing: number;
+    },
   ): CombatUnit {
     // Implementation details...
   }
@@ -12632,7 +12950,11 @@ export class ShipClassFactory {
     factionId: FactionId,
     shipClasses: FactionShipClass[],
     position: Position,
-    formation: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
+    formation: {
+      type: "offensive" | "defensive" | "balanced";
+      spacing: number;
+      facing: number;
+    },
   ): CombatUnit[] {
     // Implementation details...
   }
@@ -12690,12 +13012,14 @@ public createFleet(factionId: FactionId, shipClasses: FactionShipClass[], positi
 // Factory function that creates data fetching hooks
 export function createDataFetchHook<T, P extends any[] = []>(
   fetchFn: (...args: P) => Promise<T>,
-  defaultOptions: DataFetchOptions = {}
+  defaultOptions: DataFetchOptions = {},
 ): (...args: P) => DataFetchResult<T> {
   return (...args: P): DataFetchResult<T> => {
     // Hook implementation with standardized state management
     const [data, setData] = useState<T | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(defaultOptions.fetchOnMount !== false);
+    const [isLoading, setIsLoading] = useState<boolean>(
+      defaultOptions.fetchOnMount !== false,
+    );
     // ...additional state and logic
 
     return {
@@ -12762,7 +13086,7 @@ const stats = SHIP_STATS[shipClass];
 ```typescript
 // Type validation through type system
 export function createLifecycleHook<TProps = Record<string, unknown>>(
-  options: LifecycleOptions<TProps>
+  options: LifecycleOptions<TProps>,
 ): (props: TProps) => LifecycleResult {
   // Implementation details...
 }
@@ -12806,18 +13130,25 @@ export class ResourceRegistry {
   private static _instance: ResourceRegistry | null = null;
 
   // Storage for resource metadata
-  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> = new Map();
+  private resourceMetadata: Map<ResourceType, ExtendedResourceMetadata> =
+    new Map();
 
   // Indexes for efficient querying
-  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> = new Map();
+  private resourcesByCategory: Map<ResourceCategory, Set<ResourceType>> =
+    new Map();
   private resourcesByTag: Map<string, Set<ResourceType>> = new Map();
-  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> = new Map();
+  private resourcesByQuality: Map<ResourceQuality, Map<ResourceType, number>> =
+    new Map();
 
   // Relationship mapping
-  private conversionRates: Map<ResourceType, Map<ResourceType, number>> = new Map();
+  private conversionRates: Map<ResourceType, Map<ResourceType, number>> =
+    new Map();
 
   // Event handling
-  private listeners: Map<RegistryEventType, Set<(data: RegistryEventData) => void>> = new Map();
+  private listeners: Map<
+    RegistryEventType,
+    Set<(data: RegistryEventData) => void>
+  > = new Map();
   private eventEmitter: EventEmitter<ResourceRegistryEvent>;
 
   // Singleton access
@@ -13070,7 +13401,9 @@ export class ResourceRegistryIntegration {
   }
 
   // Synchronizing with other managers
-  public syncResourceAvailability(resourceFlowManager: ResourceFlowManager): void {
+  public syncResourceAvailability(
+    resourceFlowManager: ResourceFlowManager,
+  ): void {
     const resourceStates = resourceFlowManager.getAllResourceStates?.();
     if (!resourceStates) {
       return;
@@ -13084,7 +13417,7 @@ export class ResourceRegistryIntegration {
   public getResourceMetadata(resourceType: ResourceType | string): unknown {
     // Convert string to enum if needed
     const actualType =
-      typeof resourceType === 'string'
+      typeof resourceType === "string"
         ? ResourceTypeConverter.convertToEnum(resourceType)
         : resourceType;
 
@@ -13122,7 +13455,9 @@ export interface PooledEntity {
 /**
  * Generic entity pool for efficient object reuse
  */
-export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T>> {
+export class EntityPool<T extends PooledEntity> extends EventEmitter<
+  PoolEvent<T>
+> {
   // Available entities ready for use
   private available: T[];
 
@@ -13140,7 +13475,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T
     factory: () => T,
     initialSize: number,
     maxSize: number = 1000,
-    expandSize: number = 50
+    expandSize: number = 50,
   ) {
     super();
     this.factory = factory;
@@ -13355,7 +13690,7 @@ interface PoolEvents<T extends PooledEntity> {
 
 // Emit an event when an entity is activated
 this.emit({
-  type: 'entityActivated',
+  type: "entityActivated",
   data: { entity },
 });
 ```
@@ -13364,7 +13699,9 @@ this.emit({
 
 ```typescript
 // Type-safe entity pool
-export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T>> {
+export class EntityPool<T extends PooledEntity> extends EventEmitter<
+  PoolEvent<T>
+> {
   // Implementation details...
 }
 
@@ -13399,7 +13736,7 @@ The Entity Pooling System integrates with other systems using these patterns:
 // Creating a pool with a factory function
 const bulletPool = new EntityPool<Bullet>(
   () => new Bullet(), // Factory function
-  100 // Initial size
+  100, // Initial size
 );
 ```
 
@@ -13436,10 +13773,13 @@ class ParticleComponentManager {
   private particlePool: EntityPool<Particle>;
 
   constructor(initialSize: number) {
-    this.particlePool = new EntityPool<Particle>(() => new Particle(), initialSize);
+    this.particlePool = new EntityPool<Particle>(
+      () => new Particle(),
+      initialSize,
+    );
 
     // Listen for pool events
-    this.particlePool.on('poolExpanded', this.handlePoolExpanded);
+    this.particlePool.on("poolExpanded", this.handlePoolExpanded);
   }
 
   // Create a new particle component
@@ -13473,20 +13813,20 @@ The Factions System is a comprehensive framework for managing NPC factions in th
 ```typescript
 // src/types/ships/FactionTypes.ts
 export type FactionId =
-  | 'player'
-  | 'enemy'
-  | 'neutral'
-  | 'ally'
-  | 'space-rats'
-  | 'lost-nova'
-  | 'equator-horizon';
+  | "player"
+  | "enemy"
+  | "neutral"
+  | "ally"
+  | "space-rats"
+  | "lost-nova"
+  | "equator-horizon";
 
 export type FactionBehaviorType =
-  | 'aggressive'
-  | 'defensive'
-  | 'hit-and-run'
-  | 'stealth'
-  | 'balance';
+  | "aggressive"
+  | "defensive"
+  | "hit-and-run"
+  | "stealth"
+  | "balance";
 
 export interface FactionBehaviorConfig {
   formation: string;
@@ -13549,15 +13889,15 @@ export interface FactionState {
 ```typescript
 // src/types/events/FactionEvents.ts
 export enum FactionEventType {
-  BEHAVIOR_CHANGED = 'behaviorChanged',
-  FLEET_UPDATED = 'fleetUpdated',
-  TERRITORY_CHANGED = 'territoryChanged',
-  RELATIONSHIP_CHANGED = 'relationshipChanged',
-  RESOURCES_UPDATED = 'resourcesUpdated',
-  COMBAT_TACTICS_CHANGED = 'combatTacticsChanged',
-  TREATY_STATUS_CHANGED = 'treatyStatusChanged',
-  TRADE_ESTABLISHED = 'tradeEstablished',
-  CONFLICT_RECORDED = 'conflictRecorded',
+  BEHAVIOR_CHANGED = "behaviorChanged",
+  FLEET_UPDATED = "fleetUpdated",
+  TERRITORY_CHANGED = "territoryChanged",
+  RELATIONSHIP_CHANGED = "relationshipChanged",
+  RESOURCES_UPDATED = "resourcesUpdated",
+  COMBAT_TACTICS_CHANGED = "combatTacticsChanged",
+  TREATY_STATUS_CHANGED = "treatyStatusChanged",
+  TRADE_ESTABLISHED = "tradeEstablished",
+  CONFLICT_RECORDED = "conflictRecorded",
 }
 
 export interface FactionEvents extends Record<string, unknown> {
@@ -13588,9 +13928,9 @@ export interface FactionEvents extends Record<string, unknown> {
 }
 
 export interface FactionCombatTactics {
-  preferredRange: 'close' | 'medium' | 'long';
-  formationStyle: 'aggressive' | 'defensive' | 'balanced';
-  targetPriority: 'ships' | 'stations' | 'resources';
+  preferredRange: "close" | "medium" | "long";
+  formationStyle: "aggressive" | "defensive" | "balanced";
+  targetPriority: "ships" | "stations" | "resources";
   retreatThreshold: number;
   reinforcementThreshold: number;
 }
@@ -13685,7 +14025,10 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     this.factions.set(factionId, state);
   }
 
-  public changeBehavior(factionId: FactionId, newBehavior: FactionBehaviorType): boolean {
+  public changeBehavior(
+    factionId: FactionId,
+    newBehavior: FactionBehaviorType,
+  ): boolean {
     // Changes behavior and emits events
   }
 
@@ -13693,14 +14036,17 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
     // Updates fleets and emits events
   }
 
-  public updateTerritory(factionId: FactionId, territory: FactionTerritory): boolean {
+  public updateTerritory(
+    factionId: FactionId,
+    territory: FactionTerritory,
+  ): boolean {
     // Updates territory and emits events
   }
 
   public updateRelationship(
     factionId: FactionId,
     targetFaction: FactionId,
-    newValue: number
+    newValue: number,
   ): boolean {
     // Updates relationships and emits events
   }
@@ -13708,12 +14054,15 @@ export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   public updateResources(
     factionId: FactionId,
     resourceType: ResourceType,
-    newAmount: number
+    newAmount: number,
   ): boolean {
     // Updates resources and emits events
   }
 
-  public updateCombatTactics(factionId: FactionId, newTactics: FactionCombatTactics): boolean {
+  public updateCombatTactics(
+    factionId: FactionId,
+    newTactics: FactionCombatTactics,
+  ): boolean {
     // Updates combat tactics and emits events
   }
 }
@@ -13744,8 +14093,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
   public getTreatyStatus(
     factionId: FactionId,
-    targetId: FactionId
-  ): RelationshipState['treatyStatus'] {
+    targetId: FactionId,
+  ): RelationshipState["treatyStatus"] {
     // Returns current treaty status
   }
 
@@ -13753,7 +14102,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     change: number,
-    reason: string
+    reason: string,
   ): void {
     // Changes relationship and may trigger treaty updates
   }
@@ -13762,7 +14111,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
     factionId: FactionId,
     targetId: FactionId,
     resourceType: ResourceType,
-    amount: number
+    amount: number,
   ): void {
     // Records trade activity and improves relationships
   }
@@ -13770,8 +14119,8 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public recordConflict(
     factionId: FactionId,
     targetId: FactionId,
-    type: 'attack' | 'territory' | 'trade',
-    severity: number
+    type: "attack" | "territory" | "trade",
+    severity: number,
   ): void {
     // Records conflicts and decreases relationships
   }
@@ -13779,17 +14128,17 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
   public handleDiplomaticAction(
     factionId: FactionId,
     targetId: FactionId,
-    action: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute',
-    resources?: { type: string; amount: number }[]
+    action: "ceasefire" | "tradeRoute" | "alliance" | "tribute",
+    resources?: { type: string; amount: number }[],
   ): boolean {
     // Handles diplomatic actions between factions
   }
 
   public getAvailableDiplomaticActions(
     factionId: FactionId,
-    targetId: FactionId
+    targetId: FactionId,
   ): {
-    type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
+    type: "ceasefire" | "tradeRoute" | "alliance" | "tribute";
     name: string;
     description: string;
     requirements: { type: string; value: number }[];
@@ -13834,9 +14183,9 @@ The Faction System integrates with other game systems:
 
 ```typescript
 // Example: Using the faction managers
-import { factionManager } from './managers/factions/factionManager';
-import { FactionBehaviorManager } from './managers/factions/FactionBehaviorManager';
-import { FactionRelationshipManager } from './managers/factions/FactionRelationshipManager';
+import { factionManager } from "./managers/factions/factionManager";
+import { FactionBehaviorManager } from "./managers/factions/FactionBehaviorManager";
+import { FactionRelationshipManager } from "./managers/factions/FactionRelationshipManager";
 
 // Create behavior and relationship managers
 const behaviorManager = new FactionBehaviorManager();
@@ -13846,19 +14195,25 @@ const relationshipManager = new FactionRelationshipManager();
 factionManager.updatePlayerStatus(2, 500);
 
 // Get a faction's state
-const spaceRats = factionManager.getFactionState('space-rats');
+const spaceRats = factionManager.getFactionState("space-rats");
 
 // Change faction behavior
 if (spaceRats) {
-  behaviorManager.changeBehavior('space-rats', 'aggressive');
+  behaviorManager.changeBehavior("space-rats", "aggressive");
 }
 
 // Check relationship and available diplomatic actions
-const relationship = relationshipManager.getRelationship('player', 'space-rats');
-const diplomaticOptions = relationshipManager.getAvailableDiplomaticActions('player', 'space-rats');
+const relationship = relationshipManager.getRelationship(
+  "player",
+  "space-rats",
+);
+const diplomaticOptions = relationshipManager.getAvailableDiplomaticActions(
+  "player",
+  "space-rats",
+);
 
 // Record a trade to improve relationships
-relationshipManager.recordTrade('player', 'lost-nova', 'crystal', 100);
+relationshipManager.recordTrade("player", "lost-nova", "crystal", 100);
 
 // Handle faction update on game loop
 factionManager.update();
@@ -13880,7 +14235,7 @@ The foundation of the behavior tree system is the BehaviorNode interface, which 
 // src/managers/ai/BehaviorTreeManager.ts
 interface BehaviorNode {
   id: string;
-  type: 'sequence' | 'selector' | 'condition' | 'action';
+  type: "sequence" | "selector" | "condition" | "action";
   children?: BehaviorNode[];
   evaluate?: (context: BehaviorContext) => boolean;
   execute?: (context: BehaviorContext) => void;
@@ -13900,7 +14255,7 @@ interface BehaviorContext {
   nearbyEnemies: CombatUnit[];
   nearbyAllies: CombatUnit[];
   currentFormation: {
-    type: 'offensive' | 'defensive' | 'balanced';
+    type: "offensive" | "defensive" | "balanced";
     spacing: number;
     facing: number;
   };
@@ -13958,8 +14313,12 @@ export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
   }
 
   // Methods to update context
-  public updateContext(unitId: string, context: Partial<BehaviorContext>): void {
-    const existingContext = this.contexts.get(unitId) || this.createDefaultContext();
+  public updateContext(
+    unitId: string,
+    context: Partial<BehaviorContext>,
+  ): void {
+    const existingContext =
+      this.contexts.get(unitId) || this.createDefaultContext();
     this.contexts.set(unitId, { ...existingContext, ...context });
   }
 }
@@ -14048,14 +14407,15 @@ The system includes pre-configured behavior trees for each faction with distinct
 ### Space Rats (Pirates) - Aggressive Behavior
 
 ```typescript
-this.trees.set('space-rats-combat', {
-  id: 'space-rats-root',
-  type: 'sequence',
+this.trees.set("space-rats-combat", {
+  id: "space-rats-root",
+  type: "sequence",
   children: [
     {
-      id: 'check-health',
-      type: 'condition',
-      evaluate: context => context.unit.stats.health / context.unit.stats.maxHealth > 0.3,
+      id: "check-health",
+      type: "condition",
+      evaluate: (context) =>
+        context.unit.stats.health / context.unit.stats.maxHealth > 0.3,
     },
     // More aggressive attack-focused nodes
   ],
@@ -14065,13 +14425,13 @@ this.trees.set('space-rats-combat', {
 ### Lost Nova (Exiles) - Stealth Behavior
 
 ```typescript
-this.trees.set('lost-nova-combat', {
-  id: 'lost-nova-root',
-  type: 'sequence',
+this.trees.set("lost-nova-combat", {
+  id: "lost-nova-root",
+  type: "sequence",
   children: [
     {
-      id: 'assess-threat',
-      type: 'selector',
+      id: "assess-threat",
+      type: "selector",
       children: [
         // Nodes focused on stealth and hit-and-run tactics
       ],
@@ -14083,13 +14443,13 @@ this.trees.set('lost-nova-combat', {
 ### Equator Horizon - Balanced Behavior
 
 ```typescript
-this.trees.set('equator-horizon-combat', {
-  id: 'equator-horizon-root',
-  type: 'sequence',
+this.trees.set("equator-horizon-combat", {
+  id: "equator-horizon-root",
+  type: "sequence",
   children: [
     {
-      id: 'assess-situation',
-      type: 'selector',
+      id: "assess-situation",
+      type: "selector",
       children: [
         // Nodes focused on balanced, coordinated actions
       ],
@@ -14154,12 +14514,15 @@ The behavior tree system integrates with other game systems:
 
 ```typescript
 // Example: Using the behavior tree system in a combat hook
-import { behaviorTreeManager } from '../../managers/ai/BehaviorTreeManager';
+import { behaviorTreeManager } from "../../managers/ai/BehaviorTreeManager";
 
 function useCombatAI(unitId: string, factionId: FactionId) {
   useEffect(() => {
     // Subscribe to behavior tree events
-    const unsubscribeNodeExecuted = behaviorTreeManager.on('nodeExecuted', handleNodeExecuted);
+    const unsubscribeNodeExecuted = behaviorTreeManager.on(
+      "nodeExecuted",
+      handleNodeExecuted,
+    );
 
     // Update the AI context with current game state
     behaviorTreeManager.updateContext(unitId, {
@@ -14204,7 +14567,7 @@ The core of the Manager Registry System is implemented in `ManagerRegistry.ts`:
  * and ensure consistent access to manager instances.
  */
 
-import { CombatManager } from './combat/CombatManager';
+import { CombatManager } from "./combat/CombatManager";
 
 // Singleton instances
 let combatManagerInstance: CombatManager | null = null;
@@ -14286,7 +14649,7 @@ By providing a single point of access for manager instances, components don't ne
 
 ```typescript
 // Instead of importing CombatManager directly
-import { getCombatManager } from '../../managers/ManagerRegistry';
+import { getCombatManager } from "../../managers/ManagerRegistry";
 
 // Use the manager through the registry
 const combatManager = getCombatManager();
@@ -14319,14 +14682,17 @@ The Registry system integrates with React component lifecycle through hooks:
 
 ```typescript
 // Example from useCombatSystem.ts
-import { getCombatManager } from '../../managers/ManagerRegistry';
+import { getCombatManager } from "../../managers/ManagerRegistry";
 
 export function useCombatSystem() {
   useEffect(() => {
     const combatManager = getCombatManager();
 
     // Subscribe to combat events
-    const unsubscribe = combatManager.subscribe('combat:unit-spawned', handleUnitSpawned);
+    const unsubscribe = combatManager.subscribe(
+      "combat:unit-spawned",
+      handleUnitSpawned,
+    );
 
     return () => {
       unsubscribe();
@@ -14384,7 +14750,7 @@ function CombatOverview() {
 ### Using Managers in Other Managers
 
 ```typescript
-import { getCombatManager } from '../ManagerRegistry';
+import { getCombatManager } from "../ManagerRegistry";
 
 export class CombatShipManagerImpl {
   // Method demonstrating manager interdependency
@@ -14446,7 +14812,7 @@ export const Chart: React.FC<ChartProps> = ({
   data,
   options = {},
   type,
-  className = '',
+  className = "",
   onRender,
   onError,
 }) => {
@@ -14455,14 +14821,23 @@ export const Chart: React.FC<ChartProps> = ({
 
   // Auto-select renderer based on data size and options
   const renderer = useMemo(() => {
-    const dataSize = data.datasets.reduce((count, dataset) => count + dataset.data.length, 0);
+    const dataSize = data.datasets.reduce(
+      (count, dataset) => count + dataset.data.length,
+      0,
+    );
 
     // Choose appropriate renderer based on data size and specified renderer
-    if (options.renderer === 'webgl' || (!options.renderer && dataSize > 10000)) {
+    if (
+      options.renderer === "webgl" ||
+      (!options.renderer && dataSize > 10000)
+    ) {
       return new WebGLRenderer();
     }
 
-    if (options.renderer === 'canvas' || (!options.renderer && dataSize > 1000)) {
+    if (
+      options.renderer === "canvas" ||
+      (!options.renderer && dataSize > 1000)
+    ) {
       return new CanvasRenderer();
     }
 
@@ -14493,7 +14868,7 @@ export interface ChartData {
     [key: string]: unknown;
   }[];
   annotations?: {
-    type: 'line' | 'box' | 'point';
+    type: "line" | "box" | "point";
     position: { x?: number | string | Date; y?: number };
     color?: string;
     label?: string;
@@ -14504,7 +14879,7 @@ export interface ChartData {
 export interface ChartOptions {
   width?: number | string;
   height?: number | string;
-  renderer?: 'canvas' | 'svg' | 'webgl';
+  renderer?: "canvas" | "svg" | "webgl";
   responsive?: boolean;
   maintainAspectRatio?: boolean;
   axes?: ChartAxes;
@@ -14520,13 +14895,20 @@ export interface ChartOptions {
   };
   enablePanning?: boolean;
   enableZooming?: boolean;
-  theme?: 'light' | 'dark' | 'auto';
+  theme?: "light" | "dark" | "auto";
   memoryOptimized?: boolean;
   renderOptimization?: boolean;
   optimizationThreshold?: number;
 }
 
-export type ChartType = 'line' | 'bar' | 'scatter' | 'area' | 'pie' | 'radar' | 'heatmap';
+export type ChartType =
+  | "line"
+  | "bar"
+  | "scatter"
+  | "area"
+  | "pie"
+  | "radar"
+  | "heatmap";
 ```
 
 ### Renderer Interface
@@ -14536,8 +14918,18 @@ The system uses the Strategy Pattern through a common renderer interface:
 ```typescript
 // src/visualization/Chart.tsx
 export interface ChartRenderer {
-  render: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
-  update: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
+  render: (
+    container: HTMLElement,
+    data: ChartData,
+    options: ChartOptions,
+    type: ChartType,
+  ) => void;
+  update: (
+    container: HTMLElement,
+    data: ChartData,
+    options: ChartOptions,
+    type: ChartType,
+  ) => void;
   destroy: () => void;
   getStatus: () => { isInitialized: boolean; lastRenderTime?: number };
 }
@@ -14559,16 +14951,16 @@ export class SVGRenderer implements ChartRenderer {
   private interactiveElements: SVGElement[] = [];
   private theme = {
     light: {
-      backgroundColor: '#ffffff',
-      textColor: '#333333',
-      axisColor: '#cccccc',
-      gridColor: '#eeeeee',
+      backgroundColor: "#ffffff",
+      textColor: "#333333",
+      axisColor: "#cccccc",
+      gridColor: "#eeeeee",
     },
     dark: {
-      backgroundColor: '#333333',
-      textColor: '#ffffff',
-      axisColor: '#666666',
-      gridColor: '#444444',
+      backgroundColor: "#333333",
+      textColor: "#ffffff",
+      axisColor: "#666666",
+      gridColor: "#444444",
     },
   };
 
@@ -14581,7 +14973,7 @@ export class SVGRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     // SVG-based rendering implementation
     // ...
@@ -14592,7 +14984,7 @@ export class SVGRenderer implements ChartRenderer {
     data: ChartData,
     options: ChartOptions,
     chartArea: ChartArea,
-    chartGroup: SVGGElement
+    chartGroup: SVGGElement,
   ): void {
     // Line chart specific rendering
     // ...
@@ -14620,14 +15012,17 @@ export class CanvasRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     // Canvas-based rendering implementation
     // ...
   }
 
   // Memory optimization techniques
-  private optimizeForLargeDataset(data: ChartData, options: ChartOptions): ChartData {
+  private optimizeForLargeDataset(
+    data: ChartData,
+    options: ChartOptions,
+  ): ChartData {
     // Implement data downsampling, bucketing or other optimization techniques
     if (!options.memoryOptimized) {
       return data;
@@ -14659,7 +15054,7 @@ export class WebGLRenderer implements ChartRenderer {
     container: HTMLElement,
     data: ChartData,
     options: ChartOptions,
-    type: ChartType
+    type: ChartType,
   ): void {
     // WebGL-based rendering implementation
     // ...
@@ -14668,14 +15063,18 @@ export class WebGLRenderer implements ChartRenderer {
   // Shader management for WebGL rendering
   private createShaderProgram(
     vertexShaderSource: string,
-    fragmentShaderSource: string
+    fragmentShaderSource: string,
   ): WebGLProgram | null {
     // Compile and link shaders
     // ...
   }
 
   // Specialized WebGL-optimized rendering for different chart types
-  private renderLineChartWebGL(data: ChartData, options: ChartOptions, scales: any): void {
+  private renderLineChartWebGL(
+    data: ChartData,
+    options: ChartOptions,
+    scales: any,
+  ): void {
     // WebGL-specific line chart rendering
     // ...
   }
@@ -14695,14 +15094,17 @@ The system automatically selects the most efficient renderer based on data size:
 ```typescript
 // Auto-select renderer based on data size and options
 const renderer = useMemo(() => {
-  const dataSize = data.datasets.reduce((count, dataset) => count + dataset.data.length, 0);
+  const dataSize = data.datasets.reduce(
+    (count, dataset) => count + dataset.data.length,
+    0,
+  );
 
   // Choose appropriate renderer based on data size and specified renderer
-  if (options.renderer === 'webgl' || (!options.renderer && dataSize > 10000)) {
+  if (options.renderer === "webgl" || (!options.renderer && dataSize > 10000)) {
     return new WebGLRenderer();
   }
 
-  if (options.renderer === 'canvas' || (!options.renderer && dataSize > 1000)) {
+  if (options.renderer === "canvas" || (!options.renderer && dataSize > 1000)) {
     return new SVGRenderer();
   }
 
@@ -14736,7 +15138,9 @@ const scales = useMemo(() => calculateScales(data, options), [data, options]);
 
 // Virtualize large datasets for rendering
 const virtualizedData = useMemo(() => {
-  if (data.datasets.some(d => d.data.length > options.optimizationThreshold)) {
+  if (
+    data.datasets.some((d) => d.data.length > options.optimizationThreshold)
+  ) {
     return applyVirtualization(data, visibleRange);
   }
   return data;
@@ -14838,23 +15242,23 @@ export class WebGLShaderManager {
   public initialize(canvas: HTMLCanvasElement): boolean {
     try {
       this.canvas = canvas;
-      this.gl = canvas.getContext('webgl', {
+      this.gl = canvas.getContext("webgl", {
         alpha: true,
         premultipliedAlpha: false,
         antialias: true,
-        powerPreference: 'high-performance',
+        powerPreference: "high-performance",
       });
 
       if (!this.gl) {
-        console.error('[WebGLShaderManager] WebGL not supported');
+        console.error("[WebGLShaderManager] WebGL not supported");
         return false;
       }
 
       this.initializeDefaultShaders();
-      console.warn('[WebGLShaderManager] Initialized successfully');
+      console.warn("[WebGLShaderManager] Initialized successfully");
       return true;
     } catch (error) {
-      console.error('[WebGLShaderManager] Initialization failed', error);
+      console.error("[WebGLShaderManager] Initialization failed", error);
       return false;
     }
   }
@@ -14869,14 +15273,14 @@ The system defines a set of standardized shader types for different visualizatio
 
 ```typescript
 export enum DataVisualizationShaderType {
-  HEATMAP = 'heatmap',
-  CONTOUR = 'contour',
-  POINT_CLUSTER = 'pointCluster',
-  HIGHLIGHT = 'highlight',
-  DENSITY = 'density',
-  FLOW = 'flow',
-  TRANSITION = 'transition',
-  CUSTOM = 'custom',
+  HEATMAP = "heatmap",
+  CONTOUR = "contour",
+  POINT_CLUSTER = "pointCluster",
+  HIGHLIGHT = "highlight",
+  DENSITY = "density",
+  FLOW = "flow",
+  TRANSITION = "transition",
+  CUSTOM = "custom",
 }
 
 export interface DataVisualizationShaderConfig {
@@ -14945,11 +15349,11 @@ The system implements several GPU acceleration techniques to maximize performanc
 The system configures the WebGL context for optimal performance:
 
 ```typescript
-this.gl = canvas.getContext('webgl', {
+this.gl = canvas.getContext("webgl", {
   alpha: true,
   premultipliedAlpha: false,
   antialias: true,
-  powerPreference: 'high-performance',
+  powerPreference: "high-performance",
 });
 ```
 
@@ -14966,7 +15370,9 @@ let program = this.programs.get(programName);
 if (!program) {
   program = this.createDataVisualizationShader(config);
   if (!program) {
-    console.error(`[WebGLShaderManager] Failed to create shader for ${config.type}`);
+    console.error(
+      `[WebGLShaderManager] Failed to create shader for ${config.type}`,
+    );
     return;
   }
 }
@@ -15172,17 +15578,19 @@ The shader system integrates with React through specialized visualization compon
 
 ```typescript
 // src/components/ui/visualization/DataHighlightVisualization.tsx
-export const DataHighlightVisualization: React.FC<DataHighlightVisualizationProps> = ({
+export const DataHighlightVisualization: React.FC<
+  DataHighlightVisualizationProps
+> = ({
   data,
   width,
   height,
   visualizationType = DataVisualizationShaderType.HIGHLIGHT,
-  colors = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099'],
+  colors = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099"],
   highlightRange = [0.7, 1.0],
   animate = true,
   animationSpeed = 1.0,
   intensity = 1.0,
-  className = '',
+  className = "",
   onDataPointClick,
   showLegend = false,
   shaderConfig,
@@ -15228,7 +15636,9 @@ export interface CustomShaderDefinition {
   uniforms?: Record<string, ShaderUniform>;
 }
 
-export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps> = ({
+export const CustomShaderVisualization: React.FC<
+  CustomShaderVisualizationProps
+> = ({
   data,
   width,
   height,
@@ -15237,7 +15647,7 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
   animate = true,
   animationSpeed = 1.0,
   intensity = 1.0,
-  className = '',
+  className = "",
   onDataPointClick,
 }) => {
   // Implementation...
@@ -15336,7 +15746,10 @@ case DataVisualizationShaderType.HIGHLIGHT:
 The shader system can be used to create sophisticated data visualizations:
 
 ```tsx
-import { DataHighlightVisualization, DataVisualizationPresets } from '../visualization';
+import {
+  DataHighlightVisualization,
+  DataVisualizationPresets,
+} from "../visualization";
 
 function ResourceDensityMap() {
   const [resourceData, setResourceData] = useState<DataPoint[]>([]);
@@ -15360,7 +15773,7 @@ function ResourceDensityMap() {
           animate: true,
           animationSpeed: 0.5,
         })}
-        onDataPointClick={point => {
+        onDataPointClick={(point) => {
           console.log(`Resource at (${point.x}, ${point.y}): ${point.value}`);
         }}
         showLegend={true}
@@ -15619,7 +16032,7 @@ Specialized components extend the base component's props while adding or overrid
 
 ```typescript
 // Common pattern for extending props
-export interface SpecializedProps extends Omit<BaseProps, 'overriddenProp'> {
+export interface SpecializedProps extends Omit<BaseProps, "overriddenProp"> {
   // Additional or replacement properties
   specializedProp: string;
   overriddenProp?: SpecializedType;
@@ -15644,10 +16057,14 @@ export const Component = forwardRef<HTMLElementType, ComponentProps>(
 Components use a utility-first CSS approach with a helper function for combining classes:
 
 ```typescript
-import { cn } from '../../../utils/cn';
+import { cn } from "../../../utils/cn";
 
 // Inside component
-const combinedClasses = cn('base-classes', condition && 'conditional-classes', props.className);
+const combinedClasses = cn(
+  "base-classes",
+  condition && "conditional-classes",
+  props.className,
+);
 ```
 
 ### Component Design Patterns
@@ -15660,14 +16077,14 @@ Components provide a type-safe variant system:
 
 ```typescript
 // Type definition
-export type CardVariant = 'default' | 'bordered' | 'elevated' | 'flat';
+export type CardVariant = "default" | "bordered" | "elevated" | "flat";
 
 // Mapping variants to styles
 const variantClasses: Record<CardVariant, string> = {
-  default: 'bg-white border border-gray-200',
-  bordered: 'bg-white border-2 border-gray-300',
-  elevated: 'bg-white border border-gray-200 shadow-md',
-  flat: 'bg-gray-50',
+  default: "bg-white border border-gray-200",
+  bordered: "bg-white border-2 border-gray-300",
+  elevated: "bg-white border border-gray-200 shadow-md",
+  flat: "bg-gray-50",
 };
 
 // Usage in component
@@ -15679,14 +16096,14 @@ const classes = variantClasses[variant];
 Components support consistent sizing options:
 
 ```typescript
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 const sizeClasses: Record<ButtonSize, string> = {
-  xs: 'text-xs py-1 px-2 h-6',
-  sm: 'text-sm py-1 px-3 h-8',
-  md: 'text-base py-2 px-4 h-10',
-  lg: 'text-lg py-2 px-5 h-12',
-  xl: 'text-xl py-3 px-6 h-14',
+  xs: "text-xs py-1 px-2 h-6",
+  sm: "text-sm py-1 px-3 h-8",
+  md: "text-base py-2 px-4 h-10",
+  lg: "text-lg py-2 px-5 h-12",
+  xl: "text-xl py-3 px-6 h-14",
 };
 ```
 
@@ -15697,11 +16114,11 @@ Components handle interactive states consistently:
 ```typescript
 // Interactive states in class composition
 const classes = cn(
-  'base-classes',
-  hoverable && 'hover:shadow-lg hover:-translate-y-1',
-  selectable && 'cursor-pointer',
-  selected && 'ring-2 ring-blue-500',
-  disabled && 'opacity-60 pointer-events-none'
+  "base-classes",
+  hoverable && "hover:shadow-lg hover:-translate-y-1",
+  selectable && "cursor-pointer",
+  selected && "ring-2 ring-blue-500",
+  disabled && "opacity-60 pointer-events-none",
 );
 ```
 
@@ -15746,7 +16163,7 @@ export interface Module {
   // ... other game-specific properties
 }
 
-export interface ModuleCardProps extends Omit<CardProps, 'title' | 'subtitle'> {
+export interface ModuleCardProps extends Omit<CardProps, "title" | "subtitle"> {
   module: Module;
   // ... other game-specific props
 }
@@ -15801,7 +16218,7 @@ const renderProgressBars = () => (
 The component library makes it easy to create consistent UI elements throughout the application:
 
 ```tsx
-import { Button, AbilityButton, Card, ModuleCard } from 'ui/components';
+import { Button, AbilityButton, Card, ModuleCard } from "ui/components";
 
 function ShipControlPanel() {
   // Component state and handlers
@@ -15822,7 +16239,7 @@ function ShipControlPanel() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card title="Module Management" variant="elevated" className="p-4">
-          {modules.map(module => (
+          {modules.map((module) => (
             <ModuleCard
               key={module.id}
               module={module}
@@ -15839,7 +16256,7 @@ function ShipControlPanel() {
 
         <Card title="Ship Abilities" variant="elevated" className="p-4">
           <div className="grid grid-cols-3 gap-2">
-            {abilities.map(ability => (
+            {abilities.map((ability) => (
               <AbilityButton
                 key={ability.id}
                 ability={ability}
@@ -15881,7 +16298,7 @@ export function transformTimeSeriesData(
   timePoints: number[] | string[],
   actualValues: number[],
   predictedValues?: number[],
-  forecastValues?: number[]
+  forecastValues?: number[],
 ): Array<{
   time: number | string;
   actual?: number;
@@ -15894,7 +16311,10 @@ export function transformTimeSeriesData(
 /**
  * Calculates residuals (actual - predicted)
  */
-export function calculateResiduals(actualValues: number[], predictedValues: number[]): number[] {
+export function calculateResiduals(
+  actualValues: number[],
+  predictedValues: number[],
+): number[] {
   const residuals: number[] = [];
   const minLength = Math.min(actualValues.length, predictedValues.length);
 
@@ -15914,7 +16334,7 @@ export function calculateResiduals(actualValues: number[], predictedValues: numb
  */
 export function calculateCorrelationMatrix(
   data: Array<Record<string, unknown>>,
-  variables: string[]
+  variables: string[],
 ): Array<Array<number>> {
   // Implementation details...
 }
@@ -15924,7 +16344,7 @@ export function calculateCorrelationMatrix(
  */
 export function calculateStatistics(
   data: Array<Record<string, unknown>>,
-  variable: string
+  variable: string,
 ): {
   min: number;
   max: number;
@@ -15946,7 +16366,7 @@ export function calculateStatistics(
  */
 export function extractFeatureImportance(
   modelDetails: Record<string, unknown>,
-  features: string[]
+  features: string[],
 ): Array<{ feature: string; importance: number }> {
   // Implementation details...
 }
@@ -15954,8 +16374,10 @@ export function extractFeatureImportance(
 /**
  * Type guard for linear regression models
  */
-export function isLinearRegressionModel(modelDetails: Record<string, unknown>): boolean {
-  return safelyExtractString(modelDetails, 'type', '') === 'linearRegression';
+export function isLinearRegressionModel(
+  modelDetails: Record<string, unknown>,
+): boolean {
+  return safelyExtractString(modelDetails, "type", "") === "linearRegression";
 }
 ```
 
@@ -15966,17 +16388,17 @@ The system uses web workers for intensive data processing operations to ensure U
 ```typescript
 // src/workers/DataProcessingWorker.ts
 export enum WorkerMessageType {
-  PROCESS_CLUSTERING = 'PROCESS_CLUSTERING',
-  PROCESS_PREDICTION = 'PROCESS_PREDICTION',
-  PROCESS_RESOURCE_MAPPING = 'PROCESS_RESOURCE_MAPPING',
-  TRANSFORM_DATA = 'TRANSFORM_DATA',
-  DATA_SORTING = 'DATA_SORTING',
-  DATA_FILTERING = 'DATA_FILTERING',
-  CALCULATE_STATISTICS = 'CALCULATE_STATISTICS',
+  PROCESS_CLUSTERING = "PROCESS_CLUSTERING",
+  PROCESS_PREDICTION = "PROCESS_PREDICTION",
+  PROCESS_RESOURCE_MAPPING = "PROCESS_RESOURCE_MAPPING",
+  TRANSFORM_DATA = "TRANSFORM_DATA",
+  DATA_SORTING = "DATA_SORTING",
+  DATA_FILTERING = "DATA_FILTERING",
+  CALCULATE_STATISTICS = "CALCULATE_STATISTICS",
 }
 
 // Message handling
-self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
   const { type, id, payload } = event?.data ?? {};
 
   try {
@@ -16027,18 +16449,20 @@ function sortData(payload: SortingPayload): Record<string, unknown>[] {
 
     // Handle nulls
     if (valueA === null && valueB === null) return 0;
-    if (valueA === null) return order === 'asc' ? -1 : 1;
-    if (valueB === null) return order === 'asc' ? 1 : -1;
+    if (valueA === null) return order === "asc" ? -1 : 1;
+    if (valueB === null) return order === "asc" ? 1 : -1;
 
     // Compare based on type
-    if (typeof valueA === 'number' && typeof valueB === 'number') {
-      return order === 'asc' ? valueA - valueB : valueB - valueA;
+    if (typeof valueA === "number" && typeof valueB === "number") {
+      return order === "asc" ? valueA - valueB : valueB - valueA;
     }
 
     // Default string comparison
     const strA = String(valueA);
     const strB = String(valueB);
-    return order === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
+    return order === "asc"
+      ? strA.localeCompare(strB)
+      : strB.localeCompare(strA);
   });
 }
 
@@ -16057,14 +16481,17 @@ function calculateStatistics(payload: StatisticsPayload): StatisticsResult {
   // Calculate requested operations
   for (const op of operations) {
     switch (op) {
-      case 'mean':
+      case "mean":
         result.mean = data.reduce((sum, value) => sum + value, 0) / data.length;
         break;
 
-      case 'median':
+      case "median":
         const sorted = [...data].sort((a, b) => a - b);
         const mid = Math.floor(sorted.length / 2);
-        result.median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+        result.median =
+          sorted.length % 2 === 0
+            ? (sorted[mid - 1] + sorted[mid]) / 2
+            : sorted[mid];
         break;
 
       // More cases...
@@ -16103,7 +16530,7 @@ The system consistently handles null/undefined values:
 const value = obj?.property ?? defaultValue;
 
 // Use safe extraction functions
-const count = safelyExtractNumber(data, 'count', 0);
+const count = safelyExtractNumber(data, "count", 0);
 ```
 
 #### 3. Immutable Transformations
@@ -16112,7 +16539,7 @@ Transformations don't modify input data:
 
 ```typescript
 // Create new arrays rather than modifying inputs
-return data.map(item => ({
+return data.map((item) => ({
   ...item,
   transformedValue: processValue(item.value),
 }));
@@ -16127,7 +16554,7 @@ Intensive operations are offloaded to web workers:
 
 ```typescript
 // In UI component
-const processData = async largeDataset => {
+const processData = async (largeDataset) => {
   setLoading(true);
 
   try {
@@ -16135,7 +16562,7 @@ const processData = async largeDataset => {
       type: WorkerMessageType.CALCULATE_STATISTICS,
       payload: {
         data: largeDataset,
-        operations: ['mean', 'median', 'stdDev'],
+        operations: ["mean", "median", "stdDev"],
       },
     });
 
@@ -16154,7 +16581,7 @@ The data processing system integrates with other game systems:
 
 ```typescript
 // Used in exploration components for analysis
-import { transformResourceMappingData } from '../../utils/dataTransforms';
+import { transformResourceMappingData } from "../../utils/dataTransforms";
 
 function ResourceMapComponent() {
   useEffect(() => {
@@ -16171,17 +16598,17 @@ function ResourceMapComponent() {
 
 ```typescript
 // Used in resource management for filtering and analysis
-import { applyFilters, calculateStatistics } from '../../utils/dataTransforms';
+import { applyFilters, calculateStatistics } from "../../utils/dataTransforms";
 
 function ResourceAnalytics() {
   // Filter resources based on criteria
   const criticalResources = applyFilters(allResources, [
-    { field: 'amount', operator: 'lessThan', value: 100 },
-    { field: 'type', operator: 'in', value: ['energy', 'minerals'] },
+    { field: "amount", operator: "lessThan", value: 100 },
+    { field: "type", operator: "in", value: ["energy", "minerals"] },
   ]);
 
   // Calculate resource statistics
-  const stats = calculateStatistics(allResources, 'amount');
+  const stats = calculateStatistics(allResources, "amount");
 
   // Render analytics dashboard
 }
@@ -16191,7 +16618,10 @@ function ResourceAnalytics() {
 
 ```typescript
 // Used in research components for predictions
-import { transformTimeSeriesData, calculateResiduals } from '../../utils/dataTransforms';
+import {
+  transformTimeSeriesData,
+  calculateResiduals,
+} from "../../utils/dataTransforms";
 
 function ResearchPredictionComponent() {
   // Transform time series data for prediction charts
@@ -16199,7 +16629,7 @@ function ResearchPredictionComponent() {
     timePoints,
     actualProduction,
     predictedProduction,
-    forecastProduction
+    forecastProduction,
   );
 
   // Calculate prediction accuracy
@@ -16222,11 +16652,13 @@ import {
   transformToScatterFormat,
   calculateStatistics,
   applyFilters,
-} from '../../utils/dataTransforms';
+} from "../../utils/dataTransforms";
 
 function ResourceExplorationDashboard() {
   const [resources, setResources] = useState<ResourceData[]>([]);
-  const [filteredResources, setFilteredResources] = useState<ResourceData[]>([]);
+  const [filteredResources, setFilteredResources] = useState<ResourceData[]>(
+    [],
+  );
   const [statistics, setStatistics] = useState<StatisticsResult | null>(null);
 
   useEffect(() => {
@@ -16236,11 +16668,11 @@ function ResourceExplorationDashboard() {
       setResources(data);
 
       // Transform data for visualization
-      const scatterData = transformToScatterFormat(data, 'quantity');
+      const scatterData = transformToScatterFormat(data, "quantity");
       setScatterData(scatterData);
 
       // Calculate statistics
-      setStatistics(calculateStatistics(data, 'quantity'));
+      setStatistics(calculateStatistics(data, "quantity"));
     };
 
     fetchResources();
@@ -16249,8 +16681,8 @@ function ResourceExplorationDashboard() {
   // Apply filters when criteria changes
   useEffect(() => {
     const filtered = applyFilters(resources, [
-      { field: 'type', operator: 'equals', value: selectedResourceType },
-      { field: 'quality', operator: 'greaterThan', value: minQuality },
+      { field: "type", operator: "equals", value: selectedResourceType },
+      { field: "quality", operator: "greaterThan", value: minQuality },
     ]);
 
     setFilteredResources(filtered);
@@ -16262,7 +16694,7 @@ function ResourceExplorationDashboard() {
       <ResourceScatterPlot data={scatterData} />
       <ResourceFilterPanel
         onFilterChange={setFilterCriteria}
-        resourceTypes={getUniqueValues(resources, 'type')}
+        resourceTypes={getUniqueValues(resources, "type")}
       />
       <ResourceTable data={filteredResources} />
     </div>
