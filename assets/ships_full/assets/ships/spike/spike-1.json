@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "spike_2": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 1024,
+        "h": 1024
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1024,
+        "h": 1024
+      },
+      "sourceSize": {
+        "w": 1024,
+        "h": 1024
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "spike-1.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1028,
+      "h": 1028
+    },
+    "scale": 1
+  }
+}

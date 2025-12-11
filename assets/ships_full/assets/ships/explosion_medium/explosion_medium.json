@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "Explosion_Medium": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 360,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 360,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 360,
+        "h": 40
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "explosion_medium.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 364,
+      "h": 44
+    },
+    "scale": 1
+  }
+}
