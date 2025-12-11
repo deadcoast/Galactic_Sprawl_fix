@@ -1,32 +1,33 @@
-import { Position, Tier } from '../core/GameTypes';
-import { ResourceType } from '../resources/ResourceTypes';
-import { CombatWeaponStats, WeaponInstance } from '../weapons/WeaponTypes';
+import { Position, Tier } from "../core/GameTypes";
+import { ResourceType } from "../resources/ResourceTypes";
+import { CombatWeaponStats, WeaponInstance } from "../weapons/WeaponTypes";
+// Import ShipStatus from CommonShipTypes to break circular dependency with ShipTypes
 import {
-    CommonShipAbility,
-    CommonShipDisplayStats,
-    CommonShipStats,
-    ShipType,
-} from './CommonShipTypes';
-import { ShipStatus } from './ShipTypes';
+  CommonShipAbility,
+  CommonShipDisplayStats,
+  CommonShipStats,
+  ShipStatus,
+  ShipType,
+} from "./CommonShipTypes";
 
 // Define core Faction types here
 export type FactionId =
-  | 'player'
-  | 'enemy'
-  | 'neutral'
-  | 'ally'
-  | 'space-rats'
-  | 'lost-nova'
-  | 'equator-horizon';
+  | "player"
+  | "enemy"
+  | "neutral"
+  | "ally"
+  | "space-rats"
+  | "lost-nova"
+  | "equator-horizon";
 
 export type FactionBehaviorType =
-  | 'aggressive'
-  | 'defensive'
-  | 'hit-and-run'
-  | 'stealth'
-  | 'balance'
-  | 'passive' // Add other potential types if known
-  | 'evasive';
+  | "aggressive"
+  | "defensive"
+  | "hit-and-run"
+  | "stealth"
+  | "balance"
+  | "passive" // Add other potential types if known
+  | "evasive";
 
 export interface FactionBehaviorConfig {
   // Define based on usage in FactionShip and potentially useFactionBehavior
@@ -106,15 +107,15 @@ export interface FactionState {
 
 // Faction-specific configurations
 export interface SpaceRatsConfig extends FactionConfig {
-  id: 'space-rats';
+  id: "space-rats";
   pirateFleetComposition: {
-    flagshipType: 'ratKing';
+    flagshipType: "ratKing";
     supportShips: FactionShipClass[];
   };
 }
 
 export interface LostNovaConfig extends FactionConfig {
-  id: 'lost-nova';
+  id: "lost-nova";
   forbiddenTech: {
     darkMatterLevel: number;
     geneticModifications: string[];
@@ -122,7 +123,7 @@ export interface LostNovaConfig extends FactionConfig {
 }
 
 export interface EquatorHorizonConfig extends FactionConfig {
-  id: 'equator-horizon';
+  id: "equator-horizon";
   balanceThresholds: {
     playerExpansion: number;
     resourceControl: number;
@@ -133,7 +134,7 @@ export interface EquatorHorizonConfig extends FactionConfig {
 export interface AIBehavior {
   id: string;
   type: FactionBehaviorType;
-  priority: 'attack' | 'defend' | 'support';
+  priority: "attack" | "defend" | "support";
   conditions: {
     healthThreshold: number;
     shieldThreshold: number;
@@ -149,47 +150,53 @@ export interface FactionManager {
   updateBehavior: (factionId: FactionId, behavior: AIBehavior) => void;
   spawnFleet: (factionId: FactionId, systemId: string) => void;
   updateTerritory: (factionId: FactionId, territory: string[]) => void;
-  updateRelationships: (factionId: FactionId, relationships: Record<FactionId, number>) => void;
+  updateRelationships: (
+    factionId: FactionId,
+    relationships: Record<FactionId, number>,
+  ) => void;
 }
 
 // Faction Ship Classes - Using camelCase for consistency
 export type SpaceRatsShipClass =
-  | 'ratKing'
-  | 'asteroidMarauder'
-  | 'rogueNebula'
-  | 'ratsRevenge'
-  | 'darkSectorCorsair'
-  | 'wailingWreck'
-  | 'galacticScourge'
-  | 'plasmaFang'
-  | 'verminVanguard'
-  | 'blackVoidBuccaneer';
+  | "ratKing"
+  | "asteroidMarauder"
+  | "rogueNebula"
+  | "ratsRevenge"
+  | "darkSectorCorsair"
+  | "wailingWreck"
+  | "galacticScourge"
+  | "plasmaFang"
+  | "verminVanguard"
+  | "blackVoidBuccaneer";
 
 export type LostNovaShipClass =
-  | 'eclipseScythe'
-  | 'nullsRevenge'
-  | 'darkMatterReaper'
-  | 'quantumPariah'
-  | 'entropyScale'
-  | 'voidRevenant'
-  | 'scytheOfAndromeda'
-  | 'nebularPersistence'
-  | 'oblivionsWake'
-  | 'forbiddenVanguard';
+  | "eclipseScythe"
+  | "nullsRevenge"
+  | "darkMatterReaper"
+  | "quantumPariah"
+  | "entropyScale"
+  | "voidRevenant"
+  | "scytheOfAndromeda"
+  | "nebularPersistence"
+  | "oblivionsWake"
+  | "forbiddenVanguard";
 
 export type EquatorHorizonShipClass =
-  | 'celestialArbiter'
-  | 'etherealGalleon'
-  | 'stellarEquinox'
-  | 'chronosSentinel'
-  | 'nebulasJudgement'
-  | 'aetherialHorizon'
-  | 'cosmicCrusader'
-  | 'balancekeepersWrath'
-  | 'eclipticWatcher'
-  | 'harmonysVanguard';
+  | "celestialArbiter"
+  | "etherealGalleon"
+  | "stellarEquinox"
+  | "chronosSentinel"
+  | "nebulasJudgement"
+  | "aetherialHorizon"
+  | "cosmicCrusader"
+  | "balancekeepersWrath"
+  | "eclipticWatcher"
+  | "harmonysVanguard";
 
-export type FactionShipClass = SpaceRatsShipClass | LostNovaShipClass | EquatorHorizonShipClass;
+export type FactionShipClass =
+  | SpaceRatsShipClass
+  | LostNovaShipClass
+  | EquatorHorizonShipClass;
 
 // Faction Ship Stats
 export interface FactionShipStats extends CommonShipStats {
@@ -203,7 +210,7 @@ export interface FactionShipStats extends CommonShipStats {
   armorPenetration?: number;
   shieldPenetration?: number;
   miningRate?: number;
-  category?: import('./ShipTypes').ShipCategory;
+  category?: import("./ShipTypes").ShipCategory;
   name?: string;
   capabilities?: Record<string, unknown> & {
     canSalvage?: boolean;
@@ -230,7 +237,7 @@ export interface FactionShipStats extends CommonShipStats {
 
 // Ability effect definition used by faction ships
 export interface AbilityEffect {
-  type: 'stealth' | 'shield' | 'speed' | 'damage' | (string & {});
+  type: "stealth" | "shield" | "speed" | "damage" | (string & {});
   magnitude: number;
   radius?: number;
   duration?: number;
@@ -250,7 +257,7 @@ export type FactionShipDisplayStats = CommonShipDisplayStats;
 export interface FactionShip /* extends CommonShip */ {
   id: string;
   name: string;
-  category: 'combat' | 'support' | 'civilian';
+  category: "combat" | "support" | "civilian";
   status: ShipStatus;
   faction: FactionId;
   class: FactionShipClass;
@@ -287,7 +294,7 @@ export interface FactionShipProps {
 }
 
 // Use Omit to exclude the conflicting 'weapons' property from CommonShipStats
-export interface ShipStatsWithWeapons extends Omit<CommonShipStats, 'weapons'> {
+export interface ShipStatsWithWeapons extends Omit<CommonShipStats, "weapons"> {
   weapons: {
     primary: WeaponInstance;
     secondary?: WeaponInstance[];
@@ -300,7 +307,7 @@ export interface ShipStatsWithWeapons extends Omit<CommonShipStats, 'weapons'> {
  * Represents a formation configuration for a faction fleet.
  */
 export interface FactionFleetFormation {
-  type: 'offensive' | 'defensive' | 'balanced' | 'stealth'; // Define possible formation types
+  type: "offensive" | "defensive" | "balanced" | "stealth"; // Define possible formation types
   spacing: number;
   facing: number;
 }
@@ -314,7 +321,7 @@ export interface FactionFleet {
   ships: FactionShip[];
   formation: FactionFleetFormation; // Use the defined interface
   strength: number;
-  status: 'idle' | 'moving' | 'attacking' | 'retreating' | 'defending'; // Add missing status
+  status: "idle" | "moving" | "attacking" | "retreating" | "defending"; // Add missing status
   target?: string | Position; // Add missing target
   orders?: string; // Add missing orders
   stats?: CommonShipStats; // Use CommonShipStats instead of ShipStats

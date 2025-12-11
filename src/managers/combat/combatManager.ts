@@ -4,10 +4,13 @@
  * This manager handles combat operations using the standardized event system.
  */
 
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
-import { Position } from '../../types/core/GameTypes';
-import { CombatEvents, CombatUnitStatus } from '../../types/events/CombatEvents';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { TypedEventEmitter } from "../../lib/events/EventEmitter";
+import { Position } from "../../types/core/GameTypes";
+import {
+  CombatEvents,
+  CombatUnitStatus,
+} from "../../types/events/CombatEvents";
+import { FactionId } from "../../types/ships/FactionTypes";
 
 /**
  * Combat unit interface
@@ -43,8 +46,74 @@ export interface CombatWeapon {
   damage: number;
   range: number;
   cooldown: number;
-  status: 'ready' | 'charging' | 'cooling';
+  status: "ready" | "charging" | "cooling";
   lastFired?: number;
+}
+
+// ====================================================================
+// Fleet and Threat Types for useFleetAI Integration
+// ====================================================================
+
+/**
+ * Fleet-compatible combat unit interface
+ * Used by useFleetAI for fleet-based operations
+ */
+export interface FleetCombatUnit {
+  id: string;
+  faction: string;
+  type:
+    | "spitflare"
+    | "starSchooner"
+    | "orionFrigate"
+    | "harbringerGalleon"
+    | "midwayCarrier"
+    | "motherEarthRevenge";
+  tier: 1 | 2 | 3;
+  position: { x: number; y: number };
+  status:
+    | "idle"
+    | "patrolling"
+    | "engaging"
+    | "returning"
+    | "damaged"
+    | "retreating"
+    | "disabled";
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  weapons: {
+    id: string;
+    type: "machineGun" | "gaussCannon" | "railGun" | "mgss" | "rockets";
+    range: number;
+    damage: number;
+    cooldown: number;
+    status: "ready" | "charging" | "cooling";
+  }[];
+  specialAbilities?: {
+    name: string;
+    description: string;
+    cooldown: number;
+    active: boolean;
+  }[];
+}
+
+/**
+ * Threat interface for useFleetAI
+ */
+export interface Threat {
+  id: string;
+  position: { x: number; y: number };
+  severity: "low" | "medium" | "high";
+}
+
+/**
+ * Fleet interface for useFleetAI
+ */
+export interface Fleet {
+  id: string;
+  units: FleetCombatUnit[];
+  direction: number;
 }
 
 /**
@@ -82,9 +151,10 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
    * @returns An array of units in range
    */
   public getUnitsInRange(position: Position, range: number): CombatUnit[] {
-    return this.getAllUnits().filter(unit => {
+    return this.getAllUnits().filter((unit) => {
       const distance = Math.sqrt(
-        Math.pow(unit.position.x - position.x, 2) + Math.pow(unit.position.y - position.y, 2)
+        Math.pow(unit.position.x - position.x, 2) +
+          Math.pow(unit.position.y - position.y, 2),
       );
       return distance <= range;
     });
@@ -97,7 +167,11 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
    * @param faction The faction the unit belongs to
    * @returns The spawned unit
    */
-  public spawnUnit(unitType: string, position: Position, faction: FactionId): CombatUnit {
+  public spawnUnit(
+    unitType: string,
+    position: Position,
+    faction: FactionId,
+  ): CombatUnit {
     const id = `unit-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const unit: CombatUnit = {
@@ -106,7 +180,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
       faction,
       position,
       rotation: 0,
-      status: 'idle',
+      status: "idle",
       stats: {
         health: 100,
         maxHealth: 100,
@@ -120,7 +194,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.set(id, unit);
 
-    this.emit('combat:unit-spawned', {
+    this.emit("combat:unit-spawned", {
       unitId: id,
       unitType,
       position,
@@ -145,7 +219,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.delete(unitId);
 
-    this.emit('combat:unit-destroyed', {
+    this.emit("combat:unit-destroyed", {
       unitId,
       destroyedBy,
       timestamp: Date.now(),
@@ -170,13 +244,13 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unit.position = position;
 
     // Update status if it was idle
-    if (unit.status === 'idle') {
+    if (unit.status === "idle") {
       const previousStatus = unit.status;
-      unit.status = 'moving';
+      unit.status = "moving";
 
-      this.emit('combat:unit-status-changed', {
+      this.emit("combat:unit-status-changed", {
         unitId,
-        status: 'moving',
+        status: "moving",
         previousStatus,
         timestamp: Date.now(),
       });
@@ -184,7 +258,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-moved', {
+    this.emit("combat:unit-moved", {
       unitId,
       position,
       previousPosition,
@@ -210,7 +284,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unit.rotation = rotation;
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-rotated', {
+    this.emit("combat:unit-rotated", {
       unitId,
       rotation,
       previousRotation,
@@ -236,7 +310,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unit.status = status;
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-status-changed', {
+    this.emit("combat:unit-status-changed", {
       unitId,
       status,
       previousStatus,
@@ -258,7 +332,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unitId: string,
     damageAmount: number,
     damageSource?: string,
-    damageType?: string
+    damageType?: string,
   ): boolean {
     const unit = this.units.get(unitId);
     if (!unit) {
@@ -272,7 +346,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
       unit.stats.shield -= shieldDamage;
       remainingDamage -= shieldDamage;
 
-      this.emit('combat:unit-shield-changed', {
+      this.emit("combat:unit-shield-changed", {
         unitId,
         shieldAmount: -shieldDamage,
         currentShield: unit.stats.shield,
@@ -285,13 +359,13 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
       unit.stats.health = Math.max(0, unit.stats.health - remainingDamage);
 
       // Change status if health reaches 0
-      if (unit.stats.health === 0 && unit.status !== 'destroyed') {
+      if (unit.stats.health === 0 && unit.status !== "destroyed") {
         const previousStatus = unit.status;
-        unit.status = 'destroyed';
+        unit.status = "destroyed";
 
-        this.emit('combat:unit-status-changed', {
+        this.emit("combat:unit-status-changed", {
           unitId,
-          status: 'destroyed',
+          status: "destroyed",
           previousStatus,
           timestamp: Date.now(),
         });
@@ -299,15 +373,15 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
       // Change status to damaged if not already
       else if (
         unit.stats.health < unit.stats.maxHealth * 0.5 &&
-        unit.status !== 'damaged' &&
-        unit.status !== 'destroyed'
+        unit.status !== "damaged" &&
+        unit.status !== "destroyed"
       ) {
         const previousStatus = unit.status;
-        unit.status = 'damaged';
+        unit.status = "damaged";
 
-        this.emit('combat:unit-status-changed', {
+        this.emit("combat:unit-status-changed", {
           unitId,
-          status: 'damaged',
+          status: "damaged",
           previousStatus,
           timestamp: Date.now(),
         });
@@ -316,7 +390,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-damaged', {
+    this.emit("combat:unit-damaged", {
       unitId,
       damageAmount,
       currentHealth: unit.stats.health,
@@ -341,23 +415,23 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unitId: string,
     weaponId: string,
     targetId?: string,
-    targetPosition?: Position
+    targetPosition?: Position,
   ): boolean {
     const unit = this.units.get(unitId);
     if (!unit) {
       return false;
     }
 
-    const weapon = unit.weapons.find(w => w.id === weaponId);
-    if (!weapon || weapon.status !== 'ready') {
+    const weapon = unit.weapons.find((w) => w.id === weaponId);
+    if (!weapon || weapon.status !== "ready") {
       return false;
     }
 
-    weapon.status = 'cooling';
+    weapon.status = "cooling";
     weapon.lastFired = Date.now();
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-weapon-fired', {
+    this.emit("combat:unit-weapon-fired", {
       unitId,
       weaponId,
       targetId,
@@ -387,13 +461,13 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     };
 
     // Change status to attacking if not already
-    if (unit.status !== 'attacking') {
+    if (unit.status !== "attacking") {
       const previousStatus = unit.status;
-      unit.status = 'attacking';
+      unit.status = "attacking";
 
-      this.emit('combat:unit-status-changed', {
+      this.emit("combat:unit-status-changed", {
         unitId,
-        status: 'attacking',
+        status: "attacking",
         previousStatus,
         timestamp: Date.now(),
       });
@@ -401,7 +475,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-target-acquired', {
+    this.emit("combat:unit-target-acquired", {
       unitId,
       targetId,
       targetPosition: target.position,
@@ -409,6 +483,196 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     });
 
     return true;
+  }
+
+  // ====================================================================
+  // Fleet and Threat Management Methods for useFleetAI Integration
+  // ====================================================================
+
+  /**
+   * Fleet storage for fleet-based operations
+   */
+  private fleets = new Map<string, Fleet>();
+
+  /**
+   * Get the status of a fleet
+   * @param fleetId The ID of the fleet
+   * @returns The fleet object or undefined if not found
+   */
+  public getFleetStatus(fleetId: string): Fleet | undefined {
+    // First check if fleet exists in fleet storage
+    if (this.fleets.has(fleetId)) {
+      return this.fleets.get(fleetId);
+    }
+
+    // If not, try to construct a fleet from units with matching faction
+    const units = this.getAllUnits().filter((unit) => unit.faction === fleetId);
+    if (units.length > 0) {
+      // Calculate average direction from unit positions
+      let avgDirection = 0;
+      if (units.length > 1) {
+        const center = this.calculateCenter(units.map((u) => u.position));
+        avgDirection =
+          Math.atan2(
+            units[0].position.y - center.y,
+            units[0].position.x - center.x,
+          ) *
+          (180 / Math.PI);
+      }
+
+      return {
+        id: fleetId,
+        units: units.map((u) => this.convertToFleetCombatUnit(u)),
+        direction: avgDirection,
+      };
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Get threats within range of a position
+   * Threats are enemy units that could pose danger to a fleet
+   * @param position The position to check from
+   * @param range The range to check
+   * @returns Array of threats within range
+   */
+  public getThreatsInRange(position: Position, range: number): Threat[] {
+    const threats: Threat[] = [];
+    const units = this.getUnitsInRange(position, range);
+
+    for (const unit of units) {
+      // Skip friendly units (player faction)
+      if (unit.faction === "player" || unit.faction === "ally") {
+        continue;
+      }
+
+      // Calculate distance for threat severity
+      const distance = Math.sqrt(
+        Math.pow(unit.position.x - position.x, 2) +
+          Math.pow(unit.position.y - position.y, 2),
+      );
+
+      // Calculate threat severity based on distance and unit health
+      let severity: "low" | "medium" | "high" = "low";
+      const healthPercent = unit.stats.health / unit.stats.maxHealth;
+
+      if (distance < range * 0.3 && healthPercent > 0.5) {
+        severity = "high";
+      } else if (distance < range * 0.6 || healthPercent > 0.7) {
+        severity = "medium";
+      }
+
+      threats.push({
+        id: unit.id,
+        position: { x: unit.position.x, y: unit.position.y },
+        severity,
+      });
+    }
+
+    return threats;
+  }
+
+  /**
+   * Register a fleet
+   * @param fleet The fleet to register
+   */
+  public registerFleet(fleet: Fleet): void {
+    this.fleets.set(fleet.id, fleet);
+  }
+
+  /**
+   * Unregister a fleet
+   * @param fleetId The ID of the fleet to unregister
+   */
+  public unregisterFleet(fleetId: string): void {
+    this.fleets.delete(fleetId);
+  }
+
+  /**
+   * Calculate the center position of a set of positions
+   */
+  private calculateCenter(positions: Position[]): Position {
+    if (positions.length === 0) {
+      return { x: 0, y: 0 };
+    }
+    const sum = positions.reduce(
+      (acc, pos) => ({ x: acc.x + pos.x, y: acc.y + pos.y }),
+      { x: 0, y: 0 },
+    );
+    return {
+      x: sum.x / positions.length,
+      y: sum.y / positions.length,
+    };
+  }
+
+  /**
+   * Convert internal CombatUnit to Fleet-compatible CombatUnit
+   */
+  private convertToFleetCombatUnit(unit: CombatUnit): FleetCombatUnit {
+    return {
+      id: unit.id,
+      faction: unit.faction,
+      type: this.mapUnitType(unit.type),
+      tier: this.determineTier(unit),
+      position: { x: unit.position.x, y: unit.position.y },
+      status: this.mapUnitStatus(unit.status),
+      health: unit.stats.health,
+      maxHealth: unit.stats.maxHealth,
+      shield: unit.stats.shield,
+      maxShield: unit.stats.maxShield,
+      weapons: unit.weapons.map((w) => ({
+        id: w.id,
+        type: this.mapWeaponType(w.type),
+        range: w.range,
+        damage: w.damage,
+        cooldown: w.cooldown,
+        status: w.status,
+      })),
+    };
+  }
+
+  private mapUnitType(type: string): FleetCombatUnit["type"] {
+    const typeMap: Record<string, FleetCombatUnit["type"]> = {
+      fighter: "spitflare",
+      frigate: "orionFrigate",
+      galleon: "harbringerGalleon",
+      carrier: "midwayCarrier",
+      schooner: "starSchooner",
+    };
+    return typeMap[type] || "spitflare";
+  }
+
+  private mapUnitStatus(status: CombatUnitStatus): FleetCombatUnit["status"] {
+    const statusMap: Record<CombatUnitStatus, FleetCombatUnit["status"]> = {
+      idle: "idle",
+      moving: "patrolling",
+      attacking: "engaging",
+      defending: "patrolling",
+      retreating: "retreating",
+      disabled: "disabled",
+      destroyed: "disabled",
+      damaged: "damaged",
+    };
+    return statusMap[status] || "idle";
+  }
+
+  private mapWeaponType(type: string): FleetCombatUnit["weapons"][0]["type"] {
+    const weaponMap: Record<string, FleetCombatUnit["weapons"][0]["type"]> = {
+      laser: "gaussCannon",
+      missile: "rockets",
+      cannon: "railGun",
+      machinegun: "machineGun",
+    };
+    return weaponMap[type.toLowerCase()] || "machineGun";
+  }
+
+  private determineTier(unit: CombatUnit): 1 | 2 | 3 {
+    // Determine tier based on unit stats
+    const totalStats = unit.stats.maxHealth + unit.stats.maxShield;
+    if (totalStats > 400) return 3;
+    if (totalStats > 200) return 2;
+    return 1;
   }
 
   /**
@@ -427,13 +691,13 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     unit.target = undefined;
 
     // Change status to idle if attacking
-    if (unit.status === 'attacking') {
+    if (unit.status === "attacking") {
       const previousStatus = unit.status;
-      unit.status = 'idle';
+      unit.status = "idle";
 
-      this.emit('combat:unit-status-changed', {
+      this.emit("combat:unit-status-changed", {
         unitId,
-        status: 'idle',
+        status: "idle",
         previousStatus,
         timestamp: Date.now(),
       });
@@ -441,7 +705,7 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
 
     this.units.set(unitId, unit);
 
-    this.emit('combat:unit-target-lost', {
+    this.emit("combat:unit-target-lost", {
       unitId,
       targetId,
       targetPosition,

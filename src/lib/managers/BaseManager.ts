@@ -1,9 +1,27 @@
-import { errorLoggingService, ErrorType } from '../../services/logging/ErrorLoggingService';
+// CIRCULAR DEPENDENCY MITIGATION:
+// ErrorLoggingService extends AbstractBaseManager, creating a circular dependency.
+// We use type-only import for ErrorType and lazy loading for errorLoggingService.
+import type { ErrorType as ErrorTypeEnum } from '../../services/logging/ErrorLoggingService';
+
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType, BaseEvent as LegacyBaseEvent } from '../../types/events/EventTypes';
 import { EventBus } from '../events/EventBus';
 import { BaseEvent, eventSystem } from '../events/UnifiedEventSystem';
 import { Singleton } from '../patterns/Singleton';
+
+// Lazy-loaded error logging to break circular dependency
+let _errorLoggingService: typeof import('../../services/logging/ErrorLoggingService').errorLoggingService | null = null;
+let _ErrorType: typeof import('../../services/logging/ErrorLoggingService').ErrorType | null = null;
+
+function getErrorLoggingService() {
+  if (!_errorLoggingService) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const module = require('../../services/logging/ErrorLoggingService');
+    _errorLoggingService = module.errorLoggingService;
+    _ErrorType = module.ErrorType;
+  }
+  return { errorLoggingService: _errorLoggingService!, ErrorType: _ErrorType! };
+}
 
 /**
  * Base interface for all manager classes
@@ -250,7 +268,8 @@ export abstract class AbstractBaseManager<T extends BaseEvent>
   public handleError(error: Error, context?: Record<string, unknown>): void {
     this.lastError = error;
 
-    // Log the error
+    // Log the error using lazy-loaded service to avoid circular dependency
+    const { errorLoggingService, ErrorType } = getErrorLoggingService();
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       manager: this.managerName,
       status: this.status,
