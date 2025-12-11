@@ -59,7 +59,7 @@ function analyzeBuildOutput(buildDir: string): {
   let hasJS = false;
   let hasCSS = false;
 
-  files.forEach(file => {
+  files.forEach((file: string | Buffer) => {
     const filePath = join(buildDir, file.toString());
     if (statSync(filePath).isFile()) {
       totalSize += statSync(filePath).size;
@@ -158,9 +158,9 @@ describe('Build and Deployment Process Validation', () => {
       executeCommand('npm run build', { timeout: TIMEOUT });
       
       // Check that assets are properly referenced
-      const files = readdirSync(BUILD_DIR, { recursive: true });
+      const files = readdirSync(BUILD_DIR, { recursive: true }) as string[];
       const jsFiles = files.filter(f => f.toString().endsWith('.js'));
-      const cssFiles = files.filter(f => f.toString().endsWith('.css'));
+      const cssFiles = files.filter((f: string | Buffer) => f.toString().endsWith('.css'));
       
       // Should have at least one JS file
       expect(jsFiles.length, 'Should have JavaScript files').toBeGreaterThan(0);
@@ -250,7 +250,7 @@ describe('Build and Deployment Process Validation', () => {
       
       // Check that JavaScript files are minified (no excessive whitespace)
       const files = readdirSync(BUILD_DIR, { recursive: true });
-      const jsFiles = files.filter(f => f.toString().endsWith('.js'));
+      const jsFiles = files.filter((f: string | Buffer) => f.toString().endsWith('.js'));
       
       if (jsFiles.length > 0) {
         const jsFile = jsFiles[0];
@@ -294,7 +294,7 @@ describe('Build and Deployment Process Validation', () => {
       const files = readdirSync(BUILD_DIR, { recursive: true });
       
       // Should have assets in a reasonable structure
-      const assetFiles = files.filter(f => {
+      const assetFiles = files.filter((f: string | Buffer) => {
         const fileName = f.toString();
         return fileName.includes('assets/') || fileName.endsWith('.js') || fileName.endsWith('.css');
       });
