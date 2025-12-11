@@ -12,7 +12,7 @@ export default defineConfig({
       configureServer(server) {
         // Serve files from assets directory
         server.middlewares.use((req, res, next) => {
-          if (req.url?.startsWith('/.pixelArtAssets/')) {
+          if (req.url?.startsWith('/assets/')) {
             res.setHeader('Content-Type', 'image/png');
             // Using proper type assertion for serveStatic middleware
             return (

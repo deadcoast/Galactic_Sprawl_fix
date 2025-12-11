@@ -225,8 +225,6 @@ export function DataTable<T extends Record<string, unknown>>({
               ),
       ),
     ),
-<<<<<<< HEAD
-=======
     React.createElement('tbody', null,
       data.map((row, rowIndex) =>
         React.createElement('tr', {
@@ -243,7 +241,6 @@ export function DataTable<T extends Record<string, unknown>>({
         )
       )
     )
->>>>>>> ca187ce (chore: update dependencies and configure vscode settings)
   );
 }
 
