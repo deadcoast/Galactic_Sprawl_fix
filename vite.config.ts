@@ -124,5 +124,6 @@ export default defineConfig({
   // Configure TypeScript options
   css: {
     devSourcemap: true,
+    postcss: './config/build/postcss.config.js',
   },
 });

@@ -23,11 +23,11 @@
     "test:perf": "vitest src/tests/performance",
     "test:tools": "vitest src/tests/tools",
     "coverage": "vitest run --coverage",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "format": "prettier --config config/build/.prettierrc.json --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "format:check": "prettier --config config/build/.prettierrc.json --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
     "type-check": "tsc --noEmit --downlevelIteration --skipLibCheck",
     "type-check:downlevel": "tsc --project tsconfig.check.json",
-    "format:all": "prettier --write \"src/**/*.{ts,tsx,css,scss}\" && npm run lint:fix",
+    "format:all": "prettier --config config/build/.prettierrc.json --write \"src/**/*.{ts,tsx,css,scss}\" && npm run lint:fix",
     "validate": "npm-run-all --parallel type-check lint:critical",
     "precommit": "lint-staged && npm run type-check",
     "find-circular": "npx madge --circular --extensions ts,tsx src/",
@@ -143,14 +143,14 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --cache --fix",
-      "prettier --write"
+      "prettier --config config/build/.prettierrc.json --write"
     ],
     "*.{js,jsx}": [
       "eslint --cache --fix",
-      "prettier --write"
+      "prettier --config config/build/.prettierrc.json --write"
     ],
     "*.{json,css,scss,md}": [
-      "prettier --write"
+      "prettier --config config/build/.prettierrc.json --write"
     ]
   },
   "type": "module"

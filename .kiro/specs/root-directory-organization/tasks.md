@@ -51,14 +51,14 @@
   - Update any relative path references in moved configuration files
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 5. Update configuration file references and validate tools
+- [x] 5. Update configuration file references and validate tools
   - Update package.json scripts to reference new configuration file locations
   - Update any hardcoded paths in source code that reference moved files
   - Test all npm scripts to ensure they work with new file locations
   - Validate that all development tools (ESLint, Prettier, Jest, etc.) can find their configs
   - _Requirements: 1.4, 2.2, 2.3, 3.1_
 
-- [ ] 6. Checkpoint - Ensure all tests pass, ask the user if questions arise
+- [-] 6. Checkpoint - Ensure all tests pass, ask the user if questions arise
 
 - [ ] 7. Consolidate asset directories
   - Move .assets/ directory to assets/ in root

@@ -225,6 +225,25 @@ export function DataTable<T extends Record<string, unknown>>({
               ),
       ),
     ),
+<<<<<<< HEAD
+=======
+    React.createElement('tbody', null,
+      data.map((row, rowIndex) =>
+        React.createElement('tr', {
+          key: String((row as Record<string, unknown>).id ?? rowIndex),
+          onClick: onRowClick ? () => onRowClick(row) : undefined,
+          style: { cursor: onRowClick ? 'pointer' : 'default' },
+        },
+          columns.map(col =>
+            React.createElement('td', {
+              key: String(col.key),
+              style: { padding: '12px', borderBottom: '1px solid #222', color: '#fff' },
+            }, col.render ? col.render(row[col.key], row) : String(row[col.key] ?? ''))
+          )
+        )
+      )
+    )
+>>>>>>> ca187ce (chore: update dependencies and configure vscode settings)
   );
 }
 
