@@ -5,7 +5,7 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 import { ResourceManager } from './ResourceManager';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = ResourceManager.getInstance();
 
 /**
  * Automation condition types

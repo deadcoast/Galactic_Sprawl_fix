@@ -313,10 +313,21 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         this.canvas = dependencies.canvas;
         this.gl = this.canvas.getContext('webgl2');
         if (!this.gl) {
-          throw new Error('Failed to initialize WebGL2 context');
+          errorLoggingService.logWarn('WebGL2 context unavailable, running without GPU features.');
+          this.metadata.metrics ??= {};
+          this.metadata.metrics.gpu_disabled = 1;
+          this.metadata.status = 'ready';
+          return;
         }
       } else {
-        throw new Error('Canvas dependency required for WebGL service initialization');
+        // No canvas provided - gracefully degrade instead of throwing
+        errorLoggingService.logWarn(
+          'WebGLService initialized without a canvas; GPU features disabled.'
+        );
+        this.metadata.metrics ??= {};
+        this.metadata.metrics.gpu_disabled = 1;
+        this.metadata.status = 'ready';
+        return;
       }
 
       // Initialize metrics

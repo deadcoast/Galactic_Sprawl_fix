@@ -7,7 +7,7 @@ import { moduleManager } from './ModuleManager';
 import { moduleStatusManager } from './ModuleStatusManager';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = ResourceManager.getInstance();
 
 // Define the ModuleEvent interface
 interface ModuleEvent {

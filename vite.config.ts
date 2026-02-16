@@ -101,14 +101,8 @@ export default defineConfig({
         // Add comments to indicate chunk names in dev tools
         experimentalMinChunkSize: 10000, // 10kb - combine small chunks
       },
-      // Enable tree shaking at the rollup level
-      treeshake: {
-        // Enable more aggressive tree shaking
-        moduleSideEffects: false, // Assume modules have no side effects
-        propertyReadSideEffects: false, // Assume property reads have no side effects
-        tryCatchDeoptimization: false, // More aggressive optimizations
-        unknownGlobalSideEffects: false, // Assume unknown globals don't have side effects
-      },
+      // Rely on Rollup's default tree shaking to avoid accidentally stripping the app entry
+      treeshake: true,
     },
     // Enable source maps for production debugging
     sourcemap: true,

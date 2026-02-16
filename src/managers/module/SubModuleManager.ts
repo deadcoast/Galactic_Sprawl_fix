@@ -15,7 +15,7 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 import { moduleManager } from './ModuleManager';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = ResourceManager.getInstance();
 
 /**
  * Interface for module upgrade event data

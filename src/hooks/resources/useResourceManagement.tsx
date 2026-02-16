@@ -13,7 +13,7 @@ import
 import { ensureEnumResourceType } from '../../utils/ResourceTypeConverter';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = ResourceManager.getInstance();
 
 // Singleton instance of the resource integration
 let resourceIntegrationInstance: ResourceIntegration | null = null;

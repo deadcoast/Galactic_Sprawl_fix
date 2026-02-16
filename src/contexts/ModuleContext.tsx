@@ -435,7 +435,7 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     if (manager) {
       try {
         // Try to get all modules first, then active modules
-        const allModules = manager.getModules?.() ?? manager.getAllModules?.() ?? [];
+        const allModules = manager.getModules?.() ?? [];
         const activeModules = manager.getActiveModules?.() ?? [];
         
         // Create module map from all modules
@@ -444,10 +444,8 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
           return acc;
         }, {});
 
-        // Get active module IDs
-        const activeModuleIds = activeModules.length > 0 
-          ? activeModules.map(m => m.id)
-          : manager.getActiveModuleIds?.() ?? [];
+        // Get active module IDs from active modules
+        const activeModuleIds = activeModules.map(m => m.id);
 
         return {
           ...initialState,

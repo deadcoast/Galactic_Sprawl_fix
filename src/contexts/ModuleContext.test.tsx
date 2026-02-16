@@ -270,8 +270,8 @@ class ModuleManagerWrapper implements IModuleManager {
     return Object.values(this.modules);
   }
 
-  // For backcombatd compatibility
-  getAllModules() {
+  // For backward compatibility and ModuleProvider initialization
+  getAllModules(): TestModule[] {
     return this.getModules();
   }
 
@@ -284,11 +284,6 @@ class ModuleManagerWrapper implements IModuleManager {
     return this.getActiveModuleIds()
       .map(id => this.modules[id])
       .filter(Boolean);
-  }
-
-  // For compatibility with ModuleProvider initialization
-  getAllModules(): TestModule[] {
-    return this.getModules();
   }
 
   // Required by IModuleManager

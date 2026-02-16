@@ -250,7 +250,7 @@ describe('Build and Deployment Process Validation', () => {
       
       // Check that JavaScript files are minified (no excessive whitespace)
       const files = readdirSync(BUILD_DIR, { recursive: true });
-      const jsFiles = files.filter((f: string | Buffer) => f.toString().endsWith('.js'));
+      const jsFiles = (files as string[]).filter((f: string) => f.endsWith('.js'));
       
       if (jsFiles.length > 0) {
         const jsFile = jsFiles[0];
@@ -294,9 +294,8 @@ describe('Build and Deployment Process Validation', () => {
       const files = readdirSync(BUILD_DIR, { recursive: true });
       
       // Should have assets in a reasonable structure
-      const assetFiles = files.filter((f: string | Buffer) => {
-        const fileName = f.toString();
-        return fileName.includes('assets/') || fileName.endsWith('.js') || fileName.endsWith('.css');
+      const assetFiles = (files as string[]).filter((f: string) => {
+        return f.includes('assets/') || f.endsWith('.js') || f.endsWith('.css');
       });
       
       expect(assetFiles.length, 'Should have asset files for static serving').toBeGreaterThan(0);

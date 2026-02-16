@@ -35,17 +35,6 @@ const GameLayout = lazy(() =>
   import('./components/ui/GameLayout').then(module => ({ default: module.GameLayout }))
 );
 
-
-
-
-
-
-
-
-
-
-
-
 // A wrapper for the GameLayout component to provide the required props
 const GameLayoutWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -81,8 +70,6 @@ function initializeManagers(): void {
     throw error;
   }
 }
-
-
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
