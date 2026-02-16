@@ -175,6 +175,7 @@ poetry.lock
 # OS generated files
 .DS_Store
 .DS_Store?
+FETCH_HEAD
 ._*
 .Spotlight-V100
 .Trashes
