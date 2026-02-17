@@ -43,7 +43,8 @@
     "lint:workflow:auto-fix": "node tools/run-lint-workflow.mjs --auto-fix",
     "lint:workflow:analyze": "node tools/run-lint-workflow.mjs --skip-fix",
     "typecheck": "tsc --noEmit --downlevelIteration --skipLibCheck",
-    "typecheck:specific": "node tools/run-typecheck.mjs"
+    "typecheck:specific": "node tools/run-typecheck.mjs",
+    "audit:one-voice": "node scripts/one-voice-audit.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",

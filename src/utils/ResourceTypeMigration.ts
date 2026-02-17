@@ -8,7 +8,7 @@
 
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
 import { ResourceType, ResourceTypeString } from '../types/resources/ResourceTypes';
-import { ResourceTypeConverter } from './ResourceTypeConverter';
+import { ResourceTypeConverter } from './resources/ResourceTypeConverter';
 
 /**
  * Type alias for string-based resource types (for backward compatibility)

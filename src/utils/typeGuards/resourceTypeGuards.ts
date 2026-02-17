@@ -10,7 +10,7 @@ import
     ResourceType,
     ResourceTypeString,
   } from '../../types/resources/ResourceTypes';
-import { ResourceTypeConverter } from '../ResourceTypeConverter';
+import { ResourceTypeConverter } from '../resources/ResourceTypeConverter';
 
 // Re-export converter for use elsewhere
 export { ResourceTypeConverter };

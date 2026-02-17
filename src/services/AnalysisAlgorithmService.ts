@@ -27,7 +27,7 @@ import
   } from '../types/exploration/DataAnalysisTypes';
 import { ResourceType } from '../types/resources/ResourceTypes';
 import { isResourceType } from '../utils/typeGuards/resourceTypeGuards';
-import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService'; // Added import
+import { errorLoggingService, ErrorSeverity, ErrorType } from './logging/ErrorLoggingService';
 
 /**
  * Interface for algorithm options

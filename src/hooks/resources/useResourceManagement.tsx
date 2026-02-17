@@ -10,7 +10,7 @@ import
     ResourceState,
     ResourceType, ResourceType as StringResourceType, ResourceTypeString
   } from '../../types/resources/ResourceTypes';
-import { ensureEnumResourceType } from '../../utils/ResourceTypeConverter';
+import { ensureEnumResourceType } from '../../utils/resources/ResourceTypeConverter';
 
 // Create an instance of ResourceManager
 const resourceManager = ResourceManager.getInstance();
@@ -77,7 +77,7 @@ export function useResourceManagement() {
     }
 
     const frameId = requestAnimationFrame(_time => {
-      integration.update(1000 / 60); // Assume 60 FPS
+      void integration.update(1000 / 60); // Assume 60 FPS
     });
 
     return () => {
@@ -89,7 +89,7 @@ export function useResourceManagement() {
   useEffect(() => {
     return () => {
       if (resourceIntegrationInstance) {
-        resourceIntegrationInstance.cleanup();
+        void resourceIntegrationInstance.cleanup();
         resourceIntegrationInstance = null;
       }
     };

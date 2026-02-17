@@ -32,6 +32,27 @@ export default [
         // make sure you have some warnings enabled:
         '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '_' }],
         'no-console': 'warn',
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['**/services/ErrorLoggingService', 'src/services/ErrorLoggingService'],
+                message:
+                  'Use services/logging/ErrorLoggingService as the canonical logging entrypoint.',
+              },
+              {
+                group: ['**/utils/ResourceTypeConverter', 'src/utils/ResourceTypeConverter'],
+                message:
+                  'Use utils/resources/ResourceTypeConverter as the canonical resource converter entrypoint.',
+              },
+              {
+                group: ['**/components/ui/common/Button'],
+                message: 'Use ui/components/Button instead of legacy ui/common/Button.',
+              },
+            ],
+          },
+        ],
         // …add any other rules you care about at "warn" level
 
         // Rules requiring type information (examples)
