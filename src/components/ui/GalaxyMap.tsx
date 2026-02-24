@@ -426,8 +426,8 @@ export function GalaxyMap() {
                       : 'bg-cyan-500/20'
                 }`}
                 style={{
-                  width: `${event?.radius * 2}px`,
-                  height: `${event?.radius * 2}px`,
+                  width: `${(event?.radius ?? 0) * 2}px`,
+                  height: `${(event?.radius ?? 0) * 2}px`,
                 }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">

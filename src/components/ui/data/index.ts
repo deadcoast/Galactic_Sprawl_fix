@@ -658,9 +658,9 @@ export const Timeline: React.FC<TimelineProps> = ({
             gap: isCompact ? "12px" : "16px",
             position: "relative",
             cursor: item.onClick ? "pointer" : "default",
-            opacity: animate ? 1 : undefined,
-            transform: animate ? "translateX(0)" : undefined,
-            transition: "all 0.2s ease-out",
+            opacity: animate ? 1 : 0,
+            transform: animate ? "translateX(0)" : "translateX(-16px)",
+            transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
           },
         },
         // Timeline dot and connector

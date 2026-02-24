@@ -835,7 +835,7 @@ The resource flow system has been significantly improved to address type conflic
 
 The Resource Registry system has been significantly enhanced to address inconsistencies in resource type handling across the codebase. The improvements focus on standardizing resource types, implementing a proper singleton pattern, and creating a centralized resource registry.
 
-#### Key Improvements
+### Key Improvements
 
 1. **Resource Type Converter**: Created a new type conversion layer in `ResourceTypeConverter.ts` for bidirectional conversion between string-based and enum-based resource types, ensuring type safety.
 
@@ -919,9 +919,9 @@ The following architectural improvements will address the identified duplication
 
 #### 1. Core Infrastructure Layer
 
-**Base Service Architecture**
+> **Base Service Architecture**
 
-```
+```plaintext
 BaseService (abstract)
 ├── SingletonService (abstract)
 │   ├── DataProcessingService
@@ -933,9 +933,9 @@ BaseService (abstract)
     └── initialize()
 ```
 
-**Base Manager Architecture**
+> **Base Manager Architecture**
 
-```
+```plaintext
 BaseManager (abstract)
 ├── SingletonManager (abstract)
 │   ├── ResourceManager
@@ -949,7 +949,7 @@ BaseManager (abstract)
 
 #### 2. Event System Architecture
 
-```
+```plaintext
 EventSystem
 ├── EventBus (core implementation)
 ├── Adapters
@@ -964,9 +964,9 @@ EventSystem
 
 #### 3. Component Architecture
 
-**Visualization Component Architecture**
+> **Visualization Component Architecture**
 
-```
+```plaintext
 BaseVisualizationComponent
 ├── Renderers
 │   ├── SVGRenderer
@@ -982,9 +982,9 @@ BaseVisualizationComponent
     └── ErrorBoundaries
 ```
 
-**UI Component Architecture**
+> **UI Component Architecture**
 
-```
+```plaintext
 BaseUIComponent
 ├── Button
 │   ├── PrimaryButton
@@ -998,7 +998,7 @@ BaseUIComponent
 
 #### 4. Hook Architecture
 
-```
+```plaintext
 BaseHooks
 ├── LifecycleHooks
 │   ├── useComponentLifecycle
@@ -1100,7 +1100,7 @@ interface FactionBehaviorSystem {
 }
 ```
 
-### Implementation Status
+### Implementation
 
 - ✅ Standardized event system using TypedEventEmitter
 - ✅ Proper enum usage for event types

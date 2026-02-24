@@ -6,23 +6,23 @@ This document describes the reorganized root directory structure implemented to 
 
 ## New Directory Structure
 
-```
+```plaintext
 root/
-├── config/                    # Configuration files organized by category
-│   ├── build/                 # Build-related configurations
-│   │   ├── .prettierrc.json   # Prettier formatting configuration
-│   │   └── postcss.config.js  # PostCSS configuration
-│   ├── testing/               # Testing configurations
-│   │   ├── jest.config.js     # Jest test configuration
-│   │   └── jest-setup.js      # Jest setup file
-│   └── linting/               # Linting configurations
+├── config/                     # Configuration files organized by category
+│   ├── build/                  # Build-related configurations
+│   │   ├── .prettierrc.json    # Prettier formatting configuration
+│   │   └── postcss.config.js   # PostCSS configuration
+│   ├── testing/                # Testing configurations
+│   │   ├── jest.config.js      # Jest test configuration
+│   │   └── jest-setup.js       # Jest setup file
+│   └── linting/                # Linting configurations
 │       └── eslint_baseline.txt # ESLint baseline file
-├── docs/                      # All documentation
-├── reports/                   # Generated reports and logs
-│   ├── ERRORS.json           # Error reports
-│   ├── WARNINGS.json         # Warning reports
-│   └── test-prettier.js      # Prettier test reports
-├── assets/                    # Static assets
+├── docs/                       # All documentation
+├── reports/                    # Generated reports and logs
+│   ├── ERRORS.json             # Error reports
+│   ├── WARNINGS.json           # Warning reports
+│   └── test-prettier.js        # Prettier test reports
+├── assets/                     # Static assets
 └── [essential files remain in root]
 ```
 
@@ -82,12 +82,14 @@ export default defineConfig({
 ## Migration Impact
 
 ### What Changed
+
 - Configuration files moved to `config/` subdirectories
 - Reports moved to `reports/` directory
 - Documentation consolidated in `docs/` directory
 - Asset directory moved to root level
 
 ### What Remained the Same
+
 - All essential development tools continue to work
 - Build processes remain unchanged
 - Development server functionality preserved

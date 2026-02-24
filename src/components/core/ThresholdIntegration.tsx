@@ -41,7 +41,8 @@ export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
           unsubscribe();
         };
       } catch {
-        // Failed to connect ThresholdContext to ResourceManager
+        // Failed to connect ThresholdContext to ResourceManager — still render children
+        setIsInitialized(true);
       }
     };
 
@@ -124,8 +125,8 @@ export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
             moduleId: resourceManager.id,
             moduleType: 'resource-manager',
             timestamp: Date.now(),
+            resourceType: resourceId as ResourceType,
             data: {
-              resourceType: resourceId as ResourceType,
               thresholdType: 'min',
               current: currentAmount,
               threshold: thresholds.min,
@@ -145,8 +146,8 @@ export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
             moduleId: resourceManager.id,
             moduleType: 'resource-manager',
             timestamp: Date.now(),
+            resourceType: resourceId as ResourceType,
             data: {
-              resourceType: resourceId as ResourceType,
               thresholdType: 'max',
               current: currentAmount,
               threshold: thresholds.max,

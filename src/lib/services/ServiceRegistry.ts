@@ -85,17 +85,14 @@ export class ServiceRegistry {
   }
 
   /**
-   * Register a new service with the registry
+   * Register a new service with the registry.
+   * Idempotent — re-registering the same name overwrites the previous registration.
    */
   public register(
     name: string,
     factory: ServiceFactory,
     config: Partial<ServiceConfig> = {}
   ): void {
-    if (this.services.has(name)) {
-      throw new Error(`Service ${name} is already registered`);
-    }
-
     const defaultConfig: ServiceConfig = {
       dependencies: [],
       lazyInit: false,
@@ -157,11 +154,21 @@ export class ServiceRegistry {
    * Dispose of all services in reverse dependency order
    */
   public async dispose(): Promise<void> {
-    const sortedServices = this.sortServicesByDependencies().reverse();
+    // Clear initializing set first to prevent "circular dependency" false positives
+    // when React StrictMode re-mounts and re-initializes
+    this.initializing.clear();
+
+    const sortedServices = this.services.size > 0
+      ? this.sortServicesByDependencies().reverse()
+      : [];
 
     for (const service of sortedServices) {
       if (service.instance) {
-        await service.instance.dispose();
+        try {
+          await service.instance.dispose();
+        } catch {
+          // Swallow disposal errors — the service is being torn down anyway
+        }
       }
     }
 

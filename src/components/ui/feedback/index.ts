@@ -35,6 +35,11 @@ const injectStyles = (() => {
         0% { opacity: 0; }
         100% { opacity: 1; }
       }
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.08); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.6; }
+      }
     `;
     document.head.appendChild(style);
   };
@@ -279,7 +284,7 @@ export const Progress: React.FC<ProgressProps> = ({
   injectStyles();
 
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
-  const bufferPercentage = bufferValue
+  const bufferPercentage = bufferValue != null
     ? Math.min(100, Math.max(0, (bufferValue / max) * 100))
     : 0;
   const heights = { sm: 4, md: 8, lg: 12 };
@@ -376,7 +381,7 @@ export const Progress: React.FC<ProgressProps> = ({
       },
       // Buffer bar (for buffer variant)
       variant === "buffer" &&
-        bufferValue &&
+        bufferValue != null &&
         React.createElement("div", {
           style: {
             position: "absolute",
@@ -648,4 +653,55 @@ export const toast = {
     toast.show(message, { ...options, severity: "warning" }),
   info: (message: string, options?: Omit<ToastOptions, "severity">) =>
     toast.show(message, { ...options, severity: "info" }),
+};
+
+export const ToastContainer: React.FC<ToastContainerProps> = ({
+  position = "bottom-right",
+}) => {
+  const [toasts, setToasts] = useState<(ToastProps & { id: string })[]>([]);
+
+  useEffect(() => {
+    const listener = (toastData: ToastProps & { id: string }) => {
+      setToasts((prev) => [...prev, toastData]);
+    };
+    toastListeners.add(listener);
+    return () => {
+      toastListeners.delete(listener);
+    };
+  }, []);
+
+  const handleClose = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const positions: Record<NonNullable<ToastProps["position"]>, React.CSSProperties> = {
+    "top-right": { top: "20px", right: "20px" },
+    "top-left": { top: "20px", left: "20px" },
+    "bottom-right": { bottom: "20px", right: "20px" },
+    "bottom-left": { bottom: "20px", left: "20px" },
+    "top-center": { top: "20px", left: "50%", transform: "translateX(-50%)" },
+    "bottom-center": { bottom: "20px", left: "50%", transform: "translateX(-50%)" },
+  };
+
+  return React.createElement(
+    "div",
+    {
+      style: {
+        position: "fixed",
+        ...positions[position],
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        zIndex: 9999,
+        pointerEvents: "none",
+      },
+    },
+    toasts.map((t) =>
+      React.createElement(Toast, {
+        key: t.id,
+        ...t,
+        onClose: () => handleClose(t.id),
+      }),
+    ),
+  );
 };

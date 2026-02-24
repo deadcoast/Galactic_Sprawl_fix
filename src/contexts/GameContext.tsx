@@ -8,7 +8,6 @@ import {
   useReducer,
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
-import { EventBus } from '../lib/events/EventBus';
 import { gameManager, GameManager, GameManagerEvent } from '../managers/game/gameManager';
 import { GameEvent } from '../types/core/GameTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
@@ -525,82 +524,45 @@ export const GameProvider: React.FC<GameProviderProps> = ({
 
   // Set up event subscriptions with the manager when provided
   useEffect(() => {
-    if (manager) {
-      // Get the event bus from the manager
-      // Use a safer approach to access the eventBus property
-      const gameEvents = (manager as unknown as { eventBus: EventBus<BaseEvent> }).eventBus;
+    if (!manager) return undefined;
 
-      // Use separate handlers for each event type to match test expectations
-      // Cast event types to string to avoid type errors with EventBus
-      const startedEventType = String(EventType.GAME_STARTED);
-      const pausedEventType = String(EventType.GAME_PAUSED);
-      const resumedEventType = String(EventType.GAME_RESUMED);
-      const stoppedEventType = String(EventType.GAME_STOPPED);
-      const timeUpdatedEventType = String(EventType.TIME_UPDATED);
+    const unsubs: (() => void)[] = [];
 
-      // Create type-safe wrapper for each handler
-      const createSafeHandler = (handler: (event: GameManagerEvent) => void) => {
-        return (event: BaseEvent) => handler(event as GameManagerEvent);
-      };
-
-      /**
-       * IMPORTANT: The use of 'unknown' in the subscribe calls is intentional and necessary
-       * due to a type incompatibility between GameManagerEventType and EventType.
-       *
-       * The proper solution would be to:
-       * 1. Refactor the event system to use a single EventType enum
-       * 2. Fix the GameManagerEvent interface to ensure compatibility with BaseEvent
-       *
-       * Until then, this type assertion is a necessary workaround.
-       * This has been documented in the System_Scratchpad.md file.
-       */
-
-      // Subscribe to individual event types - this approach works with the test mocks
-      const unsubStarted = gameEvents.subscribe(
-        startedEventType as unknown as EventType,
-        createSafeHandler(event => handleGameStarted(event, dispatch))
+    try {
+      // Use the manager's subscribeToEvent API (from AbstractBaseManager/IBaseManager)
+      // instead of accessing a non-existent eventBus property
+      unsubs.push(
+        manager.subscribeToEvent(EventType.GAME_STARTED, (event) =>
+          handleGameStarted(event as GameManagerEvent, dispatch)
+        )
       );
-
-      const unsubPaused = gameEvents.subscribe(
-        pausedEventType as unknown as EventType,
-        createSafeHandler(event => handleGamePaused(event, dispatch))
+      unsubs.push(
+        manager.subscribeToEvent(EventType.GAME_PAUSED, (event) =>
+          handleGamePaused(event as GameManagerEvent, dispatch)
+        )
       );
-
-      const unsubResumed = gameEvents.subscribe(
-        resumedEventType as unknown as EventType,
-        createSafeHandler(event => handleGameResumed(event, dispatch))
+      unsubs.push(
+        manager.subscribeToEvent(EventType.GAME_RESUMED, (event) =>
+          handleGameResumed(event as GameManagerEvent, dispatch)
+        )
       );
-
-      const unsubStopped = gameEvents.subscribe(
-        stoppedEventType as unknown as EventType,
-        createSafeHandler(event => handleGameStopped(event, dispatch))
+      unsubs.push(
+        manager.subscribeToEvent(EventType.GAME_STOPPED, (event) =>
+          handleGameStopped(event as GameManagerEvent, dispatch)
+        )
       );
-
-      const unsubTimeUpdated = gameEvents.subscribe(
-        timeUpdatedEventType as unknown as EventType,
-        createSafeHandler(event => handleTimeUpdated(event, dispatch))
+      unsubs.push(
+        manager.subscribeToEvent(EventType.TIME_UPDATED, (event) =>
+          handleTimeUpdated(event as GameManagerEvent, dispatch)
+        )
       );
-
-      // Clean up subscriptions
-      return () => {
-        if (typeof unsubStarted === 'function') {
-          unsubStarted();
-        }
-        if (typeof unsubPaused === 'function') {
-          unsubPaused();
-        }
-        if (typeof unsubResumed === 'function') {
-          unsubResumed();
-        }
-        if (typeof unsubStopped === 'function') {
-          unsubStopped();
-        }
-        if (typeof unsubTimeUpdated === 'function') {
-          unsubTimeUpdated();
-        }
-      };
+    } catch (error) {
+      console.error('[GameProvider] Error subscribing to manager events:', error);
     }
-    return undefined;
+
+    return () => {
+      unsubs.forEach(fn => { if (typeof fn === 'function') fn(); });
+    };
   }, [manager]);
 
   // Create context value

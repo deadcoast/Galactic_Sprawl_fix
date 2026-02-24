@@ -1,5 +1,6 @@
-import { Database, Map, Menu, Radar, Ship, Users } from 'lucide-react';
+import { Beaker, Database, Map, Menu, Radar, Ship, Users, Wrench } from 'lucide-react';
 import * as React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameState } from '../../contexts/GameContext';
 import { useComponentProfiler } from '../../hooks/ui/useComponentProfiler';
 import { GalaxyMap } from './GalaxyMap';
@@ -16,6 +17,8 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   const [showVPRView, setShowVPRView] = React.useState(false);
   const [showGalaxyMap, setShowGalaxyMap] = React.useState(false);
   const state = useGameState(state => state);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Add component profiling to monitor performance
   const profiler = useComponentProfiler('GameLayout', {
@@ -78,30 +81,45 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
         <div className="h-8 w-8 rounded-full" style={{ backgroundColor: bannerColor }} />
         <div className="flex flex-1 flex-col space-y-6">
           <button
-            onClick={() => {
-              console.warn('Galaxy map button clicked');
-              setShowGalaxyMap(prev => !prev);
-            }}
-            className="rounded-lg p-2 transition-colors hover:bg-gray-700"
+            onClick={() => navigate('/map')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/map' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Exploration Map"
           >
             <Map className="h-6 w-6" />
           </button>
           <button
-            className="rounded-lg p-2 transition-colors hover:bg-gray-700"
-            onClick={handleToggleVPRView}
+            onClick={() => navigate('/fleet')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/fleet' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Fleet Management"
           >
             <Radar className="h-6 w-6" />
           </button>
           <button
-            className="rounded-lg p-2 transition-colors hover:bg-gray-700"
-            onClick={handleToggleSprawlView}
+            onClick={() => navigate('/hangar')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/hangar' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Ship Hangar"
           >
             <Ship className="h-6 w-6" />
           </button>
-          <button className="rounded-lg p-2 transition-colors hover:bg-gray-700">
+          <button
+            onClick={() => navigate('/colony')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/colony' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Colony Management"
+          >
             <Users className="h-6 w-6" />
           </button>
-          <button className="rounded-lg p-2 transition-colors hover:bg-gray-700">
+          <button
+            onClick={() => navigate('/research')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/research' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Research Tree"
+          >
+            <Beaker className="h-6 w-6" />
+          </button>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className={`rounded-lg p-2 transition-colors hover:bg-gray-700 ${location.pathname === '/dashboard' ? 'bg-gray-700 text-cyan-400' : ''}`}
+            title="Dashboard"
+          >
             <Database className="h-6 w-6" />
           </button>
         </div>
@@ -116,29 +134,29 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
             <div className="rounded-lg bg-gray-700 px-4 py-2">
               <span className="text-sm text-gray-300">Population:</span>
               <span className="ml-2 font-medium">
-                {state.resources.POPULATION.toLocaleString()}
+                {(state.resources?.POPULATION ?? 0).toLocaleString()}
               </span>
             </div>
             <div className="rounded-lg bg-gray-700 px-4 py-2">
               <span className="text-sm text-gray-300">Systems:</span>
               <span className="ml-2 font-medium">
-                {state.systems.explored}/{state.systems.total}
+                {state.systems?.explored ?? 0}/{state.systems?.total ?? 0}
               </span>
             </div>
             {/* Add performance indicator */}
             <div className="rounded-lg bg-gray-700 px-4 py-2">
               <span className="text-sm text-gray-300">Render:</span>
               <span
-                className={`ml-2 font-medium ${profiler.metrics.lastRenderTime > 16 ? 'text-yellow-400' : 'text-green-400'}`}
+                className={`ml-2 font-medium ${(profiler.metrics?.lastRenderTime ?? 0) > 16 ? 'text-yellow-400' : 'text-green-400'}`}
               >
-                {profiler.metrics.lastRenderTime.toFixed(1)}ms
+                {(profiler.metrics?.lastRenderTime ?? 0).toFixed(1)}ms
               </span>
             </div>
           </div>
         </div>
 
         {/* Game Content */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 overflow-auto">
           {/* Game HUD */}
           <GameHUD
             empireName={empireName}
@@ -146,7 +164,12 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
             onToggleVPRView={handleToggleVPRView}
           />
 
-          {/* Sprawl View */}
+          {/* Main Route Content — always visible */}
+          <div className="h-full w-full">
+            {children}
+          </div>
+
+          {/* Sprawl View — overlay panel */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${
               showSprawlView
@@ -157,13 +180,12 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
             <div className="flex h-full w-full flex-col items-center justify-center bg-gray-800 p-4">
               <h2 className="mb-4 text-2xl font-bold text-white">Sprawl View</h2>
               <p className="text-center text-gray-300">
-                This is where you can manage your mining operations and resource extraction.
+                Manage your mining operations and resource extraction.
               </p>
-              {children}
             </div>
           </div>
 
-          {/* VPR View */}
+          {/* VPR View — overlay panel */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${
               showVPRView
@@ -174,12 +196,12 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
             <div className="flex h-full w-full flex-col items-center justify-center bg-blue-900/50 p-4">
               <h2 className="mb-4 text-2xl font-bold text-white">Exploration View</h2>
               <p className="text-center text-gray-300">
-                This is where you can manage your exploration missions and scout ships.
+                Manage your exploration missions and scout ships.
               </p>
             </div>
           </div>
 
-          {/* Galaxy Map */}
+          {/* Galaxy Map — overlay panel */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${
               showGalaxyMap

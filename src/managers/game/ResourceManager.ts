@@ -182,6 +182,16 @@ export class ResourceManager implements IBaseManager {
     // Initialize event handlers for resource-related events
     this.initializeEventHandlers();
 
+    // Eagerly initialize resources from config so they're available before async initialize() is called
+    if (this.config.defaultResourceLimits) {
+      Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
+        const resourceType = ResourceType[type as keyof typeof ResourceType];
+        if (resourceType && limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
+          this.initializeResource(resourceType, limits.min, limits.max);
+        }
+      });
+    }
+
     console.warn('[ResourceManager] Created with config:', config);
   }
 
@@ -211,28 +221,42 @@ export class ResourceManager implements IBaseManager {
   }
 
   /**
-   * Subscribe to an event (for compatibility)
+   * Subscribe to an event
    */
   public subscribeToEvent(eventType: EventType, handler: (event: ResourceManagerEvent) => void): () => void {
-    // Simple implementation - just return a no-op unsubscribe function
-    console.warn(`[ResourceManager] Event subscription not implemented: ${eventType}`);
-    return () => {};
+    if (!this.eventHandlers.has(eventType)) {
+      this.eventHandlers.set(eventType, new Set());
+    }
+    const handlers = this.eventHandlers.get(eventType)!;
+    handlers.add(handler as EventHandler<ResourceManagerEvent>);
+
+    // Return unsubscribe function
+    return () => {
+      handlers.delete(handler as EventHandler<ResourceManagerEvent>);
+    };
   }
 
   /**
-   * Publish an event (for compatibility)
+   * Publish an event to all registered handlers
    */
-  public publishEvent(event: any): void {
-    console.warn(`[ResourceManager] Event publishing not implemented:`, event);
+  public publishEvent(event: ResourceManagerEvent): void {
+    const handlers = this.eventHandlers.get(event.type);
+    if (handlers) {
+      handlers.forEach(handler => {
+        try {
+          handler(event);
+        } catch (error) {
+          console.error(`[ResourceManager] Error in event handler for ${event.type}:`, error);
+        }
+      });
+    }
   }
 
   /**
    * Subscribe to events (internal method)
    */
   private subscribe(eventType: EventType, handler: (event: ResourceManagerEvent) => void): () => void {
-    // Simple implementation - just return a no-op unsubscribe function
-    console.warn(`[ResourceManager] Internal event subscription not implemented: ${eventType}`);
-    return () => {};
+    return this.subscribeToEvent(eventType, handler);
   }
 
   /**
@@ -484,8 +508,20 @@ export class ResourceManager implements IBaseManager {
       if (oldAmount !== newAmount) {
         state.current = newAmount;
 
-        // Log resource update
-        console.warn(`[ResourceManager] Resource ${resourceType} updated: ${oldAmount} -> ${newAmount}`);
+        // Publish resource update event so subscribers (ThresholdIntegration, etc.) are notified
+        this.publishEvent({
+          type: EventType.RESOURCE_UPDATED,
+          moduleId: this.id,
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+          resourceType,
+          amount: newAmount,
+          data: {
+            resources: {
+              [resourceType]: { current: newAmount, max: state.max, min: state.min },
+            },
+          },
+        });
 
         // Check thresholds after updating amount
         this.checkThresholds();

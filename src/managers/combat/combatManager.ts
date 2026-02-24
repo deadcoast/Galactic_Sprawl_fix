@@ -60,7 +60,7 @@ export interface CombatWeapon {
  */
 export interface FleetCombatUnit {
   id: string;
-  faction: string;
+  faction: FactionId;
   type:
     | "spitflare"
     | "starSchooner"
@@ -541,9 +541,12 @@ export class CombatManager extends TypedEventEmitter<CombatEvents> {
     const threats: Threat[] = [];
     const units = this.getUnitsInRange(position, range);
 
+    const playerFaction: FactionId = "player";
+    const allyFaction: FactionId = "ally";
+
     for (const unit of units) {
       // Skip friendly units (player faction)
-      if (unit.faction === "player" || unit.faction === "ally") {
+      if (unit.faction === playerFaction || unit.faction === allyFaction) {
         continue;
       }
 

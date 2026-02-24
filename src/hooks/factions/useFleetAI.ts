@@ -5,62 +5,9 @@ import { Position } from "../../types/core/GameTypes";
 import { FactionId } from "../../types/ships/FactionShipTypes";
 import { useAdaptiveAI } from "./useAdaptiveAI";
 import { useFactionBehavior } from "./useFactionBehavior";
+import type { Fleet, FleetCombatUnit, Threat } from "../../managers/combat/combatManager";
 
-interface CombatUnit {
-  id: string;
-  faction: string;
-  type:
-    | "spitflare"
-    | "starSchooner"
-    | "orionFrigate"
-    | "harbringerGalleon"
-    | "midwayCarrier"
-    | "motherEarthRevenge";
-  tier: 1 | 2 | 3;
-  position: { x: number; y: number };
-  status:
-    | "idle"
-    | "patrolling"
-    | "engaging"
-    | "returning"
-    | "damaged"
-    | "retreating"
-    | "disabled";
-  health: number;
-  maxHealth: number;
-  shield: number;
-  maxShield: number;
-  weapons: {
-    id: string;
-    type: "machineGun" | "gaussCannon" | "railGun" | "mgss" | "rockets";
-    range: number;
-    damage: number;
-    cooldown: number;
-    status: "ready" | "charging" | "cooling";
-  }[];
-  specialAbilities?: {
-    name: string;
-    description: string;
-    cooldown: number;
-    active: boolean;
-  }[];
-}
-
-export interface Threat {
-  id: string;
-  position: { x: number; y: number };
-  severity: "low" | "medium" | "high";
-}
-
-export interface Fleet {
-  id: string;
-  units: CombatUnit[];
-  direction: number;
-}
-
-// FleetCombatUnit from combatManager matches the local CombatUnit interface structure
-// getFleetStatus and getThreatsInRange methods are implemented in CombatManager
-import type { FleetCombatUnit } from "../../managers/combat/combatManager";
+export type { Fleet, Threat };
 
 interface FleetFormation {
   type:
@@ -259,7 +206,7 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
 }
 
 function updateFleetBehavior(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   faction: {
     fleetStrength: number;
     specialRules?: FleetAIState["specialRules"];
@@ -359,7 +306,7 @@ function emitOfficerExperience(officerId: string, amount: number) {
   console.warn(`Officer ${officerId} gained ${amount} experience`);
 }
 
-function calculateFleetStrength(fleet: { units: CombatUnit[] }): number {
+function calculateFleetStrength(fleet: { units: FleetCombatUnit[] }): number {
   const totalStrength = fleet.units.reduce((sum, unit) => {
     const healthFactor = unit.health / unit.maxHealth;
     const shieldFactor = unit.shield / unit.maxShield;
@@ -373,7 +320,7 @@ function calculateFleetStrength(fleet: { units: CombatUnit[] }): number {
 }
 
 function calculateThreatLevel(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   faction: { fleetStrength: number },
 ): number {
   const nearbyThreats = getCombatManager().getThreatsInRange(
@@ -415,7 +362,7 @@ function determineCombatStyle(
 }
 
 function shouldChangeFormation(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   state: FleetAIState,
   adaptiveAI: ReturnType<typeof useAdaptiveAI>,
 ): boolean {
@@ -433,7 +380,7 @@ function shouldChangeFormation(
 }
 
 function selectNewFormation(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   state: FleetAIState,
   adaptiveAI: ReturnType<typeof useAdaptiveAI>,
   factionBehavior: ReturnType<typeof useFactionBehavior>,
@@ -508,7 +455,7 @@ function selectNewFormation(
 
 function updateEngagementParameters(
   state: FleetAIState,
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   adaptiveAI: ReturnType<typeof useAdaptiveAI>,
 ) {
   // Adjust ranges based on fleet composition and AI learning
@@ -535,7 +482,7 @@ function updateEngagementParameters(
 }
 
 function applyFleetFormation(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   formation: FleetFormation,
 ) {
   const positions = calculateFormationPositions(fleet, formation);
@@ -548,7 +495,7 @@ function applyFleetFormation(
 }
 
 function calculateFormationPositions(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   formation: FleetFormation,
 ): { x: number; y: number }[] {
   const positions: { x: number; y: number }[] = [];
@@ -716,7 +663,7 @@ function calculateFormationPositions(
   return positions;
 }
 
-function getFleetCenter(fleet: { units: CombatUnit[] }): {
+function getFleetCenter(fleet: { units: FleetCombatUnit[] }): {
   x: number;
   y: number;
 } {
@@ -729,7 +676,7 @@ function getFleetCenter(fleet: { units: CombatUnit[] }): {
   );
 }
 
-function calculateThreatDirection(fleet: { units: CombatUnit[] }): number {
+function calculateThreatDirection(fleet: { units: FleetCombatUnit[] }): number {
   const threats = getCombatManager().getThreatsInRange(
     getFleetCenter(fleet),
     1500,
@@ -751,7 +698,7 @@ function calculateThreatDirection(fleet: { units: CombatUnit[] }): number {
 }
 
 function isFleetSpreadTooThin(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   formation: FleetFormation,
 ): boolean {
   const positions = calculateFormationPositions(fleet, formation);
@@ -775,7 +722,7 @@ function getDistance(
 
 function calculateCommandBonus(
   commandStructure?: CommandHierarchy,
-  fleet?: { units: CombatUnit[] },
+  fleet?: { units: FleetCombatUnit[] },
 ): number {
   if (!commandStructure || !fleet) {
     return 1;
@@ -818,7 +765,7 @@ interface HangarBonus {
 
 function calculateHangarBonus(
   hangarStatus: FleetAIState["hangarStatus"],
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
 ): HangarBonus {
   const { currentTier, upgradeProgress, repairEfficiency, dockingBayCapacity } =
     hangarStatus;
@@ -851,7 +798,7 @@ function calculateHangarBonus(
 
 function updateHangarStatus(
   state: FleetAIState,
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
 ) {
   const { hangarStatus } = state;
   const activeUnits = fleet.units.length;
@@ -888,7 +835,7 @@ function updateHangarStatus(
 }
 
 function generateVisualFeedback(
-  fleet: { units: CombatUnit[] },
+  fleet: { units: FleetCombatUnit[] },
   state: FleetAIState,
   formationPositions: { x: number; y: number }[],
   strengthMultiplier: number,

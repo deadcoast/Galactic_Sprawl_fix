@@ -15,12 +15,23 @@ let _ErrorType: typeof import('../../services/logging/ErrorLoggingService').Erro
 
 function getErrorLoggingService() {
   if (!_errorLoggingService) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const module = require('../../services/logging/ErrorLoggingService');
-    _errorLoggingService = module.errorLoggingService;
-    _ErrorType = module.ErrorType;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const module = require('../../services/logging/ErrorLoggingService');
+      _errorLoggingService = module.errorLoggingService;
+      _ErrorType = module.ErrorType;
+    } catch {
+      // Circular dependency not yet resolved — fall back to console
+    }
   }
-  return { errorLoggingService: _errorLoggingService!, ErrorType: _ErrorType! };
+  if (!_errorLoggingService || !_ErrorType) {
+    // Return a minimal stub so callers don't crash
+    return {
+      errorLoggingService: { logError: (...args: unknown[]) => console.error('[BaseManager fallback]', ...args) } as NonNullable<typeof _errorLoggingService>,
+      ErrorType: { RUNTIME: 'RUNTIME' } as unknown as NonNullable<typeof _ErrorType>,
+    };
+  }
+  return { errorLoggingService: _errorLoggingService, ErrorType: _ErrorType };
 }
 
 /**
