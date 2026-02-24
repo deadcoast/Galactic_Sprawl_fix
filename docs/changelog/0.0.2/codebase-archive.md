@@ -179,7 +179,7 @@ switch (routine.type) {
 }
 ```
 
-### EMPTY FUNCTION FIXES
+### EMPTY FUNCTION FIXES (Unused Variable)
 
 **Pattern**: Proper TODO Comments for Placeholder Functions
 
