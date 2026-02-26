@@ -87,6 +87,7 @@ async function initializeRegistryOnce(): Promise<void> {
 export function ServiceProvider({ children }: ServiceProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let disposed = false;
@@ -128,27 +129,55 @@ export function ServiceProvider({ children }: ServiceProviderProps) {
         registryInitializationPromise = null;
       });
     };
-  }, []);
+  }, [retryToken]);
+
+  const handleRetry = () => {
+    setError(null);
+    setIsInitialized(false);
+
+    const registry = ServiceRegistry.getInstance();
+    void registry
+      .dispose()
+      .catch(err => {
+        errorLoggingService.logError(
+          err instanceof Error ? err : new Error('Error disposing ServiceRegistry during retry'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.LOW,
+          { componentName: 'ServiceProvider', action: 'handleRetry' }
+        );
+      })
+      .finally(() => {
+        registryInitializationPromise = null;
+        setRetryToken(prev => prev + 1);
+      });
+  };
 
   if (error) {
-    // You might want to render a more user-friendly error screen
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-red-50">
-        <div className="rounded-lg bg-white p-6 shadow-lg">
-          <h2 className="mb-4 text-xl font-bold text-red-600">Service Initialization Error</h2>
-          <p className="text-gray-700">{error.message}</p>
+      <div className="flex h-screen w-screen items-center justify-center bg-[var(--gs-bg)] p-6">
+        <div className="w-full max-w-2xl rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.95)] p-6 shadow-[0_16px_32px_rgba(2,10,24,0.35)]">
+          <h2 className="mb-3 text-xl font-bold text-red-400">Service Initialization Error</h2>
+          <p className="text-[var(--gs-text-2)]">{error.message}</p>
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="rounded-md border border-blue-500/70 bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+            >
+              Retry Initialization
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   if (!isInitialized) {
-    // You might want to render a loading screen
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen w-screen items-center justify-center bg-[var(--gs-bg)]">
         <div className="text-center">
-          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-          <p className="text-gray-600">Initializing services...</p>
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-[var(--gs-text-2)]">Initializing services...</p>
         </div>
       </div>
     );

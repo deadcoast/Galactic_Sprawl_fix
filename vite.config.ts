@@ -84,12 +84,15 @@ export default defineConfig({
             "class-variance-authority",
           ],
           // Group 3D and visualization libraries
-          "vendor-3d": [
+          "vendor-three": [
             "three",
             "@react-three/fiber",
             "@react-three/drei",
-            "pixi.js",
+          ],
+          "vendor-d3": [
             "d3",
+            "d3-scale",
+            "d3-scale-chromatic",
           ],
           // Group state management libraries
           "vendor-state": ["rxjs", "xstate"],
@@ -109,7 +112,7 @@ export default defineConfig({
     // Optimize CSS and split into separate files
     cssCodeSplit: true,
     // Set chunk size warnings threshold
-    chunkSizewarningLimit: 1000, // 1MB
+    chunkSizeWarningLimit: 1000, // 1MB
   },
   esbuild: {
     target: "es2020",

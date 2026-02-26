@@ -17,18 +17,12 @@ import {
 } from '@mui/material';
 import { Suspense } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
-import { ShipHangar } from './components/buildings/modules/hangar/ShipHangar';
 // Removed unused import: import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
 import { ThresholdIntegration } from './components/core/ThresholdIntegration';
 import { ThresholdProvider } from './contexts/ThresholdContext';
 import { ServiceProvider as SystemIntegrationProvider } from './components/providers/ServiceProvider';
 import { getResourceManager } from './managers/ManagerRegistry';
 import { initializeResourceIntegration } from './managers/resource/ResourceIntegration';
-import ColonyManagementPage from './pages/ColonyManagementPage'; // Corrected name
-import PerformanceAnalysisDashboard from './pages/PerformanceAnalysisDashboard'; // Corrected name
-import ExplorationMap from './pages/ExplorationMap';
-import FleetManagement from './pages/FleetManagement';
-import ResearchTree from './pages/ResearchTree';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/logging/ErrorLoggingService';
 import { darkTheme } from './ui/theme/darkTheme';
 
@@ -61,6 +55,16 @@ class ErrorBoundary extends React.Component<
 // Lazy load components that aren't needed on initial render
 const GameLayout = lazy(() =>
   import('./components/ui/GameLayout').then(module => ({ default: module.GameLayout }))
+);
+const PerformanceAnalysisDashboard = lazy(() => import('./pages/PerformanceAnalysisDashboard'));
+const ColonyManagementPage = lazy(() => import('./pages/ColonyManagementPage'));
+const ExplorationMap = lazy(() => import('./pages/ExplorationMap'));
+const FleetManagement = lazy(() => import('./pages/FleetManagement'));
+const ResearchTree = lazy(() => import('./pages/ResearchTree'));
+const ShipHangar = lazy(() =>
+  import('./components/buildings/modules/hangar/ShipHangar').then(module => ({
+    default: module.ShipHangar,
+  }))
 );
 
 // A wrapper for the GameLayout component to provide the required props

@@ -534,7 +534,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
             sans-serif;
         }
 
-        h2 {
+        .interpolation-memoization-demo h2 {
           text-align: center;
           margin-bottom: 10px;
         }
@@ -560,17 +560,17 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
           margin: 5px 10px;
         }
 
-        label {
+        .interpolation-memoization-demo label {
           display: flex;
           align-items: center;
           gap: 10px;
         }
 
-        input[type='range'] {
+        .interpolation-memoization-demo input[type='range'] {
           width: 150px;
         }
 
-        select {
+        .interpolation-memoization-demo select {
           padding: 5px;
           border-radius: 4px;
           border: 1px solid #ccc;
@@ -600,7 +600,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
           color: white;
         }
 
-        .toggle-button:hover {
+        .interpolation-memoization-demo .toggle-button:hover {
           opacity: 0.9;
         }
 
@@ -658,7 +658,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
           text-align: center;
         }
 
-        .visualization-half h3 {
+        .interpolation-memoization-demo .visualization-half h3 {
           margin-bottom: 10px;
         }
 
@@ -675,7 +675,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
           margin-bottom: 20px;
         }
 
-        .cache-stats h3 {
+        .interpolation-memoization-demo .cache-stats h3 {
           margin-top: 0;
           margin-bottom: 15px;
           text-align: center;

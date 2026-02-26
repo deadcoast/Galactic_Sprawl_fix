@@ -18,25 +18,13 @@ import {
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
+import { moduleEventBus as canonicalModuleEventBus } from '../events/ModuleEventBus';
 
-// Import canonical event bus for bridging
-// Note: Using dynamic import pattern to avoid circular dependency
-let canonicalEventBus: {
+const canonicalEventBus: {
   emit: ((event: StandardizedEvent) => void) & (<T extends Record<string, unknown>>(eventName: string, data: T) => void);
-} | null = null;
+} | null = canonicalModuleEventBus;
 
-// Lazy load the canonical event bus to avoid circular dependencies
-const getCanonicalEventBus = async () => {
-  if (!canonicalEventBus) {
-    try {
-      const module = await import('../events/ModuleEventBus');
-      canonicalEventBus = module.moduleEventBus;
-    } catch {
-      // Silently fail - canonical bus may not be available during initialization
-    }
-  }
-  return canonicalEventBus;
-};
+const getCanonicalEventBus = () => canonicalEventBus;
 
 /**
  * Maps legacy string event types to the canonical EventType enum.
@@ -335,29 +323,27 @@ export class ModuleEventBus {
       return;
     }
 
-    // Asynchronously forward to canonical bus to avoid circular dependency issues
-    getCanonicalEventBus().then(bus => {
-      if (bus) {
-        try {
-          // Create canonical event format
-          const canonicalEvent = {
-            id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            type: canonicalType,
-            name: canonicalType,
-            description: canonicalType,
-            category: canonicalType,
-            subCategory: canonicalType,
-            timestamp: event.timestamp,
-            moduleId: event.moduleId,
-            moduleType: event.moduleType,
-            data: event.data ?? {},
-          };
-          bus.emit(canonicalEvent);
-        } catch {
-          // Silently fail bridging - don't disrupt legacy event flow
-        }
+    const bus = getCanonicalEventBus();
+    if (bus) {
+      try {
+        // Create canonical event format
+        const canonicalEvent = {
+          id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: canonicalType,
+          name: canonicalType,
+          description: canonicalType,
+          category: canonicalType,
+          subCategory: canonicalType,
+          timestamp: event.timestamp,
+          moduleId: event.moduleId,
+          moduleType: event.moduleType,
+          data: event.data ?? {},
+        };
+        bus.emit(canonicalEvent);
+      } catch {
+        // Silently fail bridging - don't disrupt legacy event flow
       }
-    });
+    }
   }
 
   /**

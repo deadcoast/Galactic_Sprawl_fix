@@ -8,7 +8,7 @@ import { ResourceType } from '../../../types/resources/ResourceTypes';
  */
 
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
 import { StandardizedEvent } from '../../../types/events/StandardizedEvents';
@@ -159,17 +159,22 @@ const GalaxyExplorationSystemInner: React.FC<
 }) => {
   // Get exploration context
   const exploration = useExploration();
+  const rootRef = useRef<HTMLDivElement>(null);
 
   // State
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [dataTableView, setDataTableView] = useState<DataTableView>(initialDataTableView);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(initialLayoutMode);
+  const [containerSize, setContainerSize] = useState(() => ({
+    width: typeof width === 'number' ? width : 0,
+    height: typeof height === 'number' ? height : 0,
+  }));
   const [viewport, setViewport] = useState<MapViewport>({
     x: 0,
     y: 0,
     scale: 1,
-    width: typeof width === 'number' ? width : 800,
-    height: typeof height === 'number' ? height / 2 : 400,
+    width: typeof width === 'number' ? width : 960,
+    height: typeof height === 'number' ? height / 2 : 480,
     ...initialViewport,
   });
   const [visualSettings, setVisualSettings] = useState<MapVisualSettings>({
@@ -185,11 +190,54 @@ const GalaxyExplorationSystemInner: React.FC<
   });
   const [selection, setSelection] = useState<MapSelection[]>(initialSelection);
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
+  const resolvedWidth =
+    typeof width === 'number' ? width : Math.max(360, Math.floor(containerSize.width || 960));
+  const resolvedHeight =
+    typeof height === 'number' ? height : Math.max(520, Math.floor(containerSize.height || 760));
+
+  // Track container dimensions for responsive string-based width/height props.
+  useEffect(() => {
+    const shouldObserve = typeof width !== 'number' || typeof height !== 'number';
+    if (!shouldObserve) {
+      return;
+    }
+
+    const element = rootRef.current;
+    if (!element) {
+      return;
+    }
+
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setContainerSize(prev => {
+        const next = {
+          width: Math.floor(rect.width),
+          height: Math.floor(rect.height),
+        };
+
+        if (prev.width === next.width && prev.height === next.height) {
+          return prev;
+        }
+
+        return next;
+      });
+    };
+
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    window.addEventListener('resize', updateSize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [width, height]);
 
   // Compute dimensions based on layout mode and view mode
   const dimensions = useMemo(() => {
-    const totalWidth = typeof width === 'number' ? width : 800;
-    const totalHeight = typeof height === 'number' ? height : 800;
+    const totalWidth = resolvedWidth;
+    const totalHeight = resolvedHeight;
 
     if (viewMode === 'map') {
       return {
@@ -225,7 +273,7 @@ const GalaxyExplorationSystemInner: React.FC<
         dataHeight: totalHeight * 0.4,
       };
     }
-  }, [width, height, viewMode, layoutMode]);
+  }, [resolvedWidth, resolvedHeight, viewMode, layoutMode]);
 
   // Update viewport when dimensions change
   useEffect(() => {
@@ -1257,7 +1305,7 @@ const GalaxyExplorationSystemInner: React.FC<
               <select
                 value={dataTableView}
                 onChange={e => handleDataTableViewChange(e.target.value as DataTableView)}
-                className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-sm text-slate-100"
+                className="gs-control text-sm"
               >
                 <option value="sectors">Sectors</option>
                 <option value="systems">Systems</option>
@@ -1269,7 +1317,7 @@ const GalaxyExplorationSystemInner: React.FC<
               {selection.length > 0 && (
                 <button
                   onClick={handleAnalyze}
-                  className="rounded-md border border-blue-500/70 bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-500"
+                  className="gs-button-primary px-3 py-1 text-sm font-medium"
                 >
                   Analyze
                 </button>
@@ -1434,7 +1482,7 @@ const GalaxyExplorationSystemInner: React.FC<
                   type="checkbox"
                   checked={visualSettings.showGrid}
                   onChange={e => handleVisualSettingsChange('showGrid', e.target.checked)}
-                  className="form-checkbox h-3 w-3"
+                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
                 />
                 <span>Grid</span>
               </label>
@@ -1443,7 +1491,7 @@ const GalaxyExplorationSystemInner: React.FC<
                   type="checkbox"
                   checked={visualSettings.showLabels}
                   onChange={e => handleVisualSettingsChange('showLabels', e.target.checked)}
-                  className="form-checkbox h-3 w-3"
+                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
                 />
                 <span>Labels</span>
               </label>
@@ -1452,7 +1500,7 @@ const GalaxyExplorationSystemInner: React.FC<
                   type="checkbox"
                   checked={visualSettings.showResourceIcons}
                   onChange={e => handleVisualSettingsChange('showResourceIcons', e.target.checked)}
-                  className="form-checkbox h-3 w-3"
+                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
                 />
                 <span>Resources</span>
               </label>
@@ -1461,7 +1509,7 @@ const GalaxyExplorationSystemInner: React.FC<
                   type="checkbox"
                   checked={visualSettings.showAnomalyIcons}
                   onChange={e => handleVisualSettingsChange('showAnomalyIcons', e.target.checked)}
-                  className="form-checkbox h-3 w-3"
+                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
                 />
                 <span>Anomalies</span>
               </label>
@@ -1470,7 +1518,7 @@ const GalaxyExplorationSystemInner: React.FC<
                   type="checkbox"
                   checked={visualSettings.showTradeRoutes}
                   onChange={e => handleVisualSettingsChange('showTradeRoutes', e.target.checked)}
-                  className="form-checkbox h-3 w-3"
+                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
                 />
                 <span>Trade Routes</span>
               </label>
@@ -1524,13 +1572,15 @@ const GalaxyExplorationSystemInner: React.FC<
 
   return (
     <div
+      ref={rootRef}
       className={cn(
         'overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100 shadow-2xl',
         className
       )}
       style={{
-        width: width,
-        height: height,
+        width,
+        height,
+        minHeight: typeof height === 'string' ? 640 : undefined,
       }}
     >
       {/* Toolbar */}

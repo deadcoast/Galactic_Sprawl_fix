@@ -1,10 +1,22 @@
 import * as React from 'react';
-import { FormationTacticsPage } from '../components/combat/formations/FormationTacticsPage';
+
+const FormationTacticsPage = React.lazy(async () => {
+  const module = await import('../components/combat/formations/FormationTacticsPage');
+  return { default: module.FormationTacticsPage };
+});
 
 const FleetManagement: React.FC = () => {
   return (
     <div className="gs-route-shell">
-      <FormationTacticsPage />
+      <React.Suspense
+        fallback={
+          <div className="gs-route-container gs-surface p-6 text-[var(--gs-text-2)]">
+            Loading fleet management...
+          </div>
+        }
+      >
+        <FormationTacticsPage />
+      </React.Suspense>
     </div>
   );
 };

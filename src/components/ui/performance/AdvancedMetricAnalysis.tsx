@@ -583,14 +583,14 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
             sans-serif;
         }
 
-        h2 {
+        .advanced-metric-analysis h2 {
           color: #333;
           border-bottom: 2px solid #4285f4;
           padding-bottom: 10px;
           margin-bottom: 20px;
         }
 
-        h3 {
+        .advanced-metric-analysis h3 {
           color: #4285f4;
           margin-top: 0;
           margin-bottom: 15px;
@@ -646,28 +646,28 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
           margin-bottom: 30px;
         }
 
-        .anomalies-list h4,
-        .correlation-analysis h3,
-        .pattern-recognition h3 {
+        .advanced-metric-analysis .anomalies-list h4,
+        .advanced-metric-analysis .correlation-analysis h3,
+        .advanced-metric-analysis .pattern-recognition h3 {
           padding: 15px;
           margin: 0;
           background: #f5f5f5;
           border-bottom: 1px solid #ddd;
         }
 
-        table {
+        .advanced-metric-analysis table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .advanced-metric-analysis th,
+        .advanced-metric-analysis td {
           padding: 12px 15px;
           text-align: left;
           border-bottom: 1px solid #eee;
         }
 
-        th {
+        .advanced-metric-analysis th {
           background: #f9f9f9;
           font-weight: 500;
         }

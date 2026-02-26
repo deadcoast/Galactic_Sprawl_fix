@@ -192,16 +192,16 @@ export function FormationTacticsPanel({
   }, [currentFormation]);
 
   return (
-    <div className="relative overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+    <div className="relative overflow-hidden rounded-lg border border-[var(--gs-border)] bg-[rgba(12,28,52,0.96)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-700 bg-gray-800 p-4">
-        <h2 className="text-xl font-bold text-white">Fleet Formation Tactics</h2>
+      <div className="flex items-center justify-between border-b border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] p-4">
+        <h2 className="text-xl font-bold text-[var(--gs-text-1)]">Fleet Formation Tactics</h2>
         <div className="flex items-center space-x-2">
           <Button
             onClick={() => setShowAdvancedStats(!showAdvancedStats)}
             variant="secondary"
             size="sm"
-            className="border-gray-600 bg-transparent text-xs hover:bg-gray-700"
+            className="border-[var(--gs-border)] bg-transparent text-xs text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(59,130,246,0.1)]"
           >
             {showAdvancedStats ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             <span className="ml-1">Stats</span>
@@ -210,7 +210,7 @@ export function FormationTacticsPanel({
             onClick={() => setIsCustomizing(!isCustomizing)}
             variant="secondary"
             size="sm"
-            className="border-gray-600 bg-transparent text-xs hover:bg-gray-700"
+            className="border-[var(--gs-border)] bg-transparent text-xs text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(59,130,246,0.1)]"
           >
             {isCustomizing ? <Save size={16} /> : <Edit size={16} />}
             <span className="ml-1">{isCustomizing ? 'Save' : 'Customize'}</span>
@@ -220,33 +220,33 @@ export function FormationTacticsPanel({
 
       {/* Stats Panel (Collapsible) */}
       {showAdvancedStats && (
-        <div className="border-b border-gray-700 bg-gray-800/50 p-4">
+        <div className="border-b border-[var(--gs-border)] bg-[rgba(20,38,65,0.75)] p-4">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold text-white">{tacticalStats.effectiveness}</div>
-              <div className="mt-1 text-xs text-gray-400">EFFECTIVENESS</div>
+              <div className="text-3xl font-bold text-[var(--gs-text-1)]">{tacticalStats.effectiveness}</div>
+              <div className="mt-1 text-xs text-[var(--gs-text-3)]">EFFECTIVENESS</div>
             </div>
             <div className="flex flex-col items-center">
               <div className="text-3xl font-bold text-red-400">{tacticalStats.offensiveRating}</div>
-              <div className="mt-1 text-xs text-gray-400">OFFENSE</div>
+              <div className="mt-1 text-xs text-[var(--gs-text-3)]">OFFENSE</div>
             </div>
             <div className="flex flex-col items-center">
               <div className="text-3xl font-bold text-blue-400">
                 {tacticalStats.defensiveRating}
               </div>
-              <div className="mt-1 text-xs text-gray-400">DEFENSE</div>
+              <div className="mt-1 text-xs text-[var(--gs-text-3)]">DEFENSE</div>
             </div>
             <div className="flex flex-col items-center">
               <div className="text-3xl font-bold text-green-400">
                 {tacticalStats.mobilityRating}
               </div>
-              <div className="mt-1 text-xs text-gray-400">MOBILITY</div>
+              <div className="mt-1 text-xs text-[var(--gs-text-3)]">MOBILITY</div>
             </div>
             <div className="flex flex-col items-center">
               <div className="text-3xl font-bold text-purple-400">
                 {tacticalStats.coordinationRating}
               </div>
-              <div className="mt-1 text-xs text-gray-400">COORDINATION</div>
+              <div className="mt-1 text-xs text-[var(--gs-text-3)]">COORDINATION</div>
             </div>
           </div>
         </div>
@@ -255,14 +255,23 @@ export function FormationTacticsPanel({
       {/* Main Content Area */}
       <div className="p-4">
         <Tabs defaultValue="formation" className="w-full">
-          <TabsList className="mb-4 border-b border-gray-700 bg-gray-800">
-            <TabsTrigger value="formation" className="py-2 text-base">
+          <TabsList className="mb-4 border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-1">
+            <TabsTrigger
+              value="formation"
+              className="py-2 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+            >
               Formation
             </TabsTrigger>
-            <TabsTrigger value="behavior" className="py-2 text-base">
+            <TabsTrigger
+              value="behavior"
+              className="py-2 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+            >
               Behavior
             </TabsTrigger>
-            <TabsTrigger value="bonuses" className="py-2 text-base">
+            <TabsTrigger
+              value="bonuses"
+              className="py-2 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+            >
               Bonuses
             </TabsTrigger>
           </TabsList>
@@ -285,7 +294,7 @@ export function FormationTacticsPanel({
                     height={240}
                   />
                   <div className="mt-3 flex justify-center space-x-2">
-                    <span className="rounded-full bg-gray-800 px-3 py-1 text-sm text-white capitalize">
+                    <span className="rounded-full border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] px-3 py-1 text-sm text-[var(--gs-text-1)] capitalize">
                       {currentFormation.pattern}
                     </span>
                     <span
@@ -333,7 +342,7 @@ export function FormationTacticsPanel({
               ))}
 
               {tacticalBonuses.length === 0 && (
-                <div className="col-span-2 py-8 text-center text-gray-400">
+                <div className="col-span-2 py-8 text-center text-[var(--gs-text-2)]">
                   No tactical bonuses available with current configuration
                 </div>
               )}
@@ -343,9 +352,10 @@ export function FormationTacticsPanel({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-gray-700 bg-gray-800 p-4">
-        <div className="text-sm text-gray-400">
-          Formation: <span className="text-gray-300">{formationStats?.currentFormationName}</span>
+      <div className="flex items-center justify-between border-t border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] p-4">
+        <div className="text-sm text-[var(--gs-text-3)]">
+          Formation:{' '}
+          <span className="text-[var(--gs-text-2)]">{formationStats?.currentFormationName}</span>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="secondary" size="sm" onClick={toggleSettingsPanel}>
@@ -360,17 +370,19 @@ export function FormationTacticsPanel({
 
       {/* Settings Panel (Conditional & Absolute Positioned) */}
       {showSettingsPanel && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-900/80 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-xl">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.95)] p-6 shadow-xl">
             {/* Close Button for Settings Panel */}
             <div className="absolute top-2 right-2">
               <Button variant="ghost" size="xs" onClick={() => setShowSettingsPanel(false)}>
                 Close
               </Button>
             </div>
-            <h3 className="mb-4 text-lg font-medium text-white">Formation Settings</h3>
+            <h3 className="mb-4 text-lg font-medium text-[var(--gs-text-1)]">Formation Settings</h3>
             {/* Placeholder for actual settings controls */}
-            <div className="mb-4 h-32 text-center text-gray-500">Settings Controls Placeholder</div>
+            <div className="mb-4 h-32 text-center text-[var(--gs-text-3)]">
+              Settings Controls Placeholder
+            </div>
             {/* Apply Button for Settings Panel */}
             <div className="flex justify-end">
               <Button
@@ -390,5 +402,4 @@ export function FormationTacticsPanel({
     </div>
   );
 }
-
 

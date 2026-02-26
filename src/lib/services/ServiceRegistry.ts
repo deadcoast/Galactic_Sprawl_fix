@@ -71,8 +71,13 @@ export class ServiceRegistry {
   private static instance: ServiceRegistry;
   private services = new Map<string, ServiceRegistration>();
   private initializing = new Set<string>();
+  private initializationPromises = new Map<string, Promise<void>>();
 
-  protected constructor() {}
+  protected constructor() {
+    if (ServiceRegistry.instance) {
+      throw new Error('Use ServiceRegistry.getInstance() instead of creating a new ServiceRegistry');
+    }
+  }
 
   /**
    * Get the singleton instance of the service registry
@@ -116,7 +121,7 @@ export class ServiceRegistry {
 
     for (const service of sortedServices) {
       if (!service.config.lazyInit) {
-        await this.initializeService(service.name);
+        await this.initializeService(service.name, []);
       }
     }
   }
@@ -131,7 +136,7 @@ export class ServiceRegistry {
     }
 
     if (!registration.initialized) {
-      await this.initializeService(name);
+      await this.initializeService(name, []);
     }
 
     return registration.instance as T;
@@ -157,6 +162,7 @@ export class ServiceRegistry {
     // Clear initializing set first to prevent "circular dependency" false positives
     // when React StrictMode re-mounts and re-initializes
     this.initializing.clear();
+    this.initializationPromises.clear();
 
     const sortedServices = this.services.size > 0
       ? this.sortServicesByDependencies().reverse()
@@ -175,9 +181,11 @@ export class ServiceRegistry {
     this.services.clear();
   }
 
-  private async initializeService(name: string): Promise<void> {
-    if (this.initializing.has(name)) {
-      throw new Error(`Circular dependency detected while initializing ${name}`);
+  private async initializeService(name: string, dependencyChain: string[] = []): Promise<void> {
+    if (dependencyChain.includes(name)) {
+      throw new Error(
+        `Circular dependency detected while initializing ${name}: ${[...dependencyChain, name].join(' -> ')}`
+      );
     }
 
     const registration = this.services.get(name);
@@ -189,23 +197,45 @@ export class ServiceRegistry {
       return;
     }
 
-    this.initializing.add(name);
+    const existingPromise = this.initializationPromises.get(name);
+    if (existingPromise) {
+      await existingPromise;
+      return;
+    }
+
+    const initPromise = (async () => {
+      this.initializing.add(name);
+
+      try {
+        // Initialize dependencies first
+        const dependencies: Record<string, BaseService> = {};
+        const nextChain = [...dependencyChain, name];
+        for (const depName of registration.config.dependencies ?? []) {
+          await this.initializeService(depName, nextChain);
+          const depRegistration = this.services.get(depName);
+          if (!depRegistration?.instance) {
+            throw new Error(`Service ${depName} is not registered`);
+          }
+          dependencies[depName] = depRegistration.instance;
+        }
+
+        // Create and initialize the service
+        const instance = registration.factory(dependencies);
+        await instance.initialize(dependencies);
+
+        registration.instance = instance;
+        registration.initialized = true;
+      } finally {
+        this.initializing.delete(name);
+      }
+    })();
+
+    this.initializationPromises.set(name, initPromise);
 
     try {
-      // Initialize dependencies first
-      const dependencies: Record<string, BaseService> = {};
-      for (const depName of registration.config.dependencies ?? []) {
-        dependencies[depName] = await this.getService(depName);
-      }
-
-      // Create and initialize the service
-      const instance = registration.factory(dependencies);
-      await instance.initialize(dependencies);
-
-      registration.instance = instance;
-      registration.initialized = true;
+      await initPromise;
     } finally {
-      this.initializing.delete(name);
+      this.initializationPromises.delete(name);
     }
   }
 

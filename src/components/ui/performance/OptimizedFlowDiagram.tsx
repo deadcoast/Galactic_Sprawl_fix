@@ -382,48 +382,51 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
         {`
         .optimized-flow-diagram {
           position: relative;
-          border: 1px solid #ddd;
+          border: 1px solid var(--gs-border);
           border-radius: 4px;
           overflow: hidden;
+          background: var(--gs-surface-1);
         }
 
-        svg {
+        .optimized-flow-diagram svg {
           display: block;
         }
 
-        .performance-stats {
+        .optimized-flow-diagram .performance-stats {
           position: absolute;
           top: 10px;
           right: 10px;
-          background: rgba(255, 255, 255, 0.9);
-          border: 1px solid #ddd;
+          background: rgba(14, 29, 51, 0.9);
+          border: 1px solid var(--gs-border);
           border-radius: 4px;
           padding: 8px 12px;
           font-size: 12px;
           font-family: monospace;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          color: var(--gs-text-1);
+          box-shadow: 0 8px 20px rgba(3, 12, 27, 0.35);
         }
 
-        .stat-row {
+        .optimized-flow-diagram .stat-row {
           display: flex;
           justify-content: space-between;
           margin-bottom: 4px;
         }
 
-        .stat-label {
+        .optimized-flow-diagram .stat-label {
           font-weight: bold;
           margin-right: 8px;
+          color: var(--gs-text-2);
         }
 
-        .stat-value {
-          color: #2196f3;
+        .optimized-flow-diagram .stat-value {
+          color: #60a5fa;
         }
 
-        .restart-btn {
+        .optimized-flow-diagram .restart-btn {
           margin-top: 8px;
           padding: 4px 8px;
-          background: #4caf50;
-          border: none;
+          background: linear-gradient(180deg, #3578ef, #2b63ca);
+          border: 1px solid #2f63cc;
           border-radius: 4px;
           color: white;
           font-size: 12px;
@@ -431,8 +434,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
           width: 100%;
         }
 
-        .restart-btn:hover {
-          background: #388e3c;
+        .optimized-flow-diagram .restart-btn:hover {
+          background: linear-gradient(180deg, #3b82f6, #2f6ed8);
         }
         `}
       </style>

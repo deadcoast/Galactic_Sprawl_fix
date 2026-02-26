@@ -642,157 +642,161 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
       <style>
         {`
         .user-behavior-correlation-view {
-          font-family:
-            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-            'Open Sans', 'Helvetica Neue', sans-serif;
           padding: 20px;
-          background-color: #f9f9f9;
-          color: #1f2937;
+          background-color: var(--gs-surface-1);
+          color: var(--gs-text-1);
           border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          border: 1px solid var(--gs-border);
+          box-shadow: none;
         }
 
-        h2 {
+        .user-behavior-correlation-view h2 {
           margin-top: 0;
-          color: #2c3e50;
+          color: var(--gs-text-1);
         }
 
-        h3 {
-          color: #34495e;
+        .user-behavior-correlation-view h3 {
+          color: var(--gs-text-1);
           margin-bottom: 15px;
         }
 
-        .loading,
-        .no-data {
+        .user-behavior-correlation-view .loading,
+        .user-behavior-correlation-view .no-data {
           padding: 40px;
           text-align: center;
-          color: #7f8c8d;
+          color: var(--gs-text-3);
           font-style: italic;
         }
 
-        .insights-section {
+        .user-behavior-correlation-view .insights-section {
           margin-bottom: 30px;
           padding: 15px;
-          background-color: white;
+          background-color: var(--gs-surface-2);
           border-radius: 6px;
-          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+          border: 1px solid var(--gs-border);
+          box-shadow: none;
         }
 
-        .insights-list {
+        .user-behavior-correlation-view .insights-list {
           list-style-type: none;
           padding: 0;
         }
 
-        .insight-item {
+        .user-behavior-correlation-view .insight-item {
           padding: 10px 15px;
           margin-bottom: 8px;
-          background-color: #f1f8ff;
-          color: #1f2937;
-          border-left: 4px solid #4299e1;
+          background-color: rgba(59, 130, 246, 0.16);
+          color: var(--gs-text-1);
+          border-left: 4px solid #3b82f6;
           border-radius: 3px;
           cursor: pointer;
           transition: background-color 0.2s;
         }
 
-        .insight-item:hover {
-          background-color: #e1efff;
+        .user-behavior-correlation-view .insight-item:hover {
+          background-color: rgba(59, 130, 246, 0.24);
         }
 
-        .correlation-section,
-        .patterns-section {
+        .user-behavior-correlation-view .correlation-section,
+        .user-behavior-correlation-view .patterns-section {
           margin-bottom: 30px;
           padding: 15px;
-          background-color: white;
+          background-color: var(--gs-surface-2);
           border-radius: 6px;
-          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+          border: 1px solid var(--gs-border);
+          box-shadow: none;
         }
 
-        .section-header {
+        .user-behavior-correlation-view .section-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 15px;
         }
 
-        .filter-controls {
+        .user-behavior-correlation-view .filter-controls {
           display: flex;
           gap: 15px;
         }
 
-        .filter-controls label {
+        .user-behavior-correlation-view .filter-controls label {
           display: flex;
           align-items: center;
           gap: 8px;
           font-size: 14px;
-          color: #334155;
+          color: var(--gs-text-2);
         }
 
-        .filter-controls select {
+        .user-behavior-correlation-view .filter-controls select {
           padding: 4px 8px;
           border-radius: 4px;
-          border: 1px solid #ccc;
+          border: 1px solid var(--gs-border);
+          background: var(--gs-surface-1);
+          color: var(--gs-text-1);
         }
 
-        .chart-container {
+        .user-behavior-correlation-view .chart-container {
           margin: 20px 0;
           overflow-x: auto;
         }
 
-        .detail-panel {
+        .user-behavior-correlation-view .detail-panel {
           margin-top: 20px;
           padding: 15px;
-          background-color: #f8fafc;
+          background-color: rgba(16, 31, 53, 0.75);
           border-radius: 6px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--gs-border);
           position: relative;
         }
 
-        .detail-panel h4 {
+        .user-behavior-correlation-view .detail-panel h4 {
           margin-top: 0;
-          color: #2d3748;
+          color: var(--gs-text-1);
         }
 
-        .detail-panel .description {
+        .user-behavior-correlation-view .detail-panel .description {
           margin-bottom: 15px;
-          color: #4a5568;
+          color: var(--gs-text-2);
         }
 
-        .detail-stats {
+        .user-behavior-correlation-view .detail-stats {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
           gap: 15px;
         }
 
-        .stat-item {
+        .user-behavior-correlation-view .stat-item {
           display: flex;
           flex-direction: column;
         }
 
-        .stat-item .label {
+        .user-behavior-correlation-view .stat-item .label {
           font-size: 12px;
-          color: #718096;
+          color: var(--gs-text-3);
           margin-bottom: 4px;
         }
 
-        .stat-item .value {
+        .user-behavior-correlation-view .stat-item .value {
           font-size: 16px;
           font-weight: 500;
+          color: var(--gs-text-1);
         }
 
-        .close-btn {
+        .user-behavior-correlation-view .close-btn {
           position: absolute;
           top: 10px;
           right: 10px;
           padding: 4px 8px;
-          background: none;
-          border: 1px solid #cbd5e0;
+          background: rgba(20, 39, 67, 0.75);
+          border: 1px solid var(--gs-border);
           border-radius: 4px;
           cursor: pointer;
           font-size: 12px;
+          color: var(--gs-text-2);
         }
 
-        .close-btn:hover {
-          background-color: #f7fafc;
+        .user-behavior-correlation-view .close-btn:hover {
+          background-color: rgba(59, 130, 246, 0.12);
         }
         `}
       </style>

@@ -942,7 +942,7 @@ export default function TechTree() {
       : tierNodes;
 
     return (
-      <div className="mb-16 flex justify-center space-x-16">
+      <div className="mb-16 flex flex-wrap justify-center gap-8">
         {nodes.map(node => (
           <div
             key={node.id}
@@ -996,14 +996,21 @@ export default function TechTree() {
   };
 
   return (
-    <div className="gs-route-container relative min-h-full rounded-2xl border border-slate-700/80 bg-slate-950 p-8 text-white shadow-2xl">
-      <h2 className="mb-8 text-center text-2xl font-bold text-white">Technology Tree</h2>
+    <div className="gs-route-container gs-surface relative min-h-full overflow-x-hidden p-6 text-[var(--gs-text-1)] md:p-8">
+      <div className="mb-7 rounded-xl border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] px-5 py-5">
+        <h2 className="gs-page-title text-center">Technology Tree</h2>
+        <p className="gs-page-subtitle text-center">
+          Progress through tiers to unlock infrastructure, fleet, and special capabilities.
+        </p>
+      </div>
 
       {/* Category filters */}
-      <div className="mb-6 flex flex-wrap justify-center gap-2">
+      <div className="mb-6 flex flex-wrap justify-center gap-2 rounded-xl border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-3">
         <button
-          className={`rounded px-3 py-1 text-sm ${
-            selectedCategory === null ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+          className={`rounded-md border px-3 py-1 text-sm transition-colors ${
+            selectedCategory === null
+              ? 'border-blue-500/70 bg-blue-600 text-white'
+              : 'border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
           }`}
           onClick={() => setSelectedCategory(null)}
         >
@@ -1012,8 +1019,10 @@ export default function TechTree() {
         {categories.map(category => (
           <button
             key={category.id}
-            className={`flex items-center rounded px-3 py-1 text-sm ${
-              selectedCategory === category.id ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+            className={`flex items-center rounded-md border px-3 py-1 text-sm transition-colors ${
+              selectedCategory === category.id
+                ? 'border-blue-500/70 bg-blue-600 text-white'
+                : 'border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             }`}
             onClick={() => setSelectedCategory(category.id)}
           >
@@ -1024,7 +1033,7 @@ export default function TechTree() {
       </div>
 
       {/* Display total nodes count */}
-      <div className="mb-4 text-center text-sm text-gray-400">
+      <div className="mb-4 text-center text-sm text-[var(--gs-text-3)]">
         Total nodes: {filteredNodes.length}{' '}
         {selectedCategory ? `in ${selectedCategory} category` : 'across all categories'}
       </div>
@@ -1033,10 +1042,10 @@ export default function TechTree() {
       {activeResearch && (
         <div className="mx-auto mb-6 max-w-md">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-300">
+            <span className="text-sm font-medium text-[var(--gs-text-2)]">
               Researching: {managedTechNodes.find(n => n.id === activeResearch)?.name}
             </span>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-[var(--gs-text-3)]">
               {Math.round(researchProgress[activeResearch] * 100)}%
             </span>
           </div>
@@ -1056,7 +1065,7 @@ export default function TechTree() {
         <div className="mb-12">
           {[1, 2, 3, 4].map(tier => (
             <div key={tier}>
-              <h3 className="mb-4 text-sm font-medium text-gray-400">Tier {tier}</h3>
+              <h3 className="mb-4 text-sm font-medium text-[var(--gs-text-3)]">Tier {tier}</h3>
               {renderTier(tier)}
             </div>
           ))}
@@ -1065,28 +1074,28 @@ export default function TechTree() {
 
       {/* Selected node details */}
       {selectedNode && (
-        <div className="mx-auto mt-8 max-w-2xl rounded-lg bg-gray-800 p-6">
+        <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] p-6">
           <div className="flex items-start">
-            <div className="mr-4 h-16 w-16 flex-shrink-0 rounded-full bg-gray-700 p-4">
-              <div className="flex h-full w-full items-center justify-center text-gray-300">
+            <div className="mr-4 h-16 w-16 flex-shrink-0 rounded-full border border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] p-4">
+              <div className="flex h-full w-full items-center justify-center text-[var(--gs-text-2)]">
                 {/* Use getIconComponent to get the icon based on category */}
                 {React.createElement(getIconComponent(selectedNode.category), { size: 24 })}
               </div>
             </div>
             <div className="flex-grow">
-              <h3 className="text-xl font-bold text-white">{selectedNode.name}</h3>
+              <h3 className="text-xl font-bold text-[var(--gs-text-1)]">{selectedNode.name}</h3>
               <div className="mb-2 flex items-center">
-                <span className="mr-2 text-sm text-gray-400">Tier {selectedNode.tier}</span>
-                <span className="mr-2 text-sm text-gray-400">•</span>
-                <span className="text-sm text-gray-400">{selectedNode.category}</span>
+                <span className="mr-2 text-sm text-[var(--gs-text-3)]">Tier {selectedNode.tier}</span>
+                <span className="mr-2 text-sm text-[var(--gs-text-3)]">•</span>
+                <span className="text-sm text-[var(--gs-text-3)]">{selectedNode.category}</span>
               </div>
-              <p className="text-gray-300">{selectedNode.description}</p>
+              <p className="text-[var(--gs-text-2)]">{selectedNode.description}</p>
 
               {/* Research button for available nodes */}
               {canUnlockNode(selectedNode.id) && !selectedNode.unlocked && (
                 <div className="mt-4">
                   <button
-                    className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500"
+                    className="rounded-md border border-blue-500/70 bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-500"
                     onClick={() => startResearch(selectedNode.id)}
                     disabled={activeResearch === selectedNode.id}
                   >

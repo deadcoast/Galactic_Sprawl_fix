@@ -39,12 +39,12 @@ export function FormationTacticsPage() {
 
   return (
     <div className="gs-route-container px-4 py-4 sm:py-6 lg:py-8">
-      <div className="mb-8">
-        <h1 className="flex items-center text-3xl font-bold text-white">
+      <div className="mb-8 rounded-xl border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] px-5 py-5">
+        <h1 className="gs-page-title flex items-center">
           <Swords className="mr-3 h-8 w-8 text-blue-400" />
           Combat Formation Tactics
         </h1>
-        <p className="mt-2 text-gray-400">
+        <p className="gs-page-subtitle">
           Configure and optimize your fleet formations and combat tactics for maximum effectiveness
         </p>
       </div>
@@ -52,10 +52,14 @@ export function FormationTacticsPage() {
       {/* Faction Selector */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card
-          className={`cursor-pointer transition-all ${activeFaction === 'player' ? 'border-blue-500 bg-blue-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
+          className={`cursor-pointer transition-all [&>div:first-child]:border-[var(--gs-border)] ${
+            activeFaction === 'player'
+              ? 'border-blue-500/80 bg-blue-900/25'
+              : 'border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(27,45,73,0.92)]'
+          }`}
           onClick={() => setActiveFaction('player')}
           title={
-            <div className="flex items-center text-lg">
+            <div className="flex items-center text-lg text-[var(--gs-text-1)]">
               <Shield className="mr-2 h-5 w-5 text-blue-400" />
               Federation
             </div>
@@ -64,10 +68,14 @@ export function FormationTacticsPage() {
         />
 
         <Card
-          className={`cursor-pointer transition-all ${activeFaction === 'enemy' ? 'border-red-500 bg-red-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
+          className={`cursor-pointer transition-all [&>div:first-child]:border-[var(--gs-border)] ${
+            activeFaction === 'enemy'
+              ? 'border-red-500/80 bg-red-900/25'
+              : 'border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(27,45,73,0.92)]'
+          }`}
           onClick={() => setActiveFaction('enemy')}
           title={
-            <div className="flex items-center text-lg">
+            <div className="flex items-center text-lg text-[var(--gs-text-1)]">
               <Star className="mr-2 h-5 w-5 text-red-400" />
               Imperium
             </div>
@@ -76,10 +84,14 @@ export function FormationTacticsPage() {
         />
 
         <Card
-          className={`cursor-pointer transition-all ${activeFaction === 'neutral' ? 'border-green-500 bg-green-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
+          className={`cursor-pointer transition-all [&>div:first-child]:border-[var(--gs-border)] ${
+            activeFaction === 'neutral'
+              ? 'border-green-500/80 bg-green-900/25'
+              : 'border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(27,45,73,0.92)]'
+          }`}
           onClick={() => setActiveFaction('neutral')}
           title={
-            <div className="flex items-center text-lg">
+            <div className="flex items-center text-lg text-[var(--gs-text-1)]">
               <Ship className="mr-2 h-5 w-5 text-green-400" />
               Collective
             </div>
@@ -88,10 +100,14 @@ export function FormationTacticsPage() {
         />
 
         <Card
-          className={`cursor-pointer transition-all ${activeFaction === 'ally' ? 'border-purple-500 bg-purple-900/30' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
+          className={`cursor-pointer transition-all [&>div:first-child]:border-[var(--gs-border)] ${
+            activeFaction === 'ally'
+              ? 'border-violet-500/80 bg-violet-900/25'
+              : 'border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] hover:border-[var(--gs-border-strong)] hover:bg-[rgba(27,45,73,0.92)]'
+          }`}
           onClick={() => setActiveFaction('ally')}
           title={
-            <div className="flex items-center text-lg">
+            <div className="flex items-center text-lg text-[var(--gs-text-1)]">
               <svg
                 viewBox="0 0 24 24"
                 width="20"
@@ -111,14 +127,23 @@ export function FormationTacticsPage() {
       </div>
 
       <Tabs defaultValue="formations" className="w-full">
-        <TabsList className="mb-6 border-b border-gray-700 bg-gray-800">
-          <TabsTrigger value="formations" className="py-3 text-base">
+        <TabsList className="mb-6 border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-1">
+          <TabsTrigger
+            value="formations"
+            className="py-3 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+          >
             Formations
           </TabsTrigger>
-          <TabsTrigger value="performance" className="py-3 text-base">
+          <TabsTrigger
+            value="performance"
+            className="py-3 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+          >
             Performance Analytics
           </TabsTrigger>
-          <TabsTrigger value="history" className="py-3 text-base">
+          <TabsTrigger
+            value="history"
+            className="py-3 text-base text-[var(--gs-text-2)] data-[state=active]:bg-[rgba(59,130,246,0.22)] data-[state=active]:text-sky-300"
+          >
             Battle History
           </TabsTrigger>
         </TabsList>
@@ -133,7 +158,7 @@ export function FormationTacticsPage() {
             {/* Sidebar - Stat Bonuses & More Info */}
             <div className="space-y-4 lg:col-span-4">
               <Card
-                className="border-gray-700 bg-gray-800"
+                className="border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] [&>div:first-child]:border-[var(--gs-border)] [&>div:first-child>h3]:text-[var(--gs-text-1)] [&>div:first-child>p]:text-[var(--gs-text-2)]"
                 title="Faction Bonuses"
                 subtitle={`Special formation bonuses for ${factionDisplayNames[activeFaction]}`}
               >
@@ -193,13 +218,13 @@ export function FormationTacticsPage() {
               </Card>
 
               <Card
-                className="border-gray-700 bg-gray-800"
+                className="border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] [&>div:first-child]:border-[var(--gs-border)] [&>div:first-child]:bg-[rgba(18,35,63,0.95)]"
                 header={
                   <div
                     className="flex cursor-pointer items-center justify-between"
                     onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   >
-                    <h3 className="text-lg font-medium">Advanced Options</h3>
+                    <h3 className="text-lg font-medium text-[var(--gs-text-1)]">Advanced Options</h3>
                     {showAdvancedOptions ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
                 }
@@ -207,29 +232,48 @@ export function FormationTacticsPage() {
                 {showAdvancedOptions && (
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center">
-                      <input type="checkbox" id="auto-adapt" className="mr-2" />
-                      <label htmlFor="auto-adapt" className="text-sm text-gray-300">
+                      <input
+                        type="checkbox"
+                        id="auto-adapt"
+                        className="mr-2 h-4 w-4 rounded border-[var(--gs-border)] bg-[rgba(18,35,63,0.9)] accent-blue-500"
+                      />
+                      <label htmlFor="auto-adapt" className="text-sm text-[var(--gs-text-2)]">
                         Auto-adapt to enemy formations
                       </label>
                     </div>
 
                     <div className="flex items-center">
-                      <input type="checkbox" id="predictive" className="mr-2" />
-                      <label htmlFor="predictive" className="text-sm text-gray-300">
+                      <input
+                        type="checkbox"
+                        id="predictive"
+                        className="mr-2 h-4 w-4 rounded border-[var(--gs-border)] bg-[rgba(18,35,63,0.9)] accent-blue-500"
+                      />
+                      <label htmlFor="predictive" className="text-sm text-[var(--gs-text-2)]">
                         Predictive maneuvering
                       </label>
                     </div>
 
                     <div className="flex items-center">
-                      <input type="checkbox" id="complex-patterns" className="mr-2" />
-                      <label htmlFor="complex-patterns" className="text-sm text-gray-300">
+                      <input
+                        type="checkbox"
+                        id="complex-patterns"
+                        className="mr-2 h-4 w-4 rounded border-[var(--gs-border)] bg-[rgba(18,35,63,0.9)] accent-blue-500"
+                      />
+                      <label htmlFor="complex-patterns" className="text-sm text-[var(--gs-text-2)]">
                         Enable complex formation patterns
                       </label>
                     </div>
 
                     <div className="mt-4">
-                      <label className="mb-1 block text-sm text-gray-400">AI Aggressiveness</label>
-                      <input type="range" min="0" max="100" className="w-full" />
+                      <label className="mb-1 block text-sm text-[var(--gs-text-3)]">
+                        AI Aggressiveness
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[rgba(32,53,86,0.9)] accent-blue-500"
+                      />
                     </div>
                   </div>
                 )}
@@ -238,11 +282,11 @@ export function FormationTacticsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="performance" className="p-8 text-center text-gray-400">
+        <TabsContent value="performance" className="p-8 text-center text-[var(--gs-text-2)]">
           <p>Performance analytics coming soon</p>
         </TabsContent>
 
-        <TabsContent value="history" className="p-8 text-center text-gray-400">
+        <TabsContent value="history" className="p-8 text-center text-[var(--gs-text-2)]">
           <p>Battle history coming soon</p>
         </TabsContent>
       </Tabs>

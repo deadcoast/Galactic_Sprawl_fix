@@ -486,19 +486,19 @@ const D3PerformanceProfilerView: React.FC = () => {
           overflow-x: auto;
         }
 
-        table {
+        .d3-performance-profiler table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .d3-performance-profiler th,
+        .d3-performance-profiler td {
           border: 1px solid #ddd;
           padding: 8px;
           text-align: left;
         }
 
-        th {
+        .d3-performance-profiler th {
           background-color: #f2f2f2;
         }
 

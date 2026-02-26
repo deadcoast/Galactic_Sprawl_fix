@@ -65,10 +65,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ) => {
     // Card variant styles
     const variantClasses: Record<CardVariant, string> = {
-      default: 'bg-white border border-gray-200',
-      bordered: 'bg-white border-2 border-gray-300',
-      elevated: 'bg-white border border-gray-200 shadow-md',
-      flat: 'bg-gray-50',
+      default: 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)]',
+      bordered: 'border-2 border-[var(--gs-border-strong)] bg-[rgba(20,38,65,0.92)]',
+      elevated:
+        'border border-[var(--gs-border)] bg-[linear-gradient(180deg,rgba(27,45,73,0.96),rgba(14,29,51,0.96))] shadow-[0_16px_32px_rgba(2,10,24,0.35)]',
+      flat: 'border border-[var(--gs-border)] bg-[rgba(15,31,54,0.8)]',
     };
 
     // Background override
@@ -83,7 +84,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       // Interactive states
       hoverable && 'hover:shadow-lg hover:-translate-y-1',
       selectable && 'cursor-pointer',
-      selected && 'ring-2 ring-blue-500',
+      selected && 'ring-2 ring-blue-500/70',
       disabled && 'opacity-60 pointer-events-none',
       // Additional class names
       className
@@ -98,9 +99,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       if (!title && !subtitle) return null;
 
       return (
-        <div className={`${contentPadding} border-b border-gray-200`}>
-          {title && <h3 className="text-lg font-medium text-gray-900">{title}</h3>}
-          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        <div className={`${contentPadding} border-b border-[var(--gs-border)]`}>
+          {title && <h3 className="text-lg font-medium text-[var(--gs-text-1)]">{title}</h3>}
+          {subtitle && <p className="mt-1 text-sm text-[var(--gs-text-2)]">{subtitle}</p>}
         </div>
       );
     };
@@ -109,7 +110,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div ref={ref} className={cardClasses} style={backgroundStyle} {...props}>
         {/* Card header */}
         {header && (
-          <div className={`${headerFooterPadding} border-b border-gray-200 bg-gray-50`}>
+          <div
+            className={`${headerFooterPadding} border-b border-[var(--gs-border)] bg-[rgba(18,35,63,0.95)] text-[var(--gs-text-1)]`}
+          >
             {header}
           </div>
         )}
@@ -118,11 +121,13 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {renderTitle()}
 
         {/* Main content - Explicitly handle null/undefined case */}
-        <div className={contentPadding}>{children ?? null}</div>
+        <div className={`${contentPadding} text-[var(--gs-text-1)]`}>{children ?? null}</div>
 
         {/* Card footer */}
         {footer && (
-          <div className={`${headerFooterPadding} border-t border-gray-200 bg-gray-50`}>
+          <div
+            className={`${headerFooterPadding} border-t border-[var(--gs-border)] bg-[rgba(18,35,63,0.95)] text-[var(--gs-text-2)]`}
+          >
             {footer}
           </div>
         )}

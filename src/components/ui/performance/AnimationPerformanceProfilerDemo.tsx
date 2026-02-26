@@ -513,7 +513,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
             sans-serif;
         }
 
-        h2 {
+        .animation-performance-profiler-demo h2 {
           text-align: center;
           margin-bottom: 20px;
         }
@@ -532,7 +532,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           flex: 1;
         }
 
-        .control-section h3 {
+        .animation-performance-profiler-demo .control-section h3 {
           margin-top: 0;
           margin-bottom: 10px;
         }
@@ -541,17 +541,17 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           margin-bottom: 10px;
         }
 
-        label {
+        .animation-performance-profiler-demo label {
           display: flex;
           align-items: center;
           gap: 10px;
         }
 
-        input[type='range'] {
+        .animation-performance-profiler-demo input[type='range'] {
           flex: 1;
         }
 
-        select {
+        .animation-performance-profiler-demo select {
           padding: 5px;
           border-radius: 4px;
           border: 1px solid #ccc;
@@ -565,7 +565,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           margin-left: 20px;
         }
 
-        button {
+        .animation-performance-profiler-demo button {
           padding: 10px 15px;
           border: none;
           border-radius: 4px;
@@ -607,7 +607,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           border-bottom: 1px solid #ddd;
         }
 
-        .metrics-tabs button {
+        .animation-performance-profiler-demo .metrics-tabs button {
           background: transparent;
           border: none;
           padding: 10px 15px;
@@ -616,7 +616,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           cursor: pointer;
         }
 
-        .metrics-tabs button.active {
+        .animation-performance-profiler-demo .metrics-tabs button.active {
           background: #3498db;
           color: white;
         }
@@ -645,7 +645,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           margin-bottom: 15px;
         }
 
-        .metrics-header h3 {
+        .animation-performance-profiler-demo .metrics-header h3 {
           margin: 0;
         }
 
@@ -698,7 +698,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .bottlenecks-card h3 {
+        .animation-performance-profiler-demo .bottlenecks-card h3 {
           margin-top: 0;
           margin-bottom: 15px;
         }
@@ -757,7 +757,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           color: #2980b9;
         }
 
-        .frames-analysis h3 {
+        .animation-performance-profiler-demo .frames-analysis h3 {
           margin-top: 0;
           margin-bottom: 15px;
         }
@@ -784,7 +784,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           flex: 1;
         }
 
-        .recommendations h3 {
+        .animation-performance-profiler-demo .recommendations h3 {
           margin-top: 0;
           margin-bottom: 15px;
         }
@@ -834,7 +834,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .report-text h4 {
+        .animation-performance-profiler-demo .report-text h4 {
           margin-top: 0;
           margin-bottom: 10px;
         }

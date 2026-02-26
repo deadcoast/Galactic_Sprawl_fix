@@ -727,14 +727,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
             sans-serif;
         }
 
-        h2 {
+        .ml-performance-prediction h2 {
           color: #333;
           border-bottom: 2px solid #4285f4;
           padding-bottom: 10px;
           margin-bottom: 20px;
         }
 
-        h3 {
+        .ml-performance-prediction h3 {
           color: #4285f4;
           margin-top: 0;
           margin-bottom: 15px;
@@ -806,26 +806,26 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
           margin-bottom: 30px;
         }
 
-        .prediction-metrics h3 {
+        .ml-performance-prediction .prediction-metrics h3 {
           padding: 15px;
           margin: 0;
           background: #f5f5f5;
           border-bottom: 1px solid #ddd;
         }
 
-        table {
+        .ml-performance-prediction table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .ml-performance-prediction th,
+        .ml-performance-prediction td {
           padding: 12px 15px;
           text-align: left;
           border-bottom: 1px solid #eee;
         }
 
-        th {
+        .ml-performance-prediction th {
           background: #f9f9f9;
           font-weight: 500;
         }
@@ -836,8 +836,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
           border-top: 1px solid #eee;
         }
 
-        .prediction-summary h4,
-        .model-explanation h4 {
+        .ml-performance-prediction .prediction-summary h4,
+        .ml-performance-prediction .model-explanation h4 {
           margin-top: 0;
           color: #333;
         }
