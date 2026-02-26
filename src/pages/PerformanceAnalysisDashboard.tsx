@@ -223,6 +223,7 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           margin: 0 auto;
           padding: 20px;
           background-color: #f5f8fa;
+          color: #1f2937;
           min-height: 100vh;
         }
 

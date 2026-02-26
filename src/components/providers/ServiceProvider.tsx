@@ -20,6 +20,67 @@ interface ServiceProviderProps {
   children: React.ReactNode;
 }
 
+let registryInitializationPromise: Promise<void> | null = null;
+
+function registerCoreServices(registry: ServiceRegistry): void {
+  registry.register('errorLogging', () => errorLoggingService, {
+    priority: 100, // High priority as other services depend on it
+  });
+
+  registry.register('recovery', () => recoveryService, {
+    dependencies: ['errorLogging'],
+    priority: 90,
+  });
+
+  registry.register('componentRegistry', () => componentRegistryService, {
+    dependencies: ['errorLogging'],
+    priority: 80,
+  });
+
+  registry.register('eventPropagation', () => eventPropagationService, {
+    dependencies: ['errorLogging', 'componentRegistry'],
+    priority: 70,
+  });
+
+  registry.register('anomalyDetection', () => anomalyDetectionService, {
+    dependencies: ['errorLogging'],
+    priority: 60,
+  });
+
+  registry.register('worker', () => workerService, {
+    dependencies: ['errorLogging'],
+    priority: 50,
+  });
+
+  registry.register('api', () => apiService, {
+    dependencies: ['errorLogging'],
+    priority: 40,
+  });
+
+  registry.register('webgl', () => webglService, {
+    dependencies: ['errorLogging'],
+    priority: 30,
+  });
+
+  registry.register('realTimeData', () => realTimeDataService, {
+    dependencies: ['errorLogging', 'api'],
+    priority: 20,
+  });
+}
+
+async function initializeRegistryOnce(): Promise<void> {
+  if (!registryInitializationPromise) {
+    const registry = ServiceRegistry.getInstance();
+    registerCoreServices(registry);
+    registryInitializationPromise = registry.initialize().catch(error => {
+      registryInitializationPromise = null;
+      throw error;
+    });
+  }
+
+  await registryInitializationPromise;
+}
+
 /**
  * Provider component that initializes and manages core services
  */
@@ -28,60 +89,18 @@ export function ServiceProvider({ children }: ServiceProviderProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let disposed = false;
+
     const initializeServices = async () => {
       try {
-        const registry = ServiceRegistry.getInstance();
-
-        // Register core services
-        registry.register('errorLogging', () => errorLoggingService, {
-          priority: 100, // High priority as other services depend on it
-        });
-
-        registry.register('recovery', () => recoveryService, {
-          dependencies: ['errorLogging'],
-          priority: 90,
-        });
-
-        registry.register('componentRegistry', () => componentRegistryService, {
-          dependencies: ['errorLogging'],
-          priority: 80,
-        });
-
-        registry.register('eventPropagation', () => eventPropagationService, {
-          dependencies: ['errorLogging', 'componentRegistry'],
-          priority: 70,
-        });
-
-        registry.register('anomalyDetection', () => anomalyDetectionService, {
-          dependencies: ['errorLogging'],
-          priority: 60,
-        });
-
-        registry.register('worker', () => workerService, {
-          dependencies: ['errorLogging'],
-          priority: 50,
-        });
-
-        registry.register('api', () => apiService, {
-          dependencies: ['errorLogging'],
-          priority: 40,
-        });
-
-        registry.register('webgl', () => webglService, {
-          dependencies: ['errorLogging'],
-          priority: 30,
-        });
-
-        registry.register('realTimeData', () => realTimeDataService, {
-          dependencies: ['errorLogging', 'api'],
-          priority: 20,
-        });
-
-        // Initialize all services
-        await registry.initialize();
-        setIsInitialized(true);
+        await initializeRegistryOnce();
+        if (!disposed) {
+          setIsInitialized(true);
+        }
       } catch (err) {
-        setError(err as Error);
+        if (!disposed) {
+          setError(err as Error);
+        }
       }
     };
 
@@ -89,6 +108,14 @@ export function ServiceProvider({ children }: ServiceProviderProps) {
 
     // Cleanup on unmount
     return () => {
+      disposed = true;
+
+      // StrictMode intentionally double-invokes effects in dev.
+      // Skipping disposal here avoids init/dispose races that surface as false circular dependencies.
+      if (import.meta.env.DEV) {
+        return;
+      }
+
       const registry = ServiceRegistry.getInstance();
       void registry.dispose().catch(err => {
         errorLoggingService.logError(
@@ -97,6 +124,8 @@ export function ServiceProvider({ children }: ServiceProviderProps) {
           ErrorSeverity.MEDIUM,
           { componentName: 'ServiceProvider', action: 'cleanupEffect' }
         );
+      }).finally(() => {
+        registryInitializationPromise = null;
       });
     };
   }, []);

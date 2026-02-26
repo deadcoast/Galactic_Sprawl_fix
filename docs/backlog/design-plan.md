@@ -1,6 +1,7 @@
 ---
 GALACTIC SPRAWL SYSTEM ARCHITECTURE
 ---
+# System Architecture
 
 ## Table of Contents
 
@@ -2321,6 +2322,7 @@ When writing tests with Vitest, follow these best practices to ensure consistent
 
 7. **Mock Implementation**:
    - Use `mockImplementation` for complex mock behavior
+
    ```javascript
    mockFunction.mockImplementation((arg1, arg2) => {
      if (arg1 === 'specific value') {
@@ -2517,6 +2519,7 @@ When writing tests, it's important to follow these best practices for imports an
    - When refactoring test files, ensure that all necessary imports are maintained
    - Missing imports can lead to undefined errors that are difficult to debug
    - Example of a common error:
+
      ```typescript
      // Error: Missing import for createTestEnvironment
      const { explorationManager } = createTestEnvironment(); // Will fail with "createTestEnvironment is not defined"
@@ -2527,6 +2530,7 @@ When writing tests, it's important to follow these best practices for imports an
    - Ensure that mock functions return appropriate values for the test
    - Use TypeScript to enforce correct return types
    - Example:
+
      ```typescript
      // Define return type for mock function
      const mockFunction = vi.fn<[string], boolean>().mockReturnValue(true);
@@ -2537,6 +2541,7 @@ When writing tests, it's important to follow these best practices for imports an
    - Reset or clear mocks in beforeEach or afterEach hooks
    - This prevents test interference and ensures a clean state for each test
    - Example:
+
      ```typescript
      beforeEach(() => {
        vi.clearAllMocks();
@@ -2547,6 +2552,7 @@ When writing tests, it's important to follow these best practices for imports an
    - Add comments explaining the behavior of complex mocks
    - This helps other developers understand the test setup
    - Example:
+
      ```typescript
      // Mock searchSystems to return different results based on criteria
      searchSystems: vi.fn(criteria => {
@@ -3825,19 +3831,19 @@ This should be used sparingly, only when necessary for test setup or verificatio
 
 Playwright tests are fully integrated with TypeScript:
 
-1.  **Type Safety**:
+1. **Type Safety**:
 
 - Page objects use proper type annotations for Playwright's `Page` and `Locator` types
 - Test files import types from `@playwright/test`
 - Custom helper methods include proper return types and parameter types
 
-2. **Common Type Issues**:
+1. **Common Type Issues**:
 
    - Ensure proper imports from `@playwright/test` including `Page` type
    - Use built-in Playwright `expect` function rather than test framework assertions
    - Implement proper async/await patterns for all Playwright operations
 
-3. **Best Practices**:
+2. **Best Practices**:
    - Use TypeScript interfaces for complex data structures
    - Leverage type inference where appropriate
    - Document complex types with JSDoc comments

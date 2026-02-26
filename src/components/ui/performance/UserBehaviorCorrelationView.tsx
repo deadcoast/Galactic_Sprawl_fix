@@ -647,6 +647,7 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
             'Open Sans', 'Helvetica Neue', sans-serif;
           padding: 20px;
           background-color: #f9f9f9;
+          color: #1f2937;
           border-radius: 8px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
@@ -686,6 +687,7 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
           padding: 10px 15px;
           margin-bottom: 8px;
           background-color: #f1f8ff;
+          color: #1f2937;
           border-left: 4px solid #4299e1;
           border-radius: 3px;
           cursor: pointer;
@@ -722,6 +724,7 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
           align-items: center;
           gap: 8px;
           font-size: 14px;
+          color: #334155;
         }
 
         .filter-controls select {

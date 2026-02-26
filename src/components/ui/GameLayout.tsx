@@ -19,6 +19,10 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   const state = useGameState(state => state);
   const navigate = useNavigate();
   const location = useLocation();
+  const showHud =
+    location.pathname === '/map' ||
+    location.pathname === '/colony' ||
+    location.pathname === '/hangar';
 
   // Add component profiling to monitor performance
   const profiler = useComponentProfiler('GameLayout', {
@@ -74,7 +78,7 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-900 text-white">
+    <div className="flex h-screen overflow-hidden bg-gray-900">
       {/* Sidebar Navigation */}
       <div className="flex w-16 flex-col items-center space-y-6 border-r border-gray-700 bg-gray-800 py-4">
         <Menu className="h-6 w-6 cursor-pointer text-gray-400 hover:text-white" />
@@ -157,12 +161,14 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
 
         {/* Game Content */}
         <div className="relative flex-1 overflow-auto">
-          {/* Game HUD */}
-          <GameHUD
-            empireName={empireName}
-            onToggleSprawlView={handleToggleSprawlView}
-            onToggleVPRView={handleToggleVPRView}
-          />
+          {/* Game HUD is only shown on gameplay routes to avoid overlaying analysis/management pages */}
+          {showHud && (
+            <GameHUD
+              empireName={empireName}
+              onToggleSprawlView={handleToggleSprawlView}
+              onToggleVPRView={handleToggleVPRView}
+            />
+          )}
 
           {/* Main Route Content — always visible */}
           <div className="h-full w-full">

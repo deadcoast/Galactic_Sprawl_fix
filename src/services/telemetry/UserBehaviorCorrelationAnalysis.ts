@@ -287,8 +287,10 @@ export class UserBehaviorCorrelationAnalysis {
         });
       }
 
-      // Extract resource utilization metrics
-      session.metrics.resourceUtilization.forEach((value, resourceType) => {
+      // Extract resource utilization metrics.
+      // Supports both Map<ResourceType, number> and plain-object snapshots from JSON persistence.
+      const resourceUtilization = session.metrics.resourceUtilization as unknown;
+      const appendResourceMetric = (resourceType: string, value: number) => {
         const metricName = `resourceUtilization:${resourceType}`;
 
         if (this.config.performanceMetrics.includes(metricName)) {
@@ -298,7 +300,23 @@ export class UserBehaviorCorrelationAnalysis {
             value,
           });
         }
-      });
+      };
+
+      if (resourceUtilization instanceof Map) {
+        resourceUtilization.forEach((value, resourceType) => {
+          if (typeof value === 'number') {
+            appendResourceMetric(String(resourceType), value);
+          }
+        });
+      } else if (resourceUtilization && typeof resourceUtilization === 'object') {
+        Object.entries(resourceUtilization as Record<string, unknown>).forEach(
+          ([resourceType, value]) => {
+            if (typeof value === 'number') {
+              appendResourceMetric(resourceType, value);
+            }
+          }
+        );
+      }
 
       // Extract event processing time
       if (this.config.performanceMetrics.includes('eventProcessingTime')) {

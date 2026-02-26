@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{js,jsx,ts,tsx}";
 
 @layer utilities {
   .bg-gradient-radial {
@@ -17,32 +17,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-@layer utilities {
-  .bg-gradient-radial {
-    background-image: radial-gradient(var(--tw-gradient-stops));
-  }
-}
 
-@layer utilities {
-  .bg-gradient-radial {
-    background-image: radial-gradient(var(--tw-gradient-stops));
-  }
-
-  .animate-spin-slow {
-    animation: spin 10s linear infinite;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
   to {
     opacity: 1;
     transform: translateX(0);

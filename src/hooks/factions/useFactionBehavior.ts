@@ -49,6 +49,114 @@ import { FactionEventType, FactionFleetEvent } from '../../types/events/FactionE
 // Added import for factionConfigs
 import { factionConfigs } from '../../config/factions/factions';
 
+interface FactionBehaviorProfile {
+  behavior: {
+    baseAggression: number;
+    expansionRate: number;
+    tradingPreference: number;
+  };
+  specialRules: {
+    alwaysHostile?: boolean;
+    requiresProvocation?: boolean;
+    powerThreshold?: number;
+  };
+}
+
+const fallbackFactionProfiles: Record<FactionId, FactionBehaviorProfile> = {
+  player: {
+    behavior: {
+      baseAggression: 0.4,
+      expansionRate: 0.6,
+      tradingPreference: 0.8,
+    },
+    specialRules: {},
+  },
+  enemy: {
+    behavior: {
+      baseAggression: 0.8,
+      expansionRate: 0.7,
+      tradingPreference: 0.2,
+    },
+    specialRules: {
+      alwaysHostile: true,
+    },
+  },
+  neutral: {
+    behavior: {
+      baseAggression: 0.2,
+      expansionRate: 0.4,
+      tradingPreference: 0.9,
+    },
+    specialRules: {},
+  },
+  ally: {
+    behavior: {
+      baseAggression: 0.3,
+      expansionRate: 0.5,
+      tradingPreference: 0.8,
+    },
+    specialRules: {},
+  },
+  'space-rats': {
+    behavior: {
+      baseAggression: 0.9,
+      expansionRate: 0.7,
+      tradingPreference: 0.1,
+    },
+    specialRules: {
+      alwaysHostile: true,
+    },
+  },
+  'lost-nova': {
+    behavior: {
+      baseAggression: 0.4,
+      expansionRate: 0.3,
+      tradingPreference: 0.6,
+    },
+    specialRules: {
+      requiresProvocation: true,
+    },
+  },
+  'equator-horizon': {
+    behavior: {
+      baseAggression: 0.5,
+      expansionRate: 0.4,
+      tradingPreference: 0.4,
+    },
+    specialRules: {
+      powerThreshold: 0.7,
+    },
+  },
+};
+
+function getFactionBehaviorProfile(factionId: FactionId): FactionBehaviorProfile {
+  const factionConfigLookup: Record<FactionId, string> = {
+    player: 'player',
+    enemy: 'enemy',
+    neutral: 'neutral',
+    ally: 'ally',
+    'space-rats': 'spaceRats',
+    'lost-nova': 'lostNova',
+    'equator-horizon': 'equatorHorizon',
+  };
+
+  const configured = factionConfigs[factionConfigLookup[factionId]] as unknown as
+    | FactionBehaviorProfile
+    | undefined;
+  if (configured) {
+    return {
+      ...configured,
+      specialRules: configured.specialRules ?? {},
+    };
+  }
+
+  const fallback = fallbackFactionProfiles[factionId];
+  console.warn(
+    `[useFactionBehavior] Missing faction config for "${factionId}" in config/factions/factions.ts. Using fallback profile.`
+  );
+  return fallback;
+}
+
 // Define the state machine transition type here
 interface StateMachineTransition {
   currentState: FactionStateType;
@@ -1146,10 +1254,7 @@ function calculateOptimalExpansionDirection(state: FactionBehaviorState): Positi
 
 export function useFactionBehavior(factionId: FactionId) {
   const [behavior, setBehavior] = useState<FactionBehaviorState>(() => {
-    const config = factionConfigs[factionId];
-    if (!config) {
-      throw new Error(`Configuration for faction ${factionId} not found.`);
-    }
+    const config = getFactionBehaviorProfile(factionId);
     return {
       id: factionId,
       name: factionId
