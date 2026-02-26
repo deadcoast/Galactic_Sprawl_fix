@@ -41,10 +41,22 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 32, color: '#ff6b6b', background: '#1a1a1a', minHeight: '100vh', fontFamily: 'monospace' }}>
-          <h1 style={{ color: '#ff6b6b' }}>Runtime Error</h1>
-          <pre style={{ whiteSpace: 'pre-wrap', color: '#ffa07a' }}>{this.state.error.message}</pre>
-          <pre style={{ whiteSpace: 'pre-wrap', color: '#888', fontSize: 12 }}>{this.state.error.stack}</pre>
+        <div
+          style={{
+            padding: 32,
+            color: 'var(--gs-text-1)',
+            background: 'var(--gs-bg)',
+            minHeight: '100vh',
+            fontFamily: 'Inter, SF Pro Text, Segoe UI, sans-serif',
+          }}
+        >
+          <h1 style={{ color: 'var(--gs-danger)', marginTop: 0 }}>Runtime Error</h1>
+          <pre style={{ whiteSpace: 'pre-wrap', color: 'var(--gs-text-2)' }}>
+            {this.state.error.message}
+          </pre>
+          <pre style={{ whiteSpace: 'pre-wrap', color: 'var(--gs-text-3)', fontSize: 12 }}>
+            {this.state.error.stack}
+          </pre>
         </div>
       );
     }
@@ -130,10 +142,18 @@ function App() {
   if (!isInitialized) {
     return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          gap: 2,
+          bgcolor: 'var(--gs-bg)',
+          color: 'var(--gs-text-2)',
+        }}
       >
-        <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Initializing Galactic Sprawl...</Typography>
+        <CircularProgress size={26} />
+        <Typography sx={{ color: 'var(--gs-text-2)' }}>Initializing Galactic Sprawl...</Typography>
       </Box>
     );
   }
@@ -154,9 +174,18 @@ function App() {
                 <ThresholdIntegration>
                   <Router>
                     <Suspense fallback={
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#212122' }}>
-                        <CircularProgress />
-                        <Typography sx={{ ml: 2, color: '#fff' }}>Loading game...</Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: '100vh',
+                          gap: 2,
+                          bgcolor: 'var(--gs-bg)',
+                        }}
+                      >
+                        <CircularProgress size={26} />
+                        <Typography sx={{ color: 'var(--gs-text-2)' }}>Loading game...</Typography>
                       </Box>
                     }>
                       <GameLayoutWrapper>

@@ -1264,7 +1264,7 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.mapWidth,
           height: dimensions.mapHeight,
         }}
-        className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950"
+        className="overflow-hidden rounded-xl border border-[var(--gs-border)] bg-[rgba(9,21,43,0.96)]"
       >
         <BaseMap
           width={dimensions.mapWidth}
@@ -1293,11 +1293,11 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.dataWidth,
           height: dimensions.dataHeight,
         }}
-        className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100"
+        className="overflow-hidden rounded-xl border border-[var(--gs-border)] bg-[rgba(16,31,53,0.95)] text-[var(--gs-text-1)]"
       >
         <div className="p-4">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-100">
+            <h2 className="text-xl font-semibold text-[var(--gs-text-1)]">
               {dataTableView.charAt(0).toUpperCase() + dataTableView.slice(1)}
             </h2>
 
@@ -1358,9 +1358,9 @@ const GalaxyExplorationSystemInner: React.FC<
             width: dimensions.dataWidth,
             height: dimensions.dataHeight,
           }}
-          className="flex items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/90"
+          className="flex items-center justify-center rounded-xl border border-[var(--gs-border)] bg-[rgba(16,31,53,0.95)]"
         >
-          <p className="text-slate-300">
+          <p className="text-[var(--gs-text-2)]">
             No analysis selected. Select an entity and click "Analyze" to view analysis.
           </p>
         </div>
@@ -1373,7 +1373,7 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.dataWidth,
           height: dimensions.dataHeight,
         }}
-        className="overflow-auto rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100"
+        className="overflow-auto rounded-xl border border-[var(--gs-border)] bg-[rgba(16,31,53,0.95)] text-[var(--gs-text-1)]"
       >
         <BaseAnalysisVisualizer
           analysis={currentAnalysis}
@@ -1396,15 +1396,15 @@ const GalaxyExplorationSystemInner: React.FC<
     }
 
     return (
-      <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-700/80 bg-slate-900/90 p-2">
+      <div className="mb-4 flex items-center justify-between rounded-xl border border-[var(--gs-border)] bg-[rgba(18,35,63,0.95)] p-2">
         <div className="flex space-x-4">
           <button
             onClick={() => handleViewModeChange('map')}
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'map'
-                ? 'border border-blue-500/70 bg-blue-600 text-white'
-                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             )}
           >
             Map
@@ -1414,8 +1414,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'data-table'
-                ? 'border border-blue-500/70 bg-blue-600 text-white'
-                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             )}
           >
             Data
@@ -1425,8 +1425,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'analysis'
-                ? 'border border-blue-500/70 bg-blue-600 text-white'
-                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             )}
             disabled={!currentAnalysis}
           >
@@ -1437,8 +1437,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'split-view'
-                ? 'border border-blue-500/70 bg-blue-600 text-white'
-                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             )}
           >
             Split View
@@ -1448,14 +1448,14 @@ const GalaxyExplorationSystemInner: React.FC<
         <div className="flex space-x-4">
           {allowLayoutChange && viewMode === 'split-view' && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-slate-300">Layout:</span>
+              <span className="text-sm text-[var(--gs-text-2)]">Layout:</span>
               <button
                 onClick={() => handleLayoutModeChange('horizontal')}
                 className={cn(
                   'rounded-md px-2 py-1 text-sm',
                   layoutMode === 'horizontal'
-                    ? 'border border-blue-500/70 bg-blue-600 text-white'
-                    : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                    ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                    : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
                 )}
               >
                 Horizontal
@@ -1465,8 +1465,8 @@ const GalaxyExplorationSystemInner: React.FC<
                 className={cn(
                   'rounded-md px-2 py-1 text-sm',
                   layoutMode === 'vertical'
-                    ? 'border border-blue-500/70 bg-blue-600 text-white'
-                    : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
+                    ? 'border border-blue-500/70 bg-[rgba(59,130,246,0.26)] text-sky-300'
+                    : 'border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
                 )}
               >
                 Vertical
@@ -1476,49 +1476,49 @@ const GalaxyExplorationSystemInner: React.FC<
 
           {allowVisualSettingsChange && (viewMode === 'map' || viewMode === 'split-view') && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-slate-300">Show:</span>
-              <label className="flex items-center space-x-1 text-sm text-slate-200">
+              <span className="text-sm text-[var(--gs-text-2)]">Show:</span>
+              <label className="flex items-center space-x-1 text-sm text-[var(--gs-text-2)]">
                 <input
                   type="checkbox"
                   checked={visualSettings.showGrid}
                   onChange={e => handleVisualSettingsChange('showGrid', e.target.checked)}
-                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
+                  className="h-3 w-3 rounded border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] accent-blue-500"
                 />
                 <span>Grid</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm text-slate-200">
+              <label className="flex items-center space-x-1 text-sm text-[var(--gs-text-2)]">
                 <input
                   type="checkbox"
                   checked={visualSettings.showLabels}
                   onChange={e => handleVisualSettingsChange('showLabels', e.target.checked)}
-                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
+                  className="h-3 w-3 rounded border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] accent-blue-500"
                 />
                 <span>Labels</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm text-slate-200">
+              <label className="flex items-center space-x-1 text-sm text-[var(--gs-text-2)]">
                 <input
                   type="checkbox"
                   checked={visualSettings.showResourceIcons}
                   onChange={e => handleVisualSettingsChange('showResourceIcons', e.target.checked)}
-                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
+                  className="h-3 w-3 rounded border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] accent-blue-500"
                 />
                 <span>Resources</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm text-slate-200">
+              <label className="flex items-center space-x-1 text-sm text-[var(--gs-text-2)]">
                 <input
                   type="checkbox"
                   checked={visualSettings.showAnomalyIcons}
                   onChange={e => handleVisualSettingsChange('showAnomalyIcons', e.target.checked)}
-                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
+                  className="h-3 w-3 rounded border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] accent-blue-500"
                 />
                 <span>Anomalies</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm text-slate-200">
+              <label className="flex items-center space-x-1 text-sm text-[var(--gs-text-2)]">
                 <input
                   type="checkbox"
                   checked={visualSettings.showTradeRoutes}
                   onChange={e => handleVisualSettingsChange('showTradeRoutes', e.target.checked)}
-                  className="h-3 w-3 rounded border border-slate-500 bg-slate-800 accent-blue-500"
+                  className="h-3 w-3 rounded border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] accent-blue-500"
                 />
                 <span>Trade Routes</span>
               </label>
@@ -1538,7 +1538,7 @@ const GalaxyExplorationSystemInner: React.FC<
     }
 
     return (
-      <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-700/80 bg-slate-900/90 p-2 text-sm text-slate-300">
+      <div className="mt-4 flex items-center justify-between rounded-xl border border-[var(--gs-border)] bg-[rgba(18,35,63,0.95)] p-2 text-sm text-[var(--gs-text-2)]">
         <div className="flex space-x-4">
           <span>Sectors: {exploration.state.sectors.length}</span>
           <span>Systems: {exploration.state.systems.length}</span>
@@ -1574,7 +1574,7 @@ const GalaxyExplorationSystemInner: React.FC<
     <div
       ref={rootRef}
       className={cn(
-        'overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100 shadow-2xl',
+        'overflow-hidden rounded-xl border border-[var(--gs-border)] bg-[rgba(15,31,54,0.95)] text-[var(--gs-text-1)] shadow-[0_16px_32px_rgba(2,10,24,0.35)]',
         className
       )}
       style={{

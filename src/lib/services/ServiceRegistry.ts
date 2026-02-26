@@ -164,11 +164,19 @@ export class ServiceRegistry {
     this.initializing.clear();
     this.initializationPromises.clear();
 
-    const sortedServices = this.services.size > 0
-      ? this.sortServicesByDependencies().reverse()
-      : [];
+    let servicesToDispose: ServiceRegistration[] = [];
 
-    for (const service of sortedServices) {
+    if (this.services.size > 0) {
+      try {
+        servicesToDispose = this.sortServicesByDependencies().reverse();
+      } catch {
+        // If dependency sorting fails (for example due to a cycle),
+        // dispose whatever has been registered in insertion order.
+        servicesToDispose = Array.from(this.services.values()).reverse();
+      }
+    }
+
+    for (const service of servicesToDispose) {
       if (service.instance) {
         try {
           await service.instance.dispose();
