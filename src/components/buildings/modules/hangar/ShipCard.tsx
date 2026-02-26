@@ -94,12 +94,12 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
     <Card
       sx={{
         cursor: onClick ? 'pointer' : 'default',
-        border: isSelected ? '2px solid #6366f1' : '2px solid transparent',
-        backgroundColor: '#374151',
-        color: '#ffffff',
+        border: isSelected ? '2px solid #3b82f6' : '2px solid transparent',
+        backgroundColor: 'rgba(20, 38, 65, 0.95)',
+        color: 'var(--gs-text-1)',
         transition: 'border-color 0.2s ease-in-out',
         '&:hover': {
-          borderColor: onClick ? '#4f46e5' : 'transparent',
+          borderColor: onClick ? '#60a5fa' : 'transparent',
         },
       }}
       onClick={handleCardClick}
@@ -135,19 +135,19 @@ export const ShipCard = ({ ship, isSelected = false, onClick }: ShipCardProps) =
 
         <div className="mt-3 flex justify-around gap-2" style={{ fontSize: '0.8rem' }}>
           <div className="text-center">
-            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: 'var(--gs-text-3)' }}>
               Speed
             </Typography>
             <Typography variant="body2">{ship.stats?.speed?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: 'var(--gs-text-3)' }}>
               Shield
             </Typography>
             <Typography variant="body2">{ship.stats?.maxShield?.toFixed(0) ?? 'N/A'}</Typography>
           </div>
           <div className="text-center">
-            <Typography variant="caption" sx={{ display: 'block', color: '#9ca3af' }}>
+            <Typography variant="caption" sx={{ display: 'block', color: 'var(--gs-text-3)' }}>
               Armor
             </Typography>
             <Typography variant="body2">

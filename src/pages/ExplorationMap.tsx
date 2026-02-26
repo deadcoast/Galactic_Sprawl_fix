@@ -3,12 +3,16 @@ import GalaxyExplorationSystem from '../components/exploration/system/GalaxyExpl
 
 const ExplorationMap: React.FC = () => {
   return (
-    <GalaxyExplorationSystem
-      showToolbar={true}
-      showStatusBar={true}
-      height="100%"
-      width="100%"
-    />
+    <div className="gs-route-shell">
+      <div className="gs-route-container">
+        <GalaxyExplorationSystem
+          showToolbar={true}
+          showStatusBar={true}
+          height="100%"
+          width="100%"
+        />
+      </div>
+    </div>
   );
 };
 

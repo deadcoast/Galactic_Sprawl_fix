@@ -38,7 +38,7 @@ export function FormationTacticsPage() {
   const fleets = fleetsByFaction[activeFaction] ?? [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="gs-route-container px-4 py-4 sm:py-6 lg:py-8">
       <div className="mb-8">
         <h1 className="flex items-center text-3xl font-bold text-white">
           <Swords className="mr-3 h-8 w-8 text-blue-400" />

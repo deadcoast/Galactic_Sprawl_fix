@@ -2,6 +2,285 @@
 @source "../index.html";
 @source "./**/*.{js,jsx,ts,tsx}";
 
+@layer base {
+  :root {
+    --gs-bg: #071226;
+    --gs-surface-0: #0a1a35;
+    --gs-surface-1: #12233f;
+    --gs-surface-2: #1a2e4d;
+    --gs-surface-3: #213758;
+    --gs-border: #2d4468;
+    --gs-border-strong: #3f5d87;
+    --gs-text-1: #e2ecfb;
+    --gs-text-2: #9fb2d3;
+    --gs-text-3: #7f94b7;
+    --gs-accent: #3b82f6;
+    --gs-accent-strong: #2563eb;
+    --gs-success: #22c55e;
+    --gs-warning: #f59e0b;
+    --gs-danger: #ef4444;
+    --gs-radius-md: 10px;
+    --gs-radius-lg: 14px;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: radial-gradient(120% 120% at 10% 0%, #102449 0%, var(--gs-bg) 55%);
+    color: var(--gs-text-1);
+    font-family:
+      Inter,
+      "SF Pro Text",
+      "Segoe UI",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Helvetica Neue",
+      sans-serif;
+  }
+}
+
+@layer components {
+  .gs-route-shell {
+    padding: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .gs-route-shell {
+      padding: 1.25rem 1.5rem;
+    }
+  }
+
+  .gs-route-container {
+    width: min(1280px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .gs-surface {
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius-lg);
+    background: linear-gradient(180deg, rgba(27, 45, 73, 0.95), rgba(14, 29, 51, 0.95));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 16px 32px rgba(2, 10, 24, 0.35);
+  }
+
+  .gs-surface-muted {
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius-md);
+    background: rgba(20, 38, 65, 0.88);
+  }
+
+  .gs-page-title {
+    margin: 0;
+    color: var(--gs-text-1);
+    font-size: clamp(1.7rem, 1.1rem + 1.6vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .gs-page-subtitle {
+    margin: 0.45rem 0 0;
+    color: var(--gs-text-2);
+    font-size: 0.98rem;
+  }
+
+  .gs-control {
+    border: 1px solid var(--gs-border);
+    border-radius: 8px;
+    background: rgba(18, 35, 63, 0.9);
+    color: var(--gs-text-1);
+    padding: 0.4rem 0.7rem;
+  }
+
+  .gs-button-primary {
+    border: 1px solid #2f63cc;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #3578ef, #2b63ca);
+    color: #eaf2ff;
+    transition: filter 180ms ease;
+  }
+
+  .gs-button-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .gs-button-secondary {
+    border: 1px solid var(--gs-border);
+    border-radius: 8px;
+    background: rgba(24, 43, 72, 0.95);
+    color: var(--gs-text-1);
+    transition: border-color 180ms ease;
+  }
+
+  .gs-button-secondary:hover {
+    border-color: var(--gs-border-strong);
+  }
+
+  .gs-muted {
+    color: var(--gs-text-3);
+  }
+
+  /* Dashboard subviews are self-styled components. Scope overrides here to keep
+     the route visually consistent without rewriting each component. */
+  .performance-analysis-dashboard .user-behavior-correlation-view {
+    background: var(--gs-surface-1);
+    color: var(--gs-text-1);
+    border: 1px solid var(--gs-border);
+    box-shadow: none;
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view h2,
+  .performance-analysis-dashboard .user-behavior-correlation-view h3,
+  .performance-analysis-dashboard .user-behavior-correlation-view h4 {
+    color: var(--gs-text-1);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .loading,
+  .performance-analysis-dashboard .user-behavior-correlation-view .no-data {
+    color: var(--gs-text-3);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .insights-section,
+  .performance-analysis-dashboard .user-behavior-correlation-view .correlation-section,
+  .performance-analysis-dashboard .user-behavior-correlation-view .patterns-section {
+    background: var(--gs-surface-2);
+    border: 1px solid var(--gs-border);
+    box-shadow: none;
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .insight-item {
+    background: rgba(59, 130, 246, 0.16);
+    color: var(--gs-text-1);
+    border-left: 4px solid #3b82f6;
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .insight-item:hover {
+    background: rgba(59, 130, 246, 0.24);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .filter-controls label,
+  .performance-analysis-dashboard .user-behavior-correlation-view .detail-panel .label {
+    color: var(--gs-text-2);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .filter-controls select {
+    border-color: var(--gs-border);
+    background: var(--gs-surface-1);
+    color: var(--gs-text-1);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .detail-panel {
+    background: rgba(16, 31, 53, 0.75);
+    border-color: var(--gs-border);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .close-btn {
+    border-color: var(--gs-border);
+    color: var(--gs-text-2);
+  }
+
+  .performance-analysis-dashboard .user-behavior-correlation-view .close-btn:hover {
+    background: rgba(59, 130, 246, 0.12);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker {
+    border-color: var(--gs-border);
+    background: var(--gs-surface-1);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker .summary-section {
+    border-bottom-color: var(--gs-border);
+    background: var(--gs-surface-2);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker .summary-label,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-description,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-table th,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-value,
+  .performance-analysis-dashboard .performance-budget-tracker .no-data {
+    color: var(--gs-text-2);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker .summary-value,
+  .performance-analysis-dashboard .performance-budget-tracker .category-heading,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-name {
+    color: var(--gs-text-1);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker .category-heading,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-table th,
+  .performance-analysis-dashboard .performance-budget-tracker .budget-table td {
+    border-color: var(--gs-border);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker tr.violation {
+    background: rgba(245, 158, 11, 0.12);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker tr.critical-violation {
+    background: rgba(239, 68, 68, 0.14);
+  }
+
+  .performance-analysis-dashboard .performance-budget-tracker .health-indicator {
+    background: rgba(88, 110, 145, 0.35);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison {
+    background: var(--gs-surface-1);
+    color: var(--gs-text-1);
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius-md);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison h2 {
+    color: var(--gs-text-1);
+    border-bottom-color: rgba(59, 130, 246, 0.55);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison h3,
+  .performance-analysis-dashboard .visualization-performance-comparison h4 {
+    color: #8ac0ff;
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .controls,
+  .performance-analysis-dashboard .visualization-performance-comparison .optimization-insights,
+  .performance-analysis-dashboard .visualization-performance-comparison .visualization-container h3 {
+    background: var(--gs-surface-2);
+    border-color: var(--gs-border);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .visualization-container {
+    background: rgba(17, 34, 58, 0.96);
+    border: 1px solid var(--gs-border);
+    box-shadow: none;
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .visualization-description {
+    color: var(--gs-text-2);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .action-button {
+    border: 1px solid #2f63cc;
+    background: linear-gradient(180deg, #3578ef, #2b63ca);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .action-button:hover {
+    background: linear-gradient(180deg, #3b82f6, #2f6ed8);
+  }
+
+  .performance-analysis-dashboard .visualization-performance-comparison .control-row label,
+  .performance-analysis-dashboard .visualization-performance-comparison .toggle-row label,
+  .performance-analysis-dashboard .visualization-performance-comparison .value {
+    color: var(--gs-text-2);
+  }
+}
+
 @layer utilities {
   .bg-gradient-radial {
     background-image: radial-gradient(var(--tw-gradient-stops));

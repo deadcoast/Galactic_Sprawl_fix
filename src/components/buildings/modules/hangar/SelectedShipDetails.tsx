@@ -121,7 +121,16 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
   if (!ship) {
     const placeholder: JSX.Element = React.createElement(
       Box,
-      { sx: { mt: 3, p: 2, border: '1px solid grey' } },
+      {
+        sx: {
+          mt: 3,
+          p: 2,
+          border: '1px solid var(--gs-border)',
+          borderRadius: '10px',
+          backgroundColor: 'rgba(20, 38, 65, 0.78)',
+          color: 'var(--gs-text-2)',
+        },
+      },
       React.createElement(Typography, { variant: 'body1' }, 'Select a ship to view details.')
     );
     return placeholder;
@@ -176,7 +185,7 @@ const SelectedShipDetails: React.FC<SelectedShipDetailsProps> = ({ ship }) => { 
 
   // --- Rendering Logic ---
   return (
-    (<Paper elevation={2} sx={{ p: 2, mt: 2 }}>
+    (<Paper elevation={0} sx={{ p: 2, mt: 2, border: '1px solid var(--gs-border)', borderRadius: '10px', backgroundColor: 'rgba(20, 38, 65, 0.9)' }}>
       {/* Common Header Details */}
       <Typography variant="h6">Selected: {ship.name}</Typography>
       <Typography variant="body1">Status: {ship.status}</Typography>

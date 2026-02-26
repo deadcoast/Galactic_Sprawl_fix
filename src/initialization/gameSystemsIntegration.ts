@@ -422,8 +422,8 @@ export function integrateWithGameSystems(): () => void {
       }
     };
 
-    // Register the listener using subscribe
-    techTreeManager.on('nodeUnlocked', techUnlockedListener);
+    // Register the listener and retain the unsubscribe callback.
+    const unsubscribeNodeUnlocked = techTreeManager.on('nodeUnlocked', techUnlockedListener);
 
     // Register tech system event handlers
     const unregisterTechHandler = techSystemComm.registerHandler(
@@ -462,7 +462,7 @@ export function integrateWithGameSystems(): () => void {
 
     // Add cleanup function
     cleanupFunctions.push(() => {
-      techTreeManager.off('nodeUnlocked', techUnlockedListener);
+      unsubscribeNodeUnlocked();
       unregisterTechHandler();
       // Additional tech system cleanup if needed
     });

@@ -95,62 +95,124 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 
   }, [hangarManager, selectedBuildClass, fetchShips]);
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className="gs-route-shell">
+        <div className="gs-route-container gs-surface flex items-center justify-center p-8">
+          <CircularProgress size={28} />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return (
+      <div className="gs-route-shell">
+        <div className="gs-route-container gs-surface p-6">
+          <Alert severity="error">{error}</Alert>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <Typography variant="h5" gutterBottom>
-        Ship Hangar ({hangarId})
-      </Typography>
-      <Button onClick={handleRefresh} sx={{ mb: 2 }}>
-        Refresh Ships
-      </Button>
-
-      <Box sx={{ mb: 3, p: 2, border: '1px dashed grey' }}>
-        <Typography variant="h6" gutterBottom>Build Ship</Typography>
-        <FormControl fullWidth sx={{ mb: 1 }}>
-          <InputLabel>Ship Class</InputLabel>
-          <Select
-            value={selectedBuildClass}
-            label="Ship Class"
-            onChange={e => setSelectedBuildClass(e.target.value as PlayerShipClass)}
+    <div className="gs-route-shell">
+      <div className="gs-route-container gs-surface p-4 md:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Typography variant="h4" sx={{ color: 'var(--gs-text-1)', fontWeight: 700 }}>
+            Ship Hangar ({hangarId})
+          </Typography>
+          <Button
+            onClick={handleRefresh}
+            variant="outlined"
+            sx={{
+              borderColor: 'var(--gs-border)',
+              color: 'var(--gs-text-1)',
+              textTransform: 'none',
+              '&:hover': {
+                borderColor: 'var(--gs-border-strong)',
+                backgroundColor: 'rgba(59, 130, 246, 0.08)',
+              },
+            }}
           >
-            {(Object.values(PlayerShipClass) as string[]).map(shipClass => (
-              <MenuItem key={shipClass} value={shipClass}>
-                {shipClass}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button onClick={handleBuildShip} variant="contained" sx={{ ml: 2 }}>
-          Build
-        </Button>
-      </Box>
+            Refresh Ships
+          </Button>
+        </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '16px',
-          marginTop: '16px'
-        }}>
-        {shipCards.length > 0 ? (
-          shipCards.map((shipData) => (
-            <div key={shipData.id}>
-              <ShipCard ship={shipData} isSelected={selectedShipId === shipData.id} onClick={handleShipSelect} />
-            </div>
-          ))
-        ) : (
-          <Typography sx={{ p: 2 }}>No ships available.</Typography>
-        )}
+        <Box
+          sx={{
+            mb: 3,
+            p: 2,
+            border: '1px solid var(--gs-border)',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(20, 38, 65, 0.88)',
+          }}
+        >
+          <Typography variant="h6" gutterBottom sx={{ color: 'var(--gs-text-1)' }}>
+            Build Ship
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 1 }}>
+            <InputLabel sx={{ color: 'var(--gs-text-2)' }}>Ship Class</InputLabel>
+            <Select
+              value={selectedBuildClass}
+              label="Ship Class"
+              onChange={e => setSelectedBuildClass(e.target.value as PlayerShipClass)}
+              sx={{
+                color: 'var(--gs-text-1)',
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--gs-border)',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--gs-border-strong)',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#60a5fa',
+                },
+                '.MuiSvgIcon-root': {
+                  color: 'var(--gs-text-2)',
+                },
+              }}
+            >
+              {(Object.values(PlayerShipClass) as string[]).map(shipClass => (
+                <MenuItem key={shipClass} value={shipClass}>
+                  {shipClass}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            onClick={handleBuildShip}
+            variant="contained"
+            sx={{
+              mt: 1,
+              textTransform: 'none',
+              background: 'linear-gradient(180deg, #3578ef, #2b63ca)',
+              '&:hover': {
+                background: 'linear-gradient(180deg, #3b82f6, #2f6ed8)',
+              },
+            }}
+          >
+            Build
+          </Button>
+        </Box>
+
+        <div className="mt-4 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+          {shipCards.length > 0 ? (
+            shipCards.map(shipData => (
+              <div key={shipData.id}>
+                <ShipCard
+                  ship={shipData}
+                  isSelected={selectedShipId === shipData.id}
+                  onClick={handleShipSelect}
+                />
+              </div>
+            ))
+          ) : (
+            <Typography sx={{ p: 2, color: 'var(--gs-text-2)' }}>No ships available.</Typography>
+          )}
+        </div>
+
+        <SelectedShipDetails ship={selectedDetails} />
       </div>
-
-      <SelectedShipDetails ship={selectedDetails} />
-
     </div>
   );
 };

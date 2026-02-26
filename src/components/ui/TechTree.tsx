@@ -996,7 +996,7 @@ export default function TechTree() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-900 p-8 text-white">
+    <div className="gs-route-container relative min-h-full rounded-2xl border border-slate-700/80 bg-slate-950 p-8 text-white shadow-2xl">
       <h2 className="mb-8 text-center text-2xl font-bold text-white">Technology Tree</h2>
 
       {/* Category filters */}

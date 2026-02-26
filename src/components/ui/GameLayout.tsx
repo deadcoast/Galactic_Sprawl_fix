@@ -1,4 +1,4 @@
-import { Beaker, Database, Map, Menu, Radar, Ship, Users, Wrench } from 'lucide-react';
+import { Beaker, Database, Map, Menu, Radar, Ship, Users } from 'lucide-react';
 import * as React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameState } from '../../contexts/GameContext';
@@ -19,10 +19,10 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   const state = useGameState(state => state);
   const navigate = useNavigate();
   const location = useLocation();
+  const legacyHudEnabled = import.meta.env.VITE_ENABLE_LEGACY_HUD === 'true';
   const showHud =
-    location.pathname === '/map' ||
-    location.pathname === '/colony' ||
-    location.pathname === '/hangar';
+    legacyHudEnabled &&
+    ['/map', '/colony', '/hangar'].includes(location.pathname);
 
   // Add component profiling to monitor performance
   const profiler = useComponentProfiler('GameLayout', {
@@ -31,28 +31,25 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
     trackPropChanges: true,
   });
 
-  // Log when component renders
-  console.warn('GameLayout rendering', { showSprawlView, showVPRView, showGalaxyMap });
-
   React.useEffect(() => {
+    if (!showHud) {
+      return;
+    }
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'm' || e.key === 'M') {
-        console.warn('M key pressed - toggling galaxy map');
         setShowGalaxyMap(prev => !prev);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  }, [showHud]);
 
-  // Handle view toggles with proper console logging for debugging
+  // Handle optional legacy HUD overlays.
   const handleToggleSprawlView = () => {
-    console.warn('Toggling sprawl view');
     setShowSprawlView(prev => {
-      const newValue = !prev;
-      console.warn(`Sprawl view is now ${newValue ? 'visible' : 'hidden'}`);
-      return newValue;
+      return !prev;
     });
 
     // If showing sprawl view, hide other views
@@ -63,11 +60,8 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   };
 
   const handleToggleVPRView = () => {
-    console.warn('Toggling VPR view');
     setShowVPRView(prev => {
-      const newValue = !prev;
-      console.warn(`VPR view is now ${newValue ? 'visible' : 'hidden'}`);
-      return newValue;
+      return !prev;
     });
 
     // If showing VPR view, hide other views
@@ -176,47 +170,53 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
           </div>
 
           {/* Sprawl View — overlay panel */}
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              showSprawlView
-                ? 'pointer-events-auto z-10 opacity-100'
-                : 'pointer-events-none z-0 opacity-0'
-            }`}
-          >
-            <div className="flex h-full w-full flex-col items-center justify-center bg-gray-800 p-4">
-              <h2 className="mb-4 text-2xl font-bold text-white">Sprawl View</h2>
-              <p className="text-center text-gray-300">
-                Manage your mining operations and resource extraction.
-              </p>
+          {showHud && (
+            <div
+              className={`absolute inset-0 transition-opacity duration-300 ${
+                showSprawlView
+                  ? 'pointer-events-auto z-10 opacity-100'
+                  : 'pointer-events-none z-0 opacity-0'
+              }`}
+            >
+              <div className="flex h-full w-full flex-col items-center justify-center bg-gray-800 p-4">
+                <h2 className="mb-4 text-2xl font-bold text-white">Sprawl View</h2>
+                <p className="text-center text-gray-300">
+                  Manage your mining operations and resource extraction.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* VPR View — overlay panel */}
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              showVPRView
-                ? 'pointer-events-auto z-10 opacity-100'
-                : 'pointer-events-none z-0 opacity-0'
-            }`}
-          >
-            <div className="flex h-full w-full flex-col items-center justify-center bg-blue-900/50 p-4">
-              <h2 className="mb-4 text-2xl font-bold text-white">Exploration View</h2>
-              <p className="text-center text-gray-300">
-                Manage your exploration missions and scout ships.
-              </p>
+          {showHud && (
+            <div
+              className={`absolute inset-0 transition-opacity duration-300 ${
+                showVPRView
+                  ? 'pointer-events-auto z-10 opacity-100'
+                  : 'pointer-events-none z-0 opacity-0'
+              }`}
+            >
+              <div className="flex h-full w-full flex-col items-center justify-center bg-blue-900/50 p-4">
+                <h2 className="mb-4 text-2xl font-bold text-white">Exploration View</h2>
+                <p className="text-center text-gray-300">
+                  Manage your exploration missions and scout ships.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Galaxy Map — overlay panel */}
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              showGalaxyMap
-                ? 'pointer-events-auto z-10 opacity-100'
-                : 'pointer-events-none z-0 opacity-0'
-            }`}
-          >
-            <GalaxyMap />
-          </div>
+          {showHud && (
+            <div
+              className={`absolute inset-0 transition-opacity duration-300 ${
+                showGalaxyMap
+                  ? 'pointer-events-auto z-10 opacity-100'
+                  : 'pointer-events-none z-0 opacity-0'
+              }`}
+            >
+              <GalaxyMap />
+            </div>
+          )}
         </div>
       </div>
     </div>

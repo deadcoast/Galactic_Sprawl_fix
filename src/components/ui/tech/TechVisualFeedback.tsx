@@ -251,12 +251,18 @@ export function TechVisualFeedback({
       }
     };
 
-    techTreeManager.on('researchProgress', handleResearchProgress);
-    techTreeManager.on('researchCompleted', handleResearchCompleted);
+    const unsubscribeResearchProgress = techTreeManager.on(
+      'researchProgress',
+      handleResearchProgress
+    );
+    const unsubscribeResearchCompleted = techTreeManager.on(
+      'researchCompleted',
+      handleResearchCompleted
+    );
 
     return () => {
-      techTreeManager.off('researchProgress', handleResearchProgress);
-      techTreeManager.off('researchCompleted', handleResearchCompleted);
+      unsubscribeResearchProgress();
+      unsubscribeResearchCompleted();
     };
   }, [node.id]);
 

@@ -1,12 +1,15 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { PerformanceBudgetTracker } from '../components/ui/performance/PerformanceBudgetTracker';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
+import VisualizationPerformanceComparison from '../components/ui/performance/VisualizationPerformanceComparison';
 import {
     errorLoggingService,
     ErrorSeverity,
     ErrorType
 } from '../services/logging/ErrorLoggingService';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
+import { BenchmarkResult } from '../utils/performance/benchmarks/PerformanceBenchmarkTools';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
 /**
@@ -18,6 +21,72 @@ const PerformanceAnalysisDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('userBehavior');
+
+  const benchmarkResults = useMemo<BenchmarkResult[]>(() => {
+    if (performanceData.length === 0) {
+      return [];
+    }
+
+    const average = (values: number[]) =>
+      values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+
+    const avgRenderTime = average(performanceData.map(session => session.metrics.renderTime));
+    const avgMemoryUsage = average(performanceData.map(session => session.metrics.memoryUsage));
+    const avgEventProcessing = average(
+      performanceData.map(session => session.metrics.eventProcessingTime)
+    );
+    const avgInteractionLatency = average(
+      performanceData.map(session => session.metrics.interactionLatency)
+    );
+    const avgEventsPerSession = average(
+      performanceData.map(session =>
+        Object.values(session.metrics.eventCounts ?? {}).reduce(
+          (sum, value) => sum + (typeof value === 'number' ? value : 0),
+          0
+        )
+      )
+    );
+
+    const now = new Date();
+
+    return [
+      {
+        name: 'ResourceManagementDashboard Render',
+        description: 'Derived from average render time in captured telemetry sessions',
+        executionTimeMs: Math.max(1, avgRenderTime),
+        memoryUsageMB: avgMemoryUsage,
+        operationsPerSecond: 1000 / Math.max(avgRenderTime, 1),
+        timestamp: now,
+      },
+      {
+        name: 'ResourceVisualizationEnhanced Update',
+        description: 'Derived from average interaction latency and event processing',
+        executionTimeMs: Math.max(1, (avgEventProcessing + avgInteractionLatency) / 2),
+        memoryUsageMB: avgMemoryUsage,
+        operationsPerSecond: 1000 / Math.max(avgEventProcessing, 1),
+        timestamp: now,
+      },
+      {
+        name: 'EventSystem Processing (1000 events)',
+        description: 'Estimated from event processing cost and session event volume',
+        executionTimeMs: Math.max(1, avgEventProcessing * 10),
+        operationsPerSecond: Math.max(1, avgEventsPerSession * (1000 / Math.max(avgEventProcessing, 1))),
+        timestamp: now,
+      },
+      {
+        name: 'Application Bootstrap',
+        description: 'Estimated startup budget proxy from render + event processing telemetry',
+        executionTimeMs: Math.max(100, avgRenderTime * 15 + avgEventProcessing * 5),
+        timestamp: now,
+      },
+      {
+        name: 'Resource System Initialization',
+        description: 'Estimated subsystem startup budget proxy from interaction/event latency',
+        executionTimeMs: Math.max(50, avgEventProcessing * 8 + avgInteractionLatency * 2),
+        timestamp: now,
+      },
+    ];
+  }, [performanceData]);
 
   // Fetch performance data when component mounts
   useEffect(() => {
@@ -142,7 +211,7 @@ const PerformanceAnalysisDashboard: React.FC = () => {
   };
 
   return (
-    <div className="performance-analysis-dashboard">
+    <div className="performance-analysis-dashboard gs-route-shell">
       <header className="dashboard-header">
         <h1>Performance Analysis Dashboard</h1>
 
@@ -194,18 +263,26 @@ const PerformanceAnalysisDashboard: React.FC = () => {
 
             {activeTab === 'metrics' && (
               <div className="tab-content">
-                <div className="placeholder-content">
-                  <h2>Performance Metrics</h2>
-                  <p>This section will contain detailed performance metrics visualization.</p>
+                <div className="dashboard-section-panel">
+                  <h2 className="dashboard-section-title">Performance Budget Compliance</h2>
+                  <PerformanceBudgetTracker
+                    results={benchmarkResults}
+                    categoryFilter={['ui', 'eventSystem', 'initialization']}
+                  />
                 </div>
               </div>
             )}
 
             {activeTab === 'trends' && (
               <div className="tab-content">
-                <div className="placeholder-content">
-                  <h2>Performance Trends</h2>
-                  <p>This section will contain performance trend analysis over time.</p>
+                <div className="dashboard-section-panel">
+                  <h2 className="dashboard-section-title">Visualization Performance Trends</h2>
+                  <VisualizationPerformanceComparison
+                    initialNodeCount={80}
+                    initialLinkCount={140}
+                    width={900}
+                    height={380}
+                  />
                 </div>
               </div>
             )}
@@ -216,36 +293,36 @@ const PerformanceAnalysisDashboard: React.FC = () => {
       <style>
         {`
         .performance-analysis-dashboard {
-          font-family:
-            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-            'Open Sans', 'Helvetica Neue', sans-serif;
-          max-width: 1200px;
+          max-width: 1280px;
           margin: 0 auto;
-          padding: 20px;
-          background-color: #f5f8fa;
-          color: #1f2937;
-          min-height: 100vh;
+          background: transparent;
+          color: var(--gs-text-1);
+          min-height: 100%;
         }
 
         .dashboard-header {
-          margin-bottom: 30px;
-          padding-bottom: 20px;
-          border-bottom: 1px solid #eaeaea;
+          margin-bottom: 20px;
+          padding: 18px 20px 16px;
+          border: 1px solid var(--gs-border);
+          border-radius: 14px;
+          background: linear-gradient(180deg, rgba(26, 46, 78, 0.95), rgba(17, 32, 55, 0.95));
           position: relative;
         }
 
         .dashboard-header h1 {
-          color: #2d3748;
+          color: var(--gs-text-1);
           margin: 0;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
+          font-size: clamp(1.5rem, 1.05rem + 1.25vw, 2.1rem);
+          letter-spacing: -0.02em;
         }
 
         .selected-insight {
-          background-color: #ebf8ff;
-          border-left: 4px solid #3182ce;
+          background-color: rgba(59, 130, 246, 0.16);
+          border-left: 4px solid #3b82f6;
           padding: 12px 15px;
           margin-top: 15px;
-          border-radius: 4px;
+          border-radius: 8px;
           position: relative;
         }
 
@@ -253,12 +330,12 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           margin: 0;
           margin-bottom: 8px;
           font-size: 16px;
-          color: #2c5282;
+          color: #bfdbfe;
         }
 
         .selected-insight p {
           margin: 0;
-          color: #4a5568;
+          color: var(--gs-text-1);
         }
 
         .selected-insight button {
@@ -266,60 +343,67 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           top: 12px;
           right: 12px;
           padding: 4px 8px;
-          background: none;
-          border: 1px solid #cbd5e0;
-          border-radius: 4px;
+          background: rgba(20, 39, 67, 0.75);
+          border: 1px solid var(--gs-border);
+          border-radius: 6px;
           cursor: pointer;
           font-size: 12px;
-          color: #4a5568;
+          color: var(--gs-text-2);
         }
 
         .selected-insight button:hover {
-          background-color: #f7fafc;
+          background-color: rgba(59, 130, 246, 0.12);
         }
 
         .dashboard-tabs {
           display: flex;
-          margin-bottom: 20px;
-          border-bottom: 1px solid #e2e8f0;
+          gap: 8px;
+          margin-bottom: 16px;
+          border: 1px solid var(--gs-border);
+          border-radius: 10px;
+          padding: 6px;
+          background: rgba(19, 38, 66, 0.8);
         }
 
         .dashboard-tabs button {
-          padding: 12px 20px;
-          border: none;
-          background: none;
-          color: #4a5568;
-          font-size: 16px;
+          padding: 10px 16px;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          background: transparent;
+          color: var(--gs-text-2);
+          font-size: 15px;
           cursor: pointer;
           position: relative;
-          transition: color 0.2s;
+          transition:
+            color 0.2s,
+            border-color 0.2s,
+            background-color 0.2s;
         }
 
         .dashboard-tabs button:hover {
-          color: #3182ce;
+          color: #bfdbfe;
+          border-color: rgba(96, 165, 250, 0.4);
+          background: rgba(59, 130, 246, 0.1);
         }
 
         .dashboard-tabs button.active {
-          color: #3182ce;
+          color: #dbeafe;
           font-weight: 500;
+          border-color: rgba(96, 165, 250, 0.6);
+          background: rgba(59, 130, 246, 0.2);
         }
 
         .dashboard-tabs button.active::after {
-          content: '';
-          position: absolute;
-          bottom: -1px;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background-color: #3182ce;
-          border-top-left-radius: 3px;
-          border-top-right-radius: 3px;
+          display: none;
         }
 
         .dashboard-content {
-          background-color: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          background-color: rgba(15, 30, 52, 0.92);
+          border: 1px solid var(--gs-border);
+          border-radius: 14px;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 18px 32px rgba(2, 10, 24, 0.35);
           overflow: hidden;
         }
 
@@ -327,20 +411,31 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           padding: 0;
         }
 
+        .dashboard-section-panel {
+          padding: 20px;
+        }
+
+        .dashboard-section-title {
+          margin: 0 0 14px;
+          color: var(--gs-text-1);
+          font-size: 1.15rem;
+          font-weight: 650;
+        }
+
         .loading-container {
           padding: 40px;
           text-align: center;
-          color: #718096;
+          color: var(--gs-text-2);
         }
 
         .placeholder-content {
           padding: 40px;
           text-align: center;
-          color: #718096;
+          color: var(--gs-text-2);
         }
 
         .placeholder-content h2 {
-          color: #4a5568;
+          color: var(--gs-text-1);
           margin-top: 0;
         }
         `}

@@ -1216,7 +1216,7 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.mapWidth,
           height: dimensions.mapHeight,
         }}
-        className="overflow-hidden rounded-md border border-gray-300 bg-black"
+        className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950"
       >
         <BaseMap
           width={dimensions.mapWidth}
@@ -1245,11 +1245,11 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.dataWidth,
           height: dimensions.dataHeight,
         }}
-        className="overflow-hidden rounded-md border border-gray-300 bg-white"
+        className="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100"
       >
         <div className="p-4">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold text-slate-100">
               {dataTableView.charAt(0).toUpperCase() + dataTableView.slice(1)}
             </h2>
 
@@ -1257,7 +1257,7 @@ const GalaxyExplorationSystemInner: React.FC<
               <select
                 value={dataTableView}
                 onChange={e => handleDataTableViewChange(e.target.value as DataTableView)}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                className="rounded-md border border-slate-600 bg-slate-800 px-2 py-1 text-sm text-slate-100"
               >
                 <option value="sectors">Sectors</option>
                 <option value="systems">Systems</option>
@@ -1269,7 +1269,7 @@ const GalaxyExplorationSystemInner: React.FC<
               {selection.length > 0 && (
                 <button
                   onClick={handleAnalyze}
-                  className="rounded-md bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600"
+                  className="rounded-md border border-blue-500/70 bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-500"
                 >
                   Analyze
                 </button>
@@ -1310,9 +1310,9 @@ const GalaxyExplorationSystemInner: React.FC<
             width: dimensions.dataWidth,
             height: dimensions.dataHeight,
           }}
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white"
+          className="flex items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/90"
         >
-          <p className="text-gray-500">
+          <p className="text-slate-300">
             No analysis selected. Select an entity and click "Analyze" to view analysis.
           </p>
         </div>
@@ -1325,7 +1325,7 @@ const GalaxyExplorationSystemInner: React.FC<
           width: dimensions.dataWidth,
           height: dimensions.dataHeight,
         }}
-        className="overflow-auto rounded-md border border-gray-300 bg-white"
+        className="overflow-auto rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100"
       >
         <BaseAnalysisVisualizer
           analysis={currentAnalysis}
@@ -1348,15 +1348,15 @@ const GalaxyExplorationSystemInner: React.FC<
     }
 
     return (
-      <div className="mb-4 flex items-center justify-between rounded-md bg-gray-100 p-2">
+      <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-700/80 bg-slate-900/90 p-2">
         <div className="flex space-x-4">
           <button
             onClick={() => handleViewModeChange('map')}
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'map'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
+                ? 'border border-blue-500/70 bg-blue-600 text-white'
+                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
             )}
           >
             Map
@@ -1366,8 +1366,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'data-table'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
+                ? 'border border-blue-500/70 bg-blue-600 text-white'
+                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
             )}
           >
             Data
@@ -1377,8 +1377,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'analysis'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
+                ? 'border border-blue-500/70 bg-blue-600 text-white'
+                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
             )}
             disabled={!currentAnalysis}
           >
@@ -1389,8 +1389,8 @@ const GalaxyExplorationSystemInner: React.FC<
             className={cn(
               'rounded-md px-3 py-1 text-sm',
               viewMode === 'split-view'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
+                ? 'border border-blue-500/70 bg-blue-600 text-white'
+                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
             )}
           >
             Split View
@@ -1400,14 +1400,14 @@ const GalaxyExplorationSystemInner: React.FC<
         <div className="flex space-x-4">
           {allowLayoutChange && viewMode === 'split-view' && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">Layout:</span>
+              <span className="text-sm text-slate-300">Layout:</span>
               <button
                 onClick={() => handleLayoutModeChange('horizontal')}
                 className={cn(
                   'rounded-md px-2 py-1 text-sm',
                   layoutMode === 'horizontal'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-200'
+                    ? 'border border-blue-500/70 bg-blue-600 text-white'
+                    : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
                 )}
               >
                 Horizontal
@@ -1417,8 +1417,8 @@ const GalaxyExplorationSystemInner: React.FC<
                 className={cn(
                   'rounded-md px-2 py-1 text-sm',
                   layoutMode === 'vertical'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-200'
+                    ? 'border border-blue-500/70 bg-blue-600 text-white'
+                    : 'border border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500'
                 )}
               >
                 Vertical
@@ -1428,8 +1428,8 @@ const GalaxyExplorationSystemInner: React.FC<
 
           {allowVisualSettingsChange && (viewMode === 'map' || viewMode === 'split-view') && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">Show:</span>
-              <label className="flex items-center space-x-1 text-sm">
+              <span className="text-sm text-slate-300">Show:</span>
+              <label className="flex items-center space-x-1 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={visualSettings.showGrid}
@@ -1438,7 +1438,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 />
                 <span>Grid</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm">
+              <label className="flex items-center space-x-1 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={visualSettings.showLabels}
@@ -1447,7 +1447,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 />
                 <span>Labels</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm">
+              <label className="flex items-center space-x-1 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={visualSettings.showResourceIcons}
@@ -1456,7 +1456,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 />
                 <span>Resources</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm">
+              <label className="flex items-center space-x-1 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={visualSettings.showAnomalyIcons}
@@ -1465,7 +1465,7 @@ const GalaxyExplorationSystemInner: React.FC<
                 />
                 <span>Anomalies</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm">
+              <label className="flex items-center space-x-1 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={visualSettings.showTradeRoutes}
@@ -1490,7 +1490,7 @@ const GalaxyExplorationSystemInner: React.FC<
     }
 
     return (
-      <div className="mt-4 flex items-center justify-between rounded-md bg-gray-100 p-2 text-sm text-gray-700">
+      <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-700/80 bg-slate-900/90 p-2 text-sm text-slate-300">
         <div className="flex space-x-4">
           <span>Sectors: {exploration.state.sectors.length}</span>
           <span>Systems: {exploration.state.systems.length}</span>
@@ -1524,7 +1524,10 @@ const GalaxyExplorationSystemInner: React.FC<
 
   return (
     <div
-      className={cn('overflow-hidden rounded-lg bg-white', className)}
+      className={cn(
+        'overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100 shadow-2xl',
+        className
+      )}
       style={{
         width: width,
         height: height,

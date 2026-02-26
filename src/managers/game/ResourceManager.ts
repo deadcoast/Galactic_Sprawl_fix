@@ -192,7 +192,6 @@ export class ResourceManager implements IBaseManager {
       });
     }
 
-    console.warn('[ResourceManager] Created with config:', config);
   }
 
   /**
