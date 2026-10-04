@@ -1,15 +1,29 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  animationFrameManager,
-  AnimationPriority,
-  registerD3Timer,
-} from '../../../utils/performance/D3AnimationFrameManager';
+import
+  {
+    animationFrameManager,
+    AnimationPriority,
+    AnimationStatus,
+    AnimationType,
+    AnimationVisibility,
+    registerD3Timer,
+  } from '../../../utils/performance/D3AnimationFrameManager';
 
 interface AnimationFrameManagerDemoProps {
   width?: number;
   height?: number;
+}
+
+interface AnimationListItem {
+  id: string;
+  name: string;
+  status: AnimationStatus;
+  priority: AnimationPriority;
+  visibility: AnimationVisibility;
+  type: AnimationType;
+  elapsedTime?: number;
 }
 
 /**
@@ -45,17 +59,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
     syncGroups: 0,
     averageFrameTime: 0,
   });
-  const [registeredAnimations, setRegisteredAnimations] = useState<
-    Array<{
-      id: string;
-      name: string;
-      status: string;
-      priority: AnimationPriority;
-      visibility: string;
-      type: string;
-      elapsedTime: number;
-    }>
-  >([]);
+  const [registeredAnimations, setRegisteredAnimations] = useState<AnimationListItem[]>([]);
   const [selectedAnimation, setSelectedAnimation] = useState<string | null>(null);
 
   // Animation groups state
@@ -72,7 +76,12 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setManagerStatus(animationFrameManager.getStatus());
-      setRegisteredAnimations(animationFrameManager.getAnimations());
+      setRegisteredAnimations(
+        animationFrameManager.getAnimations().map(anim => ({
+          ...anim,
+          elapsedTime: undefined,
+        }))
+      );
     }, 1000);
 
     return () => clearInterval(interval);
@@ -85,8 +94,8 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
     // Clear unknownnown existing content
     d3.select(svgRef.current).selectAll('*').remove();
 
-    // Set up container
     const svg = d3.select(svgRef.current);
+
     const circleGroup = svg.append('g').attr('class', 'circle-animations');
     const pathGroup = svg.append('g').attr('class', 'path-animations');
     const backgroundGroup = svg
@@ -422,7 +431,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
                             <div className="detail-item">
                               <span className="detail-label">Elapsed:</span>
                               <span className="detail-value">
-                                {(anim.elapsedTime / 1000).toFixed(1)}s
+                                {anim.elapsedTime !== undefined ? (anim.elapsedTime / 1000).toFixed(1) + 's' : 'N/A'}
                               </span>
                             </div>
 
@@ -495,7 +504,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
             sans-serif;
         }
 
-        h2 {
+        .animation-frame-manager-demo h2 {
           text-align: center;
           margin-bottom: 20px;
         }
@@ -533,7 +542,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        h3 {
+        .animation-frame-manager-demo h3 {
           margin-top: 0;
           margin-bottom: 15px;
           font-size: 1.1rem;
@@ -568,7 +577,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           gap: 10px;
         }
 
-        .btn {
+        .animation-frame-manager-demo .btn {
           padding: 8px 12px;
           border: none;
           border-radius: 4px;
@@ -577,16 +586,16 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           font-size: 0.9rem;
         }
 
-        .btn:hover {
+        .animation-frame-manager-demo .btn:hover {
           background: #dee2e6;
         }
 
-        .btn-primary {
+        .animation-frame-manager-demo .btn-primary {
           background: #007bff;
           color: white;
         }
 
-        .btn-primary:hover {
+        .animation-frame-manager-demo .btn-primary:hover {
           background: #0069d9;
         }
 
@@ -609,13 +618,13 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           color: #666;
         }
 
-        ul {
+        .animation-frame-manager-demo ul {
           list-style: none;
           padding: 0;
           margin: 0;
         }
 
-        li {
+        .animation-frame-manager-demo li {
           padding: 8px 12px;
           border-radius: 4px;
           margin-bottom: 5px;
@@ -623,11 +632,11 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           cursor: pointer;
         }
 
-        li:hover {
+        .animation-frame-manager-demo li:hover {
           background: #f1f3f5;
         }
 
-        li.selected {
+        .animation-frame-manager-demo li.selected {
           background: #e7f5ff;
           border-left: 3px solid #339af0;
         }
@@ -728,7 +737,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           gap: 10px;
         }
 
-        .detail-actions select {
+        .animation-frame-manager-demo .detail-actions select {
           margin-left: 5px;
           padding: 3px;
           border-radius: 3px;
@@ -739,7 +748,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           gap: 5px;
         }
 
-        .action-buttons button {
+        .animation-frame-manager-demo .action-buttons button {
           flex: 1;
           padding: 3px 6px;
           border: none;
@@ -749,7 +758,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
           font-size: 0.8rem;
         }
 
-        .action-buttons button:hover {
+        .animation-frame-manager-demo .action-buttons button:hover {
           background: #dee2e6;
         }
         `}

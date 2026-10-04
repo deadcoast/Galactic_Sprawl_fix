@@ -98,7 +98,7 @@ export enum EventType {
   MISSION_COMPLETED = 'MISSION_COMPLETED',
   MISSION_FAILED = 'MISSION_FAILED',
   MISSION_PROGRESS_UPDATED = 'MISSION_PROGRESS_UPDATED',
-  MISSION_REWARD_CLAIMED = 'MISSION_REWARD_CLAIMED',
+  MISSION_REcombatD_CLAIMED = 'MISSION_REcombatD_CLAIMED',
 
   // Sub-module events
   SUB_MODULE_CREATED = 'SUB_MODULE_CREATED',
@@ -272,7 +272,7 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.MISSION_COMPLETED]: EventCategory.MISSION,
   [EventType.MISSION_FAILED]: EventCategory.MISSION,
   [EventType.MISSION_PROGRESS_UPDATED]: EventCategory.MISSION,
-  [EventType.MISSION_REWARD_CLAIMED]: EventCategory.MISSION,
+  [EventType.MISSION_REcombatD_CLAIMED]: EventCategory.MISSION,
 
   // Sub-module events
   [EventType.SUB_MODULE_CREATED]: EventCategory.SUB_MODULE,

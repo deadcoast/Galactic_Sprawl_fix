@@ -10,7 +10,7 @@
 
 import { CombatManager } from '../managers/ManagerRegistry';
 import { ResourceManager } from '../managers/game/ResourceManager';
-import { MiningShipManagerImpl } from '../managers/mining/MiningShipManager';
+import { MiningShipManager } from '../managers/mining/MiningShipManager';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
 import { ResourceExchangeManager } from '../managers/resource/ResourceExchangeManager';
 import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
@@ -107,7 +107,7 @@ export function registerPoolManager(manager: ResourcePoolManager): void {
  *
  * @param manager The MiningShipManagerImpl instance
  */
-export function registerMiningManager(manager: MiningShipManagerImpl): void {
+export function registerMiningManager(manager: MiningShipManager): void {
   registerService('miningManager', manager);
 }
 
@@ -127,7 +127,7 @@ export function registerCombatManager(manager: CombatManager): void {
  */
 export function checkAllServicesAvailability(): Record<ServiceName, boolean> {
   const result = checkServicesAvailability(
-    REQUIRED_SERVICES as unknown as Array<keyof Window & string>
+    REQUIRED_SERVICES as unknown as (keyof Window & string)[]
   );
   return result as Record<ServiceName, boolean>;
 }

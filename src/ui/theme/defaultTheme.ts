@@ -5,12 +5,12 @@
  */
 
 import {
-  Theme,
-  ThemeBorderRadius,
-  ThemeBreakpoint,
-  ThemeColorName,
-  ThemeFontSizeName,
-  ThemeSpacingName,
+    Theme,
+    ThemeBorderRadius,
+    ThemeBreakpoint,
+    ThemeColorName,
+    ThemeFontSizeName,
+    ThemeSpacingName,
 } from '../../types/ui/ThemeTypes';
 
 /**

@@ -22,7 +22,7 @@ import {
 // Category icons for the TechVisualFeedback component
 export const categoryIcons = {
   infrastructure: <Database className="h-6 w-6" />,
-  warFleet: <Sword className="h-6 w-6" />,
+  combatFleet: <Sword className="h-6 w-6" />,
   reconFleet: <Radar className="h-6 w-6" />,
   miningFleet: <Ship className="h-6 w-6" />,
   weapons: <Crosshair className="h-6 w-6" />,
@@ -212,7 +212,7 @@ const techNodes: TechNode[] = [
     type: 'infrastructure',
   },
 
-  // War Fleet - Tier 1
+  // combat Fleet - Tier 1
   {
     id: 'basic-weapons',
     name: 'Basic Weapons',
@@ -220,8 +220,8 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: [],
     unlocked: true,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'light-armor',
@@ -230,8 +230,8 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: ['basic-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'fleet-coordination',
@@ -240,11 +240,11 @@ const techNodes: TechNode[] = [
     tier: 1,
     requirements: ['light-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
-  // War Fleet - Tier 2
+  // combat Fleet - Tier 2
   {
     id: 'enhanced-weapons',
     name: 'Enhanced Weapon Systems',
@@ -252,8 +252,8 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['basic-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'medium-armor',
@@ -262,8 +262,8 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['light-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'advanced-coordination',
@@ -272,21 +272,21 @@ const techNodes: TechNode[] = [
     tier: 2,
     requirements: ['fleet-coordination'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'cutting-laser',
     name: 'Cutting Laser',
-    description: 'Enables war ships to salvage resources from destroyed enemy ships',
+    description: 'Enables combat ships to salvage resources from destroyed enemy ships',
     tier: 2,
     requirements: ['enhanced-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
-  // War Fleet - Tier 3
+  // combat Fleet - Tier 3
   {
     id: 'advanced-weapons',
     name: 'Advanced Weapon Systems',
@@ -294,8 +294,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['enhanced-weapons'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'heavy-armor',
@@ -304,8 +304,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['medium-armor'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
   {
     id: 'fleet-command-ai',
@@ -314,8 +314,8 @@ const techNodes: TechNode[] = [
     tier: 3,
     requirements: ['advanced-coordination'],
     unlocked: false,
-    category: 'warFleet',
-    type: 'warFleet',
+    category: 'combatFleet',
+    type: 'combatFleet',
   },
 
   // Recon Fleet - Tier 1
@@ -476,7 +476,7 @@ const techNodes: TechNode[] = [
   {
     id: 'specialized-variants',
     name: 'Specialized Variants',
-    description: 'Unlock Plasma Rounds, EMPR & Swarm Rockets, and Gauss Planer',
+    description: 'Unlock Plasma Rounds, EMPR & Scombatm Rockets, and Gauss Planer',
     tier: 2,
     requirements: ['base-weapons'],
     unlocked: false,
@@ -615,21 +615,21 @@ const techNodes: TechNode[] = [
 
   // Special Projects - Officer Academy
   {
-    id: 'refugee-market',
+    id: 'special-refugee-market',
     name: 'Refugee Market',
     description: 'Attract skilled officers from other factions',
     tier: 2,
-    requirements: ['basic-hangar'],
+    requirements: ['basic-ship-hangar'],
     unlocked: false,
     category: 'special',
     type: 'special',
   },
   {
-    id: 'indoctrination',
+    id: 'special-indoctrination',
     name: 'Indoctrination Program',
     description: 'Convert enemy officers to enhance fleet performance',
     tier: 3,
-    requirements: ['refugee-market'],
+    requirements: ['special-refugee-market'],
     unlocked: false,
     category: 'special',
     type: 'special',
@@ -639,7 +639,7 @@ const techNodes: TechNode[] = [
     name: 'Advanced Training Simulations',
     description: 'Accelerate officer XP gain and tactical proficiency',
     tier: 3,
-    requirements: ['refugee-market'],
+    requirements: ['special-refugee-market'],
     unlocked: false,
     category: 'special',
     type: 'special',
@@ -679,7 +679,7 @@ const techNodes: TechNode[] = [
     type: 'special',
   },
   {
-    id: 'dyson-automation',
+    id: 'special-dyson-automation',
     name: 'Dyson Sphere Automation',
     description: 'Enhanced energy production via automated management',
     tier: 3,
@@ -695,13 +695,13 @@ const techNodes: TechNode[] = [
     name: 'Integrated AI Core',
     description: 'Improves automation efficiency across all systems',
     tier: 3,
-    requirements: ['quantum-comms'],
+    requirements: ['synergy-quantum-comms'],
     unlocked: false,
     category: 'synergy',
     type: 'synergy',
   },
   {
-    id: 'quantum-comms',
+    id: 'synergy-quantum-comms',
     name: 'Quantum Communications',
     description: 'Reduces system delays and improves decision-making',
     tier: 2,
@@ -715,7 +715,7 @@ const techNodes: TechNode[] = [
     name: 'Modular Tech Convergence',
     description: 'Enables synergies between different modules',
     tier: 3,
-    requirements: ['quantum-comms', 'ai-automation'],
+    requirements: ['synergy-quantum-comms', 'ai-automation'],
     unlocked: false,
     category: 'synergy',
     type: 'synergy',
@@ -731,7 +731,7 @@ interface Category {
 
 const categories: Category[] = [
   { id: 'infrastructure', name: 'Infrastructure', icon: Database },
-  { id: 'warFleet', name: 'War Fleet', icon: Sword },
+  { id: 'combatFleet', name: 'combat Fleet', icon: Sword },
   { id: 'reconFleet', name: 'Recon Fleet', icon: Radar },
   { id: 'miningFleet', name: 'Mining Fleet', icon: Ship },
   { id: 'weapons', name: 'Weapons', icon: Crosshair },
@@ -775,7 +775,7 @@ const getIconComponent = (category: TechNode['category']) => {
   switch (category) {
     case 'infrastructure':
       return nodeIcons.database;
-    case 'warFleet':
+    case 'combatFleet':
       return nodeIcons.sword;
     case 'reconFleet':
       return nodeIcons.radar;
@@ -942,7 +942,7 @@ export default function TechTree() {
       : tierNodes;
 
     return (
-      <div className="mb-16 flex justify-center space-x-16">
+      <div className="mb-16 flex flex-wrap justify-center gap-8">
         {nodes.map(node => (
           <div
             key={node.id}
@@ -996,14 +996,21 @@ export default function TechTree() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-900 p-8 text-white">
-      <h2 className="mb-8 text-center text-2xl font-bold text-white">Technology Tree</h2>
+    <div className="gs-route-container gs-surface relative min-h-full overflow-x-hidden p-6 text-[var(--gs-text-1)] md:p-8">
+      <div className="mb-7 rounded-xl border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] px-5 py-5">
+        <h2 className="gs-page-title text-center">Technology Tree</h2>
+        <p className="gs-page-subtitle text-center">
+          Progress through tiers to unlock infrastructure, fleet, and special capabilities.
+        </p>
+      </div>
 
       {/* Category filters */}
-      <div className="mb-6 flex flex-wrap justify-center gap-2">
+      <div className="mb-6 flex flex-wrap justify-center gap-2 rounded-xl border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-3">
         <button
-          className={`rounded px-3 py-1 text-sm ${
-            selectedCategory === null ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+          className={`rounded-md border px-3 py-1 text-sm transition-colors ${
+            selectedCategory === null
+              ? 'border-blue-500/70 bg-blue-600 text-white'
+              : 'border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
           }`}
           onClick={() => setSelectedCategory(null)}
         >
@@ -1012,8 +1019,10 @@ export default function TechTree() {
         {categories.map(category => (
           <button
             key={category.id}
-            className={`flex items-center rounded px-3 py-1 text-sm ${
-              selectedCategory === category.id ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+            className={`flex items-center rounded-md border px-3 py-1 text-sm transition-colors ${
+              selectedCategory === category.id
+                ? 'border-blue-500/70 bg-blue-600 text-white'
+                : 'border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
             }`}
             onClick={() => setSelectedCategory(category.id)}
           >
@@ -1024,7 +1033,7 @@ export default function TechTree() {
       </div>
 
       {/* Display total nodes count */}
-      <div className="mb-4 text-center text-sm text-gray-400">
+      <div className="mb-4 text-center text-sm text-[var(--gs-text-3)]">
         Total nodes: {filteredNodes.length}{' '}
         {selectedCategory ? `in ${selectedCategory} category` : 'across all categories'}
       </div>
@@ -1033,16 +1042,16 @@ export default function TechTree() {
       {activeResearch && (
         <div className="mx-auto mb-6 max-w-md">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-300">
+            <span className="text-sm font-medium text-[var(--gs-text-2)]">
               Researching: {managedTechNodes.find(n => n.id === activeResearch)?.name}
             </span>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-[var(--gs-text-3)]">
               {Math.round(researchProgress[activeResearch] * 100)}%
             </span>
           </div>
           <ResearchProgressIndicator
             progress={researchProgress[activeResearch] ?? 0}
-            totalTime={10} // 10 seconds for research
+            remainingTime={10} // 10 seconds for research
             isActive={true}
           />
         </div>
@@ -1056,7 +1065,7 @@ export default function TechTree() {
         <div className="mb-12">
           {[1, 2, 3, 4].map(tier => (
             <div key={tier}>
-              <h3 className="mb-4 text-sm font-medium text-gray-400">Tier {tier}</h3>
+              <h3 className="mb-4 text-sm font-medium text-[var(--gs-text-3)]">Tier {tier}</h3>
               {renderTier(tier)}
             </div>
           ))}
@@ -1065,28 +1074,28 @@ export default function TechTree() {
 
       {/* Selected node details */}
       {selectedNode && (
-        <div className="mx-auto mt-8 max-w-2xl rounded-lg bg-gray-800 p-6">
+        <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.9)] p-6">
           <div className="flex items-start">
-            <div className="mr-4 h-16 w-16 flex-shrink-0 rounded-full bg-gray-700 p-4">
-              <div className="flex h-full w-full items-center justify-center text-gray-300">
+            <div className="mr-4 h-16 w-16 flex-shrink-0 rounded-full border border-[var(--gs-border)] bg-[rgba(27,45,73,0.92)] p-4">
+              <div className="flex h-full w-full items-center justify-center text-[var(--gs-text-2)]">
                 {/* Use getIconComponent to get the icon based on category */}
                 {React.createElement(getIconComponent(selectedNode.category), { size: 24 })}
               </div>
             </div>
             <div className="flex-grow">
-              <h3 className="text-xl font-bold text-white">{selectedNode.name}</h3>
+              <h3 className="text-xl font-bold text-[var(--gs-text-1)]">{selectedNode.name}</h3>
               <div className="mb-2 flex items-center">
-                <span className="mr-2 text-sm text-gray-400">Tier {selectedNode.tier}</span>
-                <span className="mr-2 text-sm text-gray-400">•</span>
-                <span className="text-sm text-gray-400">{selectedNode.category}</span>
+                <span className="mr-2 text-sm text-[var(--gs-text-3)]">Tier {selectedNode.tier}</span>
+                <span className="mr-2 text-sm text-[var(--gs-text-3)]">•</span>
+                <span className="text-sm text-[var(--gs-text-3)]">{selectedNode.category}</span>
               </div>
-              <p className="text-gray-300">{selectedNode.description}</p>
+              <p className="text-[var(--gs-text-2)]">{selectedNode.description}</p>
 
               {/* Research button for available nodes */}
               {canUnlockNode(selectedNode.id) && !selectedNode.unlocked && (
                 <div className="mt-4">
                   <button
-                    className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500"
+                    className="rounded-md border border-blue-500/70 bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-500"
                     onClick={() => startResearch(selectedNode.id)}
                     disabled={activeResearch === selectedNode.id}
                   >

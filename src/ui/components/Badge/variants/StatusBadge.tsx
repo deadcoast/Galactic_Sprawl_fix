@@ -80,7 +80,7 @@ const STATUS_TEXT: Record<StatusType, string> = {
   inactive: 'Inactive',
   damaged: 'Damaged',
   critical: 'Critical',
-  warning: 'Warning',
+  warning: 'warning',
   normal: 'Normal',
   locked: 'Locked',
   unlocked: 'Unlocked',
@@ -96,7 +96,7 @@ const STATUS_TEXT: Record<StatusType, string> = {
 export const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
   ({ status, pulseEffect, showText = true, customText, className, ...props }, ref) => {
     const { variant, dotColor, pulseByDefault } = STATUS_MAPPINGS[status] || STATUS_MAPPINGS.normal;
-    const shouldPulse = pulseEffect === undefined ? pulseByDefault : pulseEffect;
+    const shouldPulse = pulseEffect ?? pulseByDefault;
 
     // Pulse animation class
     const pulseClass = shouldPulse ? 'animate-pulse' : '';
@@ -110,7 +110,7 @@ export const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
         className={cn(pulseClass, className)}
         {...props}
       >
-        {showText && (customText || STATUS_TEXT[status])}
+        {showText && (customText ?? STATUS_TEXT[status])}
       </Badge>
     );
   }

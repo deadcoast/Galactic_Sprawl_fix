@@ -134,7 +134,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const [internalVisible, setInternalVisible] = useState(false);
 
   // Use controlled state if provided, internal state otherwise
-  const isVisible = controlledVisible !== undefined ? controlledVisible : internalVisible;
+  const isVisible = controlledVisible ?? internalVisible;
 
   // References for tooltip and trigger elements
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -299,18 +299,20 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   // Clone the child with refs and event handlers
   const triggerElement = useMemo(() => {
-    return React.cloneElement(React.Children.only(children), {
+    const childElement = React.Children.only(children);
+    
+    return React.cloneElement(childElement, {
       ref: (node: HTMLElement | null) => {
         triggerRef.current = node;
 
         // Forward ref if the child has one
-        // Using type assertion with unknown as intermediate step for type safety
-        const childElement = children as unknown as { ref?: React.Ref<HTMLElement> };
-        if (childElement.ref) {
-          if (typeof childElement.ref === 'function') {
-            childElement.ref(node);
-          } else {
-            (childElement.ref as React.MutableRefObject<HTMLElement | null>).current = node;
+        // Access ref through the React element's ref property
+        const originalRef = (childElement as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
+        if (originalRef) {
+          if (typeof originalRef === 'function') {
+            originalRef(node);
+          } else if (originalRef && typeof originalRef === 'object' && 'current' in originalRef) {
+            (originalRef as React.MutableRefObject<HTMLElement | null>).current = node;
           }
         }
       },
@@ -318,32 +320,36 @@ export const Tooltip: React.FC<TooltipProps> = ({
         handleMouseEnter();
 
         // Forward the original event handler if it exists
-        if (children.props.onMouseEnter) {
-          children.props.onMouseEnter(e);
+        const originalHandler = childElement.props?.onMouseEnter;
+        if (typeof originalHandler === 'function') {
+          originalHandler(e);
         }
       },
       onMouseLeave: (e: React.MouseEvent) => {
         handleMouseLeave();
 
         // Forward the original event handler if it exists
-        if (children.props.onMouseLeave) {
-          children.props.onMouseLeave(e);
+        const originalHandler = childElement.props?.onMouseLeave;
+        if (typeof originalHandler === 'function') {
+          originalHandler(e);
         }
       },
       onFocus: (e: React.FocusEvent) => {
         handleFocus();
 
         // Forward the original event handler if it exists
-        if (children.props.onFocus) {
-          children.props.onFocus(e);
+        const originalHandler = childElement.props?.onFocus;
+        if (typeof originalHandler === 'function') {
+          originalHandler(e);
         }
       },
       onBlur: (e: React.FocusEvent) => {
         handleBlur();
 
         // Forward the original event handler if it exists
-        if (children.props.onBlur) {
-          children.props.onBlur(e);
+        const originalHandler = childElement.props?.onBlur;
+        if (typeof originalHandler === 'function') {
+          originalHandler(e);
         }
       },
     });

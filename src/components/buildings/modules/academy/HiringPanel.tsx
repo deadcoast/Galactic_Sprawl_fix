@@ -22,7 +22,7 @@ interface OfficerRole {
     technical: string;
   };
   xpGrowth: {
-    war: number;
+    combat: number;
     recon: number;
     mining: number;
   };
@@ -49,7 +49,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
         technical: '2-4',
       },
       xpGrowth: {
-        war: 1.2,
+        combat: 1.2,
         recon: 1.0,
         mining: 0.8,
       },
@@ -69,7 +69,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
         technical: '4-7',
       },
       xpGrowth: {
-        war: 1.5,
+        combat: 1.5,
         recon: 1.2,
         mining: 1.0,
       },
@@ -92,7 +92,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
               technical: '5-8',
             },
             xpGrowth: {
-              war: 1.6,
+              combat: 1.6,
               recon: 1.3,
               mining: 1.1,
             },
@@ -117,7 +117,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
               technical: '6-9',
             },
             xpGrowth: {
-              war: 1.8,
+              combat: 1.8,
               recon: 1.4,
               mining: 1.2,
             },
@@ -248,8 +248,8 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
                     <div className="h-2 overflow-hidden rounded-full bg-gray-700">
                       <div
                         className="h-full bg-red-500"
-                        style={{ width: `${role.xpGrowth.war * 50}%` }}
-                        title={`War XP: ${role.xpGrowth.war}x`}
+                        style={{ width: `${role.xpGrowth.combat * 50}%` }}
+                        title={`combat XP: ${role.xpGrowth.combat}x`}
                       />
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-700">
@@ -339,7 +339,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
           </motion.button>
         </div>
 
-        {/* Warnings */}
+        {/* warnings */}
         <AnimatePresence>
           {selectedRole &&
             (filteredRoles.find(r => r.id === selectedRole)?.requirements?.tier ?? 0) > tier && (

@@ -292,11 +292,11 @@ export function withLinkValidation<
  */
 export function withStepValidation<InputType, OutputType>(
   transformFn: (data: InputType, onProgress: (step: number, data: unknown) => void) => OutputType,
-  steps: Array<{
+  steps: {
     name: string;
     schema: Schema;
     required?: boolean;
-  }>,
+  }[],
   options: ValidationHookOptions = {}
 ): (data: InputType) => ValidationTransformResult<OutputType> {
   const mergedOptions = { ...defaultOptions, ...options };

@@ -121,7 +121,7 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
 
   /**
    * Creates a new EventBatcher
-   * @param targetEventBus The event bus to forward processed events to
+   * @param targetEventBus The event bus to forcombatd processed events to
    * @param config Configuration options for batching
    */
   constructor(
@@ -162,11 +162,9 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
     }
 
     // Schedule batch processing if not already scheduled
-    if (this.batchTimerId === null) {
-      this.batchTimerId = window.setTimeout(() => {
-        this.processBatch();
-      }, this.config.batchTimeWindow);
-    }
+    this.batchTimerId ??= window.setTimeout(() => {
+      this.processBatch();
+    }, this.config.batchTimeWindow);
   }
 
   /**

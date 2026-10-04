@@ -1,4 +1,36 @@
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
+/**
+ * @file ServiceRegistry.ts (lib/registry)
+ *
+ * RECOMMENDED: Unified service and manager registry with proper dependency handling.
+ *
+ * This is the most comprehensive ServiceRegistry implementation, supporting both:
+ * - Services (via registerService)
+ * - Managers (via registerManager)
+ *
+ * Other implementations exist for backward compatibility:
+ * - lib/managers/ServiceRegistry.ts - Manager-only, simpler API
+ * - lib/services/ServiceRegistry.ts - Service-only with factory pattern
+ *
+ * Usage:
+ * ```typescript
+ * import { serviceRegistry } from '../lib/registry/ServiceRegistry';
+ *
+ * // Register a service
+ * serviceRegistry.registerService(myService, 'myServiceName', ['dependency1']);
+ *
+ * // Register a manager
+ * serviceRegistry.registerManager(myManager, 'myManagerName', ['dependency1']);
+ *
+ * // Initialize all
+ * await serviceRegistry.initialize();
+ * ```
+ */
+
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { Singleton } from '../patterns/Singleton';
 import { BaseService } from '../services/BaseService';
 
@@ -41,7 +73,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
    * @param dependencies Optional array of dependency service names
    */
   public registerService(service: BaseService, name?: string, dependencies: string[] = []): void {
-    const serviceName = name || service.getMetadata().name;
+    const serviceName = name ?? service.getMetadata().name;
 
     if (this.services.has(serviceName)) {
       console.warn(`Service ${serviceName} is already registered. Skipping.`);
@@ -63,7 +95,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
    * @param dependencies Optional array of dependency service/manager names
    */
   public registerManager(manager: BaseManager, name?: string, dependencies: string[] = []): void {
-    const managerName = name || manager.getName();
+    const managerName = name ?? manager.getName();
 
     if (this.managers.has(managerName)) {
       console.warn(`Manager ${managerName} is already registered. Skipping.`);
@@ -196,7 +228,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const managerInitOrder = this.getInitializationOrder([...this.managers.keys()], false);
       for (const managerName of managerInitOrder.reverse()) {
         const entry = this.managers.get(managerName);
-        if (!entry || !entry.initialized) {
+        if (!entry?.initialized) {
           continue;
         }
 
@@ -214,7 +246,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const serviceInitOrder = this.getInitializationOrder([...this.services.keys()], true);
       for (const serviceName of serviceInitOrder.reverse()) {
         const entry = this.services.get(serviceName);
-        if (!entry || !entry.initialized) {
+        if (!entry?.initialized) {
           continue;
         }
 

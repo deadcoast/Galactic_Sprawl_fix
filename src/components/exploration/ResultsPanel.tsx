@@ -57,7 +57,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
                   </div>
 
                   <Typography variant="body2" color="text.secondary">
-                    {config?.type || 'Unknown Type'} analysis
+                    {config?.type ?? 'Unknown Type'} analysis
                   </Typography>
 
                   <div className="mt-1 flex w-full justify-between">

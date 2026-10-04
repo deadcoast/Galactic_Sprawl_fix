@@ -159,7 +159,7 @@ export function DiplomacyPanel({
           ))}
         </div>
 
-        {/* Warnings & Notes */}
+        {/* warnings & Notes */}
         {faction.type === 'spaceRats' && (
           <div className="flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
             <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-500" />

@@ -193,7 +193,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       };
 
       options.forEach(option => {
-        const groupKey = option.group || '';
+        const groupKey = option.group ?? '';
         if (!groups[groupKey]) {
           groups[groupKey] = [];
         }
@@ -313,7 +313,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
     // Determine error state
     const showError = hasError || (isValidated && !!validationError);
-    const errorToShow = errorMessage || validationError;
+    const errorToShow = errorMessage ?? validationError;
 
     // Determine if something is selected for display purposes
     const hasSelection = Array.isArray(currentValue) ? currentValue.length > 0 : !!currentValue;
@@ -323,7 +323,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       if (multiple || !currentValue || Array.isArray(currentValue)) return '';
 
       const selectedOption = options.find(option => option.value === currentValue);
-      return selectedOption?.label || '';
+      return selectedOption?.label ?? '';
     }, [multiple, currentValue, options]);
 
     // Memoize select class names
@@ -396,7 +396,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ]);
 
     // Generate unique ID for the select if not provided
-    const selectId = id || `select-${Math.random().toString(36).substring(2, 9)}`;
+    const selectId = id ?? `select-${Math.random().toString(36).substring(2, 9)}`;
 
     // Determine hidden label for accessibility
     const ariaLabel = hideLabel && typeof label === 'string' ? label : undefined;
@@ -456,7 +456,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {...rest}
           >
             {!multiple && !required && !hasSelection && (
-              <option value="">{placeholder || 'Select an option'}</option>
+              <option value="">{placeholder ?? 'Select an option'}</option>
             )}
 
             {Object.entries(groupedOptions).map(([groupName, groupOptions]) => {
@@ -482,7 +482,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             })}
           </select>
 
-          {(trailingIcon || (clearable && hasSelection)) && (
+          {(trailingIcon ?? (clearable && hasSelection)) && (
             <div className="ui-select-trailing-icon">
               {clearable && hasSelection && !multiple ? (
                 <button
@@ -495,13 +495,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                   ✕
                 </button>
               ) : (
-                trailingIcon || <span className="ui-select-arrow">▼</span>
+                trailingIcon ?? <span className="ui-select-arrow">▼</span>
               )}
             </div>
           )}
         </div>
 
-        {(helperText || showError) && (
+        {(helperText ?? showError) && (
           <div
             className={`ui-select-helper-text ${showError ? 'ui-select-error-text' : ''}`}
             id={showError ? `${selectId}-error` : undefined}

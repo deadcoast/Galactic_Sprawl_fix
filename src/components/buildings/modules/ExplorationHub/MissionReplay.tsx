@@ -53,7 +53,7 @@ const selectGameState = (state: unknown): GameState => {
  * Prevents unsafe optional chaining errors
  */
 function getPositionFromEventData(event: GameEvent): Position | null {
-  if (!event || !event.data) {
+  if (!event?.data) {
     return null;
   }
 

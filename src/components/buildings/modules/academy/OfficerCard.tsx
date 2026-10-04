@@ -9,7 +9,7 @@ interface Officer {
   nextLevelXp: number;
   role: 'Squad Leader' | 'Captain';
   status: 'training' | 'assigned' | 'available';
-  specialization: 'War' | 'Recon' | 'Mining';
+  specialization: 'combat' | 'Recon' | 'Mining';
   skills: {
     combat: number;
     leadership: number;
@@ -36,7 +36,7 @@ interface OfficerCardProps {
 export function OfficerCard({ officer, view, quality, selected, onClick }: OfficerCardProps) {
   const getSpecializationColor = () => {
     switch (officer.specialization) {
-      case 'War':
+      case 'combat':
         return 'red';
       case 'Recon':
         return 'cyan';

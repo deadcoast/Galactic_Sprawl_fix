@@ -304,153 +304,155 @@ const VisualizationPerformanceComparison: React.FC<VisualizationPerformanceCompa
         {`
         .visualization-performance-comparison {
           padding: 20px;
-          font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            sans-serif;
+          color: var(--gs-text-1);
+          border: 1px solid var(--gs-border);
+          border-radius: 10px;
+          background: var(--gs-surface-1);
         }
 
-        h2 {
-          color: #333;
-          border-bottom: 2px solid #4285f4;
+        .visualization-performance-comparison h2 {
+          color: var(--gs-text-1);
+          border-bottom: 2px solid rgba(59, 130, 246, 0.55);
           padding-bottom: 10px;
         }
 
-        .controls {
+        .visualization-performance-comparison .controls {
           display: flex;
           flex-wrap: wrap;
           gap: 20px;
           margin-bottom: 30px;
-          background: #f5f5f5;
+          background: var(--gs-surface-2);
           padding: 15px;
           border-radius: 8px;
+          border: 1px solid var(--gs-border);
         }
 
-        .control-section {
+        .visualization-performance-comparison .control-section {
           flex: 1;
           min-width: 300px;
         }
 
-        h3 {
-          color: #4285f4;
+        .visualization-performance-comparison h3 {
+          color: #8ac0ff;
           margin-top: 0;
         }
 
-        .control-row {
+        .visualization-performance-comparison .control-row {
           display: flex;
           align-items: center;
           margin-bottom: 12px;
         }
 
-        label {
+        .visualization-performance-comparison label {
           width: 150px;
           font-weight: 500;
+          color: var(--gs-text-2);
         }
 
-        input[type='range'] {
+        .visualization-performance-comparison input[type='range'] {
           flex: 1;
           margin: 0 10px;
         }
 
-        .value {
+        .visualization-performance-comparison .value {
           width: 50px;
           text-align: right;
           font-weight: 500;
+          color: var(--gs-text-2);
         }
 
-        .action-button {
+        .visualization-performance-comparison .action-button {
           padding: 8px 16px;
-          background: #4285f4;
+          background: linear-gradient(180deg, #3578ef, #2b63ca);
           color: white;
-          border: none;
+          border: 1px solid #2f63cc;
           border-radius: 4px;
           cursor: pointer;
           font-weight: 500;
           transition: background-color 0.2s;
         }
 
-        .action-button:hover {
-          background: #3367d6;
+        .visualization-performance-comparison .action-button:hover {
+          background: linear-gradient(180deg, #3b82f6, #2f6ed8);
         }
 
-        .toggle-row {
+        .visualization-performance-comparison .toggle-row {
           margin-bottom: 12px;
         }
 
-        .toggle-row label {
+        .visualization-performance-comparison .toggle-row label {
           display: flex;
           align-items: center;
           cursor: pointer;
           width: 100%;
         }
 
-        .toggle-row input[type='checkbox'] {
+        .visualization-performance-comparison .toggle-row input[type='checkbox'] {
           margin-right: 10px;
         }
 
-        .visualizations {
+        .visualization-performance-comparison .visualizations {
           display: flex;
           flex-wrap: wrap;
           gap: 20px;
           margin-bottom: 30px;
         }
 
-        .visualization-container {
+        .visualization-performance-comparison .visualization-container {
           flex: 1;
           min-width: 300px;
-          background: #fff;
+          background: rgba(17, 34, 58, 0.96);
           border-radius: 8px;
           overflow: hidden;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--gs-border);
+          box-shadow: none;
         }
 
-        .visualization-container h3 {
+        .visualization-performance-comparison .visualization-container h3 {
           padding: 15px;
           margin: 0;
-          background: #f5f5f5;
-          border-bottom: 1px solid #ddd;
+          background: var(--gs-surface-2);
+          border-bottom: 1px solid var(--gs-border);
         }
 
-        .visualization-wrapper {
+        .visualization-performance-comparison .visualization-wrapper {
           padding: 10px;
           height: ${height}px;
         }
 
-        .visualization-description {
+        .visualization-performance-comparison .visualization-description {
           padding: 0 15px 15px;
           font-size: 14px;
-          color: #555;
+          color: var(--gs-text-2);
         }
 
-        .visualization-description ul {
+        .visualization-performance-comparison .visualization-description ul {
           padding-left: 20px;
         }
 
-        .optimization-insights {
-          background: #f9f9f9;
+        .visualization-performance-comparison .optimization-insights {
+          background: var(--gs-surface-2);
           border-radius: 8px;
           padding: 20px;
           margin-top: 30px;
+          border: 1px solid var(--gs-border);
         }
 
-        .insights-content {
+        .visualization-performance-comparison .insights-content {
           display: flex;
           flex-wrap: wrap;
           gap: 20px;
         }
 
-        .optimization-explanation,
-        .performance-tips {
+        .visualization-performance-comparison .optimization-explanation,
+        .visualization-performance-comparison .performance-tips {
           flex: 1;
           min-width: 300px;
         }
 
-        .optimization-explanation h4,
-        .performance-tips h4 {
-          color: #4285f4;
+        .visualization-performance-comparison .optimization-explanation h4,
+        .visualization-performance-comparison .performance-tips h4 {
+          color: #8ac0ff;
           margin-top: 0;
         }
         `}

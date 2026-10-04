@@ -83,7 +83,7 @@ export class UserBehaviorCorrelationAnalysis {
         const performanceValues = performanceMetrics[performanceMetric];
 
         // Find matching timestamps (within the time window)
-        const pairedData: Array<[number, number]> = [];
+        const pairedData: [number, number][] = [];
 
         behaviorValues.forEach(behaviorPoint => {
           // Find performance points within the time window
@@ -174,8 +174,8 @@ export class UserBehaviorCorrelationAnalysis {
    */
   private extractBehaviorMetrics(
     sessions: SessionPerformanceData[]
-  ): Record<string, Array<{ timestamp: number; value: number }>> {
-    const metrics: Record<string, Array<{ timestamp: number; value: number }>> = {};
+  ): Record<string, { timestamp: number; value: number }[]> {
+    const metrics: Record<string, { timestamp: number; value: number }[]> = {};
 
     // Initialize metrics
     for (const metric of this.config.behaviorMetrics) {
@@ -196,7 +196,7 @@ export class UserBehaviorCorrelationAnalysis {
 
         if (sessionDurationMs > 0) {
           const frequency = (session.userInteractions.length / sessionDurationMs) * 60000;
-          metrics['interactionFrequency'].push({
+          metrics.interactionFrequency.push({
             timestamp: session.timestamp,
             value: frequency,
           });
@@ -209,7 +209,7 @@ export class UserBehaviorCorrelationAnalysis {
           session.userInteractions.reduce((sum, interaction) => sum + interaction.responseTime, 0) /
           session.userInteractions.length;
 
-        metrics['responseTime'].push({
+        metrics.responseTime.push({
           timestamp: session.timestamp,
           value: avgResponseTime,
         });
@@ -242,8 +242,8 @@ export class UserBehaviorCorrelationAnalysis {
    */
   private extractPerformanceMetrics(
     sessions: SessionPerformanceData[]
-  ): Record<string, Array<{ timestamp: number; value: number }>> {
-    const metrics: Record<string, Array<{ timestamp: number; value: number }>> = {};
+  ): Record<string, { timestamp: number; value: number }[]> {
+    const metrics: Record<string, { timestamp: number; value: number }[]> = {};
 
     // Initialize metrics
     for (const metric of this.config.performanceMetrics) {
@@ -253,42 +253,44 @@ export class UserBehaviorCorrelationAnalysis {
     sessions.forEach(session => {
       // Extract standard performance metrics
       if (this.config.performanceMetrics.includes('fps')) {
-        metrics['fps'].push({
+        metrics.fps.push({
           timestamp: session.timestamp,
           value: session.metrics.fps,
         });
       }
 
       if (this.config.performanceMetrics.includes('renderTime')) {
-        metrics['renderTime'].push({
+        metrics.renderTime.push({
           timestamp: session.timestamp,
           value: session.metrics.renderTime,
         });
       }
 
       if (this.config.performanceMetrics.includes('memoryUsage')) {
-        metrics['memoryUsage'].push({
+        metrics.memoryUsage.push({
           timestamp: session.timestamp,
           value: session.metrics.memoryUsage,
         });
       }
 
       if (this.config.performanceMetrics.includes('cpuUsage')) {
-        metrics['cpuUsage'].push({
+        metrics.cpuUsage.push({
           timestamp: session.timestamp,
           value: session.metrics.cpuUsage,
         });
       }
 
       if (this.config.performanceMetrics.includes('interactionLatency')) {
-        metrics['interactionLatency'].push({
+        metrics.interactionLatency.push({
           timestamp: session.timestamp,
           value: session.metrics.interactionLatency,
         });
       }
 
-      // Extract resource utilization metrics
-      session.metrics.resourceUtilization.forEach((value, resourceType) => {
+      // Extract resource utilization metrics.
+      // Supports both Map<ResourceType, number> and plain-object snapshots from JSON persistence.
+      const resourceUtilization = session.metrics.resourceUtilization as unknown;
+      const appendResourceMetric = (resourceType: string, value: number) => {
         const metricName = `resourceUtilization:${resourceType}`;
 
         if (this.config.performanceMetrics.includes(metricName)) {
@@ -298,11 +300,27 @@ export class UserBehaviorCorrelationAnalysis {
             value,
           });
         }
-      });
+      };
+
+      if (resourceUtilization instanceof Map) {
+        resourceUtilization.forEach((value, resourceType) => {
+          if (typeof value === 'number') {
+            appendResourceMetric(String(resourceType), value);
+          }
+        });
+      } else if (resourceUtilization && typeof resourceUtilization === 'object') {
+        Object.entries(resourceUtilization as Record<string, unknown>).forEach(
+          ([resourceType, value]) => {
+            if (typeof value === 'number') {
+              appendResourceMetric(resourceType, value);
+            }
+          }
+        );
+      }
 
       // Extract event processing time
       if (this.config.performanceMetrics.includes('eventProcessingTime')) {
-        metrics['eventProcessingTime'].push({
+        metrics.eventProcessingTime.push({
           timestamp: session.timestamp,
           value: session.metrics.eventProcessingTime,
         });

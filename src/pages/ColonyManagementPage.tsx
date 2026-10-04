@@ -366,73 +366,75 @@ export function ColonyManagementPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Colony Management</h1>
-        <div className="flex items-center space-x-2">
-          <label htmlFor="quality" className="text-sm text-gray-400">
-            Visual Quality:
-          </label>
-          <select
-            id="quality"
-            value={quality}
-            onChange={handleQualityChange}
-            className="rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-white"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
+    <div className="gs-route-shell">
+      <div className="gs-route-container p-1 sm:p-2">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="gs-page-title">Colony Management</h1>
+          <div className="flex items-center space-x-2">
+            <label htmlFor="quality" className="text-sm text-slate-300">
+              Visual Quality:
+            </label>
+            <select
+              id="quality"
+              value={quality}
+              onChange={handleQualityChange}
+              className="gs-control text-sm"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <ColonyManagementSystem
-          colonyId="alpha-centauri-1"
-          colonyName="Alpha Centauri Outpost"
-          initialPopulation={5000}
-          maxPopulation={15000}
-          baseGrowthRate={0.05}
-          initialGrowthModifiers={sampleGrowthModifiers}
-          initialTradePartners={sampleTradePartners}
-          initialTradeRoutes={sampleTradeRoutes}
-          initialPopulationEvents={samplePopulationEvents}
-          initialBuildings={sampleBuildings}
-          initialResources={sampleResources}
-          initialSatisfactionFactors={sampleSatisfactionFactors}
-          quality={quality}
-          onPopulationChange={newPopulation => {
-            console.warn(`Population changed to ${newPopulation}`);
-          }}
-          onTradeRouteChange={routes => {
-            console.warn(
-              `Trade routes updated, active routes: ${routes.filter(r => r.status === 'active').length}`
-            );
-          }}
-          onGrowthModifierChange={modifiers => {
-            console.warn(
-              `Growth modifiers updated, active modifiers: ${modifiers.filter(m => m.active).length}`
-            );
-          }}
-          onBuildingClick={handleBuildingClick}
-          onResourceClick={handleResourceClick}
-        />
+        <div className="grid grid-cols-1 gap-6">
+          <ColonyManagementSystem
+            colonyId="alpha-centauri-1"
+            colonyName="Alpha Centauri Outpost"
+            initialPopulation={5000}
+            maxPopulation={15000}
+            baseGrowthRate={0.05}
+            initialGrowthModifiers={sampleGrowthModifiers}
+            initialTradePartners={sampleTradePartners}
+            initialTradeRoutes={sampleTradeRoutes}
+            initialPopulationEvents={samplePopulationEvents}
+            initialBuildings={sampleBuildings}
+            initialResources={sampleResources}
+            initialSatisfactionFactors={sampleSatisfactionFactors}
+            quality={quality}
+            onPopulationChange={newPopulation => {
+              console.warn(`Population changed to ${newPopulation}`);
+            }}
+            onTradeRouteChange={routes => {
+              console.warn(
+                `Trade routes updated, active routes: ${routes.filter(r => r.status === 'active').length}`
+              );
+            }}
+            onGrowthModifierChange={modifiers => {
+              console.warn(
+                `Growth modifiers updated, active modifiers: ${modifiers.filter(m => m.active).length}`
+              );
+            }}
+            onBuildingClick={handleBuildingClick}
+            onResourceClick={handleResourceClick}
+          />
 
-        <ColonyManagementSystem
-          colonyId="tau-ceti-2"
-          colonyName="Tau Ceti Mining Colony"
-          initialPopulation={2500}
-          maxPopulation={8000}
-          baseGrowthRate={0.03}
-          initialGrowthModifiers={sampleGrowthModifiers.slice(0, 3)}
-          initialTradePartners={sampleTradePartners.slice(1, 4)}
-          initialTradeRoutes={sampleTradeRoutes.slice(0, 2)}
-          initialPopulationEvents={samplePopulationEvents.slice(2, 5)}
-          initialBuildings={sampleBuildings.slice(1, 4)}
-          initialResources={sampleResources.slice(0, 3)}
-          initialSatisfactionFactors={sampleSatisfactionFactors.slice(0, 4)}
-          quality={quality}
-        />
+          <ColonyManagementSystem
+            colonyId="tau-ceti-2"
+            colonyName="Tau Ceti Mining Colony"
+            initialPopulation={2500}
+            maxPopulation={8000}
+            baseGrowthRate={0.03}
+            initialGrowthModifiers={sampleGrowthModifiers.slice(0, 3)}
+            initialTradePartners={sampleTradePartners.slice(1, 4)}
+            initialTradeRoutes={sampleTradeRoutes.slice(0, 2)}
+            initialPopulationEvents={samplePopulationEvents.slice(2, 5)}
+            initialBuildings={sampleBuildings.slice(1, 4)}
+            initialResources={sampleResources.slice(0, 3)}
+            initialSatisfactionFactors={sampleSatisfactionFactors.slice(0, 4)}
+            quality={quality}
+          />
+        </div>
       </div>
     </div>
   );

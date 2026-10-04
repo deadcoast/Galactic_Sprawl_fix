@@ -1,6 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
  * System identifier type
@@ -64,11 +64,11 @@ export type MessageHandler = (message: SystemMessage) => void | Promise<void>;
  * Event communication system
  */
 export class EventCommunication {
-  private handlers: Map<SystemId, Map<string, Set<MessageHandler>>> = new Map();
-  private messageSubject: Subject<SystemMessage> = new Subject();
-  private ackSubject: Subject<MessageAcknowledgment> = new Subject();
+  private handlers = new Map<SystemId, Map<string, Set<MessageHandler>>>();
+  private messageSubject = new Subject<SystemMessage>();
+  private ackSubject = new Subject<MessageAcknowledgment>();
   private systemId: SystemId;
-  private pendingAcks: Map<
+  private pendingAcks = new Map<
     string,
     {
       message: SystemMessage;
@@ -76,7 +76,7 @@ export class EventCommunication {
       resolve: (ack: MessageAcknowledgment) => void;
       reject: (error: Error) => void;
     }
-  > = new Map();
+  >();
 
   constructor(systemId: SystemId) {
     this.systemId = systemId;
@@ -89,7 +89,7 @@ export class EventCommunication {
   private initializeEventBusIntegration(): void {
     // Subscribe to system communication events
     moduleEventBus.subscribe('SYSTEM_MESSAGE' as ModuleEventType, (event: ModuleEvent) => {
-      if (event?.data && event?.data?.message) {
+      if (event?.data?.message) {
         const message = event?.data?.message as SystemMessage;
 
         // Process the message if it's targeted at this system or is a broadcast
@@ -101,7 +101,7 @@ export class EventCommunication {
 
     // Subscribe to acknowledgment events
     moduleEventBus.subscribe('SYSTEM_MESSAGE_ACK' as ModuleEventType, (event: ModuleEvent) => {
-      if (event?.data && event?.data?.ack) {
+      if (event?.data?.ack) {
         const ack = event?.data?.ack as MessageAcknowledgment;
 
         // Process the acknowledgment if it's targeted at this system
@@ -116,7 +116,7 @@ export class EventCommunication {
    * Process an incoming message
    */
   private processIncomingMessage(message: SystemMessage): void {
-    // Forward to the message subject
+    // Forcombatd to the message subject
     this.messageSubject.next(message);
 
     // Get handlers for this message type
@@ -158,12 +158,12 @@ export class EventCommunication {
         if (result instanceof Promise) {
           handlerPromises.push(
             result?.catch(error => {
-              errors.push(error);
+              errors.push(error instanceof Error ? error : new Error(String(error)));
             })
           );
         }
       } catch (error) {
-        errors.push(error as Error);
+        errors.push(error instanceof Error ? error : new Error(String(error)));
       }
     });
 
@@ -171,7 +171,7 @@ export class EventCommunication {
     if (message.requiresAck) {
       if (handlerPromises.length > 0) {
         // Wait for all promises to resolve
-        Promise.all(handlerPromises).then(() => {
+        void Promise.all(handlerPromises).then(() => {
           this.sendAcknowledgment(
             message.id,
             message.source,
@@ -195,7 +195,7 @@ export class EventCommunication {
    * Process an acknowledgment
    */
   private processAcknowledgment(ack: MessageAcknowledgment): void {
-    // Forward to the ack subject
+    // Forcombatd to the ack subject
     this.ackSubject.next(ack);
 
     // Resolve pending promise if exists
@@ -207,7 +207,7 @@ export class EventCommunication {
       if (ack.success) {
         pending.resolve(ack);
       } else {
-        pending.reject(new Error(ack.error || 'Unknown error'));
+        pending.reject(new Error(ack.error ?? 'Unknown error'));
       }
     }
   }
@@ -387,7 +387,7 @@ export class EventCommunication {
 }
 
 // Map of system communication instances
-const systemCommunications: Map<SystemId, EventCommunication> = new Map();
+const systemCommunications = new Map<SystemId, EventCommunication>();
 
 /**
  * Get or create a system communication instance

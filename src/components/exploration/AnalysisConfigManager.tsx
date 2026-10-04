@@ -1,31 +1,34 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  IconButton,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from '@mui/material';
+import
+  {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControl,
+    IconButton,
+    InputLabel,
+    List,
+    ListItem,
+    ListItemText,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
+  } from '@mui/material';
 import * as React from 'react';
 import { useState } from 'react';
-import {
-  AnalysisConfig,
-  AnalysisType,
-  Dataset,
-  VisualizationType,
-} from '../../types/exploration/DataAnalysisTypes';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
+import
+  {
+    AnalysisConfig,
+    AnalysisType,
+    Dataset,
+    VisualizationType,
+  } from '../../types/exploration/DataAnalysisTypes';
 
 interface AnalysisConfigManagerProps {
   configs: AnalysisConfig[];
@@ -194,7 +197,7 @@ const AnalysisConfigManager: React.FC<AnalysisConfigManagerProps> = ({
                       e.stopPropagation();
                       const updatedName = `${config.name} (edited)`; // Placeholder update
                       onUpdateConfig(config.id, { name: updatedName });
-                      console.log(`Placeholder edit for: ${config.name}`);
+                      errorLoggingService.logInfo(`Placeholder edit for: ${config.name}`);
                     }}
                     sx={{ mr: 1 }} // Add margin between buttons
                   >
@@ -220,7 +223,7 @@ const AnalysisConfigManager: React.FC<AnalysisConfigManagerProps> = ({
                     <Typography component="span" variant="body2" color="text.primary">
                       {config.type}
                     </Typography>
-                    {` — ${datasets.find(d => d.id === config.datasetId)?.name || 'Unknown dataset'}`}
+                    {` — ${datasets.find(d => d.id === config.datasetId)?.name ?? 'Unknown dataset'}`}
                   </>
                 }
               />
@@ -255,7 +258,7 @@ const AnalysisConfigManager: React.FC<AnalysisConfigManagerProps> = ({
             <Select
               value={newConfigDatasetId}
               label="Dataset"
-              onChange={e => setNewConfigDatasetId(e.target.value as string)}
+              onChange={e => setNewConfigDatasetId(e.target.value)}
             >
               <MenuItem value="">
                 <em>Select a dataset</em>

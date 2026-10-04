@@ -142,7 +142,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     }, [className, size, variant, disabled, hasError, checked, labelPosition]);
 
     // Generate unique ID for the radio if not provided
-    const radioId = id || `radio-${Math.random().toString(36).substring(2, 9)}`;
+    const radioId = id ?? `radio-${Math.random().toString(36).substring(2, 9)}`;
 
     // Content to render
     const radioElement = (
@@ -191,7 +191,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
         </div>
 
         {/* Helper text or error message */}
-        {(helperText || hasError) && (
+        {(helperText ?? hasError) && (
           <div
             className={`ui-radio-helper-text ${hasError ? 'ui-radio-error-text' : ''}`}
             id={hasError ? `${radioId}-error` : undefined}
@@ -245,11 +245,11 @@ export interface RadioGroupProps
   /**
    * Radio options
    */
-  options?: Array<{
+  options?: {
     value: string;
     label: React.ReactNode;
     disabled?: boolean;
-  }>;
+  }[];
 
   /**
    * Callback when selection changes
@@ -292,7 +292,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   helperText,
 }) => {
   // State for uncontrolled mode
-  const [selectedValue, setSelectedValue] = React.useState(defaultValue || '');
+  const [selectedValue, setSelectedValue] = React.useState(defaultValue ?? '');
 
   // Determine if we're in controlled or uncontrolled mode
   const isControlled = value !== undefined;
@@ -338,8 +338,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 
   // Render radios from options if provided
   const radioOptions =
-    options &&
-    options.map(option => (
+    options?.map(option => (
       <Radio
         key={option.value}
         name={name}
@@ -358,7 +357,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
     if (React.isValidElement(child) && child.type === Radio) {
       return React.cloneElement(child, {
         name,
-        checked: currentValue === child.props.value,
+        checked: currentValue === (child.props as RadioProps).value,
         onChange: handleRadioChange,
       } as React.ComponentProps<typeof Radio>);
     }
@@ -378,9 +377,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
         </div>
       )}
 
-      <div className="ui-radio-group-options">{radioOptions || enhancedChildren}</div>
+      <div className="ui-radio-group-options">{radioOptions ?? enhancedChildren}</div>
 
-      {(helperText || hasError) && (
+      {(helperText ?? hasError) && (
         <div
           className={`ui-radio-group-helper-text ${hasError ? 'ui-radio-group-error-text' : ''}`}
           id={hasError ? `${groupId}-error` : undefined}

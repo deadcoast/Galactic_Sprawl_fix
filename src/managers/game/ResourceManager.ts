@@ -1,29 +1,35 @@
-import {
-  DEFAULT_PRODUCTION_RATES,
-  PRODUCTION_INTERVALS,
-  RESOURCE_MANAGER_CONFIG,
-  RESOURCE_PRIORITIES,
-  RESOURCE_THRESHOLDS,
-  STORAGE_EFFICIENCY,
-  TRANSFER_CONFIG,
-} from '../../config/resource/ResourceConfig';
-import { AbstractBaseManager } from '../../lib/managers/BaseManager';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import
+  {
+    DEFAULT_PRODUCTION_RATES,
+    PRODUCTION_INTERVALS,
+    RESOURCE_MANAGER_CONFIG,
+    RESOURCE_PRIORITIES,
+    RESOURCE_THRESHOLDS,
+    STORAGE_EFFICIENCY,
+    TRANSFER_CONFIG
+  } from '../../config/resource/ResourceConfig';
+import { IBaseManager, ManagerStatus } from '../../lib/managers/BaseManager';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+  } from '../../services/logging/ErrorLoggingService';
 import { EventHandler } from '../../types/events/EventEmitterInterface';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import {
-  ResourceConsumption as ImportedResourceConsumption,
-  ResourceFlow as ImportedResourceFlow,
-  ResourceProduction as ImportedResourceProduction,
-  ResourceTransfer as ImportedResourceTransfer,
-  ResourceState,
-  ResourceThreshold,
-} from '../../types/resources/ResourceTypes';
-import {
-  ensureEnumResourceType,
-  ensureStringResourceType,
-  toEnumResourceType,
-} from '../../utils/resources/ResourceTypeConverter';
+import
+  {
+    ResourceConsumption as ImportedResourceConsumption,
+    ResourceFlow as ImportedResourceFlow,
+    ResourceProduction as ImportedResourceProduction, ResourceState,
+    ResourceThreshold, ResourceTransfer as ImportedResourceTransfer
+  } from '../../types/resources/ResourceTypes';
+import
+  {
+    ensureEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType
+  } from '../../utils/resources/ResourceTypeConverter';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -42,11 +48,11 @@ const TRANSFER_CONFIG_WITH_MIN = {
 /**
  * Resource operation error types
  */
-type ResourceError = {
+interface ResourceError {
   code: 'INVALID_RESOURCE' | 'INSUFFICIENT_RESOURCES' | 'INVALID_TRANSFER' | 'THRESHOLD_VIOLATION';
   message: string;
   details?: unknown;
-};
+}
 
 /**
  * Resource optimization strategies
@@ -79,8 +85,8 @@ export function isResourceManagerEvent(event: unknown): event is ResourceManager
     'type' in e &&
     'resourceType' in e &&
     typeof e.type === 'string' &&
-    Object.values(EventType).includes(e.type as EventType) &&
-    Object.values(ResourceType).includes(e.resourceType as ResourceType)
+    Object.values(EventType).includes(e.type) &&
+    Object.values(ResourceType).includes(e.resourceType)
   );
 }
 
@@ -100,11 +106,11 @@ interface ResourceConsumption extends Omit<ImportedResourceConsumption, 'type'> 
 
 // Update the ResourceFlow interface to properly use standardized resource types
 interface ResourceFlow extends Omit<ImportedResourceFlow, 'resources'> {
-  resources: Array<{
+  resources: {
     type: ResourceType;
     amount: number;
     interval?: number;
-  }>;
+  }[];
 }
 
 // Update the ResourceTransfer interface to properly use standardized resource types
@@ -115,7 +121,9 @@ interface ResourceTransfer extends Omit<ImportedResourceTransfer, 'type'> {
 /**
  * Manages game resources
  */
-export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
+export class ResourceManager implements IBaseManager {
+  private static instance: ResourceManager | null = null;
+  
   private resources: Map<ResourceType, ResourceState>;
   private transfers: ResourceTransfer[];
   private maxTransferHistory: number;
@@ -135,12 +143,23 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   };
   private eventHandlers: Map<EventType, Set<EventHandler<ResourceManagerEvent>>>;
 
-  constructor(
+  public readonly id: string = 'ResourceManager';
+  private status: ManagerStatus = ManagerStatus.UNINITIALIZED;
+
+  /**
+   * Get the singleton instance of ResourceManager
+   */
+  public static getInstance(): ResourceManager {
+    if (!ResourceManager.instance) {
+      ResourceManager.instance = new ResourceManager();
+    }
+    return ResourceManager.instance;
+  }
+
+  private constructor(
     maxTransferHistory = 1000,
     config: ResourceManagerConfig = RESOURCE_MANAGER_CONFIG as ResourceManagerConfig
   ) {
-    super('ResourceManager');
-
     this.resources = new Map();
     this.transfers = [];
     this.maxTransferHistory = maxTransferHistory;
@@ -163,7 +182,80 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     // Initialize event handlers for resource-related events
     this.initializeEventHandlers();
 
-    console.warn('[ResourceManager] Created with config:', config);
+    // Eagerly initialize resources from config so they're available before async initialize() is called
+    if (this.config.defaultResourceLimits) {
+      Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
+        const resourceType = ResourceType[type as keyof typeof ResourceType];
+        if (resourceType && limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
+          this.initializeResource(resourceType, limits.min, limits.max);
+        }
+      });
+    }
+
+  }
+
+  /**
+   * Get the manager's name
+   */
+  public getName(): string {
+    return 'ResourceManager';
+  }
+
+  /**
+   * Get the manager's status
+   */
+  public getStatus(): ManagerStatus {
+    return this.status;
+  }
+
+  /**
+   * Handle errors that occur within the manager
+   */
+  public handleError(error: Error, context?: Record<string, unknown>): void {
+    console.error(`[ResourceManager] Error:`, error.message, context);
+    errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+      manager: 'ResourceManager',
+      ...context,
+    });
+  }
+
+  /**
+   * Subscribe to an event
+   */
+  public subscribeToEvent(eventType: EventType, handler: (event: ResourceManagerEvent) => void): () => void {
+    if (!this.eventHandlers.has(eventType)) {
+      this.eventHandlers.set(eventType, new Set());
+    }
+    const handlers = this.eventHandlers.get(eventType)!;
+    handlers.add(handler as EventHandler<ResourceManagerEvent>);
+
+    // Return unsubscribe function
+    return () => {
+      handlers.delete(handler as EventHandler<ResourceManagerEvent>);
+    };
+  }
+
+  /**
+   * Publish an event to all registered handlers
+   */
+  public publishEvent(event: ResourceManagerEvent): void {
+    const handlers = this.eventHandlers.get(event.type);
+    if (handlers) {
+      handlers.forEach(handler => {
+        try {
+          handler(event);
+        } catch (error) {
+          console.error(`[ResourceManager] Error in event handler for ${event.type}:`, error);
+        }
+      });
+    }
+  }
+
+  /**
+   * Subscribe to events (internal method)
+   */
+  private subscribe(eventType: EventType, handler: (event: ResourceManagerEvent) => void): () => void {
+    return this.subscribeToEvent(eventType, handler);
   }
 
   /**
@@ -254,69 +346,74 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   }
 
   /**
-   * @inheritdoc
+   * Initialize the manager
    */
-  protected async onInitialize(_dependencies?: unknown): Promise<void> {
+  public async initialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    if (this.status === ManagerStatus.READY) {
+      return;
+    }
+
+    this.status = ManagerStatus.INITIALIZING;
     // Initialize resources with config limits
     if (this.config.defaultResourceLimits) {
       Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
         const resourceType = ResourceType[type as keyof typeof ResourceType];
         if (limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
           this.initializeResource(resourceType, limits.min, limits.max);
+          errorLoggingService.logInfo(
+            `[ResourceManager] Initialized resource ${resourceType} with limits: min=${limits.min}, max=${limits.max}`,
+            {
+              service: 'ResourceManager',
+              method: 'onInitialize',
+              resourceType: resourceType,
+            }
+          );
         }
       });
     } else {
-      console.warn(
-        '[ResourceManager] Warning: defaultResourceLimits is null or undefined in config'
+      errorLoggingService.logWarn(
+        '[ResourceManager] warning: defaultResourceLimits is null or undefined in config',
+        {
+          service: 'ResourceManager',
+          method: 'onInitialize',
+        }
       );
     }
 
     // Initialize optimization strategies
     this.initializeOptimizationStrategies();
 
-    // Publish initialization event
-    this.publish({
-      type: EventType.SYSTEM_STARTUP,
-      resourceType: ResourceType.MINERALS,
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: { config: this.config },
+    this.status = ManagerStatus.READY;
+
+    errorLoggingService.logInfo('[ResourceManager] Initialized with config', {
+      service: 'ResourceManager',
+      method: 'initialize',
+      configKeys: Object.keys(this.config),
     });
 
-    console.warn('[ResourceManager] Initialized with config:', this.config);
+    await Promise.resolve();
   }
 
   /**
-   * @inheritdoc
+   * Update method called on each game tick
    */
-  protected onUpdate(deltaTime: number): void {
+  public update(deltaTime: number): void {
     // Process optimizations every 5 seconds
     if (Date.now() - this.optimizationMetrics.lastOptimizationTime > 5000) {
       this.runOptimizations();
       this.optimizationMetrics.lastOptimizationTime = Date.now();
     }
-
-    // Publish update event with current resource states
-    this.publish({
-      type: EventType.RESOURCE_UPDATED,
-      resourceType: ResourceType.MINERALS,
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        resources: this.getAllResourceStates(),
-        deltaTime,
-      },
-    });
   }
 
   /**
-   * @inheritdoc
+   * Dispose of the manager's resources
    */
-  protected async onDispose(): Promise<void> {
+  public async dispose(): Promise<void> {
+    if (this.status === ManagerStatus.DISPOSED) {
+      return;
+    }
     // Stop all production intervals
-    for (const [_id, interval] of this.productionIntervals.entries()) {
+    for (const [id, interval] of this.productionIntervals.entries()) {
       clearInterval(interval);
     }
     this.productionIntervals.clear();
@@ -333,20 +430,20 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.errors.clear();
     this.optimizationStrategies.clear();
 
-    console.warn('[ResourceManager] Disposed');
+    this.status = ManagerStatus.DISPOSED;
+
+    errorLoggingService.logInfo('[ResourceManager] Disposed', {
+      service: 'ResourceManager',
+      method: 'dispose',
+    });
+
+    await Promise.resolve();
   }
 
   /**
-   * @inheritdoc
+   * Get statistics for this manager
    */
-  protected getVersion(): string {
-    return '1.0.0';
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected getStats(): Record<string, number | string> {
+  public getStats(): Record<string, number | string> {
     return {
       resourceCount: this.resources.size,
       transferCount: this.transfers.length,
@@ -410,18 +507,18 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       if (oldAmount !== newAmount) {
         state.current = newAmount;
 
-        // Use publish method inherited from AbstractBaseManager
-        this.publish({
+        // Publish resource update event so subscribers (ThresholdIntegration, etc.) are notified
+        this.publishEvent({
           type: EventType.RESOURCE_UPDATED,
-          resourceType: resourceType,
           moduleId: this.id,
           moduleType: 'resource-manager',
           timestamp: Date.now(),
+          resourceType,
+          amount: newAmount,
           data: {
-            type: ensureStringResourceType(resourceType),
-            oldAmount,
-            newAmount,
-            state,
+            resources: {
+              [resourceType]: { current: newAmount, max: state.max, min: state.min },
+            },
           },
         });
 
@@ -458,21 +555,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Check if we have enough
     if (state.current < amount) {
-      // Emit shortage event
-      this.publish({
-        type: EventType.RESOURCE_SHORTAGE,
-        resourceType: type,
-        moduleId: this.id,
-        moduleType: 'resource-manager',
-        timestamp: Date.now(),
-        amount: amount,
-        data: {
-          resourceType: type,
-          requiredAmount: amount,
-          availableAmount: state.current,
-          deficit: amount - state.current,
-        },
-      });
+      // Log shortage event
+      console.warn(`[ResourceManager] Resource shortage: ${type}, required: ${amount}, available: ${state.current}`);
       return false;
     }
 
@@ -541,16 +625,6 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   private logResourceError(id: string, error: ResourceError): void {
     this.errors.set(id, error);
     console.error(`[ResourceManager] Error (${id}): ${error.message}`, error.details);
-    // Use publish method inherited from AbstractBaseManager
-    this.publish({
-      type: EventType.ERROR_OCCURRED,
-      // Add a default resourceType for general errors
-      resourceType: ResourceType.MINERALS, // Or choose another appropriate default
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: error,
-    });
   }
 
   private setResourceThreshold(
@@ -567,19 +641,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         // Clamp current value if necessary
         state.current = Math.max(state.min, Math.min(state.max, state.current));
 
-        // Use publish method inherited from AbstractBaseManager
-        this.publish({
-          type: EventType.RESOURCE_THRESHOLD_CHANGED,
-          resourceType: resourceType,
-          moduleId: this.id,
-          moduleType: 'resource-manager',
-          timestamp: Date.now(),
-          data: {
-            type: ensureStringResourceType(resourceType),
-            oldValue,
-            newValue: value,
-          },
-        });
+        // Log threshold change
+        console.warn(`[ResourceManager] Threshold changed for ${resourceType}: ${oldValue} -> ${value}`);
       }
     } else {
       // Use the newly added method
@@ -590,16 +653,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     }
   }
 
-  /**
-   * @inheritdoc
-   */
-  public override handleError(error: Error, context?: Record<string, unknown>): void {
-    // Call the parent class implementation
-    super.handleError(error, context);
 
-    // Additional resource manager specific error handling
-    console.error(`[ResourceManager] Error:`, error.message);
-  }
 
   /**
    * Validates resource transfer operation
@@ -671,15 +725,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         this.transfers.shift();
       }
 
-      // Emit transfer event
-      this.publish({
-        type: EventType.RESOURCE_TRANSFERRED,
-        resourceType: type,
-        moduleId: source,
-        moduleType: 'resource-manager',
-        timestamp: Date.now(),
-        data: { transfer },
-      });
+      // Log transfer event
+      console.warn(`[ResourceManager] Transfer completed: ${transferAmount.toFixed(2)} ${type} from ${source} to ${target}`);
 
       console.warn(
         `[ResourceManager] Transferred ${transferAmount.toFixed(2)} ${type} from ${source} to ${target}`
@@ -740,19 +787,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.productions.set(id, production);
     this.scheduleProduction(id, production);
 
-    // Use publish method inherited from AbstractBaseManager
-    this.publish({
-      type: EventType.RESOURCE_PRODUCTION_REGISTERED,
-      // Infer resourceType from production data
-      resourceType: ensureEnumResourceType(production.type),
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        production,
-        oldProduction,
-      },
-    });
+    // Log production registration
+    console.warn(`[ResourceManager] Production registered: ${id} for ${production.type}`);
   }
 
   /**
@@ -762,19 +798,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     const oldConsumption = this.consumptions.get(id);
     this.consumptions.set(id, consumption);
 
-    // Use publish method inherited from AbstractBaseManager
-    this.publish({
-      type: EventType.RESOURCE_CONSUMPTION_REGISTERED,
-      // Infer resourceType from consumption data
-      resourceType: ensureEnumResourceType(consumption.type),
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        consumption,
-        oldConsumption,
-      },
-    });
+    // Log consumption registration
+    console.warn(`[ResourceManager] Consumption registered: ${id} for ${consumption.type}`);
   }
 
   /**
@@ -785,19 +810,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.flows.set(id, flow);
     this.scheduleFlow(id, flow);
 
-    // Use publish method inherited from AbstractBaseManager
-    this.publish({
-      type: EventType.RESOURCE_FLOW_REGISTERED,
-      // Add a default resourceType for flows (might involve multiple types)
-      resourceType: ResourceType.MINERALS, // Or handle differently if possible
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        flow,
-        oldFlow,
-      },
-    });
+    // Log flow registration
+    console.warn(`[ResourceManager] Flow registered: ${id}`);
   }
 
   /**
@@ -809,16 +823,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       this.clearProductionSchedule(id);
       this.productions.delete(id);
 
-      // Use publish method inherited from AbstractBaseManager
-      this.publish({
-        type: EventType.RESOURCE_PRODUCTION_UNREGISTERED,
-        // Infer resourceType from production data
-        resourceType: ensureEnumResourceType(production.type),
-        moduleId: this.id,
-        moduleType: 'resource-manager',
-        timestamp: Date.now(),
-        data: { production },
-      });
+      // Log production unregistration
+      console.warn(`[ResourceManager] Production unregistered: ${id} for ${production.type}`);
     }
   }
 
@@ -830,16 +836,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     if (consumption) {
       this.consumptions.delete(id);
 
-      // Use publish method inherited from AbstractBaseManager
-      this.publish({
-        type: EventType.RESOURCE_CONSUMPTION_UNREGISTERED,
-        // Infer resourceType from consumption data
-        resourceType: ensureEnumResourceType(consumption.type),
-        moduleId: this.id,
-        moduleType: 'resource-manager',
-        timestamp: Date.now(),
-        data: { consumption },
-      });
+      // Log consumption unregistration
+      console.warn(`[ResourceManager] Consumption unregistered: ${id} for ${consumption.type}`);
     }
   }
 
@@ -852,16 +850,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       this.clearFlowSchedule(id);
       this.flows.delete(id);
 
-      // Use publish method inherited from AbstractBaseManager
-      this.publish({
-        type: EventType.RESOURCE_FLOW_UNREGISTERED,
-        // Add a default resourceType for flows
-        resourceType: ResourceType.MINERALS, // Or handle differently
-        moduleId: this.id,
-        moduleType: 'resource-manager',
-        timestamp: Date.now(),
-        data: { flow },
-      });
+      // Log flow unregistration
+      console.warn(`[ResourceManager] Flow unregistered: ${id}`);
     }
   }
 
@@ -1056,107 +1046,13 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     this.optimizationMetrics.lastOptimizationTime = Date.now();
 
-    // Use publish method inherited from AbstractBaseManager
-    this.publish({
-      type: EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED,
-      // Add a default resourceType for optimization event
-      resourceType: ResourceType.MINERALS, // Or handle differently
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        productionEfficiency: this.optimizationMetrics.productionEfficiency,
-        consumptionEfficiency: this.optimizationMetrics.consumptionEfficiency,
-        transferEfficiency: this.optimizationMetrics.transferEfficiency,
-        metrics: this.getStats(),
-      },
-    });
+    // Log optimization completion
+    console.warn(`[ResourceManager] Optimization completed - Production: ${this.optimizationMetrics.productionEfficiency.toFixed(2)}, Consumption: ${this.optimizationMetrics.consumptionEfficiency.toFixed(2)}, Transfer: ${this.optimizationMetrics.transferEfficiency.toFixed(2)}`);
 
     console.warn('[ResourceManager] Optimizations completed.');
   }
 
-  /**
-   * Updates resource production and consumption with configured intervals
-   */
-  update(deltaTime: number): void {
-    // Run optimizations first
-    this.runOptimizations();
 
-    // Update performance metrics for each resource
-    const resourceEntries = Array.from(this.resources.entries());
-    for (const [type, state] of resourceEntries) {
-      const usage = this.calculateResourceUsage(type);
-
-      // Convert string type to enum type for the performance monitor
-      const enumType = toEnumResourceType(type);
-      resourcePerformanceMonitor.recordMetrics(
-        enumType,
-        state.production,
-        usage,
-        this.calculateTransferRate(type),
-        state.current / state.max
-      );
-    }
-
-    // Handle production with configured rates
-    const productionEntries = Array.from(this.productions.entries());
-    for (const [id, production] of productionEntries) {
-      if (!this.checkThresholds(production.conditions)) {
-        continue;
-      }
-
-      // Calculate amount to produce based on rate and time
-      const amount = (production.amount * deltaTime) / production.interval;
-      // Add resource using the enum type directly
-      this.addResource(production.type, amount);
-
-      console.warn(`[ResourceManager] Produced ${amount.toFixed(2)} ${production.type} from ${id}`);
-    }
-
-    // Handle consumption with configured rates
-    const consumptionEntries = Array.from(this.consumptions.entries());
-    for (const [id, consumption] of consumptionEntries) {
-      if (!this.checkThresholds(consumption.conditions)) {
-        continue;
-      }
-
-      // Calculate amount to consume based on rate and time
-      const amount = (consumption.amount * deltaTime) / consumption.interval;
-      // Remove resource using the enum type directly
-      this.removeResource(consumption.type, amount);
-
-      if (consumption.required) {
-        // Log error for required consumption
-        this.logResourceError(id, {
-          code: 'INSUFFICIENT_RESOURCES',
-          message: `Failed to consume required resource: ${consumption.type}`,
-          details: {
-            type: consumption.type,
-            amount,
-            consumer: id,
-            priority: RESOURCE_PRIORITIES[consumption.type as ResourceType],
-          },
-        });
-      }
-    }
-
-    // Handle flows with configured transfer settings
-    const flowEntries = Array.from(this.flows.entries());
-    for (const [id, flow] of flowEntries) {
-      if (!this.checkThresholds(flow.conditions)) {
-        console.warn(`[ResourceManager] Flow ${id} skipped due to threshold conditions`);
-        continue;
-      }
-
-      // Process each resource in the flow
-      flow.resources.forEach(resource => {
-        // Calculate amount to transfer based on rate and time
-        const amount = (resource.amount * deltaTime) / (resource.interval || 1000);
-        // Transfer resources using the enum type directly
-        this.transferResources(resource.type, amount, flow.source, flow.target);
-      });
-    }
-  }
 
   /**
    * Checks resource thresholds against configured values
@@ -1259,18 +1155,18 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       flow.resources.forEach(resource => {
         const interval = setInterval(() => {
           if (this.checkThresholds(flow.conditions)) {
-            const amount = resource.amount;
+            const {amount} = resource;
             // Transfer resources using the enum type directly
             this.transferResources(resource.type, amount, flow.source, flow.target);
           }
-        }, resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
+        }, resource.interval ?? TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
 
         this.productionIntervals.set(`${id}-${resource.type}`, interval);
 
         console.warn(
           `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${
             flow.target
-          } every ${resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
+          } every ${resource.interval ?? TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
         );
       });
 
@@ -1344,7 +1240,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Set rates for each resource type
     resourceTypes.forEach(typeKey => {
-      const type = typeKey as ResourceType;
+      const type = typeKey;
       const state = this.getResourceState(type);
       rates[type] = {
         production: state?.production ?? 0,

@@ -70,7 +70,7 @@ export class MultitabCommunicationChannel {
   private broadcastChannel: BroadcastChannel | null = null;
 
   /** Information about all known tabs */
-  private knownTabs: Map<string, TabInfo> = new Map();
+  private knownTabs = new Map<string, TabInfo>();
 
   /** Whether we're using localStorage fallback */
   private usingLocalStorageFallback = false;
@@ -315,7 +315,7 @@ export class MultitabCommunicationChannel {
    */
   public getState(): 'idle' | 'ready' | 'testing' | 'complete' | 'error' {
     const tabInfo = this.knownTabs.get(this.tabId);
-    return tabInfo?.state || 'idle';
+    return tabInfo?.state ?? 'idle';
   }
 
   /**

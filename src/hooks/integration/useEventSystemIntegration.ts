@@ -5,7 +5,12 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 
 /**
@@ -62,9 +67,11 @@ export function useMultiEventSubscription(
 
   // Set up subscriptions
   useEffect(() => {
-    if (!eventTypes.length) return;
+    if (!eventTypes.length) {
+      return;
+    }
 
-    const unsubscribes: Array<() => void> = [];
+    const unsubscribes: (() => void)[] = [];
 
     try {
       // Subscribe to each event type
@@ -105,7 +112,9 @@ export function useMultiEventSubscription(
       unsubscribes.forEach(unsubscribe => unsubscribe());
 
       // Return empty cleanup function
-      return () => {};
+      return () => {
+        // Empty cleanup function
+      };
     }
   }, [JSON.stringify(eventTypes), ...deps]);
 }
@@ -129,31 +138,28 @@ export function useEventMonitor(
   // Set up event subscription
   useEffect(() => {
     // Determine which event types to subscribe to
-    const typesToMonitor = eventTypes || Object.values(EventType);
+    const typesToMonitor = eventTypes ?? Object.values(EventType);
 
     // Subscribe to events
-    const unsubscribe = moduleEventBus.subscribeToMunknown(typesToMonitor, (event: BaseEvent) => {
-      // Apply filter if provided
-      if (filter && !filter(event)) {
-        return;
-      }
-
-      // Update events state
-      setEvents(prev => {
-        // Add new event to beginning of array
-        const newEvents = [event, ...prev];
-
-        // Limit to maxEvents
-        if (newEvents.length > maxEvents) {
-          return newEvents.slice(0, maxEvents);
-        }
-
-        return newEvents;
-      });
-    });
-
-    // Return cleanup function
-    return unsubscribe;
+    return moduleEventBus.subscribeToMunknown(typesToMonitor, (event: BaseEvent) => {
+          // Apply filter if provided
+          if (filter && !filter(event)) {
+            return;
+          }
+    
+          // Update events state
+          setEvents(prev => {
+            // Add new event to beginning of array
+            const newEvents = [event, ...prev];
+    
+            // Limit to maxEvents
+            if (newEvents.length > maxEvents) {
+              return newEvents.slice(0, maxEvents);
+            }
+    
+            return newEvents;
+          });
+        });
   }, [maxEvents, JSON.stringify(eventTypes), filter]);
 
   // Function to clear events

@@ -47,7 +47,7 @@ export function initializeEventSystem(): () => void {
         `Resource update: ${payload.operation} ${payload.amount} of ${payload.resourceType}`
       );
 
-      // Forward important resource events to the module system
+      // Forcombatd important resource events to the module system
       if (payload.amount > 1000) {
         _moduleSystemComm.sendMessage('resource-system', 'resource-threshold-reached', {
           resourceType: payload.resourceType,

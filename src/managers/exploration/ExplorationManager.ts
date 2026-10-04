@@ -2,7 +2,7 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 /**
  * @file ExplorationManager.ts
  * Implementation of the ExplorationManager that conforms to the BaseManager interface.
- *
+ * 
  * This class handles:
  * 1. Star system management and ship assignments
  * 2. Sector scanning and discovery tracking
@@ -14,454 +14,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { ReconShipManagerImpl } from './ReconShipManager';
+import { ReconShip, ShipStatus } from '../../types/ships/ShipTypes';
+import { ReconShipManagerEvents, ReconShipManagerImpl } from './ReconShipManager';
 /**
  * @file ExplorationManagerImpl.ts
  * Implementation of the ExplorationManager that conforms to the BaseManager interface.
- *
+ * 
  * This class handles:
  * 1. Star system management and ship assignments
  * 2. Sector scanning and discovery tracking
  * 3. Integration with ship managers for operation
  * 4. Event-based communication with UI components
  */
-
-import { EventBus } from '../../lib/events/EventBus';
-import { Ship } from '../../types/ships/Ship';
-
-// Define Exploration specific event types
-export enum ExplorationEvents {
-  SECTOR_DISCOVERED = 'EXPLORATION_SECTOR_DISCOVERED',
-  SECTOR_SCANNED = 'EXPLORATION_SECTOR_SCANNED',
-  ANOMALY_DETECTED = 'EXPLORATION_ANOMALY_DETECTED',
-  RESOURCE_DETECTED = 'EXPLORATION_RESOURCE_DETECTED',
-  SCAN_STARTED = 'EXPLORATION_SCAN_STARTED',
-  SCAN_COMPLETED = 'EXPLORATION_SCAN_COMPLETED',
-  SCAN_FAILED = 'EXPLORATION_SCAN_FAILED',
-  SHIP_ASSIGNED = 'EXPLORATION_SHIP_ASSIGNED',
-  SHIP_UNASSIGNED = 'EXPLORATION_SHIP_UNASSIGNED',
-  SYSTEM_CREATED = 'EXPLORATION_SYSTEM_CREATED',
-  SYSTEM_UPDATED = 'EXPLORATION_SYSTEM_UPDATED',
-}
-
-// Map exploration events to standard EventType enum
-export const EXPLORATION_EVENTS = {
-  SECTOR_DISCOVERED: EventType.EXPLORATION_SECTOR_DISCOVERED,
-  SECTOR_SCANNED: EventType.EXPLORATION_SECTOR_SCANNED,
-  ANOMALY_DETECTED: EventType.EXPLORATION_ANOMALY_DETECTED,
-  RESOURCE_DETECTED: EventType.EXPLORATION_RESOURCE_DETECTED,
-  SCAN_STARTED: EventType.EXPLORATION_SCAN_STARTED,
-  SCAN_COMPLETED: EventType.EXPLORATION_SCAN_COMPLETED,
-  SCAN_FAILED: EventType.EXPLORATION_SCAN_FAILED,
-  SHIP_ASSIGNED: EventType.EXPLORATION_SHIP_ASSIGNED,
-  SHIP_UNASSIGNED: EventType.EXPLORATION_SHIP_UNASSIGNED,
-} as const;
-
-// Define interfaces for the types used
-export interface StarSystem {
-  id: string;
-  name: string;
-  type?: string;
-  resources?: ResourceType[];
-  status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
-  assignedShips: string[];
-  position: {
-    x: number;
-    y: number;
-  };
-  lastScanned?: number;
-  discoveredAt?: number;
-}
-
-export interface SystemSearchCriteria {
-  name?: string;
-  type?: string;
-  resources?: ResourceType[];
-  status?: string;
-}
-
-// Ship interface to break circular dependency
-export interface IShip {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  assignedTo?: string;
-}
-
-// Ship manager interface to break circular dependency
-export interface IShipManager {
-  getShipById(shipId: string): IShip | undefined;
-  updateShipStatus(shipId: string, status: string): void;
-  updateShipAssignment(shipId: string, systemId: string): void;
-  getAllShips(): IShip[];
-  getShipsByType(type: string): IShip[];
-  getShipsByStatus(status: string): IShip[];
-}
-
-// Event data interface
-export interface ExplorationEventData extends Record<string, unknown> {
-  system?: StarSystem;
-  shipId?: string;
-  systemId?: string;
-  reason?: string;
-}
-
-/**
- * ExplorationManagerImpl implements the exploration manager functionality,
- * managing star systems and their assignments.
- */
-export class ExplorationManagerImpl extends AbstractBaseManager<BaseEvent> {
-  private systems: Map<string, StarSystem> = new Map();
-
-  // Module ID for this manager (used in events)
-  private moduleId: string = uuidv4();
-
-  // Statistics
-  private stats = {
-    systemsCreated: 0,
-    systemsUpdated: 0,
-    shipsAssigned: 0,
-    shipsUnassigned: 0,
-  };
-
-  /**
-   * Create a new ExplorationManagerImpl
-   *
-   * @param eventBus The event bus for events
-   * @param shipManager The ship manager implementation
-   */
-  constructor(
-    private eventBus: EventBus<BaseEvent>,
-    private shipManager: IShipManager
-  ) {
-    super('ExplorationManagerImpl');
-  }
-
-  /**
-   * Get the version of this manager implementation
-   */
-  protected getVersion(): string {
-    return '1.0.0';
-  }
-
-  /**
-   * Get statistics for this manager (for monitoring)
-   */
-  protected getStats(): Record<string, number | string> {
-    return {
-      ...this.stats,
-      systemCount: this.systems.size,
-    };
-  }
-
-  /**
-   * Initialize the exploration manager
-   */
-  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
-    console.warn('ExplorationManagerImpl initialized');
-
-    // No initialization needed at this time
-    return Promise.resolve();
-  }
-
-  /**
-   * Handle updates on each tick
-   */
-  protected onUpdate(_deltaTime: number): void {
-    // Currently no time-based updates needed
-  }
-
-  /**
-   * Clean up resources
-   */
-  protected async onDispose(): Promise<void> {
-    this.systems.clear();
-    return Promise.resolve();
-  }
-
-  /**
-   * Create an event with proper structure
-   */
-  private createEvent(eventType: ExplorationEvents, data: ExplorationEventData): BaseEvent {
-    return {
-      type: eventType as unknown as EventType,
-      timestamp: Date.now(),
-      moduleId: this.moduleId,
-      moduleType: 'EXPLORATION' as ModuleType,
-      data,
-    };
-  }
-
-  /**
-   * Create a new star system in the exploration manager
-   */
-  public createStarSystem(system: {
-    id: string;
-    name: string;
-    status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
-    position?: { x: number; y: number };
-  }): StarSystem {
-    const now = Date.now();
-
-    const newSystem: StarSystem = {
-      ...system,
-      position: system.position || { x: 0, y: 0 },
-      assignedShips: [],
-      discoveredAt: now,
-    };
-
-    this.systems.set(system.id, newSystem);
-    this.stats.systemsCreated++;
-
-    // Emit event
-    const event = this.createEvent(ExplorationEvents.SYSTEM_CREATED, {
-      system: newSystem,
-    });
-    this.publishEvent(event);
-
-    return newSystem;
-  }
-
-  /**
-   * Get a star system by ID
-   */
-  public getSystemById(systemId: string): StarSystem | undefined {
-    return this.systems.get(systemId);
-  }
-
-  /**
-   * Get all star systems
-   */
-  public getAllSystems(): StarSystem[] {
-    return Array.from(this.systems.values());
-  }
-
-  /**
-   * Add an existing star system to the exploration manager
-   */
-  public addStarSystem(system: {
-    id: string;
-    name: string;
-    type: ResourceType;
-    resources: ResourceType[];
-    status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
-    position?: { x: number; y: number };
-  }): StarSystem {
-    const now = Date.now();
-
-    const newSystem: StarSystem = {
-      ...system,
-      position: system.position || { x: 0, y: 0 },
-      assignedShips: [],
-      discoveredAt: now,
-    };
-
-    this.systems.set(system.id, newSystem);
-    this.stats.systemsCreated++;
-
-    // Emit event
-    const event = this.createEvent(ExplorationEvents.SYSTEM_CREATED, {
-      system: newSystem,
-    });
-    this.publishEvent(event);
-
-    return newSystem;
-  }
-
-  /**
-   * Update a star system
-   */
-  public updateSystem(
-    systemId: string,
-    updates: Partial<Omit<StarSystem, 'id'>>
-  ): StarSystem | undefined {
-    const system = this.systems.get(systemId);
-    if (!system) {
-      return undefined;
-    }
-
-    const updatedSystem = {
-      ...system,
-      ...updates,
-    };
-
-    this.systems.set(systemId, updatedSystem);
-    this.stats.systemsUpdated++;
-
-    // Emit event
-    const event = this.createEvent(ExplorationEvents.SYSTEM_UPDATED, {
-      system: updatedSystem,
-    });
-    this.publishEvent(event);
-
-    return updatedSystem;
-  }
-
-  /**
-   * Assign a ship to a star system
-   */
-  public assignShipToSystem(shipId: string, systemId: string): boolean {
-    const system = this.systems.get(systemId);
-    if (!system) {
-      return false;
-    }
-
-    const ship = this.shipManager.getShipById(shipId);
-    if (!ship) {
-      return false;
-    }
-
-    // Update the system
-    system.assignedShips.push(shipId);
-    this.systems.set(systemId, system);
-
-    // Update the ship
-    this.shipManager.updateShipStatus(shipId, 'assigned');
-    this.shipManager.updateShipAssignment(shipId, systemId);
-
-    this.stats.shipsAssigned++;
-
-    // Emit event
-    const event = this.createEvent(ExplorationEvents.SHIP_ASSIGNED, {
-      system,
-      shipId,
-      systemId,
-    });
-    this.publishEvent(event);
-
-    return true;
-  }
-
-  /**
-   * Unassign a ship from a system
-   */
-  public unassignShipFromSystem(shipId: string, systemId: string): boolean {
-    const system = this.systems.get(systemId);
-    if (!system) {
-      return false;
-    }
-
-    // Check if the ship is actually assigned to this system
-    const shipIndex = system.assignedShips.indexOf(shipId);
-    if (shipIndex === -1) {
-      return false;
-    }
-
-    // Update the system
-    system.assignedShips.splice(shipIndex, 1);
-    this.systems.set(systemId, system);
-
-    // Update the ship
-    this.shipManager.updateShipStatus(shipId, 'idle');
-    this.shipManager.updateShipAssignment(shipId, '');
-
-    this.stats.shipsUnassigned++;
-
-    // Emit event
-    const event = this.createEvent(ExplorationEvents.SHIP_UNASSIGNED, {
-      system,
-      shipId,
-      systemId,
-    });
-    this.publishEvent(event);
-
-    return true;
-  }
-
-  /**
-   * Search star systems based on criteria
-   */
-  public searchSystems(criteria: SystemSearchCriteria): StarSystem[] {
-    const results: StarSystem[] = [];
-
-    for (const system of this.systems.values()) {
-      if (this.matchesCriteria(system, criteria)) {
-        results.push(system);
-      }
-    }
-
-    return results;
-  }
-
-  /**
-   * Check if a system matches the search criteria
-   */
-  private matchesCriteria(system: StarSystem, criteria: SystemSearchCriteria): boolean {
-    // Check name
-    if (criteria.name && !system.name.toLowerCase().includes(criteria.name.toLowerCase())) {
-      return false;
-    }
-
-    // Check type
-    if (criteria.type && system.type !== criteria.type) {
-      return false;
-    }
-
-    // Check resources
-    if (criteria.resources && criteria.resources.length > 0) {
-      if (!system.resources) {
-        return false;
-      }
-
-      if (!criteria.resources.every(resource => system.resources?.includes(resource))) {
-        return false;
-      }
-    }
-
-    // Check status
-    if (criteria.status && system.status !== criteria.status) {
-      return false;
-    }
-
-    return true;
-  }
-}
-
-/**
- * Exploration event interface extending BaseEvent
- */
-export interface ExplorationEvent extends BaseEvent {
-  type: EventType;
-  moduleId: string;
-  moduleType: ModuleType;
-  data: ExplorationEventData;
-}
-
-/**
- * Type guard for ExplorationEvent
- */
-export function isExplorationEvent(event: unknown): event is ExplorationEvent {
-  if (!event || typeof event !== 'object') return false;
-  const e = event as ExplorationEvent;
-  return (
-    'type' in e &&
-    'moduleId' in e &&
-    'moduleType' in e &&
-    'data' in e &&
-    typeof e.type === 'string' &&
-    typeof e.moduleId === 'string' &&
-    typeof e.moduleType === 'string' &&
-    typeof e.data === 'object'
-  );
-}
-
-// Define a type for our exploration event data
-export interface ExplorationEventData extends Record<string, unknown> {
-  sector?: Sector;
-  operation?: ScanOperation;
-  resource?: {
-    type: ResourceType;
-    amount: number;
-    quality: number;
-  };
-  anomaly?: Anomaly;
-  ship?: Ship;
-  reason?: string;
-  sectorId?: string;
-  shipId?: string;
-  anomalyId?: string;
-}
 
 // Define interfaces for the types used
 export interface StarSystem {
@@ -489,11 +53,13 @@ export interface Sector {
   anomalies: Anomaly[];
   lastScanned?: number;
   discoveredAt?: number;
-  resources?: Array<{
+  resources?: {
     type: ResourceType;
     amount: number;
     quality?: number;
-  }>;
+  }[];
+  position: { x: number; y: number };
+  assignedShips: string[];
 }
 
 export interface Anomaly {
@@ -526,20 +92,57 @@ export interface ScanOperation {
   results?: Record<string, unknown>;
 }
 
+// Event data interface
+export interface ExplorationEventData extends Record<string, unknown> {
+  sector?: Sector;
+  operation?: ScanOperation;
+  resource?: {
+    type: ResourceType;
+    amount: number;
+    quality: number;
+  };
+  anomaly?: Anomaly;
+  ship?: ReconShip;
+  reason?: string;
+  sectorId?: string;
+  shipId?: string;
+  anomalyId?: string;
+}
+
+/**
+ * Exploration event interface extending BaseEvent
+ */
+export interface ExplorationEvent extends BaseEvent {
+  type: EventType;
+  moduleId: string;
+  moduleType: ModuleType;
+  data: ExplorationEventData;
+}
+
+// Type guard for ExplorationEvent
+export function isExplorationEvent(event: unknown): event is ExplorationEvent {
+  if (typeof event !== 'object' || event === null) return false;
+  const potentialEvent = event as ExplorationEvent;
+  return (
+    typeof potentialEvent.type === 'string' &&
+    typeof potentialEvent.timestamp === 'number' &&
+    typeof potentialEvent.moduleId === 'string' &&
+    typeof potentialEvent.moduleType === 'string' &&
+    typeof potentialEvent.data === 'object'
+  );
+}
+
 /**
  * ExplorationManager implements the exploration system functionality,
  * managing star systems, sectors, anomalies, and coordinating with ship operations.
  */
 export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
-  // Maps to store exploration data
-  private sectors: Map<string, Sector> = new Map();
-  private anomalies: Map<string, Anomaly> = new Map();
-  private scanOperations: Map<string, ScanOperation> = new Map();
-
-  // References to other managers
+  private sectors: Map<string, Sector> = new Map<string, Sector>();
+  private anomalies: Map<string, Anomaly> = new Map<string, Anomaly>();
+  private scanOperations: Map<string, ScanOperation> = new Map<string, ScanOperation>();
   private shipManager: ReconShipManagerImpl;
 
-  // Stats tracking
+  // Statistics
   private stats = {
     sectorsDiscovered: 0,
     sectorsScanned: 0,
@@ -550,25 +153,86 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     failedScans: 0,
   };
 
-  // Module ID for this manager (used in events)
   private moduleId: string = uuidv4();
 
   /**
-   * Creates a new ExplorationManager
-   *
-   * @param shipManager The ship manager to use for ship operations
-   * @param id Optional ID for the manager
+   * Create a new ExplorationManager
+   * @param shipManager The ReconShipManager implementation
+   * @param id Optional manager ID
    */
   constructor(shipManager: ReconShipManagerImpl, id?: string) {
     super('ExplorationManager', id);
     this.shipManager = shipManager;
+
+    // Listen to ship status changes using the correct event type and method
+    this.shipManager.on('STATUS_CHANGED', this.handleShipStatusChange);
+  }
+
+  /**
+   * Handles ship status changes, potentially canceling scan operations.
+   * This listener receives the specific data from ReconShipManager.
+   * @param data The event data containing ship ID, status, and ship object.
+   */
+  private handleShipStatusChange = (data: {
+    shipId: string;
+    status: ShipStatus;
+    ship: ReconShip;
+  }): void => {
+    const { shipId, status } = data;
+    if (status === ShipStatus.DISABLED || status === ShipStatus.DESTROYED) {
+      // Find any active scan operation involving this ship
+      const activeScan = Array.from(this.scanOperations.values()).find(
+        (op) => op.shipId === shipId && op.status === 'active'
+      );
+
+      if (activeScan) {
+        // Cancel the scan operation
+        this.cancelScanOperation(activeScan.id, 'ship_unavailable');
+      }
+    }
+  };
+
+  /**
+   * Initializes the ExplorationManager.
+   */
+  protected async onInitialize(): Promise<void> {
+    // Initialization logic, e.g., loading data, setting up initial state
+    await Promise.resolve();
+    this.publishEvent(
+      this.createEvent(EventType.MODULE_ACTIVATED, {
+        status: 'active',
+      })
+    );
+  }
+
+  /**
+   * Updates the manager's state based on the elapsed time.
+   * @param deltaTime Time elapsed since the last update in milliseconds.
+   */
+  protected onUpdate(deltaTime: number): void {
+    // Update ongoing scan operations
+    this.updateScanOperations(deltaTime);
+  }
+
+  /**
+   * Cleans up resources when the manager is disposed.
+   */
+  protected async onDispose(): Promise<void> {
+    // Cleanup logic, e.g., unsubscribing from events, saving state
+    await Promise.resolve();
+    this.shipManager.off('STATUS_CHANGED', this.handleShipStatusChange);
+    this.publishEvent(
+      this.createEvent(EventType.MODULE_DEACTIVATED, {
+        status: 'inactive',
+      })
+    );
   }
 
   /**
    * Get the version of this manager implementation
    */
   protected getVersion(): string {
-    return '1.0.0';
+    return '1.1.0';
   }
 
   /**
@@ -584,34 +248,6 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   }
 
   /**
-   * Initialize the exploration manager
-   */
-  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
-    console.warn('ExplorationManager initialized');
-
-    // Subscribe to ship-related events to update exploration data
-    this.subscribe(EventType.STATUS_CHANGED, this.handleShipStatusChange);
-  }
-
-  /**
-   * Handle updates on each tick
-   */
-  protected onUpdate(_deltaTime: number): void {
-    // Update active scan operations
-    this.updateScanOperations(_deltaTime);
-  }
-
-  /**
-   * Clean up resources
-   */
-  protected async onDispose(): Promise<void> {
-    // Clear all data
-    this.sectors.clear();
-    this.anomalies.clear();
-    this.scanOperations.clear();
-  }
-
-  /**
    * Creates a standard ExplorationEvent
    */
   private createEvent(type: EventType, data: ExplorationEventData): ExplorationEvent {
@@ -623,21 +259,6 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
       data,
     };
   }
-
-  /**
-   * Handle ship status changes
-   */
-  private handleShipStatusChange = (event: ExplorationEvent): void => {
-    if (!isExplorationEvent(event)) return;
-
-    const { shipId, status } = event?.data;
-    if (!shipId || !status) return;
-
-    // If the ship is no longer available, cancel its scan operations
-    if (status === 'unavailable' || status === 'destroyed') {
-      this.cancelScanOperationsForShip(shipId as string);
-    }
-  };
 
   /**
    * Update active scan operations
@@ -684,9 +305,33 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
       // Emit a scan completed event
       this.publishEvent(
-        this.createEvent(EXPLORATION_EVENTS.SCAN_COMPLETED, {
+        this.createEvent(EventType.EXPLORATION_SCAN_COMPLETED, {
           sector,
           operation,
+        })
+      );
+    }
+  }
+
+  /**
+   * Cancel a specific scan operation by its ID.
+   * @param operationId The ID of the operation to cancel.
+   * @param reason A string indicating the reason for cancellation.
+   */
+  private cancelScanOperation(operationId: string, reason: string): void {
+    const operation = this.scanOperations.get(operationId);
+    if (operation && operation.status === 'active') {
+      operation.status = 'cancelled';
+      this.stats.activeScans--;
+      this.stats.failedScans++;
+
+      // Emit a scan failed event
+      this.publishEvent(
+        this.createEvent(EventType.EXPLORATION_SCAN_FAILED, {
+          operation,
+          reason,
+          sectorId: operation.sectorId,
+          shipId: operation.shipId,
         })
       );
     }
@@ -714,7 +359,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
         // Emit a resource detected event
         this.publishEvent(
-          this.createEvent(EXPLORATION_EVENTS.RESOURCE_DETECTED, {
+          this.createEvent(EventType.EXPLORATION_RESOURCE_DETECTED, {
             resource,
             sector,
           })
@@ -745,7 +390,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
       // Emit an anomaly detected event
       this.publishEvent(
-        this.createEvent(EXPLORATION_EVENTS.ANOMALY_DETECTED, {
+        this.createEvent(EventType.EXPLORATION_ANOMALY_DETECTED, {
           anomaly,
           sector,
           anomalyId: anomaly.id,
@@ -781,7 +426,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     // Emit a scan started event
     this.publishEvent(
-      this.createEvent(EXPLORATION_EVENTS.SCAN_STARTED, {
+      this.createEvent(EventType.EXPLORATION_SCAN_STARTED, {
         operation,
         sector,
         sectorId,
@@ -794,14 +439,14 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
    * Cancel scan operations for a ship
    */
   private cancelScanOperationsForShip(shipId: string): void {
-    for (const [_id, operation] of this.scanOperations.entries()) {
+    for (const operation of this.scanOperations.values()) {
       if (operation.shipId === shipId && operation.status === 'active') {
         operation.status = 'cancelled';
         this.stats.activeScans--;
 
         // Emit a scan failed event
         this.publishEvent(
-          this.createEvent(EXPLORATION_EVENTS.SCAN_FAILED, {
+          this.createEvent(EventType.EXPLORATION_SCAN_FAILED, {
             operation,
             reason: 'cancelled_by_ship',
             sectorId: operation.sectorId,
@@ -890,7 +535,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     // Emit a sector discovered event
     this.publishEvent(
-      this.createEvent(EXPLORATION_EVENTS.SECTOR_DISCOVERED, {
+      this.createEvent(EventType.EXPLORATION_SECTOR_DISCOVERED, {
         sector,
         sectorId: sector.id,
       })
@@ -920,7 +565,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     // Emit a ship assigned event
     this.publishEvent(
-      this.createEvent(EXPLORATION_EVENTS.SHIP_ASSIGNED, {
+      this.createEvent(EventType.EXPLORATION_SHIP_ASSIGNED, {
         sectorId,
         shipId,
         sector,
@@ -949,7 +594,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 
     // Emit a ship unassigned event
     this.publishEvent(
-      this.createEvent(EXPLORATION_EVENTS.SHIP_UNASSIGNED, {
+      this.createEvent(EventType.EXPLORATION_SHIP_UNASSIGNED, {
         shipId,
         ship,
       })
@@ -1020,6 +665,45 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   public getScanOperationsByShip(shipId: string): ScanOperation[] {
     return Array.from(this.scanOperations.values()).filter(op => op.shipId === shipId);
   }
+
+  // --- New Methods for Ship Manager Interaction ---
+
+  /**
+   * Retrieves all reconnaissance ships managed by the internal ship manager.
+   * @returns An array of ReconShip objects.
+   */
+  public getAllReconShips(): ReconShip[] {
+    return this.shipManager.getAllShips();
+  }
+
+  /**
+   * Add a listener for a specific event type from the ReconShipManager.
+   * @param eventType The type of event to listen for (must be a key of ReconShipManagerEvents).
+   * @param listener The function to call when the event is emitted.
+   */
+  public addReconShipListener<K extends keyof ReconShipManagerEvents>(
+    eventType: K,
+    listener: (data: ReconShipManagerEvents[K]) => void
+  ): () => void {
+    // Use the 'on' method provided by TypedEventEmitter, which returns an unsubscribe function
+    return this.shipManager.on(eventType, listener);
+  }
+
+  /**
+   * Remove a listener for a specific event type from the ReconShipManager.
+   * Note: TypedEventEmitter's off() method is deprecated. Use the unsubscribe function returned by addReconShipListener instead.
+   * @param eventType The type of event to stop listening for (must be a key of ReconShipManagerEvents).
+   * @param listener The listener function to remove.
+   */
+  public removeReconShipListener<K extends keyof ReconShipManagerEvents>(
+    eventType: K,
+    listener: (data: ReconShipManagerEvents[K]) => void
+  ): void {
+    // Use the 'off' method provided by TypedEventEmitter (note: this is deprecated)
+    this.shipManager.off(eventType, listener);
+  }
+
+  // --- Initialization and Teardown ---
 }
 
 // Mock event bus and ship manager for demonstration purposes

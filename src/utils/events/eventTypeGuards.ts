@@ -11,9 +11,9 @@ export function isResourceUpdateEvent(
     event?.data !== undefined &&
     typeof event?.data === 'object' &&
     event?.data !== null &&
-    'resourceAmounts' in event?.data &&
-    typeof event?.data?.resourceAmounts === 'object' &&
-    event?.data?.resourceAmounts !== null
+    'resourceAmounts' in event.data &&
+    typeof event.data.resourceAmounts === 'object' &&
+    event.data.resourceAmounts !== null
   );
 }
 
@@ -27,9 +27,9 @@ export function isResourceProductionEvent(
     event?.data !== undefined &&
     typeof event?.data === 'object' &&
     event?.data !== null &&
-    'resourceType' in event?.data &&
-    'amount' in event?.data &&
-    typeof event?.data?.amount === 'number'
+    'resourceType' in event.data &&
+    'amount' in event.data &&
+    typeof event.data.amount === 'number'
   );
 }
 
@@ -43,8 +43,8 @@ export function isResourceConsumptionEvent(
     event?.data !== undefined &&
     typeof event?.data === 'object' &&
     event?.data !== null &&
-    'resourceType' in event?.data &&
-    'amount' in event?.data &&
-    typeof event?.data?.amount === 'number'
+    'resourceType' in event.data &&
+    'amount' in event.data &&
+    typeof event.data.amount === 'number'
   );
 }

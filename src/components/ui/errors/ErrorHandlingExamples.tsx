@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { ErrorSeverity, ErrorType } from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { ComponentErrorState } from './ComponentErrorState';
 import { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';

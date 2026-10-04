@@ -144,7 +144,7 @@ export const ResourceFlowDiagram = memo(
       if (!selectedNodeId) {
         return null;
       }
-      return nodes.find(node => node.id === selectedNodeId) || null;
+      return nodes.find(node => node.id === selectedNodeId) ?? null;
     }, [nodes, selectedNodeId]);
 
     // Memoize network nodes to prevent unnecessary recalculations
@@ -158,7 +158,7 @@ export const ResourceFlowDiagram = memo(
         const isFiltered =
           selectedResourceTypes &&
           selectedResourceTypes.length > 0 &&
-          (!node.resources || !node.resources.some(r => selectedResourceTypes.includes(r)));
+          (!node.resources?.some(r => selectedResourceTypes.includes(r)));
 
         // Calculate node size based on capacity and current load
         const size = node.capacity
@@ -222,7 +222,7 @@ export const ResourceFlowDiagram = memo(
 
         // Determine line width based on flow amount
         const width = connection.maxFlow
-          ? Math.max(1, Math.min(5, 1 + ((connection.currentFlow || 0) / connection.maxFlow) * 4))
+          ? Math.max(1, Math.min(5, 1 + ((connection.currentFlow ?? 0) / connection.maxFlow) * 4))
           : 2;
 
         // Determine color based on resource types
@@ -466,7 +466,7 @@ const NodeDetailsPanel = memo(function NodeDetailsPanel({ node, onClose }: NodeD
 
           <div className="resource-flow-node-details-row">
             <span className="resource-flow-node-details-label">Status:</span>
-            <span className="resource-flow-node-details-value">{node.status || 'Active'}</span>
+            <span className="resource-flow-node-details-value">{node.status ?? 'Active'}</span>
           </div>
 
           {node.capacity !== undefined && (
@@ -533,10 +533,10 @@ export function createResourceFlowData(
   // Process nodes to add default values where needed
   const processedNodes = nodes.map(node => ({
     ...node,
-    status: node.status || 'active',
-    capacity: node.capacity !== undefined ? node.capacity : 100,
-    currentLoad: node.currentLoad !== undefined ? node.currentLoad : 0,
-    efficiency: node.efficiency !== undefined ? node.efficiency : 100,
+    status: node.status ?? 'active',
+    capacity: node.capacity ?? 100,
+    currentLoad: node.currentLoad ?? 0,
+    efficiency: node.efficiency ?? 100,
   }));
 
   // Process connections to ensure they reference valid nodes and have default values
@@ -549,9 +549,9 @@ export function createResourceFlowData(
     })
     .map(conn => ({
       ...conn,
-      maxFlow: conn.maxFlow !== undefined ? conn.maxFlow : 100,
-      currentFlow: conn.currentFlow !== undefined ? conn.currentFlow : 50,
-      active: conn.active !== undefined ? conn.active : true,
+      maxFlow: conn.maxFlow ?? 100,
+      currentFlow: conn.currentFlow ?? 50,
+      active: conn.active ?? true,
     }));
 
   return {

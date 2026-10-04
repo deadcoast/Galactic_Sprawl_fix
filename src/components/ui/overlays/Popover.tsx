@@ -86,7 +86,7 @@ export interface PopoverProps {
    * Whether the popover should have an arrow pointing to the trigger
    * @default true
    */
-  showArrow?: boolean;
+  shocombatrow?: boolean;
 
   /**
    * Min width of the popover (can be overridden by the content)
@@ -131,7 +131,7 @@ export function Popover({
   className = '',
   zIndex,
   animationDuration = 200,
-  showArrow = true,
+  shocombatrow = true,
   minWidth,
   maxWidth,
   onOpen,
@@ -175,7 +175,7 @@ export function Popover({
   // Create container for portal
   useEffect(() => {
     const portalContainer =
-      document.getElementById('popover-portal') ||
+      document.getElementById('popover-portal') ??
       (() => {
         const container = document.createElement('div');
         container.id = 'popover-portal';
@@ -466,7 +466,7 @@ export function Popover({
               position: 'fixed',
               top: position.top,
               left: position.left,
-              zIndex: zIndex || 1200,
+              zIndex: zIndex ?? 1200,
               backgroundColor: 'var(--color-background-surface, #fff)',
               border: '1px solid var(--color-border, #e2e8f0)',
               borderRadius: 'var(--border-radius-medium, 4px)',
@@ -484,7 +484,7 @@ export function Popover({
             data-testid="popover"
           >
             {/* Arrow */}
-            {showArrow && (
+            {shocombatrow && (
               <div
                 ref={arrowRef}
                 className="popover-arrow"
@@ -538,7 +538,7 @@ export function Popover({
             {/* Content */}
             <div className="popover-content">{content}</div>
           </div>,
-          document.getElementById('popover-portal') || document.body
+          document.getElementById('popover-portal') ?? document.body
         )}
     </>
   );

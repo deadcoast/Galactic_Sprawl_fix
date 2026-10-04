@@ -11,7 +11,7 @@ import { Theme, ThemeBreakpoint } from '../../types/ui/ThemeTypes';
 /**
  * Breakpoint keys in order from smallest to largest
  */
-const BREAKPOINT_KEYS: Array<ThemeBreakpoint> = [
+const BREAKPOINT_KEYS: ThemeBreakpoint[] = [
   ThemeBreakpoint.XS,
   ThemeBreakpoint.SM,
   ThemeBreakpoint.MD,

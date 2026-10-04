@@ -91,7 +91,7 @@ const batchConfigs = new Map<string, EventBatchConfig>();
  * Initialize the event batcher
  */
 export function initializeEventBatcher(): () => void {
-  // Subscribe to all module events and forward them to the subject
+  // Subscribe to all module events and forcombatd them to the subject
   const unsubscribe = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, event => {
     moduleEventSubject.next(event);
   });
@@ -151,8 +151,8 @@ export function createBatchedEventStream(
   // Create a batched stream
   filteredEvents$
     .pipe(
-      bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
-      filter(events => batchConfig.emitEmptyBatches || events.length > 0)
+      bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER),
+      filter(events => batchConfig.emitEmptyBatches ?? events.length > 0)
     )
     .subscribe(events => {
       // Create a batch
@@ -183,7 +183,7 @@ export function updateBatchConfig(
   const batchKey = createBatchKey(eventTypes);
 
   // Get the current config
-  const currentConfig = batchConfigs.get(batchKey) || DEFAULT_BATCH_CONFIG;
+  const currentConfig = batchConfigs.get(batchKey) ?? DEFAULT_BATCH_CONFIG;
 
   // Update the config
   batchConfigs.set(batchKey, {
@@ -210,7 +210,7 @@ export function getBatchConfig(eventTypes: ModuleEventType[]): EventBatchConfig 
   const batchKey = createBatchKey(eventTypes);
 
   // Return the config or default
-  return batchConfigs.get(batchKey) || DEFAULT_BATCH_CONFIG;
+  return batchConfigs.get(batchKey) ?? DEFAULT_BATCH_CONFIG;
 }
 
 /**

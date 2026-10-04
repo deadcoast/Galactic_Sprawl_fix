@@ -1,16 +1,21 @@
 version = 1
 
 [[analyzers]]
+name = "secrets"
+
+[[analyzers]]
+name = "test-coverage"
+
+[[analyzers]]
 name = "javascript"
 
   [analyzers.meta]
-  module_system = "commonjs"
+  plugins = ["react"]
   environment = [
     "nodejs",
-    "browser",
-    "jest",
+    "vitest",
+    "browser"
   ]
 
-  plugins = ["react"]
-  style_guide = "airbnb"
-  dialect = "flow"
+[[code_formatters]]
+name = "prettier"

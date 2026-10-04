@@ -14,18 +14,37 @@ interface DragPreviewProps<T = Record<string, unknown>> {
   currentOffset: { x: number; y: number };
 }
 
+/**
+ * Safely converts a value to string for display purposes
+ */
+function safeStringify(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 function DragPreview<T = Record<string, unknown>>({ item, currentOffset }: DragPreviewProps<T>) {
   // Extract properties safely with type assertions
   const name =
     item?.type === 'module' || item?.type === 'ship'
-      ? String((item?.data as Record<string, unknown>).name ?? '')
+      ? safeStringify((item?.data as Record<string, unknown>).name)
       : '';
 
   const amount =
-    item?.type === 'resource' ? String((item?.data as Record<string, unknown>).amount ?? '') : '';
+    item?.type === 'resource' ? safeStringify((item?.data as Record<string, unknown>).amount) : '';
 
   const resourceType =
-    item?.type === 'resource' ? String((item?.data as Record<string, unknown>).type ?? '') : '';
+    item?.type === 'resource' ? safeStringify((item?.data as Record<string, unknown>).type) : '';
 
   return (
     <div
@@ -68,8 +87,18 @@ export function DropTarget<T = Record<string, unknown>>({
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      if (e.dataTransfer && accept.includes(JSON.parse(e.dataTransfer.getData('text')).type)) {
-        setIsOver(true);
+      if (e.dataTransfer) {
+        try {
+          const parsedData = JSON.parse(e.dataTransfer.getData('text')) as unknown;
+          if (parsedData && typeof parsedData === 'object' && 'type' in parsedData) {
+            const dragItem = parsedData as { type: string };
+            if (accept.includes(dragItem.type)) {
+              setIsOver(true);
+            }
+          }
+        } catch {
+          // Invalid JSON data, ignore
+        }
       }
     };
 
@@ -81,9 +110,16 @@ export function DropTarget<T = Record<string, unknown>>({
       e.preventDefault();
       setIsOver(false);
       if (e.dataTransfer) {
-        const item = JSON.parse(e.dataTransfer.getData('text')) as DragItem<T>;
-        if (accept.includes(item?.type)) {
-          onDrop(item);
+        try {
+          const parsedData = JSON.parse(e.dataTransfer.getData('text')) as unknown;
+          if (parsedData && typeof parsedData === 'object' && 'type' in parsedData) {
+            const item = parsedData as DragItem<T>;
+            if (accept.includes(item?.type)) {
+              onDrop(item);
+            }
+          }
+        } catch {
+          // Invalid JSON data, ignore
         }
       }
     };

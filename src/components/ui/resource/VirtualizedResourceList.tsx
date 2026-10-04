@@ -171,7 +171,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
           key={column.key.toString()}
           className="px-4 py-2 font-semibold"
           style={{
-            minWidth: column.minWidth || column.width,
+            minWidth: column.minWidth ?? column.width,
             width: column.width,
             flex: column.flex ?? 0,
           }}
@@ -198,7 +198,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
             key={`${item?.id}-${column.key.toString()}`}
             className="truncate px-4 py-2"
             style={{
-              minWidth: column.minWidth || column.width,
+              minWidth: column.minWidth ?? column.width,
               width: column.width,
               flex: column.flex ?? 0,
             }}
@@ -236,7 +236,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
         className={`rounded bg-gray-800 ${className}`}
         style={{ height, width }}
       >
-        {(emptyRenderer || defaultEmptyRenderer)()}
+        {(emptyRenderer ?? defaultEmptyRenderer)()}
       </div>
     );
   }
@@ -249,7 +249,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
         style={{ height, width }}
       >
         {/* Header */}
-        {(headerRenderer || defaultHeaderRenderer)()}
+        {(headerRenderer ?? defaultHeaderRenderer)()}
 
         {/* Virtualized List */}
         {getRowHeight ? (
@@ -261,7 +261,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
             itemSize={getRowHeight}
             overscanCount={5}
           >
-            {rowRenderer || defaultRowRenderer}
+            {(rowRenderer ?? defaultRowRenderer) as React.ComponentType<ListChildComponentProps<T>>}
           </VariableSizeList>
         ) : (
           <List
@@ -272,13 +272,13 @@ export function VirtualizedResourceList<T extends { id: string }>({
             itemSize={rowHeight}
             overscanCount={5}
           >
-            {rowRenderer || defaultRowRenderer}
+            {(rowRenderer ?? defaultRowRenderer) as React.ComponentType<ListChildComponentProps<T>>}
           </List>
         )}
       </div>
 
       {/* Footer */}
-      {showFooter && (footerRenderer || defaultFooterRenderer)()}
+      {showFooter && (footerRenderer ?? defaultFooterRenderer)()}
     </div>
   );
 }

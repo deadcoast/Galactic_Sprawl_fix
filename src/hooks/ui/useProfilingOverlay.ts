@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 import { applicationProfiler } from '../../utils/profiling/applicationProfiler';
 
 interface ProfilingOverlayOptions {

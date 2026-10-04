@@ -15,13 +15,13 @@ interface ChainStatus {
   currentStep: number;
   progress: number;
   status: 'pending' | 'in-progress' | 'completed' | 'failed' | 'paused';
-  stepDetails: Array<{
+  stepDetails: {
     converterId: string;
     converterName: string;
     recipeId: string;
     recipeName: string;
     status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  }>;
+  }[];
 }
 
 interface ChainTemplate {
@@ -41,14 +41,14 @@ interface RecipeDetail {
   id: string;
   name: string;
   baseEfficiency: number;
-  inputs: Array<{
+  inputs: {
     type: string;
     amount: number;
-  }>;
-  outputs: Array<{
+  }[];
+  outputs: {
     type: string;
     amount: number;
-  }>;
+  }[];
 }
 
 interface ChainManagementInterfaceProps {

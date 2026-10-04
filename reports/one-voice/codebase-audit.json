@@ -1,0 +1,2055 @@
+{
+  "generatedAt": "2026-02-16T06:49:48.302Z",
+  "thresholds": {
+    "largeFileLines": 1200
+  },
+  "summary": {
+    "runtimeSourceFileCount": 796,
+    "graphSourceFileCount": 796,
+    "duplicateBasenameCount": 33,
+    "largeFileCount": 17,
+    "markerFileCount": 116,
+    "markerTotalCount": 391,
+    "unresolvedLocalImportCount": 23,
+    "cycleCount": 9,
+    "entrypointCount": 5,
+    "reachableFromEntrypointsCount": 185,
+    "disconnectedFromEntrypointsCount": 612,
+    "missingToolScriptTargetCount": 14,
+    "legacyPathCandidateCount": 9
+  },
+  "entrypoints": [
+    "main.tsx",
+    "workers/worker.ts",
+    "workers/ResourceFlowWorker.ts",
+    "workers/combatWorker.ts",
+    "workers/DataProcessingWorker.ts"
+  ],
+  "architectureSeams": {
+    "duplicateBasenames": [
+      {
+        "name": "index.ts",
+        "count": 35,
+        "files": [
+          "components/exploration/core/index.ts",
+          "components/exploration/index.ts",
+          "components/exploration/visualizations/index.ts",
+          "components/ui/data/index.ts",
+          "components/ui/errors/index.ts",
+          "components/ui/feedback/index.ts",
+          "components/ui/game/index.ts",
+          "components/ui/index.ts",
+          "components/ui/inputs/index.ts",
+          "components/ui/layout/index.ts",
+          "components/ui/modules/index.ts",
+          "components/ui/navigation/index.ts",
+          "components/ui/optimized/index.ts",
+          "components/ui/performance/index.ts",
+          "components/ui/profiling/index.ts",
+          "components/ui/typography/index.ts",
+          "config/ships/index.ts",
+          "errorHandling/index.ts",
+          "hooks/errors/index.ts",
+          "hooks/factory/index.ts",
+          "hooks/integration/index.ts",
+          "hooks/ui/index.ts",
+          "types/exploration/index.ts",
+          "types/index.ts",
+          "types/shared/index.ts",
+          "types/visualization/index.ts",
+          "ui/components/Badge/index.ts",
+          "ui/components/Badge/variants/index.ts",
+          "ui/components/Button/index.ts",
+          "ui/components/Card/index.ts",
+          "ui/components/index.ts",
+          "utils/dataTransforms/index.ts",
+          "utils/dependency-mapping/index.ts",
+          "utils/profiling/index.ts",
+          "visualization/index.ts"
+        ]
+      },
+      {
+        "name": "Badge.tsx",
+        "count": 4,
+        "files": [
+          "components/ui/Badge.tsx",
+          "components/ui/common/Badge.tsx",
+          "ui/components/Badge.tsx",
+          "ui/components/Badge/Badge.tsx"
+        ]
+      },
+      {
+        "name": "Button.tsx",
+        "count": 3,
+        "files": [
+          "components/ui/common/Button.tsx",
+          "ui/components/Button.tsx",
+          "ui/components/Button/Button.tsx"
+        ]
+      },
+      {
+        "name": "ServiceRegistry.ts",
+        "count": 3,
+        "files": [
+          "lib/managers/ServiceRegistry.ts",
+          "lib/registry/ServiceRegistry.ts",
+          "lib/services/ServiceRegistry.ts"
+        ]
+      },
+      {
+        "name": "AbilityButton.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/buttons/AbilityButton.tsx",
+          "ui/components/Button/variants/AbilityButton.tsx"
+        ]
+      },
+      {
+        "name": "BarChart.tsx",
+        "count": 2,
+        "files": [
+          "components/exploration/visualizations/BarChart.tsx",
+          "components/ui/visualization/BarChart.tsx"
+        ]
+      },
+      {
+        "name": "BaseAnalysisVisualizer.tsx",
+        "count": 2,
+        "files": [
+          "components/exploration/core/BaseAnalysisVisualizer.tsx",
+          "components/ui/showcase/BaseAnalysisVisualizer.tsx"
+        ]
+      },
+      {
+        "name": "Card.tsx",
+        "count": 2,
+        "files": [
+          "ui/components/Card.tsx",
+          "ui/components/Card/Card.tsx"
+        ]
+      },
+      {
+        "name": "Chart.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/visualization/Chart.tsx",
+          "visualization/Chart.tsx"
+        ]
+      },
+      {
+        "name": "Divider.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/Divider.tsx",
+          "ui/components/Divider.tsx"
+        ]
+      },
+      {
+        "name": "ErrorBoundary.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/errors/ErrorBoundary.tsx",
+          "errorHandling/ErrorBoundary.tsx"
+        ]
+      },
+      {
+        "name": "ErrorFallback.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/errors/ErrorFallback.tsx",
+          "errorHandling/ErrorFallback.tsx"
+        ]
+      },
+      {
+        "name": "ErrorLoggingService.ts",
+        "count": 2,
+        "files": [
+          "services/ErrorLoggingService.ts",
+          "services/logging/ErrorLoggingService.ts"
+        ]
+      },
+      {
+        "name": "EventBatcher.ts",
+        "count": 2,
+        "files": [
+          "lib/events/EventBatcher.ts",
+          "utils/events/EventBatcher.ts"
+        ]
+      },
+      {
+        "name": "EventTypes.ts",
+        "count": 2,
+        "files": [
+          "types/events/EventTypes.ts",
+          "types/ui/EventTypes.ts"
+        ]
+      },
+      {
+        "name": "ExplorationHub.tsx",
+        "count": 2,
+        "files": [
+          "components/buildings/modules/ExplorationHub/ExplorationHub.tsx",
+          "effects/component_effects/ExplorationHub.tsx"
+        ]
+      },
+      {
+        "name": "FactionShipTypes.ts",
+        "count": 2,
+        "files": [
+          "types/factions/FactionShipTypes.ts",
+          "types/ships/FactionShipTypes.ts"
+        ]
+      },
+      {
+        "name": "geometry.ts",
+        "count": 2,
+        "files": [
+          "types/geometry.ts",
+          "utils/geometry.ts"
+        ]
+      },
+      {
+        "name": "GlobalErrorBoundary.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/GlobalErrorBoundary.tsx",
+          "errorHandling/GlobalErrorBoundary.tsx"
+        ]
+      },
+      {
+        "name": "HabitableWorld.tsx",
+        "count": 2,
+        "files": [
+          "components/buildings/colony/HabitableWorld.tsx",
+          "effects/component_effects/HabitableWorld.tsx"
+        ]
+      },
+      {
+        "name": "Icon.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/Icon.tsx",
+          "ui/components/Icon.tsx"
+        ]
+      },
+      {
+        "name": "ModuleCard.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/modules/ModuleCard.tsx",
+          "ui/components/Card/variants/ModuleCard.tsx"
+        ]
+      },
+      {
+        "name": "ModuleEvents.ts",
+        "count": 2,
+        "files": [
+          "lib/modules/ModuleEvents.ts",
+          "types/events/ModuleEvents.ts"
+        ]
+      },
+      {
+        "name": "ModuleTypes.ts",
+        "count": 2,
+        "files": [
+          "types/buildings/ModuleTypes.ts",
+          "types/modules/ModuleTypes.ts"
+        ]
+      },
+      {
+        "name": "ParticleSystemManager.ts",
+        "count": 2,
+        "files": [
+          "managers/effects/ParticleSystemManager.ts",
+          "managers/game/ParticleSystemManager.ts"
+        ]
+      },
+      {
+        "name": "ResourceFlowDiagram.tsx",
+        "count": 2,
+        "files": [
+          "components/exploration/visualizations/ResourceFlowDiagram.tsx",
+          "components/ui/visualization/ResourceFlowDiagram.tsx"
+        ]
+      },
+      {
+        "name": "ResourceFlowTypes.ts",
+        "count": 2,
+        "files": [
+          "managers/resource/ResourceFlowTypes.ts",
+          "types/resources/ResourceFlowTypes.ts"
+        ]
+      },
+      {
+        "name": "ResourceTypeConverter.ts",
+        "count": 2,
+        "files": [
+          "utils/ResourceTypeConverter.ts",
+          "utils/resources/ResourceTypeConverter.ts"
+        ]
+      },
+      {
+        "name": "ResourceTypeMigration.ts",
+        "count": 2,
+        "files": [
+          "utils/ResourceTypeMigration.ts",
+          "utils/resources/ResourceTypeMigration.ts"
+        ]
+      },
+      {
+        "name": "ShipCard.tsx",
+        "count": 2,
+        "files": [
+          "components/buildings/modules/hangar/ShipCard.tsx",
+          "components/ships/ShipCard.tsx"
+        ]
+      },
+      {
+        "name": "ShipDisplay.tsx",
+        "count": 2,
+        "files": [
+          "components/ships/ShipDisplay.tsx",
+          "components/ui/game/ShipDisplay.tsx"
+        ]
+      },
+      {
+        "name": "Tooltip.tsx",
+        "count": 2,
+        "files": [
+          "components/ui/Tooltip.tsx",
+          "ui/components/Tooltip.tsx"
+        ]
+      },
+      {
+        "name": "useModuleEvents.ts",
+        "count": 2,
+        "files": [
+          "hooks/events/useModuleEvents.ts",
+          "hooks/modules/useModuleEvents.ts"
+        ]
+      }
+    ],
+    "largeFiles": [
+      {
+        "file": "config/automation/miningRules.ts",
+        "lines": 8423,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "services/AnalysisAlgorithmService.ts",
+        "lines": 3712,
+        "markerCount": 15,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/resource/ResourceFlowManager.ts",
+        "lines": 3369,
+        "markerCount": 25,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/factions/useFactionBehavior.ts",
+        "lines": 2790,
+        "markerCount": 14,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "visualization/renderers/WebGLRenderer.tsx",
+        "lines": 2603,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/module/ShipHangarManager.ts",
+        "lines": 2525,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/showcase/DataDashboardApp.tsx",
+        "lines": 1909,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/performance/VisualizationInspector.tsx",
+        "lines": 1839,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/DetailedAnomalyAnalysis.tsx",
+        "lines": 1779,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "visualization/renderers/CanvasRenderer.tsx",
+        "lines": 1668,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/system/GalaxyExplorationSystem.tsx",
+        "lines": 1556,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/showcase/PerformanceMonitoringDashboard.tsx",
+        "lines": 1496,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "resource/subsystems/ResourceFlowSubsystem.ts",
+        "lines": 1358,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "contexts/ModuleContext.test.tsx",
+        "lines": 1282,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/game/ResourceManager.ts",
+        "lines": 1264,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/weapons/AdvancedWeaponEffectManager.ts",
+        "lines": 1239,
+        "markerCount": 0,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/ExplorationHub/ExplorationHub.tsx",
+        "lines": 1234,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      }
+    ],
+    "markerFiles": [
+      {
+        "file": "managers/resource/ResourceFlowManager.ts",
+        "lines": 3369,
+        "markerCount": 25,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "systems/exploration/DiscoveryClassification.ts",
+        "lines": 491,
+        "markerCount": 17,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "services/AnalysisAlgorithmService.ts",
+        "lines": 3712,
+        "markerCount": 15,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/factions/useFactionBehavior.ts",
+        "lines": 2790,
+        "markerCount": 14,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/resource/ResourceIntegration.ts",
+        "lines": 661,
+        "markerCount": 13,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/resource/ConverterManagerUI.tsx",
+        "lines": 408,
+        "markerCount": 13,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/ships/ShipManager.ts",
+        "lines": 864,
+        "markerCount": 12,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/combat/useCombatAI.ts",
+        "lines": 508,
+        "markerCount": 11,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/mining/MiningShipManager.ts",
+        "lines": 722,
+        "markerCount": 9,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/modules/ModuleEvents.ts",
+        "lines": 464,
+        "markerCount": 9,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "contexts/ModuleContext.tsx",
+        "lines": 915,
+        "markerCount": 8,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/automation/GlobalAutomationManager.ts",
+        "lines": 776,
+        "markerCount": 7,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/ExplorationDataManager.tsx",
+        "lines": 622,
+        "markerCount": 7,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/combat/formations/FormationTacticsPanel.tsx",
+        "lines": 395,
+        "markerCount": 7,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/automation/useAutomation.ts",
+        "lines": 118,
+        "markerCount": 7,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/MiningHub/MiningWindow.tsx",
+        "lines": 854,
+        "markerCount": 6,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "workers/worker.ts",
+        "lines": 188,
+        "markerCount": 6,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/resource/ResourceConversionManager.ts",
+        "lines": 964,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/automation/AutomationVisualization.tsx",
+        "lines": 524,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/managers/BaseManager.ts",
+        "lines": 462,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "registry/ResourceRegistryIntegration.ts",
+        "lines": 367,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "errorHandling/utils/migration.ts",
+        "lines": 184,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/game/index.ts",
+        "lines": 164,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/navigation/index.ts",
+        "lines": 117,
+        "markerCount": 5,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "resource/subsystems/ResourceFlowSubsystem.ts",
+        "lines": 1358,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/ResourceDiscoverySystem.tsx",
+        "lines": 758,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/colony/ColonyManagerImpl.ts",
+        "lines": 628,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/mining/MiningResourceIntegration.ts",
+        "lines": 501,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/ai/ResourceConsumptionPredictor.ts",
+        "lines": 458,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "pages/PerformanceAnalysisDashboard.tsx",
+        "lines": 352,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/module/ModuleManagerWrapper.ts",
+        "lines": 351,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/modules/ModuleTypes.ts",
+        "lines": 141,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "pages/ConverterManagementPage.tsx",
+        "lines": 120,
+        "markerCount": 4,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/DetailedAnomalyAnalysis.tsx",
+        "lines": 1779,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/game/ResourceManager.ts",
+        "lines": 1264,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/ExplorationHub/ExplorationHub.tsx",
+        "lines": 1234,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/automation/AutomationRuleEditor.tsx",
+        "lines": 840,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/core/BaseAnalysisVisualizer.tsx",
+        "lines": 653,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "ui/components/inputs/Select.tsx",
+        "lines": 520,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "ui/components/inputs/Input.tsx",
+        "lines": 350,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/ships/FactionShipTypes.ts",
+        "lines": 329,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/MiningHub/MineralProcessingCentre.tsx",
+        "lines": 322,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/ai/behaviorTree.ts",
+        "lines": 287,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/combat/useCombatAI.early.test/getUnitAIState.early.test.ts",
+        "lines": 237,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/hangar/SelectedShipDetails.tsx",
+        "lines": 211,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "utils/ships/shipUtils.ts",
+        "lines": 193,
+        "markerCount": 3,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/config/TypeSafeConfigDemo.tsx",
+        "lines": 1129,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/events/EventTypes.ts",
+        "lines": 916,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/ResourceRegistryUI.tsx",
+        "lines": 873,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/resource/ResourcePoolManager.ts",
+        "lines": 766,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/DiscoveryClassification.tsx",
+        "lines": 707,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/GalaxyMap.tsx",
+        "lines": 637,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/SprawlView.tsx",
+        "lines": 631,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/visualizations/ResourceFlowDiagram.tsx",
+        "lines": 583,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "workers/ResourceFlowWorker.ts",
+        "lines": 499,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/AdvancedFilteringSystem.tsx",
+        "lines": 479,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "config/automation/colonyRules.ts",
+        "lines": 455,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/ExplorationHub/ExplorationWindow.tsx",
+        "lines": 405,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/academy/HiringPanel.tsx",
+        "lines": 363,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/GalaxyMapSystem.tsx",
+        "lines": 363,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/ships/ShipTypes.ts",
+        "lines": 351,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/AnalysisConfigManager.tsx",
+        "lines": 327,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ships/FactionShips/FactionDashboard.tsx",
+        "lines": 322,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/ExplorationHub/MissionLog.tsx",
+        "lines": 296,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/integration/useModuleSystemIntegration.ts",
+        "lines": 292,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/game/gameManager.ts",
+        "lines": 291,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/academy/OfficerAcademy.tsx",
+        "lines": 259,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/ai/shipBehavior.ts",
+        "lines": 221,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/factions/FactionManager.tsx",
+        "lines": 220,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/MiningHub/ThresholdPresetsPanel.tsx",
+        "lines": 192,
+        "markerCount": 2,
+        "hasLegacyPathMarker": true
+      },
+      {
+        "file": "components/ui/index.ts",
+        "lines": 95,
+        "markerCount": 2,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/showcase/DataDashboardApp.tsx",
+        "lines": 1909,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "contexts/ModuleContext.test.tsx",
+        "lines": 1282,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/events/EventBus.ts",
+        "lines": 1042,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/GameHUD.tsx",
+        "lines": 957,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ships/exploration/ReconShipCoordination.tsx",
+        "lines": 802,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/game/AutomationManager.ts",
+        "lines": 787,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "managers/resource/ResourceStorageManager.ts",
+        "lines": 671,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/feedback/index.ts",
+        "lines": 652,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/visualizations/MemoryOptimizedCanvasChart.tsx",
+        "lines": 641,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/ui/EventTypes.ts",
+        "lines": 573,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/visualization/TemporalAnalysisView.tsx",
+        "lines": 506,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/automation/useGlobalAutomation.ts",
+        "lines": 477,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/modules/ModuleGrid.tsx",
+        "lines": 468,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "utils/performance/HookPerformanceDashboard.tsx",
+        "lines": 433,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/resource/ResourceRateFiltering.tsx",
+        "lines": 371,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/registry/ServiceRegistry.ts",
+        "lines": 360,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "services/RealTimeDataService.ts",
+        "lines": 360,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/resource/ChainManagementInterface.tsx",
+        "lines": 357,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/automation/ConditionChecker.ts",
+        "lines": 343,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "utils/resources/ResourceTypeConverter.ts",
+        "lines": 341,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/resource/ChainVisualization.tsx",
+        "lines": 320,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/resource/ResourceVisualizationEnhanced.tsx",
+        "lines": 317,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/debug/GameStateMonitor.tsx",
+        "lines": 316,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "utils/resources/ResourceTypeMigration.ts",
+        "lines": 300,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/ui/ComponentTypes.ts",
+        "lines": 281,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/ResourceEventMonitor.tsx",
+        "lines": 243,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/combat/useCombatSystem.ts",
+        "lines": 241,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/DataFilterPanel.tsx",
+        "lines": 229,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ships/common/FactionShipBase.tsx",
+        "lines": 211,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "hooks/modules/useModuleEvents.ts",
+        "lines": 200,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "services/logging/ErrorLoggingService.ts",
+        "lines": 199,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/DatasetManager.tsx",
+        "lines": 183,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "lib/events/ModuleEventBus.ts",
+        "lines": 183,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/MiningHub/ThresholdManager.tsx",
+        "lines": 181,
+        "markerCount": 1,
+        "hasLegacyPathMarker": true
+      },
+      {
+        "file": "services/AnomalyDetectionService.ts",
+        "lines": 169,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/hangar/ShipCard.tsx",
+        "lines": 164,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/exploration/visualizations/MemoryOptimizedCharts.tsx",
+        "lines": 163,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/visualization/LazyResourceFlowDiagram.tsx",
+        "lines": 161,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/buildings/modules/ExplorationHub/ExplorationControls.tsx",
+        "lines": 144,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "contexts/ThemeContext.tsx",
+        "lines": 137,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/core/SystemIntegration.tsx",
+        "lines": 114,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "types/ships/PlayerShipTypes.ts",
+        "lines": 111,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/game/LazyMiniMap.tsx",
+        "lines": 83,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "components/ui/visualization/LazyNetworkGraph.tsx",
+        "lines": 70,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      },
+      {
+        "file": "config/game/gameConfig.ts",
+        "lines": 58,
+        "markerCount": 1,
+        "hasLegacyPathMarker": false
+      }
+    ],
+    "unresolvedLocalImports": [
+      {
+        "file": "App.tsx",
+        "specifier": "./pages/ExplorationMap"
+      },
+      {
+        "file": "App.tsx",
+        "specifier": "./pages/FleetManagement"
+      },
+      {
+        "file": "App.tsx",
+        "specifier": "./pages/ResearchTree"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./Button"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./Card"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./showcase"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./accordion/Accordion"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./alert/Alert"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./avatar/Avatar"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./badge/Badge"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./breadcrumb/Breadcrumb"
+      },
+      {
+        "file": "components/ui/index.ts",
+        "specifier": "./checkbox/Checkbox"
+      },
+      {
+        "file": "components/ui/modules/ModuleCard.tsx",
+        "specifier": "./ModuleCard.css"
+      },
+      {
+        "file": "components/ui/modules/ModuleGrid.tsx",
+        "specifier": "./ModuleGrid.css"
+      },
+      {
+        "file": "components/ui/modules/ModuleUpgradeVisualization.tsx",
+        "specifier": "./ModuleUpgradeVisualization.css"
+      },
+      {
+        "file": "components/ui/resource/ConverterDetailsView.tsx",
+        "specifier": "./ConverterDetailsView.css"
+      },
+      {
+        "file": "hooks/integration/useResourceSystemIntegration.ts",
+        "specifier": "../store/hooks"
+      },
+      {
+        "file": "hooks/integration/useResourceSystemIntegration.ts",
+        "specifier": "../../store/slices/resourceSlice"
+      },
+      {
+        "file": "lib/optimization/RenderBatcher.d.ts",
+        "specifier": "../utils/EventEmitter"
+      },
+      {
+        "file": "lib/registry/ServiceRegistry.ts",
+        "specifier": "../lib/registry/ServiceRegistry"
+      },
+      {
+        "file": "utils/events/EventDispatcher.tsx",
+        "specifier": "../utils/events/EventDispatcher"
+      },
+      {
+        "file": "utils/resources/ResourceTypeMigration.ts",
+        "specifier": "../../types/resources/LegacyResourceTypes"
+      },
+      {
+        "file": "visualization/index.ts",
+        "specifier": "./visualization"
+      }
+    ],
+    "disconnectedFromEntrypoints": {
+      "files": [
+        "api/TypeSafeApiClient.ts",
+        "components/buildings/colony/AutomatedExpansion.tsx",
+        "components/buildings/colony/BiodomeModule.tsx",
+        "components/buildings/colony/ColonyCore.tsx",
+        "components/buildings/colony/CulturalCenter.tsx",
+        "components/buildings/colony/EconomicHub.tsx",
+        "components/buildings/colony/HabitableWorld.tsx",
+        "components/buildings/colony/ResourceTransferAnimation.tsx",
+        "components/buildings/modules/ExplorationHub/ExplorationControls.tsx",
+        "components/buildings/modules/ExplorationHub/ExplorationHub.tsx",
+        "components/buildings/modules/ExplorationHub/ExplorationTutorial.tsx",
+        "components/buildings/modules/ExplorationHub/ExplorationWindow.tsx",
+        "components/buildings/modules/ExplorationHub/MissionLog.tsx",
+        "components/buildings/modules/ExplorationHub/MissionReplay.tsx",
+        "components/buildings/modules/ExplorationHub/ShipStatusMonitor.tsx",
+        "components/buildings/modules/MiningHub/AutomationMonitor.tsx",
+        "components/buildings/modules/MiningHub/MineralProcessingCentre.tsx",
+        "components/buildings/modules/MiningHub/MiningControls.tsx",
+        "components/buildings/modules/MiningHub/MiningMap.tsx",
+        "components/buildings/modules/MiningHub/MiningTutorial.tsx",
+        "components/buildings/modules/MiningHub/MiningWindow.tsx",
+        "components/buildings/modules/MiningHub/ResourceNode.tsx",
+        "components/buildings/modules/MiningHub/ResourceStorage.tsx",
+        "components/buildings/modules/MiningHub/ResourceTransfer.tsx",
+        "components/buildings/modules/MiningHub/TechBonus.tsx",
+        "components/buildings/modules/MiningHub/ThresholdManager.tsx",
+        "components/buildings/modules/MiningHub/ThresholdPresetsPanel.tsx",
+        "components/buildings/modules/MiningHub/ThresholdStatusIndicator.tsx",
+        "components/buildings/modules/academy/HiringPanel.tsx",
+        "components/buildings/modules/academy/OfficerAcademy.tsx",
+        "components/buildings/modules/academy/OfficerCard.tsx",
+        "components/buildings/modules/academy/OfficerDetails.tsx",
+        "components/buildings/modules/hangar/HangarBayList.tsx",
+        "components/buildings/modules/hangar/HangarModule.tsx",
+        "components/buildings/modules/hangar/ShipBuildingInterface.tsx",
+        "components/buildings/modules/radar/RadarModule.tsx",
+        "components/buildings/modules/trading/TradingHub.tsx",
+        "components/buildings/mothership/MothershipCore.tsx",
+        "components/combat/BattleEnvironment.tsx",
+        "components/combat/CombatLayout.tsx",
+        "components/combat/CombatSystemDemo.tsx",
+        "components/combat/SalvageSystem.tsx",
+        "components/combat/alerts/AlertSystemUI.tsx",
+        "components/combat/radar/DetectionVisualization.tsx",
+        "components/combat/radar/RadarSweepAnimation.tsx",
+        "components/combat/radar/RangeIndicators.tsx",
+        "components/core/IntegrationErrorHandler.tsx",
+        "components/core/SystemIntegration.tsx",
+        "components/debug/AIDebugOverlay.tsx",
+        "components/debug/GameStateMonitor.tsx",
+        "components/exploration/AdvancedFilteringSystem.tsx",
+        "components/exploration/AnalysisConfigManager.tsx",
+        "components/exploration/AnomalyAnalysis.tsx",
+        "components/exploration/AutomatedSectorScanner.tsx",
+        "components/exploration/DataAnalysisSystem.tsx",
+        "components/exploration/DataFilterPanel.tsx",
+        "components/exploration/DataPointVirtualList.tsx",
+        "components/exploration/DatasetManager.tsx",
+        "components/exploration/DetailedAnomalyAnalysis.tsx",
+        "components/exploration/DiscoveryClassification.tsx",
+        "components/exploration/ExplorationDataManager.tsx",
+        "components/exploration/ExplorationSystemIntegration.tsx",
+        "components/exploration/GalaxyMapSystem.tsx",
+        "components/exploration/GalaxyMappingSystem.tsx",
+        "components/exploration/RealTimeMapUpdates.tsx",
+        "components/exploration/ResourceDiscoverySystem.tsx",
+        "components/exploration/ResourcePotentialVisualization.tsx",
+        "components/exploration/ResultsPanel.tsx",
+        "components/exploration/context/ExplorationContext.tsx",
+        "components/exploration/core/BaseAnalysisVisualizer.tsx",
+        "components/exploration/core/BaseDataTable.tsx",
+        "components/exploration/core/BaseMap.tsx",
+        "components/exploration/core/index.ts",
+        "components/exploration/index.ts",
+        "components/exploration/system/GalaxyExplorationSystem.tsx",
+        "components/exploration/visualizations/AnalysisVisualization.tsx",
+        "components/exploration/visualizations/BarChart.tsx",
+        "components/exploration/visualizations/BaseChart.tsx",
+        "components/exploration/visualizations/CanvasChartFactory.tsx",
+        "components/exploration/visualizations/CanvasLineChart.tsx",
+        "components/exploration/visualizations/CanvasScatterPlot.tsx",
+        "components/exploration/visualizations/ClusterVisualization.tsx",
+        "components/exploration/visualizations/HeatMap.tsx",
+        "components/exploration/visualizations/LineChart.tsx",
+        "components/exploration/visualizations/MemoryOptimizedCanvasChart.tsx",
+        "components/exploration/visualizations/MemoryOptimizedCharts.tsx",
+        "components/exploration/visualizations/PredictionVisualization.tsx",
+        "components/exploration/visualizations/ResourceDistributionChart.tsx",
+        "components/exploration/visualizations/ResourceFlowDiagram.tsx",
+        "components/exploration/visualizations/ResourceMappingVisualization.tsx",
+        "components/exploration/visualizations/ScatterPlot.tsx",
+        "components/exploration/visualizations/TooltipAdapter.tsx",
+        "components/exploration/visualizations/ViewportOptimizedHeatMap.tsx",
+        "components/exploration/visualizations/ViewportOptimizedScatterPlot.tsx",
+        "components/exploration/visualizations/VirtualizedDataTable.tsx",
+        "components/exploration/visualizations/VirtualizedLineChart.tsx",
+        "components/exploration/visualizations/index.ts",
+        "components/exploration/visualizations/withMemoryManagement.tsx",
+        "components/factions/FactionAI.tsx",
+        "components/factions/FactionManager.tsx",
+        "components/performance/DeviceCapabilityReport.tsx",
+        "components/performance/GeographicAnalysisDashboard.tsx",
+        "components/performance/LongSessionMemoryVisualizer.tsx",
+        "components/performance/MultitabPerformanceLauncher.tsx",
+        "components/performance/MultitabPerformanceResults.tsx",
+        "components/ships/FactionShips/FactionDashboard.tsx",
+        "components/ships/FactionShips/equatorHorizon/CelestialArbiter.tsx",
+        "components/ships/FactionShips/equatorHorizon/EquatorHorizonShip.tsx",
+        "components/ships/FactionShips/equatorHorizon/EtherealGalleon.tsx",
+        "components/ships/FactionShips/equatorHorizon/StellarEquinox.tsx",
+        "components/ships/FactionShips/lostNova/DarkMatterReaper.tsx",
+        "components/ships/FactionShips/lostNova/EclipseScythe.tsx",
+        "components/ships/FactionShips/lostNova/LostNovaShip.tsx",
+        "components/ships/FactionShips/lostNova/NullHunter.tsx",
+        "components/ships/FactionShips/spaceRats/AsteroidMarauder.tsx",
+        "components/ships/FactionShips/spaceRats/RatKing.tsx",
+        "components/ships/FactionShips/spaceRats/RogueNebula.tsx",
+        "components/ships/FactionShips/spaceRats/SpaceRatShip.tsx",
+        "components/ships/ShipCard.tsx",
+        "components/ships/ShipDisplay.tsx",
+        "components/ships/base/BaseShip.tsx",
+        "components/ships/combatships/CombatShip.tsx",
+        "components/ships/combatships/HarbringerGalleon.tsx",
+        "components/ships/combatships/MidwayCarrier.tsx",
+        "components/ships/combatships/MotherEarthRevenge.tsx",
+        "components/ships/combatships/OrionFrigate.tsx",
+        "components/ships/combatships/PlayerCombatShip.tsx",
+        "components/ships/combatships/Spitflare.tsx",
+        "components/ships/combatships/StarSchooner.tsx",
+        "components/ships/common/CommonShipMovement.tsx",
+        "components/ships/common/CommonShipStats.tsx",
+        "components/ships/common/FactionFleet.tsx",
+        "components/ships/common/FactionShipBase.tsx",
+        "components/ships/common/FactionShipStats.tsx",
+        "components/ships/common/ReconShipStatus.tsx",
+        "components/ships/exploration/ReconShipControl.tsx",
+        "components/ships/exploration/ReconShipCoordination.tsx",
+        "components/ships/mining/VoidDredgerMiner.tsx",
+        "components/ships/player/adapters/ShipAdapter.tsx",
+        "components/ships/player/base/PlayerShipBase.tsx",
+        "components/ships/player/base/PlayerShipStats.tsx",
+        "components/ships/player/customization/PlayerShipCustomization.tsx",
+        "components/ships/player/customization/PlayerShipUpgrade.tsx",
+        "components/ships/player/customization/PlayerShipUpgradeSystem.tsx",
+        "components/trade/TradeRouteVisualizer.tsx",
+        "components/ui/Badge.tsx",
+        "components/ui/ContextMenu.tsx",
+        "components/ui/DiplomacyPanel.tsx",
+        "components/ui/Divider.tsx",
+        "components/ui/DragAndDrop.tsx",
+        "components/ui/GlobalErrorBoundary.tsx",
+        "components/ui/Icon.tsx",
+        "components/ui/ResourceEventMonitor.tsx",
+        "components/ui/ResourceRegistryUI.tsx",
+        "components/ui/SprawlView.tsx",
+        "components/ui/Tooltip.tsx",
+        "components/ui/TooltipProvider.tsx",
+        "components/ui/VPRErrorBoundary.tsx",
+        "components/ui/VPRLoadingFallback.tsx",
+        "components/ui/VPRStarSystemView.tsx",
+        "components/ui/automation/AutomationRuleEditor.tsx",
+        "components/ui/automation/AutomationVisualization.tsx",
+        "components/ui/buttons/AbilityButton.tsx",
+        "components/ui/common/Badge.tsx",
+        "components/ui/common/Button.tsx",
+        "components/ui/config/TypeSafeConfigDemo.tsx",
+        "components/ui/data/index.ts",
+        "components/ui/errors/ComponentErrorState.tsx",
+        "components/ui/errors/ComponentSpecificErrorStates.tsx",
+        "components/ui/errors/ErrorBoundary.tsx",
+        "components/ui/errors/ErrorFallback.tsx",
+        "components/ui/errors/ErrorHandlingExamples.tsx",
+        "components/ui/errors/NetworkErrorFallback.tsx",
+        "components/ui/errors/ResourceLoadingError.tsx",
+        "components/ui/errors/index.ts",
+        "components/ui/event/VirtualizedEventLog.tsx",
+        "components/ui/feedback/index.ts",
+        "components/ui/game/FactionBadge.tsx",
+        "components/ui/game/LazyMiniMap.tsx",
+        "components/ui/game/ShipDisplay.tsx",
+        "components/ui/game/index.ts",
+        "components/ui/index.ts",
+        "components/ui/inputs/index.ts",
+        "components/ui/layout/ResponsiveLayout.tsx",
+        "components/ui/layout/index.ts",
+        "components/ui/modules/ModuleCard.tsx",
+        "components/ui/modules/ModuleControls.tsx",
+        "components/ui/modules/ModuleGrid.tsx",
+        "components/ui/modules/ModuleHUD.tsx",
+        "components/ui/modules/ModuleStatusDisplay.tsx",
+        "components/ui/modules/ModuleStatusIndicator.tsx",
+        "components/ui/modules/ModuleUpgradeDisplay.tsx",
+        "components/ui/modules/ModuleUpgradeVisualization.tsx",
+        "components/ui/modules/SubModuleHUD.tsx",
+        "components/ui/modules/index.ts",
+        "components/ui/navigation/index.ts",
+        "components/ui/optimized/MemoizedComponent.tsx",
+        "components/ui/optimized/index.ts",
+        "components/ui/overlays/Dialog.tsx",
+        "components/ui/overlays/Drawer.tsx",
+        "components/ui/overlays/Modal.tsx",
+        "components/ui/overlays/Popover.tsx",
+        "components/ui/performance/AdvancedMetricAnalysis.tsx",
+        "components/ui/performance/AnimationFrameManagerDemo.tsx",
+        "components/ui/performance/AnimationPerformanceProfilerDemo.tsx",
+        "components/ui/performance/AnimationQualityDemo.tsx",
+        "components/ui/performance/BatchedUpdateDemo.tsx",
+        "components/ui/performance/D3AccessorBenchmarkView.tsx",
+        "components/ui/performance/D3PerformanceProfilerView.tsx",
+        "components/ui/performance/DynamicBudgetAdjustmentPanel.tsx",
+        "components/ui/performance/InterpolationMemoizationDemo.tsx",
+        "components/ui/performance/MLPerformancePrediction.tsx",
+        "components/ui/performance/OptimizationComparisonView.tsx",
+        "components/ui/performance/OptimizedFlowDiagram.tsx",
+        "components/ui/performance/PerformanceBenchmarkDashboard.tsx",
+        "components/ui/performance/PerformanceBudgetTracker.tsx",
+        "components/ui/performance/PerformanceRegressionReport.tsx",
+        "components/ui/performance/VisualizationInspector.tsx",
+        "components/ui/performance/VisualizationPerformanceComparison.tsx",
+        "components/ui/performance/index.ts",
+        "components/ui/performance/performanceTypes.ts",
+        "components/ui/profiling/ProfilingOverlay.tsx",
+        "components/ui/profiling/index.ts",
+        "components/ui/resource/ChainManagementInterface.tsx",
+        "components/ui/resource/ChainVisualization.tsx",
+        "components/ui/resource/ConverterDashboard.tsx",
+        "components/ui/resource/ConverterDetailsView.tsx",
+        "components/ui/resource/ConverterManagerUI.tsx",
+        "components/ui/resource/ResourceBar.tsx",
+        "components/ui/resource/ResourceDisplay.tsx",
+        "components/ui/resource/ResourceForecastingVisualization.tsx",
+        "components/ui/resource/ResourceGrid.tsx",
+        "components/ui/resource/ResourceIcon.tsx",
+        "components/ui/resource/ResourceManagementDashboard.tsx",
+        "components/ui/resource/ResourceOptimizationSuggestions.tsx",
+        "components/ui/resource/ResourceRateFiltering.tsx",
+        "components/ui/resource/ResourceRatesDisplay.tsx",
+        "components/ui/resource/ResourceRatesTrends.tsx",
+        "components/ui/resource/ResourceRatesUI.tsx",
+        "components/ui/resource/ResourceThresholdVisualization.tsx",
+        "components/ui/resource/ResourceVisualizationEnhanced.tsx",
+        "components/ui/resource/VirtualizedResourceDataset.tsx",
+        "components/ui/resource/VirtualizedResourceList.tsx",
+        "components/ui/showcase/BaseAnalysisVisualizer.tsx",
+        "components/ui/showcase/DataDashboardApp.tsx",
+        "components/ui/showcase/PerformanceMonitoringDashboard.tsx",
+        "components/ui/status/StatusEffect.tsx",
+        "components/ui/tooltip-context.ts",
+        "components/ui/tooltip-context.tsx",
+        "components/ui/typography/index.ts",
+        "components/ui/visualization/AnomalyVisualization.tsx",
+        "components/ui/visualization/BarChart.tsx",
+        "components/ui/visualization/Chart.tsx",
+        "components/ui/visualization/CustomShaderVisualization.tsx",
+        "components/ui/visualization/D3VisualizationErrorBoundary.tsx",
+        "components/ui/visualization/DataHighlightVisualization.tsx",
+        "components/ui/visualization/DataTransitionParticleSystem.tsx",
+        "components/ui/visualization/FlowDiagram.tsx",
+        "components/ui/visualization/HeatMapDensityVisualization.tsx",
+        "components/ui/visualization/LazyNetworkGraph.tsx",
+        "components/ui/visualization/LazyResourceFlowDiagram.tsx",
+        "components/ui/visualization/LineGraph.tsx",
+        "components/ui/visualization/NetworkGraph.tsx",
+        "components/ui/visualization/ParticleTransitionVisualization.tsx",
+        "components/ui/visualization/ResourceFlowDiagram.tsx",
+        "components/ui/visualization/TemporalAnalysisView.tsx",
+        "components/ui/visualization/VisualizationErrorBoundaries.tsx",
+        "components/weapons/WeaponComponents.tsx",
+        "components/weapons/WeaponControl.tsx",
+        "components/weapons/WeaponLoadout.tsx",
+        "components/weapons/WeaponSpecialization.tsx",
+        "components/weapons/WeaponSystem.tsx",
+        "components/weapons/WeaponUpgradeSystem.tsx",
+        "config/automation/colonyRules.ts",
+        "config/automation/combatRules.ts",
+        "config/automation/explorationRules.ts",
+        "config/automation/hangarRules.ts",
+        "config/automation/miningRules.ts",
+        "config/buildings/defaultBuildings.ts",
+        "config/combat/combatConfig.ts",
+        "config/combat/weaponConfig.ts",
+        "config/factions/factionCommon.ts",
+        "config/factions/factionConfig.ts",
+        "config/game/gameConfig.ts",
+        "config/modules/defaultModuleConfigs.ts",
+        "config/modules/upgradePathsConfig.ts",
+        "contexts/ClassificationContext.tsx",
+        "contexts/DataAnalysisContext.tsx",
+        "contexts/ModuleContext.test.tsx",
+        "contexts/ResourceRatesContext.tsx",
+        "contexts/ShipContext.tsx",
+        "contexts/ThemeContext.tsx",
+        "effects/component_effects/BackgroundEffect.tsx",
+        "effects/component_effects/BuildingUpgradeEffect.tsx",
+        "effects/component_effects/CapitalShipEffect.tsx",
+        "effects/component_effects/CentralMothership.tsx",
+        "effects/component_effects/ColonyStarStation.tsx",
+        "effects/component_effects/CombatAutomationEffect.tsx",
+        "effects/component_effects/EngineTrailEffect.ts",
+        "effects/component_effects/ExplorationHub.tsx",
+        "effects/component_effects/ExplosionEffect.tsx",
+        "effects/component_effects/FormationTransitionEffect.tsx",
+        "effects/component_effects/HabitableWorld.tsx",
+        "effects/component_effects/MineralProcessing.tsx",
+        "effects/component_effects/ModuleUpgradeTransition.tsx",
+        "effects/component_effects/MothershipSuperstructure.tsx",
+        "effects/component_effects/PopulationIndicator.tsx",
+        "effects/component_effects/ProgressionEffects.tsx",
+        "effects/component_effects/ResourceFlowVisualization.tsx",
+        "effects/component_effects/ShieldEffect.tsx",
+        "effects/component_effects/ShieldImpactEffect.ts",
+        "effects/component_effects/ShipPathEffect.tsx",
+        "effects/component_effects/SmokeTrailEffect.tsx",
+        "effects/component_effects/StarSystemBackdrop.tsx",
+        "effects/component_effects/ThrusterEffect.tsx",
+        "effects/component_effects/TradeRouteEffect.tsx",
+        "effects/component_effects/VisualEffect.ts",
+        "effects/component_effects/WeaponEffect.tsx",
+        "effects/types_effects/AdvancedWeaponEffects.ts",
+        "effects/types_effects/EnvironmentalHazardEffects.ts",
+        "effects/util_effects/effectUtils.ts",
+        "errorHandling/ErrorBoundary.tsx",
+        "errorHandling/ErrorFallback.tsx",
+        "errorHandling/GlobalErrorBoundary.tsx",
+        "errorHandling/index.ts",
+        "errorHandling/specialized/DataFetchingErrorBoundary.tsx",
+        "errorHandling/specialized/VisualizationErrorBoundary.tsx",
+        "errorHandling/utils/errorBoundaryHOC.tsx",
+        "errorHandling/utils/migration.ts",
+        "eslint-rules/no-string-resource-types.js",
+        "hooks/automation/useAutomation.ts",
+        "hooks/automation/useGlobalAutomation.ts",
+        "hooks/combat/useCombatAI.early.test/getUnitAIState.early.test.ts",
+        "hooks/combat/useCombatAI.ts",
+        "hooks/errors/index.ts",
+        "hooks/errors/useErrorHandler.ts",
+        "hooks/events/useEventBatching.ts",
+        "hooks/events/useEventFiltering.ts",
+        "hooks/events/useEventSubscription.ts",
+        "hooks/events/useSystemEvents.ts",
+        "hooks/factions/useDiplomacy.ts",
+        "hooks/factions/useEnemyAI.ts",
+        "hooks/factions/useFactionAI.ts",
+        "hooks/factory/createDataFetchHook.ts",
+        "hooks/factory/createLifecycleHook.ts",
+        "hooks/factory/createStateHook.ts",
+        "hooks/factory/index.ts",
+        "hooks/game/useAnimation.ts",
+        "hooks/game/useAssets.ts",
+        "hooks/game/useGameState.ts",
+        "hooks/game/useGlobalEvents.ts",
+        "hooks/integration/index.ts",
+        "hooks/integration/useEventSystemIntegration.ts",
+        "hooks/integration/useManagerRegistryIntegration.ts",
+        "hooks/integration/useModuleSystemIntegration.ts",
+        "hooks/integration/useResourceSystemIntegration.ts",
+        "hooks/modules/useModuleAutomation.ts",
+        "hooks/modules/useModuleState.ts",
+        "hooks/modules/useModuleStatus.ts",
+        "hooks/modules/useModuleUpgrade.ts",
+        "hooks/modules/useSubModules.ts",
+        "hooks/performance/useMemoWithDeepCompare.ts",
+        "hooks/performance/useOptimizedCallback.ts",
+        "hooks/performance/useSessionPerformance.ts",
+        "hooks/resources/useResourceManagement.tsx",
+        "hooks/resources/useResourceState.ts",
+        "hooks/resources/useResourceSystem.ts",
+        "hooks/services/useService.ts",
+        "hooks/ships/useShipActions.ts",
+        "hooks/ships/useShipClassManager.ts",
+        "hooks/ships/useShipEffects.ts",
+        "hooks/ui/index.ts",
+        "hooks/ui/useBreakpoint.ts",
+        "hooks/ui/useComponentLifecycle.ts",
+        "hooks/ui/useComponentRegistration.ts",
+        "hooks/ui/useDebugOverlay.ts",
+        "hooks/ui/useMediaQuery.ts",
+        "hooks/ui/useProfilingOverlay.ts",
+        "hooks/ui/useTheme.ts",
+        "hooks/ui/useTooltip.ts",
+        "hooks/ui/useVPR.ts",
+        "hooks/ui/useVPRInteractivity.ts",
+        "hooks/useGPUCompute.ts",
+        "hooks/useMemoryManager.ts",
+        "hooks/usePaginatedData.ts",
+        "hooks/useRealTimeData.ts",
+        "hooks/useStreamedData.ts",
+        "hooks/useTypedApi.ts",
+        "hooks/useWebGL.ts",
+        "hooks/useWorker.ts",
+        "hooks/visualization/useChartCoordination.ts",
+        "initialization/automationSystemInit.ts",
+        "initialization/eventSystemInit.ts",
+        "initialization/gameSystemsIntegration.ts",
+        "initialization/moduleFrameworkInit.ts",
+        "initialization/moduleUpgradeInit.ts",
+        "initialization/serviceRegistration.ts",
+        "lib/ai/ResourceConsumptionPredictor.ts",
+        "lib/ai/behaviorTree.ts",
+        "lib/automation/ConditionChecker.ts",
+        "lib/events/EventBatcher.ts",
+        "lib/events/EventBusTypes.ts",
+        "lib/optimization/RenderBatcher.d.ts",
+        "lib/optimization/RenderBatcher.ts",
+        "lib/optimization/WebGLShaderManager.ts",
+        "lib/visualization/ChartCoordinationManager.ts",
+        "lib/visualization/ParticleSystem.ts",
+        "managers/ai/BehaviorTreeManager.ts",
+        "managers/colony/ColonyManagerImpl.ts",
+        "managers/combat/CombatShipManager.ts",
+        "managers/combat/EnvironmentalHazardManager.ts",
+        "managers/exploration/ExplorationManager.ts",
+        "managers/exploration/ReconShipManager.ts",
+        "managers/factions/FactionRelationshipManager.ts",
+        "managers/game/ParticleSystemManager.ts",
+        "managers/game/animationManager.ts",
+        "managers/game/assetManager.ts",
+        "managers/game/salvageManager.ts",
+        "managers/mining/MiningResourceIntegration.ts",
+        "managers/module/ModuleAttachmentManager.ts",
+        "managers/module/ModuleUpgradeManager.ts",
+        "managers/module/SubModuleManager.ts",
+        "managers/resource/AdaptivePerformanceManager.ts",
+        "managers/resource/ResourceTransferManager.tsx",
+        "managers/weapons/AdvancedWeaponEffectManager.ts",
+        "managers/weapons/WeaponEffectManager.ts",
+        "managers/weapons/WeaponUpgradeManager.ts",
+        "pages/CombatSystemPage.tsx",
+        "pages/ConverterManagementPage.tsx",
+        "pages/ResourceManagementPage.tsx",
+        "pages/ResourceRegistryDemo.tsx",
+        "pages/performance/LongSessionMemoryPage.tsx",
+        "pages/performance/MultitabPerformanceTestPage.tsx",
+        "resource/ResourceSystem.ts",
+        "resource/subsystems/ResourceFlowSubsystem.ts",
+        "resource/subsystems/ResourceStorageSubsystem.ts",
+        "resource/subsystems/ResourceThresholdSubsystem.ts",
+        "resource/subsystems/ResourceTransferSubsystem.ts",
+        "router/routes.tsx",
+        "services/AnalysisAlgorithmService.ts",
+        "services/DataCollectionService.ts",
+        "services/DataProcessingService.ts",
+        "services/ErrorLoggingService.ts",
+        "styles/mediaQueries.ts",
+        "styles/themeUtils.ts",
+        "systems/exploration/DiscoveryClassification.ts",
+        "tests/accessibility/a11y.test.tsx",
+        "tests/components/ui/Button.test.tsx",
+        "tests/components/ui/Card.test.tsx",
+        "tests/components/ui/ErrorBoundary.test.tsx",
+        "tests/components/ui/responsive.test.tsx",
+        "tests/e2e/workflow-e2e.spec.ts",
+        "tests/integration/build-deployment.test.ts",
+        "tests/integration/simple-workflow.test.ts",
+        "tests/integration/ui-components.test.tsx",
+        "tests/integration/workflow-validation.test.ts",
+        "tests/performance/LongSessionMemoryTestSuite.ts",
+        "tests/performance/MultitabPerformanceTestSuite.ts",
+        "tests/setup.ts",
+        "tests/setup/testingLibrary.setup.ts",
+        "tests/setupTests.ts",
+        "tests/types.d.ts",
+        "tests/utils/CLI.test.ts",
+        "tests/utils/DependencyMapper.test.ts",
+        "tests/utils/FileClassificationSystem.test.ts",
+        "tests/utils/GitOperationsPreservation.test.ts",
+        "tests/utils/PathResolution.test.ts",
+        "tests/utils/ScriptExecutionContinuity.test.ts",
+        "tests/utils/ToolConfigurationAccessibility.test.ts",
+        "tests/utils/test-utils.tsx",
+        "tests/vitest.d.ts",
+        "types/TypeUtils.ts",
+        "types/common.ts",
+        "types/common/VectorTypes.ts",
+        "types/config/GameConfigTypes.ts",
+        "types/config/TypeSafeConfig.ts",
+        "types/core/Position.ts",
+        "types/debug/DebugTypes.ts",
+        "types/declarations.d.ts",
+        "types/events/EnvironmentalHazardEvents.ts",
+        "types/events/ExplorationEvents.ts",
+        "types/events/ModuleEventTypes.ts",
+        "types/events/SharedEventTypes.ts",
+        "types/events/ShipEvents.ts",
+        "types/events/TypedEvent.ts",
+        "types/events/__tests__/StandardizedEvents.test.ts",
+        "types/events/moduleEventBus.d.ts",
+        "types/exploration/AnalysisComponentTypes.ts",
+        "types/exploration/ClassificationTypes.ts",
+        "types/exploration/DataAnalysisTypes.ts",
+        "types/exploration/ExplorationTypeUtils.ts",
+        "types/exploration/ExplorationTypes.ts",
+        "types/exploration/index.ts",
+        "types/factions/FactionShipTypes.ts",
+        "types/geometry.ts",
+        "types/global.d.ts",
+        "types/index.ts",
+        "types/managers/MockManagerFactory.ts",
+        "types/managers/SharedManagerTypes.ts",
+        "types/mining/MiningTypes.ts",
+        "types/mui-overrides.d.ts",
+        "types/resources/FlowNodeTypes.ts",
+        "types/resources/ResourceFlowTypes.ts",
+        "types/resources/ResourcePoolTypes.ts",
+        "types/shared/index.ts",
+        "types/state/TypeSafeStateManagement.ts",
+        "types/system/SystemTypes.ts",
+        "types/test-utils.d.ts",
+        "types/types-fix.d.ts",
+        "types/ui/ComponentTypes.ts",
+        "types/ui/EventTypes.ts",
+        "types/ui/ThemeTypes.ts",
+        "types/ui/typeGuards.ts",
+        "types/visualization/CommonTypes.ts",
+        "types/visualization/index.ts",
+        "types/visualizations/D3AnimationTypes.ts",
+        "types/visualizations/D3DragTypes.ts",
+        "types/visualizations/D3SelectionTypes.ts",
+        "types/visualizations/D3Types.ts",
+        "types/visualizations/D3ValidationHooks.ts",
+        "types/visualizations/D3Validators.ts",
+        "types/visualizations/D3ZoomTypes.ts",
+        "types/visualizations/FlowTypes.ts",
+        "types/weapons/WeaponUpgrades.ts",
+        "ui/components/Badge.tsx",
+        "ui/components/Badge/Badge.tsx",
+        "ui/components/Badge/index.ts",
+        "ui/components/Badge/variants/StatusBadge.tsx",
+        "ui/components/Badge/variants/index.ts",
+        "ui/components/Button.tsx",
+        "ui/components/Button/index.ts",
+        "ui/components/Button/variants/AbilityButton.tsx",
+        "ui/components/Card.tsx",
+        "ui/components/Card/index.ts",
+        "ui/components/Card/variants/ConverterNodeCard.tsx",
+        "ui/components/Card/variants/ModuleCard.tsx",
+        "ui/components/Divider.tsx",
+        "ui/components/Icon.tsx",
+        "ui/components/Tooltip.tsx",
+        "ui/components/index.ts",
+        "ui/components/inputs/Checkbox.tsx",
+        "ui/components/inputs/Input.tsx",
+        "ui/components/inputs/Radio.tsx",
+        "ui/components/inputs/Select.tsx",
+        "ui/components/inputs/Slider.tsx",
+        "ui/components/inputs/Switch.tsx",
+        "ui/components/layout/Container.tsx",
+        "ui/components/layout/Flex.tsx",
+        "ui/components/layout/Grid.tsx",
+        "ui/components/layout/Spacer.tsx",
+        "ui/components/layout/Stack.tsx",
+        "ui/components/typography/Heading.tsx",
+        "ui/components/typography/Label.tsx",
+        "ui/components/typography/Text.tsx",
+        "ui/layout/Responsive.tsx",
+        "ui/theme/defaultTheme.ts",
+        "utils/ResourceTypeConverter.ts",
+        "utils/ResourceTypeMigration.ts",
+        "utils/dataTransforms/chartTransforms.ts",
+        "utils/dataTransforms/filterTransforms.ts",
+        "utils/dataTransforms/index.ts",
+        "utils/dataTransforms/scientificTransforms.ts",
+        "utils/dependency-mapping/BaselineValidator.ts",
+        "utils/dependency-mapping/DependencyMapper.ts",
+        "utils/dependency-mapping/FileClassificationSystem.ts",
+        "utils/dependency-mapping/ReorganizationValidator.ts",
+        "utils/dependency-mapping/cli.ts",
+        "utils/dependency-mapping/index.ts",
+        "utils/events/EventBatcher.ts",
+        "utils/events/EventBatchingRxJS.ts",
+        "utils/events/EventDataTypes.ts",
+        "utils/events/EventDevTools.ts",
+        "utils/events/EventDispatcher.tsx",
+        "utils/events/EventFilter.ts",
+        "utils/events/EventPrioritizer.ts",
+        "utils/events/EventThrottling.ts",
+        "utils/events/eventTypeGuards.ts",
+        "utils/events/rxjsIntegration.ts",
+        "utils/geometry.ts",
+        "utils/math/calculations.ts",
+        "utils/modules/moduleValidation.ts",
+        "utils/performance/D3AccessorBenchmark.ts",
+        "utils/performance/D3AnimationFrameManager.ts",
+        "utils/performance/D3AnimationProfiler.ts",
+        "utils/performance/D3AnimationQualityManager.ts",
+        "utils/performance/D3BatchedUpdates.ts",
+        "utils/performance/D3InterpolationCache.ts",
+        "utils/performance/D3PerformanceOptimizations.ts",
+        "utils/performance/D3PerformanceProfiler.ts",
+        "utils/performance/HookPerformanceDashboard.tsx",
+        "utils/performance/animationFrameManagerInstance.ts",
+        "utils/performance/benchmarks/DynamicBudgetAdjustment.ts",
+        "utils/performance/benchmarks/PerformanceBenchmarkTools.ts",
+        "utils/performance/benchmarks/PerformanceBudgets.ts",
+        "utils/performance/hookPerformanceMonitor.ts",
+        "utils/performance/longsession/LongSessionMemoryTracker.ts",
+        "utils/performance/multitab/MultitabCommunicationChannel.ts",
+        "utils/performance/network/NetworkDegradationSimulator.ts",
+        "utils/profiling/applicationProfiler.ts",
+        "utils/profiling/enhancedComponentProfiler.ts",
+        "utils/profiling/index.ts",
+        "utils/resources/ResourceTypeMigration.ts",
+        "utils/resources/resourceUtils.ts",
+        "utils/services/ServiceAccess.ts",
+        "utils/ships/shipClassUtils.ts",
+        "utils/ships/shipUtils.ts",
+        "utils/state/contextSelectors.ts",
+        "utils/state/stateMigration.ts",
+        "utils/state/statePersistence.ts",
+        "utils/vpr-diagnostic.ts",
+        "visualization/index.ts",
+        "vite-env.d.ts"
+      ],
+      "byDirectory": [
+        {
+          "directory": "components",
+          "count": 272
+        },
+        {
+          "directory": "hooks",
+          "count": 61
+        },
+        {
+          "directory": "utils",
+          "count": 54
+        },
+        {
+          "directory": "types",
+          "count": 53
+        },
+        {
+          "directory": "ui",
+          "count": 32
+        },
+        {
+          "directory": "effects",
+          "count": 29
+        },
+        {
+          "directory": "tests",
+          "count": 25
+        },
+        {
+          "directory": "managers",
+          "count": 20
+        },
+        {
+          "directory": "config",
+          "count": 13
+        },
+        {
+          "directory": "lib",
+          "count": 10
+        },
+        {
+          "directory": "errorHandling",
+          "count": 8
+        },
+        {
+          "directory": "contexts",
+          "count": 6
+        },
+        {
+          "directory": "initialization",
+          "count": 6
+        },
+        {
+          "directory": "pages",
+          "count": 6
+        },
+        {
+          "directory": "resource",
+          "count": 5
+        },
+        {
+          "directory": "services",
+          "count": 4
+        },
+        {
+          "directory": "styles",
+          "count": 2
+        },
+        {
+          "directory": "api",
+          "count": 1
+        },
+        {
+          "directory": "eslint-rules",
+          "count": 1
+        },
+        {
+          "directory": "router",
+          "count": 1
+        },
+        {
+          "directory": "systems",
+          "count": 1
+        },
+        {
+          "directory": "visualization",
+          "count": 1
+        },
+        {
+          "directory": "vite-env.d.ts",
+          "count": 1
+        }
+      ]
+    },
+    "cycles": [
+      [
+        "lib/ai/shipBehavior.ts",
+        "lib/ai/shipMovement.ts",
+        "managers/ManagerRegistry.ts",
+        "managers/combat/combatManager.ts",
+        "managers/mining/MiningShipManager.ts"
+      ],
+      [
+        "resource/ResourceSystem.ts",
+        "resource/subsystems/ResourceFlowSubsystem.ts",
+        "resource/subsystems/ResourceStorageSubsystem.ts",
+        "resource/subsystems/ResourceThresholdSubsystem.ts",
+        "resource/subsystems/ResourceTransferSubsystem.ts"
+      ],
+      [
+        "visualization/Chart.tsx",
+        "visualization/renderers/CanvasRenderer.tsx",
+        "visualization/renderers/SVGRenderer.tsx",
+        "visualization/renderers/WebGLRenderer.tsx"
+      ],
+      [
+        "lib/events/UnifiedEventSystem.ts",
+        "lib/managers/BaseManager.ts",
+        "services/logging/ErrorLoggingService.ts"
+      ],
+      [
+        "types/resources/ProductionChainTypes.ts",
+        "types/resources/ResourceConversionTypes.ts",
+        "types/resources/ResourceTypes.ts"
+      ],
+      [
+        "hooks/resources/useResourceTracking.ts",
+        "types/resources/ResourceSerializationTypes.ts"
+      ],
+      [
+        "managers/module/ModuleManager.ts",
+        "managers/module/ModuleStatusManager.ts"
+      ],
+      [
+        "types/ships/FactionShipTypes.ts",
+        "types/ships/ShipTypes.ts"
+      ],
+      [
+        "lib/modules/ModuleEvents.ts"
+      ]
+    ],
+    "missingToolScriptTargets": [
+      {
+        "script": "fix-imports",
+        "target": "tools/fix-imports.js"
+      },
+      {
+        "script": "fix-imports-v2",
+        "target": "tools/fix-imports-v2.js"
+      },
+      {
+        "script": "format:prettier",
+        "target": "tools/fix-eslint-by-rule.js"
+      },
+      {
+        "script": "lint:chart",
+        "target": "tools/eslint-progress-chart.js"
+      },
+      {
+        "script": "lint:fix-rule",
+        "target": "tools/fix-eslint-by-rule.js"
+      },
+      {
+        "script": "lint:fix-top",
+        "target": "tools/fix-eslint-by-rule.js"
+      },
+      {
+        "script": "lint:status",
+        "target": "tools/eslint-progress-chart.js"
+      },
+      {
+        "script": "lint:status",
+        "target": "tools/fix-eslint-by-rule.js"
+      },
+      {
+        "script": "lint:track",
+        "target": "tools/track-eslint-progress.js"
+      },
+      {
+        "script": "lint:workflow",
+        "target": "tools/run-lint-workflow.mjs"
+      },
+      {
+        "script": "lint:workflow:analyze",
+        "target": "tools/run-lint-workflow.mjs"
+      },
+      {
+        "script": "lint:workflow:auto-fix",
+        "target": "tools/run-lint-workflow.mjs"
+      },
+      {
+        "script": "lint:workflow:interactive",
+        "target": "tools/run-lint-workflow.mjs"
+      },
+      {
+        "script": "typecheck:specific",
+        "target": "tools/run-typecheck.mjs"
+      }
+    ],
+    "legacyPathCandidates": [
+      "components/buildings/modules/MiningHub/ThresholdManager.tsx",
+      "components/buildings/modules/MiningHub/ThresholdPresetsPanel.tsx",
+      "components/buildings/modules/MiningHub/ThresholdStatusIndicator.tsx",
+      "components/core/ThresholdIntegration.tsx",
+      "components/ui/resource/ResourceThresholdVisualization.tsx",
+      "contexts/ThresholdContext.tsx",
+      "contexts/ThresholdTypes.ts",
+      "managers/resource/ResourceThresholdManager.ts",
+      "resource/subsystems/ResourceThresholdSubsystem.ts"
+    ]
+  }
+}

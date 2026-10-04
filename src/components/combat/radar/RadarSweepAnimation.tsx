@@ -49,9 +49,7 @@ export function RadarSweepAnimation({
 
   // Animation loop for the sweep
   const animate = (time: number) => {
-    if (previousTimeRef.current === undefined) {
-      previousTimeRef.current = time;
-    }
+    previousTimeRef.current ??= time;
 
     const deltaTime = time - previousTimeRef.current;
     previousTimeRef.current = time;

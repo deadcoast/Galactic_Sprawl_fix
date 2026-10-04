@@ -72,8 +72,7 @@ interface ResourceEventData {
  */
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
   return Boolean(
-    event &&
-      event.data &&
+    event?.data &&
       typeof event.data === 'object' &&
       'resourceType' in event.data &&
       'amount' in event.data &&
@@ -86,7 +85,7 @@ function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: Res
  * Safely extract resource amount from event data
  */
 function safelyExtractAmount(event: ModuleEvent): number {
-  if (!event || !event.data) {
+  if (!event?.data) {
     return 0;
   }
 

@@ -78,8 +78,8 @@ export const Spacer = forwardRef<HTMLDivElement, SpacerProps>(
     },
     ref
   ) => {
-    const finalX = size !== undefined ? size : x;
-    const finalY = size !== undefined ? size : y;
+    const finalX = size ?? x;
+    const finalY = size ?? y;
 
     // Memoize styles for better performance
     const spacerStyles = useMemo(() => {

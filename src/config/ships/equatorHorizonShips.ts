@@ -1,19 +1,19 @@
-import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
-  DAMAGE_BOOST_EFFECT,
-  EXPLOSIVE_EFFECT,
-  GAUSS_EFFECT,
-  PLASMA_EFFECT,
-  SHIELD_FIELD_EFFECT,
-  SPEED_REDUCTION_EFFECT,
-  STEALTH_EFFECT,
+    DAMAGE_BOOST_EFFECT,
+    EXPLOSIVE_EFFECT,
+    GAUSS_EFFECT,
+    PLASMA_EFFECT,
+    SHIELD_FIELD_EFFECT,
+    SPEED_REDUCTION_EFFECT,
+    STEALTH_EFFECT
 } from '../../effects/types_effects/shipEffects';
+import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponInstance,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponStatus,
+    WeaponInstance,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponStatus
 } from '../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -22,7 +22,7 @@ const _TEMPORAL_EFFECT = {
   id: 'temporal-disruption',
   type: 'damage',
   name: 'Temporal Disruption',
-  description: 'Time-warping energy damage',
+  description: 'Time-combatping energy damage',
   magnitude: 80,
   duration: 3,
   active: true,
@@ -37,7 +37,7 @@ const _QUANTUM_EFFECT = {
   id: 'quantum-collapse',
   type: 'damage',
   name: 'Quantum Collapse',
-  description: 'Reality-warping energy damage',
+  description: 'Reality-combatping energy damage',
   magnitude: 100,
   duration: 2,
   active: true,
@@ -265,7 +265,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
       {
         id: 'quantum-collapse-ability',
         name: 'Quantum Collapse',
-        description: 'Unleashes a reality-warping energy burst',
+        description: 'Unleashes a reality-combatping energy burst',
         cooldown: 90,
         duration: 5,
         active: false,
@@ -947,4 +947,4 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
       },
     ],
   },
-} as const;
+} as Record<EquatorHorizonShipClass, FactionShipStats>;

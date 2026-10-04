@@ -11,7 +11,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import { UIEventType } from '../../../types/ui/EventTypes';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
@@ -188,7 +188,7 @@ export function Drawer({
       // Emit drawer opened event
       try {
         const event = new CustomEvent(UIEventType.MODAL_OPENED, {
-          detail: { modalId: title || 'drawer', modalType: 'drawer' },
+          detail: { modalId: title ?? 'drawer', modalType: 'drawer' },
         });
         document.dispatchEvent(event);
       } catch (error) {
@@ -200,7 +200,7 @@ export function Drawer({
             componentName: 'Drawer',
             action: 'dispatchDrawerOpenedEvent',
             eventType: UIEventType.MODAL_OPENED,
-            drawerId: title || 'drawer',
+            drawerId: title ?? 'drawer',
           }
         );
       }
@@ -231,7 +231,7 @@ export function Drawer({
           // Emit drawer closed event
           try {
             const event = new CustomEvent(UIEventType.MODAL_CLOSED, {
-              detail: { modalId: title || 'drawer', modalType: 'drawer' },
+              detail: { modalId: title ?? 'drawer', modalType: 'drawer' },
             });
             document.dispatchEvent(event);
           } catch (error) {
@@ -243,7 +243,7 @@ export function Drawer({
                 componentName: 'Drawer',
                 action: 'dispatchDrawerClosedEvent',
                 eventType: UIEventType.MODAL_CLOSED,
-                drawerId: title || 'drawer',
+                drawerId: title ?? 'drawer',
               }
             );
           }
@@ -377,7 +377,7 @@ export function Drawer({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     opacity: isOpen ? 1 : 0,
     transition: `opacity ${animationDuration}ms ease`,
-    zIndex: zIndex || 1300,
+    zIndex: zIndex ?? 1300,
     pointerEvents: isOpen ? 'auto' : 'none',
   };
 
@@ -400,7 +400,7 @@ export function Drawer({
         className={`drawer drawer-${placement} ${className}`}
         style={{
           ...getDrawerPositionStyles(),
-          zIndex: zIndex || 1300,
+          zIndex: zIndex ?? 1300,
         }}
         tabIndex={-1}
         aria-modal="true"
@@ -409,7 +409,7 @@ export function Drawer({
         data-testid="drawer-content"
       >
         {/* Drawer Header */}
-        {(title || showCloseButton) && (
+        {(title ?? showCloseButton) && (
           <div
             className="drawer-header"
             style={{
@@ -491,7 +491,7 @@ export function Drawer({
         )}
       </div>
     </>,
-    document.getElementById('drawer-portal') || document.body
+    document.getElementById('drawer-portal') ?? document.body
   );
 }
 

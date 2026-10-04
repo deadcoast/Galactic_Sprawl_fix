@@ -113,7 +113,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
       } catch (error) {
         // Handle retry logic
         if (options?.retry && error instanceof ApiError) {
-          const apiError = error as ApiError;
+          const apiError = error;
           const maxRetries = options?.maxRetries ?? 3;
           const retryDelay = options?.retryDelay ?? 1000;
 
@@ -142,7 +142,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
               return retryResponse;
             } catch (retryError) {
               if (retryError instanceof ApiError) {
-                lastError = retryError as ApiError;
+                lastError = retryError;
               } else {
                 throw retryError;
               }
@@ -155,7 +155,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
 
         // Call error callback if provided
         if (options?.onError && error instanceof ApiError) {
-          options?.onError(error as ApiError);
+          options?.onError(error);
         }
 
         throw error;

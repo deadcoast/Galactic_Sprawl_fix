@@ -5,10 +5,8 @@ import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { GameEvent, GameEventType, Position } from '../../types/core/GameTypes';
-import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { Position } from '../../types/core/GameTypes';
+import { FactionId } from '../../types/ships/FactionShipTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -98,12 +96,7 @@ interface BattleEnvironmentProps {
   onThreatDetected?: (hazard: Hazard) => void;
 }
 
-interface FormationLines {
-  points: Array<{ x: number; y: number }>;
-  style: 'solid' | 'dashed';
-  color: string;
-  opacity: number;
-}
+
 
 interface RangeCircle {
   center: { x: number; y: number };
@@ -114,44 +107,27 @@ interface RangeCircle {
 
 // Interface for AI fleet behavior results - kept for future implementation of advanced fleet AI
 // Will be used when implementing the adaptive fleet behavior system
-interface __FleetAIResult {
-  formationPatterns: {
-    defensive: {
-      spacing: number;
-      facing: number;
-      pattern: 'defensive';
-      adaptiveSpacing: boolean;
-    };
-    offensive: {
-      spacing: number;
-      facing: number;
-      pattern: 'offensive';
-      adaptiveSpacing: boolean;
-    };
-    balanced: {
-      spacing: number;
-      facing: number;
-      pattern: 'balanced';
-      adaptiveSpacing: boolean;
-    };
-  };
-  adaptiveAI: {
-    experienceLevel: number;
-    performance: {
-      damageEfficiency: number;
-      survivalRate: number;
-    };
-  };
-  factionBehavior: {
-    aggressionLevel: number;
-    territorialControl: {
-      facing: number;
-    };
-  };
-  visualFeedback?: {
-    formationLines: FormationLines;
-    rangeCircles: RangeCircle[];
-  };
+
+
+// Define enum for worker message types
+enum CombatWorkerMessageType {
+  WEAPON_FIRE = 'WEAPON_FIRE',
+  UNIT_MOVE = 'UNIT_MOVE',
+  // Add other potential types here as enums
+}
+
+// Define interface for worker messages
+interface CombatWorkerMessageData {
+  weaponId?: string;
+  targetId?: string;
+  weaponType?: string;
+  unitId?: string;
+  position?: Position;
+}
+
+interface CombatWorkerMessage {
+  type: CombatWorkerMessageType; // Use only the enum type
+  data?: CombatWorkerMessageData;
 }
 
 export function BattleEnvironment({
@@ -169,18 +145,18 @@ export function BattleEnvironment({
 }: BattleEnvironmentProps) {
   // Use refs for mutable state that doesn't need re-renders
   const activeHazardsRef = useRef(hazards);
-  const particlePositionsRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
+  const particlePositionsRef = useRef<Record<string, { x: number; y: number }[]>>({});
   const weaponEffectsRef = useRef<Record<string, { active: boolean; type: string }>>({});
 
   // State that needs re-renders
   const [impactAnimations, setImpactAnimations] = useState<Record<string, boolean>>({});
   const [automationEffects, setAutomationEffects] = useState<
-    Array<{
+    {
       id: string;
       type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
       position: Position;
       timestamp: number;
-    }>
+    }[]
   >([]);
 
   // Memoize event handlers
@@ -214,59 +190,13 @@ export function BattleEnvironment({
 
   // Batch updates using requestAnimationFrame and implement advanced fleet AI
   const requestUpdate = useCallback(() => {
-    // Create a custom fleet AI result for advanced visualization
-    const customFleetAIResult: __FleetAIResult = {
-      formationPatterns: {
-        defensive: {
-          spacing: 50,
-          facing: 0,
-          pattern: 'defensive',
-          adaptiveSpacing: true,
-        },
-        offensive: {
-          spacing: 30,
-          facing: 90,
-          pattern: 'offensive',
-          adaptiveSpacing: false,
-        },
-        balanced: {
-          spacing: 40,
-          facing: 45,
-          pattern: 'balanced',
-          adaptiveSpacing: true,
-        },
-      },
-      adaptiveAI: {
-        experienceLevel: tier,
-        performance: {
-          damageEfficiency: 0.8,
-          survivalRate: 0.9,
-        },
-      },
-      factionBehavior: {
-        aggressionLevel: factionId === 'lost-nova' ? 0.8 : 0.5,
-        territorialControl: {
-          facing: 0,
-        },
-      },
-      visualFeedback: fleetAI.visualFeedback
-        ? {
-            formationLines: fleetAI.visualFeedback.formationLines,
-            rangeCircles: fleetAI.visualFeedback.rangeCircles,
-          }
-        : undefined,
-    };
-
-    // Log the fleet AI result for debugging
-    console.warn('Advanced fleet AI result:', customFleetAIResult);
-
     // Update active hazards
     activeHazardsRef.current = hazards;
 
     requestAnimationFrame(() => {
       setImpactAnimations(prev => ({ ...prev }));
     });
-  }, [hazards, fleetAI.visualFeedback, tier, factionId]);
+  }, [hazards]);
 
   // Use the requestUpdate function in an effect to demonstrate its usage
   useEffect(() => {
@@ -321,7 +251,7 @@ export function BattleEnvironment({
       return;
     }
 
-    const newPositions: Record<string, Array<{ x: number; y: number }>> = {};
+    const newPositions: Record<string, { x: number; y: number }[]> = {};
     activeHazardsRef.current.forEach(hazard => {
       const baseParticleCount = quality === 'high' ? 20 : 10;
       const tierMultiplier = 1 + (tier - 1) * 0.5;
@@ -385,15 +315,68 @@ export function BattleEnvironment({
   useEffect(() => {
     const worker = new Worker(new URL('../../workers/combatWorker.ts', import.meta.url));
 
-    worker.onmessage = e => {
+    // Type guard for worker message data
+    const isCombatWorkerMessage = (message: unknown): message is CombatWorkerMessage => {
+      return (
+        typeof message === 'object' &&
+        message !== null &&
+        'type' in message &&
+        typeof message.type === 'string' && // Type is initially string from worker
+        Object.values(CombatWorkerMessageType).includes(message.type as CombatWorkerMessageType) // Check if it's a valid enum value
+      );
+    };
+
+    worker.onmessage = (e: MessageEvent) => {
+      // Validate message structure
+      if (!isCombatWorkerMessage(e.data)) {
+        // console.error('Received invalid message from combat worker:', e.data);
+        return;
+      }
+
+      // Now e.data.type is guaranteed to be CombatWorkerMessageType by the guard
       const { type, data } = e.data;
+
+      // Use type guards for data properties
+      const safelyGetString = (
+        obj: CombatWorkerMessageData | undefined,
+        key: keyof CombatWorkerMessageData
+      ): string => {
+        const value = obj?.[key];
+        return typeof value === 'string' ? value : '';
+      };
+
+      const safelyGetPosition = (
+        obj: CombatWorkerMessageData | undefined,
+        key: keyof CombatWorkerMessageData
+      ): Position => {
+        const pos = obj?.[key];
+        if (
+          typeof pos === 'object' &&
+          pos !== null &&
+          'x' in pos &&
+          'y' in pos &&
+          typeof pos.x === 'number' && // Check type explicitly
+          typeof pos.y === 'number' // Check type explicitly
+        ) {
+          return pos;
+        }
+        return { x: 0, y: 0 }; // Default position if invalid
+      };
+
+      // Use enum values in switch statement
       switch (type) {
-        case 'WEAPON_FIRE':
-          handleWeaponFire(data?.weaponId, data?.targetId, data?.weaponType);
+        case CombatWorkerMessageType.WEAPON_FIRE:
+          handleWeaponFire(
+            safelyGetString(data, 'weaponId'),
+            safelyGetString(data, 'targetId'),
+            safelyGetString(data, 'weaponType')
+          );
           break;
-        case 'UNIT_MOVE':
-          onUnitMove(data?.unitId, data?.position);
+        case CombatWorkerMessageType.UNIT_MOVE:
+          onUnitMove(safelyGetString(data, 'unitId'), safelyGetPosition(data, 'position'));
           break;
+        // No default needed if all enum cases are handled, but good practice
+        // default: const _exhaustiveCheck: never = type; // Ensures all cases are handled
       }
     };
 
@@ -504,7 +487,7 @@ export function BattleEnvironment({
         color: baseColor,
         glowIntensity: tier * (hazard.severity === 'high' ? 1.5 : 1),
         animations: vprAnimations,
-        particlePattern: hazard.vpr?.particleSystem.pattern || 'circular',
+        particlePattern: hazard.vpr?.particleSystem.pattern ?? 'circular',
       };
     },
     [tier, getVPRAnimationSet]
@@ -618,81 +601,51 @@ export function BattleEnvironment({
     detectThreats();
   }, [hazards, __handleThreatDetection]);
 
-  // Update fleet AI result based on current battle state
-  useEffect(() => {
-    if (units.length > 0) {
-      // Update formation lines based on unit positions
-      const points = units.map(unit => ({ x: unit.position.x, y: unit.position.y }));
 
-      // Update range circles based on unit weapons
-      const rangeCircles = units.map(unit => {
-        const maxRange = Math.max(...unit.weapons.map(w => w.range));
-        return {
-          center: unit.position,
-          radius: maxRange,
-          type: 'engagement' as const,
-          opacity: 0.3,
-        };
-      });
-
-      // Use the existing fleetAIResult from useFleetAI hook
-      // This is just for demonstration - we're not actually modifying the fleetAIResult
-      // since it comes from a hook and we can't directly modify it
-      console.warn('Fleet AI visualization updated with', {
-        formationLines: {
-          points,
-          style: 'solid' as const,
-          color: '#00ff00',
-          opacity: 0.5,
-        },
-        rangeCircles,
-      });
-    }
-  }, [units]);
 
   // Add a log event helper to use GameEvent and GameEventType
-  const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {
-    const event: GameEvent = {
-      type: eventType,
-      timestamp: Date.now(),
-      data,
-    };
+  // const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {
+  //   const event: GameEvent = {
+  //     type: eventType,
+  //     timestamp: Date.now(),
+  //     data,
+  //   };
 
-    // Use the useGameState hook indirectly by referencing it in comments
-    // This is a workaround since hooks can only be used in component functions
-    // In a real implementation, this would use the useGameState hook to update state
-    console.warn('Combat event logged, would use useGameState to update:', event);
+  //   // Use the useGameState hook indirectly by referencing it in comments
+  //   // This is a workaround since hooks can only be used in component functions
+  //   // In a real implementation, this would use the useGameState hook to update state
+  //   // console.warn('Combat event logged, would use useGameState to update:', event);
 
-    return event;
-  };
+  //   return event;
+  // };
 
   // Add a utility function to convert GameEventType to EventType for the BaseEvent
-  const mapGameEventTypeToEventType = (gameEventType: GameEventType): EventType => {
-    // Map game event types to system event types
-    switch (gameEventType) {
-      case 'combat':
-        return EventType.COMBAT_UPDATED;
-      case 'exploration':
-        return EventType.EXPLORATION_SCAN_COMPLETED;
-      case 'trade':
-        return EventType.RESOURCE_TRANSFERRED;
-      case 'diplomacy':
-        return EventType.SYSTEM_ALERT;
-      default:
-        return EventType.SYSTEM_ALERT;
-    }
-  };
+  // const mapGameEventTypeToEventType = (gameEventType: GameEventType): EventType => {
+  //   // Map game event types to system event types
+  //   switch (gameEventType) {
+  //     case 'combat':
+  //       return EventType.COMBAT_UPDATED;
+  //     case 'exploration':
+  //       return EventType.EXPLORATION_SCAN_COMPLETED;
+  //     case 'trade':
+  //       return EventType.RESOURCE_TRANSFERRED;
+  //     case 'diplomacy':
+  //       return EventType.SYSTEM_ALERT;
+  //     default:
+  //       return EventType.SYSTEM_ALERT;
+  //   }
+  // };
 
   // Add a utility function to use BaseEvent
-  const convertToBaseEvent = (gameEvent: GameEvent): BaseEvent => {
-    return {
-      type: mapGameEventTypeToEventType(gameEvent.type),
-      timestamp: gameEvent.timestamp,
-      data: gameEvent.data as Record<string, unknown> | undefined,
-      moduleId: 'combat-system',
-      moduleType: 'COMBAT_MODULE' as ModuleType,
-    };
-  };
+  // const convertToBaseEvent = (gameEvent: GameEvent): BaseEvent => {
+  //   return {
+  //     type: mapGameEventTypeToEventType(gameEvent.type),
+  //     timestamp: gameEvent.timestamp,
+  //     data: gameEvent.data as Record<string, unknown> | undefined,
+  //     moduleId: 'combat-system',
+  //     moduleType: 'COMBAT_MODULE' as ModuleType,
+  //   };
+  // };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -921,23 +874,23 @@ document.head.appendChild(style);
  * Safely extracts position data from event
  */
 function getPositionFromEvent(event: { data?: { position?: unknown } }): Position {
-  if (!event || !event.data || !event.data.position) {
+  // Use optional chaining for conciseness
+  const position = event?.data?.position;
+  if (!position) {
     return { x: 50, y: 50 }; // Default position
   }
-
-  const position = event.data.position;
 
   if (
     typeof position === 'object' &&
     position !== null &&
     'x' in position &&
     'y' in position &&
-    typeof position.x !== 'undefined' &&
-    typeof position.y !== 'undefined'
+    typeof position.x === 'number' && // Check type explicitly
+    typeof position.y === 'number' // Check type explicitly
   ) {
     return {
-      x: Number(position.x),
-      y: Number(position.y),
+      x: position.x,
+      y: position.y,
     };
   }
 
@@ -953,15 +906,15 @@ const CombatControls = () => {
   };
 
   const handleSkipBack = () => {
-    console.warn('Combat simulation skipped back');
+    // console.warn('Combat simulation skipped back');
   };
 
-  const handleSkipForward = () => {
-    console.warn('Combat simulation skipped forward');
+  const handleSkipForcombatd = () => {
+    // console.warn('Combat simulation skipped forcombatd');
   };
 
   const handleClose = () => {
-    console.warn('Combat simulation closed');
+    // console.warn('Combat simulation closed');
   };
 
   return (
@@ -976,7 +929,7 @@ const CombatControls = () => {
           <Play className="h-5 w-5 text-teal-400" />
         )}
       </button>
-      <button onClick={handleSkipForward} aria-label="Skip forward">
+      <button onClick={handleSkipForcombatd} aria-label="Skip forcombatd">
         <SkipForward className="h-5 w-5 text-teal-400" />
       </button>
       <button onClick={handleClose} aria-label="Close">

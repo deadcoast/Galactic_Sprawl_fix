@@ -13,7 +13,9 @@ import {
   MultitabPerformanceLauncher,
 } from '../../components/performance/MultitabPerformanceLauncher';
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+} from '../../services/logging/ErrorLoggingService';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
@@ -25,7 +27,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<ResultSet | null>(null);
   const [isCoordinator, setIsCoordinator] = useState(true);
-  const [_report, setReport] = useState<string>('');
+  const [report, setReport] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
 
   // Check URL parameters to determine if this is a worker tab
@@ -74,7 +76,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
     try {
       const savedResults = localStorage.getItem('multitab_performance_results');
       if (savedResults) {
-        setResults(JSON.parse(savedResults));
+        setResults(JSON.parse(savedResults) as ResultSet);
       }
     } catch (e) {
       errorLoggingService.logWarn('Failed to load previous test results:', { error: e });

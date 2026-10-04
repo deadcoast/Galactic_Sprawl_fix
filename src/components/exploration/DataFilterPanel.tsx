@@ -1,13 +1,13 @@
 import AddIcon from '@mui/icons-material/Add';
 import {
-  Button,
-  Chip,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
+    Button,
+    Chip,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
 } from '@mui/material';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -37,9 +37,9 @@ interface DataFilterPanelProps {
  * Utility function to log dataset information
  * Using underscore prefix to indicate it's a private function
  */
-const _logDatasetInfo = (datasetId: string): void => {
+const _logDatasetInfo = (_datasetId: string): void => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(`Filters applied to dataset: ${datasetId}`);
+    // Filters applied to dataset: {datasetId}
   }
 };
 

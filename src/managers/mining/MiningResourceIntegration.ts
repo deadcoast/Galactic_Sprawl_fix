@@ -1,23 +1,26 @@
 import { Position } from '../../types/core/GameTypes';
-import {
-  BaseEvent,
-  EventType,
-  // Re-import necessary event data types
-  MiningShipRegisteredEventData,
-  MiningShipStatusChangedEventData,
-  MiningShipUnregisteredEventData,
-} from '../../types/events/EventTypes';
-import {
-  FlowNode,
-  FlowNodeType,
-  ResourceState,
-  ResourceType,
-} from '../../types/resources/ResourceTypes';
-import { MiningShip, UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes'; // Use this MiningShip
+import
+  {
+    BaseEvent,
+    EventType,
+    // Re-import necessary event data types
+    MiningShipRegisteredEventData,
+    MiningShipStatusChangedEventData,
+    MiningShipUnregisteredEventData,
+  } from '../../types/events/EventTypes';
+import
+  {
+    FlowNode,
+    FlowNodeType,
+    ResourceState,
+    ResourceType,
+  } from '../../types/resources/ResourceTypes';
+import { MiningShip, UnifiedShipStatus } from '../../types/ships/ShipTypes'; // Use this MiningShip
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 // Fix import path for ShipStatus
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { ResourceManager } from '../game/ResourceManager';
 import { MiningShipManager } from './MiningShipManager';
 
@@ -41,9 +44,9 @@ function createFlowNodeInternal(
   id: string,
   type: FlowNodeType,
   resourceTypes: ResourceType[], // Keep for potential future use, though FlowNode doesn't directly use it
-  efficiency: number = 1.0,
-  isActive: boolean = true,
-  capacity: number = 1000
+  efficiency = 1.0,
+  isActive = true,
+  capacity = 1000
   // currentLoad: number = 0, // Not in FlowNode
 ): FlowNode {
   return {
@@ -70,8 +73,8 @@ export class MiningResourceIntegration {
   private thresholdManager: ResourceThresholdManager;
   private flowManager: ResourceFlowManager;
   private miningManager: MiningShipManager;
-  private initialized: boolean = false;
-  private miningNodes: Map<string, ResourceNode> = new Map();
+  private initialized = false;
+  private miningNodes = new Map<string, ResourceNode>();
   private transferHistory: ResourceTransfer[] = [];
   private unsubscribeFunctions: (() => void)[] = [];
 
@@ -129,7 +132,7 @@ export class MiningResourceIntegration {
       moduleEventBus.subscribe(EventType.MINING_SHIP_REGISTERED, (event: BaseEvent) => {
         // Use type guard
         if (isMiningShipRegisteredData(event.data)) {
-          const ship = event.data.ship; // Type is now known
+          const {ship} = event.data; // Type is now known
           console.warn(`[MiningResourceIntegration] Mining ship registered: ${ship.id}`);
 
           // Use UnifiedShipStatus
@@ -242,7 +245,7 @@ export class MiningResourceIntegration {
   private registerMiningNodes(): void {
     const nodes = this.getMiningNodesFromManager();
     nodes.forEach(node => {
-      if (!node || !node.id || !node.type || !node.position) return;
+      if (!node?.id || !node.type || !node.position) return;
       this.miningNodes.set(node.id, {
         id: node.id,
         type: node.type,
@@ -302,7 +305,7 @@ export class MiningResourceIntegration {
     id: string,
     type: ResourceType,
     position: Position,
-    efficiency: number = 1.0
+    efficiency = 1.0
   ): void {
     this.miningNodes.set(id, {
       id,
@@ -326,12 +329,12 @@ export class MiningResourceIntegration {
    * Stubbed: Helper method to get mining nodes.
    * TODO: Implement logic to query the actual source of mining nodes (e.g., AsteroidFieldManager).
    */
-  private getMiningNodesFromManager(): Array<{
+  private getMiningNodesFromManager(): {
     id: string;
     type: ResourceType;
     position: Position;
     thresholds: { min: number; max: number }; // Keep signature, though we return []
-  }> {
+  }[] {
     // Call the public method - This method doesn't exist on the manager!
     // return this.miningManager.getResourceNodes();
     console.warn(
@@ -342,8 +345,12 @@ export class MiningResourceIntegration {
 
   private handleMiningTaskCompleted(event: BaseEvent): void {
     if (!event.data || typeof event.data !== 'object' || !('task' in event.data)) {
-      console.warn(
-        '[MiningResourceIntegration] Received MiningTaskCompleted event without valid task data.'
+      errorLoggingService.logWarn(
+        '[MiningResourceIntegration] Received MiningTaskCompleted event without valid task data',
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+        }
       );
       return;
     }
@@ -360,13 +367,17 @@ export class MiningResourceIntegration {
     }
 
     if (!isTaskData(event.data.task)) {
-      console.warn(
-        '[MiningResourceIntegration] Received MiningTaskCompleted event with invalid task structure in data.'
+      errorLoggingService.logWarn(
+        '[MiningResourceIntegration] Received MiningTaskCompleted event with invalid task structure in data',
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+        }
       );
       return;
     }
 
-    const task = event.data.task;
+    const {task} = event.data;
     const ship: MiningShip | undefined = this.miningManager.getShipData(task.shipId);
 
     if (ship && ship.status === UnifiedShipStatus.RETURNING) {
@@ -381,21 +392,51 @@ export class MiningResourceIntegration {
         cargoCapacity = (ship.stats.cargo as { capacity: number }).capacity;
       }
 
-      const amountToDeposit = ship.currentLoad ?? 0;
-      if (amountToDeposit > 0) {
+      // Safely extract currentLoad and ensure it's a number
+      const rawCurrentLoad = ship.currentLoad;
+      const amountToDeposit: number = typeof rawCurrentLoad === 'number' ? rawCurrentLoad : 0;
+      
+      if (amountToDeposit > 0 && cargoCapacity > 0) {
         this.resourceManager.addResource(task.resourceType, amountToDeposit);
-        console.log(
-          `[MiningResourceIntegration] Ship ${ship.id} deposited ${amountToDeposit.toFixed(2)} ${task.resourceType}`
+        errorLoggingService.logInfo(
+          `[MiningResourceIntegration] Ship ${ship.id} deposited ${amountToDeposit.toFixed(2)} ${task.resourceType}`,
+          {
+            service: 'MiningResourceIntegration',
+            method: 'handleMiningTaskCompleted',
+            shipId: ship.id,
+            resourceType: task.resourceType,
+            amount: amountToDeposit,
+          }
         );
       } else {
-        console.log(`[MiningResourceIntegration] Ship ${ship.id} returned with empty cargo.`);
+        errorLoggingService.logInfo(
+          `[MiningResourceIntegration] Ship ${ship.id} returned with empty cargo`,
+          {
+            service: 'MiningResourceIntegration',
+            method: 'handleMiningTaskCompleted',
+            shipId: ship.id,
+          }
+        );
       }
     } else if (ship) {
-      console.log(
-        `[MiningResourceIntegration] Task completed for ship ${ship.id}, but status was ${ship.status}, not RETURNING.`
+      errorLoggingService.logInfo(
+        `[MiningResourceIntegration] Task completed for ship ${ship.id}, but status was ${ship.status}, not RETURNING`,
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+          shipId: ship.id,
+          status: ship.status,
+        }
       );
     } else {
-      console.warn(`[MiningResourceIntegration] Task completed for unknown ship ${task.shipId}.`);
+      errorLoggingService.logWarn(
+        `[MiningResourceIntegration] Task completed for unknown ship ${task.shipId}`,
+        {
+          service: 'MiningResourceIntegration',
+          method: 'handleMiningTaskCompleted',
+          shipId: task.shipId,
+        }
+      );
     }
   }
 
@@ -416,7 +457,7 @@ function isMiningShipRegisteredData(data: unknown): data is MiningShipRegistered
     typeof data === 'object' &&
     data !== null &&
     'ship' in data &&
-    typeof (data as any).ship === 'object'
+    typeof (data as { ship: unknown }).ship === 'object'
   );
 }
 
@@ -425,7 +466,7 @@ function isMiningShipUnregisteredData(data: unknown): data is MiningShipUnregist
     typeof data === 'object' &&
     data !== null &&
     'shipId' in data &&
-    typeof (data as any).shipId === 'string'
+    typeof (data as { shipId: unknown }).shipId === 'string'
   );
 }
 
@@ -434,11 +475,11 @@ function isMiningShipStatusChangedData(data: unknown): data is MiningShipStatusC
     typeof data === 'object' &&
     data !== null &&
     'shipId' in data &&
-    typeof (data as any).shipId === 'string' &&
+    typeof (data as { shipId: unknown }).shipId === 'string' &&
     'oldStatus' in data &&
-    typeof (data as any).oldStatus === 'string' && // Basic check
+    typeof (data as { oldStatus: unknown }).oldStatus === 'string' && // Basic check
     'newStatus' in data &&
-    typeof (data as any).newStatus === 'string'
+    typeof (data as { newStatus: unknown }).newStatus === 'string'
   ); // Basic check
 }
 
@@ -449,11 +490,11 @@ function isMiningResourceCollectedData(
     typeof data === 'object' &&
     data !== null &&
     'shipId' in data &&
-    typeof (data as any).shipId === 'string' &&
+    typeof (data as { shipId: unknown }).shipId === 'string' &&
     'resourceType' in data &&
-    typeof (data as any).resourceType === 'string' && // Basic check for ResourceType
+    typeof (data as { resourceType: unknown }).resourceType === 'string' && // Basic check for ResourceType
     'amount' in data &&
-    typeof (data as any).amount === 'number'
+    typeof (data as { amount: unknown }).amount === 'number'
   );
 }
 // --------------------------------

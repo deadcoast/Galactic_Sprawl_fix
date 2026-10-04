@@ -2,28 +2,34 @@
  * @file ModuleEventBus.ts
  * Standardized implementation of the ModuleEventBus using the new EventBus base class.
  *
- * This file maintains backward compatibility with the original ModuleEvents.ts
+ * This file maintains backcombatd compatibility with the original ModuleEvents.ts
  * while leveraging the new standardized architecture.
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
-import {
-  isValidModuleStatusEventData,
-  isValidPopulationEventData,
-  isValidResourceEventData,
-  isValidStandardizedEvent,
-  isValidTradeRouteEventData,
-  StandardizedEvent,
-} from '../../types/events/StandardizedEvents';
+import
+  {
+    isValidModuleStatusEventData,
+    isValidPopulationEventData,
+    isValidResourceEventData,
+    isValidStandardizedEvent,
+    isValidTradeRouteEventData,
+    StandardizedEvent,
+  } from '../../types/events/StandardizedEvents';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventBus, EventListener, SubscriptionOptions } from './EventBus';
 
 /**
  * Legacy type definition for ModuleEvent
- * Kept for backward compatibility
+ * Kept for backcombatd compatibility
  */
 export type ModuleEvent = StandardizedEvent;
 
@@ -65,8 +71,8 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
         category: eventOrName as EventType,
         subCategory: eventOrName as EventType,
         timestamp: Date.now(),
-        moduleId: (data as { moduleId?: string })?.moduleId || 'unknown',
-        moduleType: (data as { moduleType?: ModuleType })?.moduleType || 'radar',
+        moduleId: (data as { moduleId?: string })?.moduleId ?? 'unknown',
+        moduleType: (data as { moduleType?: ModuleType })?.moduleType ?? 'radar',
         data: data as Record<string, unknown>,
       };
       super.emit(event);
@@ -158,7 +164,7 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
     options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }
   ): () => void {
     // Create array to hold all unsubscribe functions
-    const unsubscribers: Array<() => void> = [];
+    const unsubscribers: (() => void)[] = [];
 
     // Subscribe to each event type
     for (const eventType of eventTypes) {

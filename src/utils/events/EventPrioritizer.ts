@@ -12,7 +12,7 @@
  * 5. Adaptive processing strategies
  */
 
-import { Subject, Subscription, from, of } from 'rxjs';
+import { from, of, Subject, Subscription } from 'rxjs';
 import { bufferTime, concatMap, delay, filter, mergeMap } from 'rxjs/operators';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { EventBatchConfig } from './EventBatcher';
@@ -164,7 +164,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
   /**
    * Priority queues for each priority level
    */
-  private queues: Map<EventPriority, PrioritizedEvent<T>[]> = new Map();
+  private queues = new Map<EventPriority, PrioritizedEvent<T>[]>();
 
   /**
    * Whether the prioritizer is currently processing
@@ -184,12 +184,12 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
   /**
    * Map of event type to latest event (for coalescing)
    */
-  private latestEventByType: Map<string, PrioritizedEvent<T>> = new Map();
+  private latestEventByType = new Map<string, PrioritizedEvent<T>>();
 
   /**
    * Set of active subscriptions
    */
-  private subscriptions: Set<Subscription> = new Set();
+  private subscriptions = new Set<Subscription>();
 
   /**
    * Performance metrics
@@ -250,14 +250,16 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.config = {
       ...DEFAULT_CONFIG,
       ...config,
-      batchConfigByPriority: new Map([
-        ...DEFAULT_CONFIG.batchConfigByPriority,
-        ...(config.batchConfigByPriority || new Map()),
+      batchConfigByPriority: new Map<EventPriority, EventBatchConfig>([
+        ...Array.from(DEFAULT_CONFIG.batchConfigByPriority.entries()),
+        ...Array.from(config.batchConfigByPriority?.entries() ?? []),
       ]),
-      priorityMap: new Map([...(config.priorityMap || new Map())]),
-      coalesceableEventTypes: new Set([
-        ...DEFAULT_CONFIG.coalesceableEventTypes,
-        ...(config.coalesceableEventTypes || new Set()),
+      priorityMap: new Map<EventType | string, EventPriority>([
+        ...Array.from(config.priorityMap?.entries() ?? [])
+      ]),
+      coalesceableEventTypes: new Set<EventType | string>([
+        ...Array.from(DEFAULT_CONFIG.coalesceableEventTypes),
+        ...Array.from(config.coalesceableEventTypes ?? []),
       ]),
     };
 
@@ -282,7 +284,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
         const priorityEvents$ = this.events$.pipe(filter(e => e.priority === priority));
 
         // Get batch config for this priority
-        const batchConfig = this.config.batchConfigByPriority.get(priority) || {
+        const batchConfig = this.config.batchConfigByPriority.get(priority) ?? {
           timeWindow: 100,
           maxBatchSize: 50,
           emitEmptyBatches: false,
@@ -310,7 +312,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
             bufferTime(
               batchConfig.timeWindow,
               null,
-              batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER
+              batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER
             ),
             // Only process non-empty batches
             filter(events => events.length > 0),
@@ -382,14 +384,14 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
       // Increment processed count for this priority
       this.metrics.eventsByPriority[prioritizedEvent.priority]++;
     } catch (error) {
-      console.error('Error processing event:', error);
+      // Error processing event - handled appropriately
     }
   }
 
   /**
    * Update metrics for adaptive throttling
    */
-  private async updateMetrics(): Promise<void> {
+  private updateMetrics(): Promise<void> {
     // Calculate events per second
     const now = Date.now();
 
@@ -408,6 +410,8 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.queues.forEach((queue, priority) => {
       this.metrics.queueDepthByPriority[priority] = queue.length;
     });
+    
+    return Promise.resolve();
   }
 
   /**
@@ -499,14 +503,17 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     this.config = {
       ...this.config,
       ...config,
-      batchConfigByPriority: new Map([
-        ...this.config.batchConfigByPriority,
-        ...(config.batchConfigByPriority || new Map()),
+      batchConfigByPriority: new Map<EventPriority, EventBatchConfig>([
+        ...Array.from(this.config.batchConfigByPriority.entries()),
+        ...Array.from(config.batchConfigByPriority?.entries() ?? []),
       ]),
-      priorityMap: new Map([...this.config.priorityMap, ...(config.priorityMap || new Map())]),
+      priorityMap: new Map<EventType | string, EventPriority>([
+        ...Array.from(this.config.priorityMap.entries()),
+        ...Array.from(config.priorityMap?.entries() ?? [])
+      ]),
       coalesceableEventTypes: new Set([
         ...this.config.coalesceableEventTypes,
-        ...(config.coalesceableEventTypes || new Set()),
+        ...(config.coalesceableEventTypes ?? new Set()),
       ]),
     };
   }

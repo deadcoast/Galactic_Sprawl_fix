@@ -9,7 +9,7 @@ interface Officer {
   nextLevelXp: number;
   role: 'Squad Leader' | 'Captain';
   status: 'training' | 'assigned' | 'available';
-  specialization: 'War' | 'Recon' | 'Mining';
+  specialization: 'combat' | 'Recon' | 'Mining';
   skills: {
     combat: number;
     leadership: number;
@@ -37,7 +37,7 @@ export function OfficerDetails({
 }: OfficerDetailsProps) {
   const getSpecializationColor = () => {
     switch (officer.specialization) {
-      case 'War':
+      case 'combat':
         return 'red';
       case 'Recon':
         return 'cyan';
@@ -150,7 +150,7 @@ export function OfficerDetails({
         <div className="mb-6">
           <h4 className="mb-3 text-sm font-medium text-gray-300">Training Programs</h4>
           <div className="space-y-2">
-            {['War', 'Recon', 'Mining'].map(spec => (
+            {['combat', 'Recon', 'Mining'].map(spec => (
               <button
                 key={spec}
                 onClick={() => onStartTraining(officer.id, spec)}
@@ -162,7 +162,7 @@ export function OfficerDetails({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    {spec === 'War' && <Sword className="h-4 w-4" />}
+                    {spec === 'combat' && <Sword className="h-4 w-4" />}
                     {spec === 'Recon' && <Star className="h-4 w-4" />}
                     {spec === 'Mining' && <Zap className="h-4 w-4" />}
                     <span className="text-white">{spec} Specialization</span>
@@ -224,12 +224,12 @@ export function OfficerDetails({
           <h4 className="mb-3 text-sm font-medium text-gray-300">Available Assignments</h4>
           <div className="space-y-2">
             <button
-              onClick={() => onAssign(officer.id, 'warFleet')}
+              onClick={() => onAssign(officer.id, 'combatFleet')}
               className="flex w-full items-center justify-between rounded-lg bg-gray-800/50 p-3 hover:bg-gray-700/50"
             >
               <div className="flex items-center space-x-2">
                 <Sword className="h-4 w-4 text-red-400" />
-                <span className="text-white">War Fleet Command</span>
+                <span className="text-white">combat Fleet Command</span>
               </div>
               <ChevronRight className="h-4 w-4 text-gray-500" />
             </button>

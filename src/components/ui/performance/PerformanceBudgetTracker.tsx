@@ -405,172 +405,171 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
       <style>
         {`
         .performance-budget-tracker {
-          font-family:
-            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-            'Open Sans', 'Helvetica Neue', sans-serif;
-          border: 1px solid #e0e0e0;
+          border: 1px solid var(--gs-border);
           border-radius: 4px;
           overflow: hidden;
+          background: var(--gs-surface-1);
+          color: var(--gs-text-1);
         }
 
-        .summary-section {
+        .performance-budget-tracker .summary-section {
           padding: 16px;
-          background-color: #f5f5f5;
-          border-bottom: 1px solid #e0e0e0;
+          background-color: var(--gs-surface-2);
+          border-bottom: 1px solid var(--gs-border);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
-        .summary-stats {
+        .performance-budget-tracker .summary-stats {
           display: flex;
           gap: 24px;
         }
 
-        .summary-item {
+        .performance-budget-tracker .summary-item {
           text-align: center;
         }
 
-        .summary-label {
+        .performance-budget-tracker .summary-label {
           font-size: 12px;
-          color: #666;
+          color: var(--gs-text-2);
           margin-bottom: 4px;
         }
 
-        .summary-value {
+        .performance-budget-tracker .summary-value {
           font-size: 24px;
           font-weight: 600;
-          color: #333;
+          color: var(--gs-text-1);
         }
 
-        .summary-value.warning {
+        .performance-budget-tracker .summary-value.warning {
           color: #ffa000;
         }
 
-        .summary-value.error {
+        .performance-budget-tracker .summary-value.error {
           color: #d32f2f;
         }
 
-        .summary-value.success {
+        .performance-budget-tracker .summary-value.success {
           color: #388e3c;
         }
 
-        .status-badge {
+        .performance-budget-tracker .status-badge {
           padding: 8px 16px;
           border-radius: 4px;
           font-weight: 600;
           font-size: 14px;
         }
 
-        .status-badge.error {
-          background-color: #ffebee;
-          color: #d32f2f;
-          border: 1px solid #ffcdd2;
+        .performance-budget-tracker .status-badge.error {
+          background-color: rgba(239, 68, 68, 0.16);
+          color: #fca5a5;
+          border: 1px solid rgba(239, 68, 68, 0.45);
         }
 
-        .status-badge.warning {
-          background-color: #fff8e1;
-          color: #ffa000;
-          border: 1px solid #ffecb3;
+        .performance-budget-tracker .status-badge.warning {
+          background-color: rgba(245, 158, 11, 0.16);
+          color: #fcd34d;
+          border: 1px solid rgba(245, 158, 11, 0.45);
         }
 
-        .status-badge.success {
-          background-color: #e8f5e9;
-          color: #388e3c;
-          border: 1px solid #c8e6c9;
+        .performance-budget-tracker .status-badge.success {
+          background-color: rgba(34, 197, 94, 0.16);
+          color: #86efac;
+          border: 1px solid rgba(34, 197, 94, 0.45);
         }
 
-        .budgets-container {
+        .performance-budget-tracker .budgets-container {
           padding: 16px;
         }
 
-        .budget-category {
+        .performance-budget-tracker .budget-category {
           margin-bottom: 24px;
         }
 
-        .category-heading {
+        .performance-budget-tracker .category-heading {
           margin-top: 0;
           margin-bottom: 12px;
           font-size: 18px;
-          color: #333;
+          color: var(--gs-text-1);
           padding-bottom: 8px;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid var(--gs-border);
         }
 
-        .budget-table {
+        .performance-budget-tracker .budget-table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        .budget-table th,
-        .budget-table td {
+        .performance-budget-tracker .budget-table th,
+        .performance-budget-tracker .budget-table td {
           padding: 12px;
           text-align: left;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid var(--gs-border);
         }
 
-        .budget-table th {
+        .performance-budget-tracker .budget-table th {
           font-weight: 500;
-          color: #666;
+          color: var(--gs-text-2);
           font-size: 14px;
         }
 
-        .budget-table tr:last-child td {
+        .performance-budget-tracker .budget-table tr:last-child td {
           border-bottom: none;
         }
 
-        .budget-name {
+        .performance-budget-tracker .budget-name {
           font-weight: 500;
         }
 
-        .budget-description {
+        .performance-budget-tracker .budget-description {
           font-size: 12px;
-          color: #666;
+          color: var(--gs-text-2);
           margin-top: 4px;
         }
 
-        .budget-metric {
+        .performance-budget-tracker .budget-metric {
           min-width: 200px;
         }
 
-        .metric-comparison {
+        .performance-budget-tracker .metric-comparison {
           display: flex;
           align-items: center;
           flex-wrap: wrap;
         }
 
-        .actual-value {
+        .performance-budget-tracker .actual-value {
           font-weight: 600;
           font-size: 16px;
         }
 
-        .budget-value {
-          color: #888;
+        .performance-budget-tracker .budget-value {
+          color: var(--gs-text-2);
           margin-left: 4px;
           font-size: 14px;
         }
 
-        .health-indicator {
+        .performance-budget-tracker .health-indicator {
           margin-top: 6px;
           height: 4px;
-          background-color: #eee;
+          background-color: rgba(88, 110, 145, 0.35);
           width: 100%;
           border-radius: 2px;
           overflow: hidden;
         }
 
-        .health-bar {
+        .performance-budget-tracker .health-bar {
           height: 100%;
           transition: width 0.3s ease;
         }
 
-        .no-data {
-          color: #999;
+        .performance-budget-tracker .no-data {
+          color: var(--gs-text-3);
           font-style: italic;
           font-size: 14px;
         }
 
-        .status-indicator {
+        .performance-budget-tracker .status-indicator {
           font-size: 12px;
           font-weight: 600;
           padding: 4px 8px;
@@ -579,27 +578,27 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
           line-height: 1;
         }
 
-        .status-indicator.passing {
-          background-color: #e8f5e9;
-          color: #388e3c;
+        .performance-budget-tracker .status-indicator.passing {
+          background-color: rgba(34, 197, 94, 0.14);
+          color: #86efac;
         }
 
-        .status-indicator.failing {
-          background-color: #fff8e1;
-          color: #ffa000;
+        .performance-budget-tracker .status-indicator.failing {
+          background-color: rgba(245, 158, 11, 0.14);
+          color: #fcd34d;
         }
 
-        .status-indicator.critical {
-          background-color: #ffebee;
-          color: #d32f2f;
+        .performance-budget-tracker .status-indicator.critical {
+          background-color: rgba(239, 68, 68, 0.14);
+          color: #fca5a5;
         }
 
-        tr.violation {
-          background-color: #fffde7;
+        .performance-budget-tracker tr.violation {
+          background-color: rgba(245, 158, 11, 0.12);
         }
 
-        tr.critical-violation {
-          background-color: #ffebee;
+        .performance-budget-tracker tr.critical-violation {
+          background-color: rgba(239, 68, 68, 0.14);
         }
         `}
       </style>

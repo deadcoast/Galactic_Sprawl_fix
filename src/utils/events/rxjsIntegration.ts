@@ -17,7 +17,7 @@ export const moduleEvents$ = moduleEventSubject.asObservable().pipe(
  * Initialize the RxJS integration with the moduleEventBus
  */
 export function initializeRxJSIntegration(): () => void {
-  // Subscribe to all module events and forward them to the subject
+  // Subscribe to all module events and forcombatd them to the subject
   const unsubscribe = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, event => {
     moduleEventSubject.next(event);
   });
@@ -60,12 +60,12 @@ export function getEventsByData<T>(
       }
 
       // Check if the property exists in event?.data
-      if (!(propertyName in (event?.data as Record<string, unknown>))) {
+      if (!(propertyName in event.data)) {
         return false;
       }
 
       // Check if the property value matches
-      return (event?.data as Record<string, unknown>)[propertyName] === propertyValue;
+      return event.data[propertyName] === propertyValue;
     })
   );
 }
@@ -108,7 +108,7 @@ export function createEventTypeSubject<T extends ModuleEventType>(
 ): Subject<ModuleEvent> {
   const subject = new Subject<ModuleEvent>();
 
-  // Subscribe to the event type and forward to the subject
+  // Subscribe to the event type and forcombatd to the subject
   const unsubscribe = moduleEventBus.subscribe(eventType, event => {
     subject.next(event);
   });
@@ -132,7 +132,7 @@ export function createEventTypeSubject<T extends ModuleEventType>(
 /**
  * Create a specialized event stream with transformation
  */
-export function createTransformedEventStream<_T, R>(
+export function createTransformedEventStream<T extends ModuleEvent, R>(
   eventType: ModuleEventType,
   transformFn: (event: ModuleEvent) => R
 ): Observable<R> {

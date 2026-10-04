@@ -175,11 +175,10 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
   let rafId: number | null = null;
   let frameCount = 0;
   let frameTimes: number[] = [];
-  let startTime = 0;
 
   // FPS tracking (last 60 frames)
   const fpsBufferSize = 60;
-  const fpsBuffer: number[] = Array(fpsBufferSize).fill(0);
+  const fpsBuffer: number[] = new Array<number>(fpsBufferSize).fill(0);
   let fpsBufferIndex = 0;
   let currentFps = targetFps;
 
@@ -206,11 +205,10 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
    *
    * @param timestamp Current frame timestamp
    */
-  function animationFrame(timestamp: number) {
+  const animationFrame = (timestamp: number) => {
     // Calculate timing information
     const deltaTime = lastFrameTimestamp ? timestamp - lastFrameTimestamp : 0;
     lastFrameTimestamp = timestamp;
-    const elapsedTime = timestamp - startTime;
 
     // Update FPS tracking
     updateFps(deltaTime);
@@ -258,9 +256,9 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       // Skip if we've reached the per-frame animation limit
       if (maxAnimationsPerFrame > 0 && animationsProcessed >= maxAnimationsPerFrame) {
         if (debugMode) {
-          console.warn(
-            `Animation frame manager: Reached max animations per frame (${maxAnimationsPerFrame})`
-          );
+          // console.warn(
+          //   `Animation frame manager: Reached max animations per frame (${maxAnimationsPerFrame})`
+          // );
         }
         break;
       }
@@ -278,9 +276,9 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       // Skip if we're out of time
       if (frameTimeBudgetRemaining <= 0) {
         if (debugMode) {
-          console.warn(
-            `Animation frame manager: Frame budget exhausted, skipping remaining animations`
-          );
+          // console.warn(
+          //   `Animation frame manager: Frame budget exhausted, skipping remaining animations`
+          // );
         }
         break;
       }
@@ -294,7 +292,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
         frameCount: animation.frameCount,
         remainingFrameBudget: frameTimeBudgetRemaining,
         isFrameOverBudget:
-          frameTimeBudgetRemaining < (animation.config.frameTimeBudget || frameBudget * 0.2),
+          frameTimeBudgetRemaining < (animation.config.frameTimeBudget ?? frameBudget * 0.2),
         currentFps,
       };
 
@@ -310,9 +308,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
 
       try {
         // Execute animation callback
-        const callbackStart = performance.now();
         const result = animation.callback(animation.elapsedTime, _deltaTime, _frameInfo);
-        const _callbackDuration = performance.now() - callbackStart;
 
         // Handle result (return true to stop the animation)
         if (result === true) {
@@ -326,14 +322,14 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
           !animation.config.loop
         ) {
           if (debugMode) {
-            console.warn(
-              `Animation frame manager: Auto-cancelling long-running animation ${animation.config.id}`
-            );
+            // console.warn(
+            //   `Animation frame manager: Auto-cancelling long-running animation ${animation.config.id}`
+            // );
           }
           completeAnimation(animation.config.id);
         }
-      } catch (error) {
-        console.error(`Error in animation ${animation.config.id}:`, error);
+      } catch {
+        // console.error(`Error in animation ${animation.config.id}:`);
         animation.status = 'error';
       }
 
@@ -346,7 +342,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     } else {
       stopAnimationLoop();
     }
-  }
+  };
 
   /**
    * Check if there are unknown running animations
@@ -362,13 +358,12 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     if (isRunning) return;
 
     isRunning = true;
-    startTime = performance.now();
     lastFrameTimestamp = 0;
     frameCount = 0;
     frameTimes = [];
 
     if (debugMode) {
-      console.warn('Animation frame manager: Starting animation loop');
+      // console.warn('Animation frame manager: Starting animation loop');
     }
 
     rafId = requestAnimationFrame(animationFrame);
@@ -388,7 +383,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.warn('Animation frame manager: Stopping animation loop');
+      // console.warn('Animation frame manager: Stopping animation loop');
     }
   }
 
@@ -404,20 +399,20 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     callback: AnimationFrameCallback
   ): string {
     // Generate ID if not provided
-    const id = config.id || `animation-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const id = config.id ?? `animation-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
     // Create full configuration with defaults
     const fullConfig: RegisteredAnimationConfig = {
       id,
-      name: config.name || `Animation ${id}`,
-      priority: config.priority || 'medium',
-      type: config.type || 'custom',
-      duration: config.duration || 1000,
+      name: config.name ?? `Animation ${id}`,
+      priority: config.priority ?? 'medium',
+      type: config.type ?? 'custom',
+      duration: config.duration ?? 1000,
       easing: config.easing,
-      loop: config.loop || false,
-      runWhenHidden: config.runWhenHidden || false,
-      frameTimeBudget: config.frameTimeBudget || frameBudget * 0.5,
-      enableProfiling: config.enableProfiling || enableProfiling,
+      loop: config.loop ?? false,
+      runWhenHidden: config.runWhenHidden ?? false,
+      frameTimeBudget: config.frameTimeBudget ?? frameBudget * 0.5,
+      enableProfiling: config.enableProfiling ?? enableProfiling,
       onComplete: config.onComplete,
       syncGroup: config.syncGroup,
     };
@@ -458,7 +453,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animations.set(id, animation);
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Registered animation ${id} (${fullConfig.name})`);
+      // console.warn(`Animation frame manager: Registered animation ${id} (${fullConfig.name})`);
     }
 
     return id;
@@ -474,7 +469,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     const animation = animations.get(id);
     if (!animation) {
       if (debugMode) {
-        console.warn(`Animation frame manager: Cannot start animation ${id} - not found`);
+        // console.warn(`Animation frame manager: Cannot start animation ${id} - not found`);
       }
       return;
     }
@@ -484,7 +479,6 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     if (resetTime) {
       animation.startTime = now;
       animation.lastFrameTime = now;
-      animation.elapsedTime = 0;
       animation.frameCount = 0;
     } else if (animation.status === 'paused' && animation.pausedElapsedTime !== undefined) {
       // Resume from pause - adjust start time to maintain elapsed time
@@ -508,7 +502,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Started animation ${id} (${animation.config.name})`);
+      // console.warn(`Animation frame manager: Started animation ${id} (${animation.config.name})`);
     }
 
     // Start the animation loop if needed
@@ -533,7 +527,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animation.pauseStartTime = performance.now();
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Paused animation ${id} (${animation.config.name})`);
+      // console.warn(`Animation frame manager: Paused animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -551,7 +545,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     startAnimation(id, false);
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Resumed animation ${id} (${animation.config.name})`);
+      // console.warn(`Animation frame manager: Resumed animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -574,16 +568,16 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     // Call completion handler if provided
-    if (animation.config.onComplete) {
+    if (animation?.config?.onComplete) {
       try {
         animation.config.onComplete();
-      } catch (error) {
-        console.error(`Error in animation completion handler for ${id}:`, error);
+      } catch {
+        // console.error(`Error in animation completion handler for ${id}:`);
       }
     }
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Completed animation ${id} (${animation.config.name})`);
+      // console.warn(`Animation frame manager: Completed animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -601,10 +595,10 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     // Stop profiling if active
     if (
       animation.config.enableProfiling &&
-      animation.profilingData?.profiler &&
-      animation.profilingData.profiler.getStatus().isRunning
+      animation.profilingData?.profiler?.getStatus()?.isRunning &&
+      animation.profilingData
     ) {
-      animation.profilingData.report = animation.profilingData.profiler.stop();
+      animation.profilingData.report = animation.profilingData.profiler?.stop();
     }
 
     animations.delete(id);
@@ -621,7 +615,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Cancelled animation ${id} (${animation.config.name})`);
+      // console.warn(`Animation frame manager: Cancelled animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -654,7 +648,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Updated visibility for ${id} to ${visibility}`);
+      // console.warn(`Animation frame manager: Updated visibility for ${id} to ${visibility}`);
     }
   }
 
@@ -673,7 +667,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animation.config.priority = priority;
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Updated priority for ${id} to ${priority}`);
+      // console.warn(`Animation frame manager: Updated priority for ${id} to ${priority}`);
     }
   }
 
@@ -713,7 +707,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.warn(`Animation frame manager: Synchronized group ${groupId} with action ${action}`);
+      // console.warn(`Animation frame manager: Synchronized group ${groupId} with action ${action}`);
     }
   }
 
@@ -725,15 +719,14 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
    */
   function getPerformanceReport(id: string): AnimationPerformanceReport | undefined {
     const animation = animations.get(id);
-    if (!animation || !animation.profilingData) {
+    if (!animation?.profilingData) {
       return undefined;
     }
 
     // If animation is still running, get current report
     if (
       animation.status === 'running' &&
-      animation.profilingData.profiler &&
-      animation.profilingData.profiler.getStatus().isRunning
+      animation.profilingData.profiler?.getStatus()?.isRunning
     ) {
       return animation.profilingData.profiler.stop();
     }
@@ -770,7 +763,6 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       priority: anim.config.priority,
       visibility: anim.visibility,
       type: anim.config.type,
-      elapsedTime: anim.elapsedTime,
       frameCount: anim.frameCount,
     }));
   }
@@ -976,9 +968,6 @@ export function registerD3Transition<
     type: 'transition',
   };
 
-  // Store original transition method
-  const _originalTransition = selection.transition;
-
   // Register animation with frame manager
   const id = animationFrameManager.registerAnimation(
     fullConfig,
@@ -1068,8 +1057,8 @@ export function registerAnimationSequence<
   controller: { start: () => void; stop: () => void; pause: () => void; resume: () => void };
 } {
   // Store original sequence methods to intercept them
-  const _originalStart = sequence.start;
-  const _originalStop = sequence.stop;
+  const _originalStart = sequence.start.bind(sequence); // Bind 'this'
+  const _originalStop = sequence.stop.bind(sequence); // Bind 'this'
 
   // Create complete configuration
   const fullConfig: Omit<RegisteredAnimationConfig, 'id'> & { id?: string } = {
@@ -1119,24 +1108,4 @@ export function registerAnimationSequence<
   };
 
   return { id, controller };
-}
-
-function updateAnimation(
-  animation: RegisteredAnimation,
-  timestamp: number,
-  deltaTime: number,
-  frameInfo: FrameInfo
-): void {
-  // ... existing code ...
-  const _deltaTime = timestamp - animation.lastFrameTime;
-  const _frameInfo = {
-    timestamp,
-    elapsed: animation.elapsedTime,
-    deltaTime: _deltaTime,
-    frameCount: animation.frameCount,
-    remainingFrameBudget: frameInfo.remainingFrameBudget,
-    isFrameOverBudget: frameInfo.isFrameOverBudget,
-    currentFps: frameInfo.currentFps,
-  };
-  // ... existing code ...
 }

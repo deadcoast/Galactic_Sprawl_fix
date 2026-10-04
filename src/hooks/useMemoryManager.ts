@@ -176,7 +176,7 @@ export function useMemoryManager<T>(
 
   // Store memory usage estimation
   const [memoryUsage, setMemoryUsage] = useState<number>(
-    initialDataSizeEstimate || estimateObjectSize(initialData)
+    initialDataSizeEstimate ?? estimateObjectSize(initialData)
   );
 
   // Track if memory is above threshold

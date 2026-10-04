@@ -145,7 +145,7 @@ export function ShipUpgrade({ ship, onUpgrade }: ShipUpgradeProps) {
         <span>Upgrade to Tier {ship.tier + 1}</span>
       </button>
 
-      {/* Warnings */}
+      {/* warnings */}
       {!canUpgrade && (
         <div className="mt-4 flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />

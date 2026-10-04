@@ -1,11 +1,12 @@
 import { isEqual } from 'lodash';
 import * as React from 'react';
-import { ComponentType, JSXElementConstructor, ReactElement, useEffect, useRef } from 'react';
-import {
-  ComponentProfilingOptions,
-  ComponentProfilingResult,
-  ComponentRenderMetrics,
-} from '../../types/ui/UITypes';
+import { ComponentType, ReactElement, useEffect, useRef } from 'react';
+import
+  {
+    ComponentProfilingOptions,
+    ComponentProfilingResult,
+    ComponentRenderMetrics
+  } from '../../types/ui/UITypes';
 
 /**
  * Default profiling options
@@ -221,7 +222,7 @@ export function withProfiling<Props>(
   Component: ComponentType<Props>,
   options: Partial<ComponentProfilingOptions> = {}
 ): ComponentType<Props> & { profiler: ComponentProfilingResult } {
-  const componentName = Component.displayName || Component.name || 'UnnamedComponent';
+  const componentName = Component.displayName ?? Component.name ?? 'UnnamedComponent';
   const profiler = createComponentProfiler(componentName, options);
 
   // Create a profiled component
@@ -230,9 +231,9 @@ export function withProfiling<Props>(
       // Store previous props for comparison
       const prevPropsRef = useRef<Props | null>(null);
 
-      // Profile the render
-      const result = profileRender<Props, ReactElement>(
-        p => React.createElement(Component as unknown as JSXElementConstructor<Props>, p),
+              // Profile the render
+        const result = profileRender<Props, ReactElement>(
+          p => React.createElement(Component as React.ComponentType<unknown>, p as unknown as React.Attributes),
         profiler,
         prevPropsRef.current,
         props

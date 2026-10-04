@@ -1,5 +1,23 @@
 import { useEffect, useState } from 'react';
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+
+// CIRCULAR DEPENDENCY MITIGATION:
+// ErrorLoggingService imports BaseEvent from this file, creating a circular dependency.
+// We use type-only import for ErrorType and lazy loading for errorLoggingService.
+import type { ErrorType as ErrorTypeEnum } from '../../services/logging/ErrorLoggingService';
+
+// Lazy-loaded error logging to break circular dependency
+let _errorLoggingService: typeof import('../../services/logging/ErrorLoggingService').errorLoggingService | null = null;
+let _ErrorType: typeof import('../../services/logging/ErrorLoggingService').ErrorType | null = null;
+
+function getErrorLoggingService() {
+  if (!_errorLoggingService) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const module = require('../../services/logging/ErrorLoggingService');
+    _errorLoggingService = module.errorLoggingService;
+    _ErrorType = module.ErrorType;
+  }
+  return { errorLoggingService: _errorLoggingService!, ErrorType: _ErrorType! };
+}
 
 /**
  * Base event interface that all events should extend
@@ -82,9 +100,7 @@ export class EventSystem {
    * @returns The singleton instance
    */
   public static getInstance(): EventSystem {
-    if (!EventSystem.instance) {
-      EventSystem.instance = new EventSystem();
-    }
+    EventSystem.instance ??= new EventSystem();
     return EventSystem.instance;
   }
 
@@ -136,9 +152,7 @@ export class EventSystem {
    */
   public publish<T extends BaseEvent>(event: T, options?: PublishOptions): void {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // If batching is active, add to batch queue and return
     if (this.isBatching) {
@@ -151,6 +165,7 @@ export class EventSystem {
 
     if (mergedOptions.async) {
       this.publishAsync(event, mergedOptions).catch(error => {
+        const { errorLoggingService, ErrorType } = getErrorLoggingService();
         errorLoggingService.logError(
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
@@ -173,9 +188,7 @@ export class EventSystem {
     options: PublishOptions = {}
   ): Promise<void> {
     // Ensure event has a timestamp
-    if (!event.timestamp) {
-      event.timestamp = Date.now();
-    }
+    event.timestamp ??= Date.now();
 
     // Merge options with defaults
     const mergedOptions = { ...this.defaultPublishOptions, ...options, async: true };
@@ -213,6 +226,7 @@ export class EventSystem {
             if (mergedOptions.errorMode === 'throw') {
               throw error;
             } else {
+              const { errorLoggingService, ErrorType } = getErrorLoggingService();
               errorLoggingService.logError(
                 error instanceof Error ? error : new Error(String(error)),
                 ErrorType.RUNTIME,
@@ -229,6 +243,7 @@ export class EventSystem {
       if (mergedOptions.errorMode === 'throw') {
         throw error;
       } else {
+        const { errorLoggingService, ErrorType } = getErrorLoggingService();
         errorLoggingService.logError(
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
@@ -267,11 +282,12 @@ export class EventSystem {
             }
 
             // Call handler
-            subscription.handler(event);
+            void subscription.handler(event);
           } catch (error) {
             if (options?.errorMode === 'throw') {
               throw error;
             } else {
+              const { errorLoggingService, ErrorType } = getErrorLoggingService();
               errorLoggingService.logError(
                 error instanceof Error ? error : new Error(String(error)),
                 ErrorType.RUNTIME,
@@ -286,6 +302,7 @@ export class EventSystem {
       if (options?.errorMode === 'throw') {
         throw error;
       } else {
+        const { errorLoggingService, ErrorType } = getErrorLoggingService();
         errorLoggingService.logError(
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
@@ -406,15 +423,13 @@ export class EventSystem {
       const [lastEvent, setLastEvent] = useState<T | null>(null);
 
       useEffect(() => {
-        const unsubscribe = this.subscribe<T>(
-          eventType,
-          event => {
-            setLastEvent(event);
-          },
-          options
-        );
-
-        return unsubscribe;
+        return this.subscribe<T>(
+                  eventType,
+                  event => {
+                    setLastEvent(event);
+                  },
+                  options
+                );
       }, [eventType, JSON.stringify(options)]);
 
       return lastEvent;

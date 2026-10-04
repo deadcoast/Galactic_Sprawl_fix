@@ -284,7 +284,7 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.HEATMAP,
-    colors: props?.colors || ['#000080', '#0000ff', '#00ffff', '#ffff00', '#ff0000'],
+    colors: props?.colors ?? ['#000080', '#0000ff', '#00ffff', '#ffff00', '#ff0000'],
   }),
 
   /**
@@ -295,7 +295,7 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.DENSITY,
-    colors: props?.colors || ['#000044', '#000088', '#0000ff', '#4444ff', '#8888ff'],
+    colors: props?.colors ?? ['#000044', '#000088', '#0000ff', '#4444ff', '#8888ff'],
     intensity: props?.intensity ?? 0.7,
   }),
 
@@ -307,8 +307,8 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.HIGHLIGHT,
-    colors: props?.colors || ['#666666', '#888888', '#aaaaaa', '#cccccc', '#ffffff'],
-    highlightRange: props?.highlightRange || [0.8, 1.0],
+    colors: props?.colors ?? ['#666666', '#888888', '#aaaaaa', '#cccccc', '#ffffff'],
+    highlightRange: props?.highlightRange ?? [0.8, 1.0],
     intensity: props?.intensity ?? 0.9,
   }),
 
@@ -320,9 +320,9 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.FLOW,
-    colors: props?.colors || ['#003366', '#0066cc', '#0099ff', '#66ccff', '#99ddff'],
+    colors: props?.colors ?? ['#003366', '#0066cc', '#0099ff', '#66ccff', '#99ddff'],
     animate: true,
-    animationSpeed: props?.animationSpeed || 1.5,
+    animationSpeed: props?.animationSpeed ?? 1.5,
   }),
 
   /**
@@ -333,7 +333,7 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.CONTOUR,
-    colors: props?.colors || ['#000000', '#333333', '#666666', '#999999', '#ffffff'],
+    colors: props?.colors ?? ['#000000', '#333333', '#666666', '#999999', '#ffffff'],
     intensity: props?.intensity ?? 0.8,
   }),
 };

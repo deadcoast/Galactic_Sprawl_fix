@@ -130,7 +130,7 @@ export const linkSchema: Schema = {
  * @param path The current path (for error reporting)
  * @returns A validation result
  */
-export function validateSchema<T>(data: T, schema: Schema, path: string = ''): ValidationResult {
+export function validateSchema<T>(data: T, schema: Schema, path = ''): ValidationResult {
   const result: ValidationResult = { valid: true, errors: [] };
 
   if (!data || typeof data !== 'object') {
@@ -515,7 +515,7 @@ export function formatValidationErrors(result: ValidationResult): string[] {
 export function assertValid<T>(
   data: T,
   schema: Schema,
-  errorPrefix: string = 'Validation error'
+  errorPrefix = 'Validation error'
 ): void {
   const result = validateSchema(data, schema);
   if (!result.valid) {

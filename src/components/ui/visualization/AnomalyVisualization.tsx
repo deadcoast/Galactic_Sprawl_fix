@@ -3,11 +3,12 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useService } from '../../../hooks/services/useService';
 import { anomalyDetectionService, DataPoint } from '../../../services/AnomalyDetectionService';
-import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../../services/logging/ErrorLoggingService';
 
 interface ViewportState {
   x: number;
@@ -48,9 +49,12 @@ const useChartCoordination = ({
     try {
       const storedState = localStorage.getItem(chartStorageKey);
       if (storedState) {
-        const parsedState = JSON.parse(storedState);
+        const parsedState = JSON.parse(storedState) as {
+          viewport: ViewportState;
+          highlight: DataPoint | null;
+        };
         // Apply initial viewport from storage or use the provided initial state
-        onViewportChange(parsedState.viewport || initialState.viewport);
+        onViewportChange(parsedState.viewport ?? initialState.viewport);
 
         // Apply initial highlight from storage if available
         if (parsedState.highlight) {
@@ -78,7 +82,9 @@ const useChartCoordination = ({
       // Persist chart settings using chart ID and group ID
       try {
         const currentState = localStorage.getItem(chartStorageKey);
-        const newState = currentState ? { ...JSON.parse(currentState), viewport } : { viewport };
+        const newState = currentState
+          ? { ...(JSON.parse(currentState) as { viewport: ViewportState }), viewport }
+          : { viewport };
         localStorage.setItem(chartStorageKey, JSON.stringify(newState));
       } catch (error) {
         console.warn(`Could not save viewport state for chart ${chartId}:`, error);
@@ -97,7 +103,7 @@ const useChartCoordination = ({
         try {
           const currentState = localStorage.getItem(chartStorageKey);
           const newState = currentState
-            ? { ...JSON.parse(currentState), highlight: point }
+            ? { ...(JSON.parse(currentState) as { highlight: DataPoint | null }), highlight: point }
             : { highlight: point };
           localStorage.setItem(chartStorageKey, JSON.stringify(newState));
         } catch (error) {
@@ -159,8 +165,8 @@ export function AnomalyVisualization({
 
     const detectAnomalies = async () => {
       try {
-        (anomalyService as typeof anomalyDetectionService).addDataPoints(data);
-        await (anomalyService as typeof anomalyDetectionService).detectAnomalies('statistical');
+        anomalyService.addDataPoints(data);
+        await anomalyService.detectAnomalies('statistical');
       } catch (error) {
         errorLoggingService.logError(
           error instanceof Error ? error : new Error('Error detecting anomalies'),
@@ -171,7 +177,7 @@ export function AnomalyVisualization({
       }
     };
 
-    detectAnomalies();
+    void detectAnomalies();
   }, [anomalyService, data]);
 
   // Draw function
@@ -198,7 +204,7 @@ export function AnomalyVisualization({
     data?.forEach(point => {
       const x = point.values[dimensions[0]];
       const y = point.values[dimensions[1]];
-      const score = (anomalyService as typeof anomalyDetectionService).getAnomalyScore(point.id);
+      const score = anomalyService.getAnomalyScore(point.id);
 
       // Determine point color based on anomaly score
       if (score) {
@@ -305,13 +311,13 @@ export function AnomalyVisualization({
         <div style={{ marginTop: '8px' }}>
           <Typography variant="body2">
             Point ID: {hoveredPoint.id}
-            {(anomalyService as typeof anomalyDetectionService)
-              .getAnomalyScore(hoveredPoint.id)
-              ?.explanation?.map((exp: string, i: number) => (
+            {anomalyService?.getAnomalyScore(hoveredPoint.id)?.explanation?.map(
+              (exp: string, i: number) => (
                 <div key={i} style={{ color: 'red' }}>
                   {exp}
                 </div>
-              ))}
+              )
+            )}
           </Typography>
         </div>
       )}

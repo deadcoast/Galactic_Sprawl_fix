@@ -1,11 +1,11 @@
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
-  CombatWeaponStats,
-  WeaponCategory,
-  WeaponInstance,
-  WeaponUpgrade,
-  WeaponUpgradeType,
+    CombatWeaponStats,
+    WeaponCategory,
+    WeaponInstance,
+    WeaponUpgrade,
+    WeaponUpgradeType,
 } from '../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -31,12 +31,10 @@ interface WeaponSpecialization {
   unlocked: boolean;
 }
 
-type UpgradeTree = {
-  [key in WeaponCategory]: {
+type UpgradeTree = Record<WeaponCategory, {
     upgrades: WeaponUpgrade[];
     specializations: WeaponSpecialization[];
-  };
-};
+  }>;
 
 const WEAPON_CATEGORIES: WeaponCategory[] = [
   'machineGun',
@@ -61,8 +59,8 @@ const WEAPON_CATEGORIES: WeaponCategory[] = [
 export class WeaponUpgradeManager extends TypedEventEmitter<WeaponUpgradeEvents> {
   private static instance: WeaponUpgradeManager;
   private upgradeTrees: UpgradeTree;
-  private weaponExperience: Map<string, number> = new Map();
-  private appliedUpgrades: Map<string, Set<string>> = new Map();
+  private weaponExperience = new Map<string, number>();
+  private appliedUpgrades = new Map<string, Set<string>>();
 
   private constructor() {
     super();
@@ -220,7 +218,7 @@ export class WeaponUpgradeManager extends TypedEventEmitter<WeaponUpgradeEvents>
     const { category } = weapon.config;
     const upgrade = this.upgradeTrees[category].upgrades.find(u => u.id === upgradeId);
 
-    if (!upgrade || !upgrade.unlocked) {
+    if (!upgrade?.unlocked) {
       return false;
     }
 
@@ -358,16 +356,8 @@ export class WeaponUpgradeManager extends TypedEventEmitter<WeaponUpgradeEvents>
     this.appliedUpgrades.clear();
   }
 
-  public subscribe<K extends keyof WeaponUpgradeEvents>(
-    event: K,
-    handler: (data: WeaponUpgradeEvents[K]) => void
-  ) {
-    this.on(event, handler);
-    return {
-      unsubscribe: () => {
-        this.off(event, handler);
-      },
-    };
+  public subscribe<K extends keyof WeaponUpgradeEvents>(event: K, handler: (data: WeaponUpgradeEvents[K]) => void): () => void {
+    return this.on(event, handler);
   }
 
   public getWeaponExperience(weaponId: string): number {

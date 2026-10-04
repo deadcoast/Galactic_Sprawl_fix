@@ -157,7 +157,7 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
       'MISSION_COMPLETED',
       'MISSION_FAILED',
       'MISSION_PROGRESS_UPDATED',
-      'MISSION_REWARD_CLAIMED',
+      'MISSION_REcombatD_CLAIMED',
       'SUB_MODULE_CREATED',
       'SUB_MODULE_ATTACHED',
       'SUB_MODULE_DETACHED',

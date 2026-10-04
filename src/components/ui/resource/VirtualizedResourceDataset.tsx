@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import {
-  errorLoggingService,
-  ErrorSeverity,
-  ErrorType,
-} from '../../../services/ErrorLoggingService';
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../../services/logging/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {
@@ -78,7 +78,7 @@ export interface ResourceDatasetProps<T extends ResourceDataItem> {
   /**
    * Fields to search in when filtering by searchTerm
    */
-  searchFields?: Array<keyof T>;
+  searchFields?: (keyof T)[];
 
   /**
    * Function to sort items
@@ -141,7 +141,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   rowHeight = 60,
   filterItem,
   searchTerm = '',
-  searchFields = ['name', 'id', 'type'] as Array<keyof T>,
+  searchFields = ['name', 'id', 'type'] as (keyof T)[],
   sortItems,
   onItemClick,
   loadingRenderer,
@@ -348,7 +348,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
         style={{ height, width }}
         ref={containerRef}
       >
-        {(emptyRenderer || defaultEmptyRenderer)()}
+        {emptyRenderer ? emptyRenderer() : defaultEmptyRenderer()}
       </div>
     );
   }
@@ -370,23 +370,26 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   const itemCount = hasMoreItems ? processedItems.length + 1 : processedItems.length;
 
   // Render row with underlying renderer
-  const renderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const renderRow = React.memo(({ index, style }: { index: number; style: React.CSSProperties }): JSX.Element | null => {
     if (!isItemLoaded(index)) {
       return (
         <div style={style} className="p-4">
-          {(loadingRenderer || defaultLoadingRenderer)()}
+          {loadingRenderer ? loadingRenderer() : defaultLoadingRenderer()}
         </div>
       );
     }
 
-    return rowRenderer
+    const renderedRow = rowRenderer
       ? rowRenderer({ item: processedItems[index], index, style })
       : defaultRowRenderer({ index, style });
-  };
+
+    // Ensure we always return JSX.Element or null
+    return renderedRow as JSX.Element | null;
+  });
 
   return (
     <div className={className}>
-      {headerRenderer && headerRenderer()}
+      {headerRenderer?.()}
 
       <div
         ref={containerRef}
@@ -422,7 +425,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
       </div>
 
       {showStats && renderStats()}
-      {footerRenderer && footerRenderer()}
+      {footerRenderer?.()}
     </div>
   );
 }

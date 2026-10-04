@@ -55,7 +55,7 @@ export interface ModuleStatusEventData {
  */
 export interface TradeRouteEventData {
   partnerId: string;
-  tradeResources: Array<ResourceType>;
+  tradeResources: ResourceType[];
   efficiency?: number;
   [key: string]: unknown;
 }

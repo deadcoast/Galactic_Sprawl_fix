@@ -32,13 +32,13 @@ export class ResourceCostManager {
   private containers: Map<string, ResourceContainer>;
   private discounts: Map<string, number>;
   private taxes: Map<string, number>;
-  private costHistory: Array<{
+  private costHistory: {
     costs: ResourceCost[];
     timestamp: number;
     source?: string;
     target?: string;
     success: boolean;
-  }>;
+  }[];
   private maxHistorySize: number;
 
   constructor(maxHistorySize = 100) {
@@ -62,7 +62,6 @@ export class ResourceCostManager {
    */
   public registerContainer(container: ResourceContainer): boolean {
     if (!container.id) {
-      console.error('Invalid container:', container);
       return false;
     }
 
@@ -123,7 +122,7 @@ export class ResourceCostManager {
       if (containerId) {
         // Check specific container
         const container = this.containers.get(containerId);
-        if (container && container.resources) {
+        if (container?.resources) {
           available = this.getAvailableResources(container, type);
         }
       } else {
@@ -228,7 +227,7 @@ export class ResourceCostManager {
       if (containerId) {
         // Apply to specific container
         const container = this.containers.get(containerId);
-        if (container && container.resources) {
+        if (container?.resources) {
           this.updateContainerResources(container, type, amount);
         }
       } else {
@@ -283,7 +282,7 @@ export class ResourceCostManager {
     costs: ResourceCost[],
     source?: string,
     target?: string,
-    success: boolean = true
+    success = true
   ): void {
     this.costHistory.push({
       costs,
@@ -302,26 +301,26 @@ export class ResourceCostManager {
   /**
    * Get cost history
    */
-  public getCostHistory(): Array<{
+  public getCostHistory(): {
     costs: ResourceCost[];
     timestamp: number;
     source?: string;
     target?: string;
     success: boolean;
-  }> {
+  }[] {
     return [...this.costHistory];
   }
 
   /**
    * Get cost history for a specific resource type
    */
-  public getCostHistoryByType(type: ResourceType): Array<{
+  public getCostHistoryByType(type: ResourceType): {
     costs: ResourceCost[];
     timestamp: number;
     source?: string;
     target?: string;
     success: boolean;
-  }> {
+  }[] {
     return this.costHistory.filter(entry => entry.costs.some(cost => cost.type === type));
   }
 
@@ -340,11 +339,7 @@ export class ResourceCostManager {
    * Get available resources from a container
    */
   private getAvailableResources(container: ResourceContainer, type: ResourceType): number {
-    if (!container || !container.resources) {
-      return 0;
-    }
-
-    return container.resources.get(type) ?? 0;
+    return container?.resources?.get(type) ?? 0;
   }
 
   /**
@@ -355,7 +350,7 @@ export class ResourceCostManager {
     type: ResourceType,
     amount: number
   ): void {
-    if (!container || !container.resources) {
+    if (!container?.resources) {
       return;
     }
 

@@ -4,7 +4,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 import {
   BenchmarkResult,
   createPerformanceVisualization,
@@ -111,7 +111,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
   }, [benchmarkResults]);
 
   // Run the selected benchmark
-  const runBenchmark = async () => {
+  const runBenchmark = async (): Promise<void> => {
     setIsRunning(true);
     setCurrentProgress(0);
 
@@ -311,7 +311,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           </div>
 
           <div className="actions">
-            <button onClick={runBenchmark} disabled={isRunning} className="primary-button">
+            <button onClick={() => void runBenchmark()} disabled={isRunning} className="primary-button">
               {isRunning ? 'Running...' : 'Run Benchmark'}
             </button>
 
@@ -359,10 +359,10 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
                       <tr key={`${result?.name}-${index}`}>
                         <td>{result?.name}</td>
                         <td>{result?.executionTimeMs.toFixed(2)}</td>
-                        <td>{resourceResult.nodeCount || 'N/A'}</td>
-                        <td>{resourceResult.connectionCount || 'N/A'}</td>
-                        <td>{result?.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
-                        <td>{result?.timestamp?.toLocaleString() || 'N/A'}</td>
+                        <td>{resourceResult.nodeCount ?? 'N/A'}</td>
+                        <td>{resourceResult.connectionCount ?? 'N/A'}</td>
+                        <td>{result?.memoryUsageMB?.toFixed(2) ?? 'N/A'}</td>
+                        <td>{result?.timestamp?.toLocaleString() ?? 'N/A'}</td>
                       </tr>
                     );
                   })}
@@ -478,9 +478,9 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           border-radius: 8px;
         }
 
-        h1,
-        h2,
-        h3 {
+        .performance-benchmark-dashboard h1,
+        .performance-benchmark-dashboard h2,
+        .performance-benchmark-dashboard h3 {
           color: #2c3e50;
         }
 
@@ -505,14 +505,14 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           margin-bottom: 15px;
         }
 
-        label {
+        .performance-benchmark-dashboard label {
           display: block;
           margin-bottom: 5px;
           font-weight: 500;
         }
 
-        select,
-        input {
+        .performance-benchmark-dashboard select,
+        .performance-benchmark-dashboard input {
           width: 100%;
           padding: 8px 12px;
           border: 1px solid #ddd;
@@ -545,7 +545,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           margin-top: 20px;
         }
 
-        button {
+        .performance-benchmark-dashboard button {
           padding: 8px 16px;
           border: none;
           border-radius: 4px;
@@ -555,26 +555,26 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           transition: background-color 0.2s;
         }
 
-        button:disabled {
+        .performance-benchmark-dashboard button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
 
-        .primary-button {
+        .performance-benchmark-dashboard .primary-button {
           background-color: #3498db;
           color: white;
         }
 
-        .primary-button:hover:not(:disabled) {
+        .performance-benchmark-dashboard .primary-button:hover:not(:disabled) {
           background-color: #2980b9;
         }
 
-        .secondary-button {
+        .performance-benchmark-dashboard .secondary-button {
           background-color: #e74c3c;
           color: white;
         }
 
-        .secondary-button:hover:not(:disabled) {
+        .performance-benchmark-dashboard .secondary-button:hover:not(:disabled) {
           background-color: #c0392b;
         }
 
@@ -599,12 +599,12 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           margin-bottom: 15px;
         }
 
-        .filter-controls button {
+        .performance-benchmark-dashboard .filter-controls button {
           background-color: #ecf0f1;
           color: #333;
         }
 
-        .filter-controls button:hover {
+        .performance-benchmark-dashboard .filter-controls button:hover {
           background-color: #d5dbdb;
         }
 
@@ -613,19 +613,19 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           overflow-y: auto;
         }
 
-        table {
+        .performance-benchmark-dashboard table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .performance-benchmark-dashboard th,
+        .performance-benchmark-dashboard td {
           padding: 10px;
           text-align: left;
           border-bottom: 1px solid #eee;
         }
 
-        th {
+        .performance-benchmark-dashboard th {
           font-weight: 600;
           color: #2c3e50;
           background-color: #f8f9fa;

@@ -318,7 +318,7 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
               'data-testid': dataTestId,
             }
           : {}),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         ref: _ref,
       },
       children

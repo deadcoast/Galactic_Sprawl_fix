@@ -112,7 +112,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
         [ResourceType.ORGANIC]: ResourceType.ORGANIC.toLowerCase() as keyof typeof allResourceRates,
       };
 
-      return mapping[resourceType] || null;
+      return mapping[resourceType] ?? null;
     };
 
     // (...args: unknown[]) => unknown to collect current rate data

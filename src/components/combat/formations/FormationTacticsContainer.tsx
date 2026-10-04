@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useCombatSystem } from '../../../hooks/combat/useCombatSystem';
+import { errorLoggingService } from '../../../services/logging/ErrorLoggingService';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
-import { FactionId } from '../../../types/ships/FactionTypes';
+import { FactionId } from '../../../types/ships/FactionShipTypes';
 import { FormationTacticsPanel } from './FormationTacticsPanel';
 
 interface FormationTacticsContainerProps {
@@ -48,14 +49,19 @@ export function FormationTacticsContainer({ fleetIds, factionId }: FormationTact
     ) {
       combatSystem.updateFleetTactic(fleetId, tacticId);
     } else {
-      console.warn(`Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`);
+      errorLoggingService.logWarn(`Invalid tactic: ${tacticId}. Expected one of: flank, charge, kite, hold`, {
+        component: 'FormationTacticsContainer',
+        fleetId,
+        tacticId,
+        validTactics: ['flank', 'charge', 'kite', 'hold']
+      });
     }
   };
 
   if (fleetIds.length === 0) {
     return (
-      <div className="rounded-lg bg-gray-800 p-6 text-center">
-        <p className="text-gray-400">No fleets available for formation management</p>
+      <div className="rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-6 text-center">
+        <p className="text-[var(--gs-text-2)]">No fleets available for formation management</p>
       </div>
     );
   }
@@ -64,8 +70,8 @@ export function FormationTacticsContainer({ fleetIds, factionId }: FormationTact
     <div className="space-y-4">
       {/* Fleet Selector */}
       {fleetIds.length > 1 && (
-        <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
-          <h3 className="mb-2 text-sm font-medium text-gray-300">Select Fleet</h3>
+        <div className="rounded-lg border border-[var(--gs-border)] bg-[rgba(20,38,65,0.88)] p-4">
+          <h3 className="mb-2 text-sm font-medium text-[var(--gs-text-2)]">Select Fleet</h3>
           <div className="grid grid-cols-3 gap-2">
             {fleetIds.map(fleetId => (
               <button
@@ -73,8 +79,8 @@ export function FormationTacticsContainer({ fleetIds, factionId }: FormationTact
                 onClick={() => setActiveFleetId(fleetId)}
                 className={`rounded px-3 py-2 text-sm transition-colors ${
                   activeFleetId === fleetId
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'border border-blue-500/70 bg-blue-600 text-white'
+                    : 'border border-[var(--gs-border)] bg-[rgba(27,45,73,0.9)] text-[var(--gs-text-2)] hover:border-[var(--gs-border-strong)]'
                 }`}
               >
                 Fleet {fleetId.replace('fleet-', '')}

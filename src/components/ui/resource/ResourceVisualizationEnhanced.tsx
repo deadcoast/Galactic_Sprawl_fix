@@ -51,7 +51,7 @@ const resourceDescriptions: Record<ResourceType, string> = {
   [ResourceType.HELIUM]: 'Light gas used for cooling and various industrial processes.',
   [ResourceType.DEUTERIUM]: 'Hydrogen isotope used for fusion power and advanced propulsion.',
   [ResourceType.ANTIMATTER]: 'Exotic material with enormous energy potential.',
-  [ResourceType.DARK_MATTER]: 'Mysterious substance with reality-warping properties.',
+  [ResourceType.DARK_MATTER]: 'Mysterious substance with reality-combatping properties.',
   [ResourceType.EXOTIC_MATTER]: 'Extremely rare material with unique physical properties.',
   [ResourceType.ORGANIC]: 'Biological material used for medicine and biotech.',
   [ResourceType.FOOD]: 'Essential sustenance to maintain population growth and happiness.',
@@ -77,7 +77,7 @@ function getResourceStatus(
   if (percentage <= thresholds.warning) {
     return {
       icon: AlertTriangle,
-      message: 'Warning',
+      message: 'warning',
       color: 'text-yellow-500',
     };
   }

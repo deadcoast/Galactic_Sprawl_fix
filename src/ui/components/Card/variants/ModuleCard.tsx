@@ -130,9 +130,15 @@ export const ModuleCard = forwardRef<HTMLDivElement, ModuleCardProps>(
 
     // Format time remaining
     const formatTime = (seconds?: number): string => {
-      if (!seconds) return '';
-      if (seconds < 60) return `${Math.ceil(seconds)}s`;
-      if (seconds < 3600) return `${Math.ceil(seconds / 60)}m`;
+      if (!seconds) {
+        return '';
+      }
+      if (seconds < 60) {
+        return `${Math.ceil(seconds)}s`;
+      }
+      if (seconds < 3600) {
+        return `${Math.ceil(seconds / 60)}m`;
+      }
       return `${Math.floor(seconds / 3600)}h ${Math.ceil((seconds % 3600) / 60)}m`;
     };
 
@@ -228,14 +234,18 @@ export const ModuleCard = forwardRef<HTMLDivElement, ModuleCardProps>(
 
     // Create resource I/O display
     const renderResources = () => {
-      if (!showResources) return null;
+      if (!showResources) {
+        return null;
+      }
 
       const hasConsumption =
         module.resourceConsumption && Object.keys(module.resourceConsumption).length > 0;
       const hasProduction =
         module.resourceProduction && Object.keys(module.resourceProduction).length > 0;
 
-      if (!hasConsumption && !hasProduction) return null;
+      if (!hasConsumption && !hasProduction) {
+        return null;
+      }
 
       return (
         <div className="mt-3 border-t border-gray-200 pt-2 text-sm">

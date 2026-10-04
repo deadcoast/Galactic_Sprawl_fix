@@ -165,14 +165,14 @@ export function createTimeBatchedStream<T>(
           eventObj.priority === undefined || eventObj.priority >= batchConfig.priorityThreshold!
         );
       }),
-      bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
+      bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER),
       filter(events => events.length > 0),
       map(events =>
         createBatchResult(
           events,
           batchConfig,
           true,
-          events.length >= (batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER)
+          events.length >= (batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER)
         )
       )
     );
@@ -193,7 +193,7 @@ export function createTimeBatchedStream<T>(
   // Standard batching approach
   return source.pipe(
     // Buffer events by time window and max size
-    bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
+    bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER),
     // Filter out empty batches
     filter(events => events.length > 0),
     // Create batch result
@@ -202,7 +202,7 @@ export function createTimeBatchedStream<T>(
         events,
         batchConfig,
         true,
-        events.length >= (batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER)
+        events.length >= (batchConfig.maxBatchSize ?? Number.MAX_SAFE_INTEGER)
       )
     )
   );
@@ -221,7 +221,7 @@ function createBatchResult<T>(
   const now = Date.now();
   const timestamps = events.map(event => {
     const eventObj = event as { timestamp?: number };
-    return eventObj.timestamp || now;
+    return eventObj.timestamp ?? now;
   });
 
   // Sort events by timestamp if configured

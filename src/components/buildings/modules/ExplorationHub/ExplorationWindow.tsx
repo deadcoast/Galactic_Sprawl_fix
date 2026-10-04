@@ -1,16 +1,18 @@
-import {
-  AlertTriangle,
-  Filter,
-  History,
-  Map,
-  Radar,
-  Rocket,
-  Search,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react';
+import
+  {
+    AlertTriangle,
+    Filter,
+    History,
+    Map,
+    Radar,
+    Rocket,
+    Search,
+    ZoomIn,
+    ZoomOut,
+  } from 'lucide-react';
 import * as React from 'react';
 import { useRef, useState } from 'react';
+import { SectorStatus as ControlsSectorStatus, Discovery } from '../../../../types/exploration/ExplorationTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ExplorationControls } from './ExplorationControls';
@@ -369,7 +371,19 @@ export function ExplorationWindow() {
       {/* Right Panel - Controls & Details */}
       <div className="w-1/3 p-6">
         {selectedSector ? (
-          <ExplorationControls sector={selectedSector} onClose={() => setSelectedSector(null)} />
+          (() => {
+            const sectorUpper = selectedSector ? {
+              ...selectedSector,
+              status: selectedSector.status.toUpperCase() as ControlsSectorStatus,
+              anomalies: (selectedSector.anomalies as unknown) as Discovery[],
+            } : undefined;
+            return (
+              <ExplorationControls
+                sector={sectorUpper as unknown as Parameters<typeof ExplorationControls>[0]['sector']}
+                onClose={() => setSelectedSector(null)}
+              />
+            );
+          })()
         ) : (
           <div className="flex h-full items-center justify-center text-center text-gray-400">
             <div>

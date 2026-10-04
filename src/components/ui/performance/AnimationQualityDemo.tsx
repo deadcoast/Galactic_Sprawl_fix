@@ -120,7 +120,7 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
 
     // Bind data with quality adjustment (may limit node count)
     const nodeElements = bindDataWithQualityAdjustment(
-      svgContainer.selectAll('circle') as d3.Selection<Element, unknown, SVGSVGElement, unknown>,
+      svgContainer.selectAll('circle') as unknown as d3.Selection<Element, unknown, SVGSVGElement, unknown>,
       nodes,
       d => d.id.toString()
     );
@@ -188,10 +188,10 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
       // Use batched updates if enabled
       if (settings.enableBatching) {
         requestAnimationFrame(() => {
-          nodeEnter.attr('cx', d => d.x as number).attr('cy', d => d.y as number);
+          nodeEnter.attr('cx', d => d.x).attr('cy', d => d.y);
         });
       } else {
-        nodeEnter.attr('cx', d => d.x as number).attr('cy', d => d.y as number);
+        nodeEnter.attr('cx', d => d.x).attr('cy', d => d.y);
       }
     });
 
@@ -267,7 +267,7 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
     setUserOverrides(newOverrides);
 
     // Apply the override
-    animationQualityManager.setUserPreference(key, value);
+    animationQualityManager.setUserPreference(key, value as number | boolean);
 
     // Update state with new settings
     setCurrentSettings(animationQualityManager.getCurrentSettings());

@@ -1,26 +1,28 @@
 import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  Paper,
-  Tab,
-  Tabs,
-  Typography,
+    Button,
+    CircularProgress,
+    Divider, Paper,
+    Tab,
+    Tabs,
+    Typography
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
 import { Component, ErrorInfo, useCallback, useEffect } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../services/logging/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 import {
-  AnalysisConfig,
-  AnalysisResult,
-  DataPoint,
-  Dataset,
+    AnalysisConfig,
+    AnalysisResult,
+    DataPoint,
+    Dataset
 } from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
@@ -58,7 +60,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
         <Typography variant="h6" color="error">
           Analysis Failed
         </Typography>
-        <Typography variant="body1">{result?.error || 'Unknown error occurred'}</Typography>
+        <Typography variant="body1">{result?.error ?? 'Unknown error occurred'}</Typography>
       </div>
     );
   }
@@ -154,7 +156,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         ) {
           // In a real implementation, you would get updates from a manager/registry
           // For now, simulate with dataset refreshes
-          console.warn(`Dataset ${dataset.id} has been updated externally`);
+          errorLoggingService.logWarn(`Dataset ${dataset.id} has been updated externally`);
 
           // For demo purposes, clone and modify the dataset
           setDatasetDetails({
@@ -197,7 +199,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
 
       datasetDetails.dataPoints.forEach(dp => {
         if (dp.type in typeCounts) {
-          typeCounts[dp.type as keyof typeof typeCounts]++;
+          typeCounts[dp.type]++;
         }
       });
 
@@ -324,7 +326,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
         </div>
         <button
           className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-          onClick={handleRefreshDataset}
+          onClick={() => void handleRefreshDataset()}
           disabled={isLoading}
         >
           {isLoading ? 'Refreshing...' : 'Refresh'}
@@ -372,7 +374,7 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
       fallbackComponent={({ error }) => (
         <div className="rounded border border-red-200 bg-red-50 p-3">
           <h3 className="text-sm font-medium text-red-700">Error loading dataset info</h3>
-          <p className="text-xs text-red-600">{error?.message || 'An unexpected error occurred'}</p>
+          <p className="text-xs text-red-600">{error?.message ?? 'An unexpected error occurred'}</p>
         </div>
       )}
       onError={(error: Error, info: ErrorInfo) => {
@@ -391,7 +393,9 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
 // Utility function that uses DatasetInfo for development purposes
 const _logDatasetDetails = (dataset: Dataset): void => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(`Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`);
+    errorLoggingService.logWarn(
+      `Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`
+    );
   }
 };
 
@@ -417,7 +421,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   const [activeTab, setActiveTab] = React.useState<number>(0);
   const [filteredData, setFilteredData] = React.useState<DataPoint[]>([]);
   const [filters, setFilters] = React.useState<
-    Array<{
+    {
       field: string;
       operator:
         | 'equals'
@@ -428,7 +432,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         | 'notContains'
         | 'between';
       value: string | number | boolean | string[] | [number, number];
-    }>
+    }[]
   >([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [lastRefresh, setLastRefresh] = React.useState<number>(Date.now());
@@ -454,7 +458,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Get latest results for the selected config
   const currentResults = selectedConfig
     ? getAnalysisResultsByConfigId(selectedConfig.id).sort(
-        (a: AnalysisResult, b: AnalysisResult) => (b.startTime ?? 0) - (a.startTime ?? 0)
+        (a, b) => (b.startTime ?? 0) - (a.startTime ?? 0)
       )
     : [];
 
@@ -578,7 +582,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Handle filter changes with standardized events
   const handleFilterChange = useCallback(
     (
-      newFilters: Array<{
+      newFilters: {
         field: string;
         operator:
           | 'equals'
@@ -589,7 +593,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
           | 'notContains'
           | 'between';
         value: string | number | boolean | string[] | [number, number];
-      }>
+      }[]
     ) => {
       setFilters(newFilters);
       if (selectedDataset) {
@@ -665,9 +669,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         <Tab label="Results" />
       </Tabs>
 
-      <Grid container spacing={2}>
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {/* Left Panel */}
-        <Grid item xs={12} md={3}>
+        <div style={{ flex: '0 0 300px', minWidth: '250px' }}>
           {activeTab === 0 && (
             <Paper sx={{ p: 2 }}>
               <DatasetManager
@@ -709,10 +713,10 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
               />
             </Paper>
           )}
-        </Grid>
+        </div>
 
         {/* Center Panel */}
-        <Grid item xs={12} md={activeTab === 0 ? 5 : 9}>
+        <div style={{ flex: activeTab === 0 ? '1 1 400px' : '1 1 600px', minWidth: '300px' }}>
           {activeTab === 0 && selectedDataset && (
             <Paper sx={{ p: 2 }}>
               <div className="mb-2">
@@ -759,7 +763,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 <Typography variant="h6">{selectedConfig.name}</Typography>
                 <Typography variant="body2">{selectedConfig.description}</Typography>
                 <div className="mt-2">
-                  <Button variant="contained" onClick={handleRunAnalysis} disabled={isLoading}>
+                  <Button variant="contained" onClick={() => void handleRunAnalysis()} disabled={isLoading}>
                     {isLoading ? <CircularProgress size={24} /> : 'Run Analysis'}
                   </Button>
                 </div>
@@ -773,11 +777,11 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
               )}
             </Paper>
           )}
-        </Grid>
+        </div>
 
         {/* Right Panel - only visible in dataset tab */}
         {activeTab === 0 && (
-          <Grid item xs={12} md={4}>
+          <div style={{ flex: '0 0 350px', minWidth: '300px' }}>
             <Paper sx={{ p: 2 }}>
               {selectedDataset && (
                 <div className="mb-4">
@@ -805,18 +809,18 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </Typography>
                   <div className="rounded bg-gray-50 p-1">
                     <Typography variant="subtitle1">{selectedDataPoint.name}</Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Type: {selectedDataPoint.type} | ID: {selectedDataPoint.id}
                     </Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Coordinates: ({selectedDataPoint.coordinates.x},{' '}
                       {selectedDataPoint.coordinates.y})
                     </Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Date: {new Date(selectedDataPoint.date).toLocaleString()}
                     </Typography>
 
-                    <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                    <Typography variant="overline" sx={{ display: 'block', mt: 1 }}>
                       Properties
                     </Typography>
 
@@ -832,7 +836,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     {selectedDataPoint.metadata &&
                       Object.keys(selectedDataPoint.metadata).length > 0 && (
                         <>
-                          <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                          <Typography variant="overline" sx={{ display: 'block', mt: 1 }}>
                             Metadata
                           </Typography>
                           <div className="ml-1">
@@ -849,9 +853,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 </>
               )}
             </Paper>
-          </Grid>
+          </div>
         )}
-      </Grid>
+      </div>
     </div>
   );
 }

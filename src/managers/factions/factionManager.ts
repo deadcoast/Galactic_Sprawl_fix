@@ -1,4 +1,5 @@
 import { factionConfigs, type FactionConfig } from '../../config/factions/factions';
+import type { FactionFleet } from '../../types/ships/FactionShipTypes';
 
 interface FactionState {
   activeShips: number;
@@ -10,14 +11,15 @@ interface FactionState {
   relationshipWithPlayer: number; // -1 to 1
   lastActivity: number;
   isActive: boolean;
+  fleets: FactionFleet[];
 }
 
 export type { FactionState };
 
 class FactionManager {
-  private factionStates: Map<string, FactionState> = new Map();
-  private playerTier: number = 1;
-  private playerPower: number = 0;
+  private factionStates: Map<string, FactionState> = new Map<string, FactionState>();
+  private playerTier = 1;
+  private playerPower = 0;
 
   constructor() {
     // Initialize faction states
@@ -32,6 +34,7 @@ class FactionManager {
         relationshipWithPlayer: config.specialRules.alwaysHostile ? -1 : 0,
         lastActivity: Date.now(),
         isActive: false,
+        fleets: [],
       });
     });
   }
@@ -90,6 +93,7 @@ class FactionManager {
     state.isActive = false;
     state.activeShips = 0;
     state.fleetStrength = 1;
+    state.fleets = [];
   }
 
   public getFactionState(factionId: string): FactionState | undefined {

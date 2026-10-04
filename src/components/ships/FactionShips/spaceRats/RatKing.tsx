@@ -3,9 +3,9 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { SpaceRatShip } from '../../common/SpaceRatShip';
+import { SpaceRatShip } from './SpaceRatShip';
 
 interface RatKingProps {
   id: string;
@@ -42,7 +42,6 @@ export const RatKing: React.FC<RatKingProps> = ({
   onEngage,
   onRetreat,
   onSpecialAbility,
-  tactics,
   position,
   rotation,
 }) => {

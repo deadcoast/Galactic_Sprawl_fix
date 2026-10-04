@@ -15,7 +15,7 @@ export function createMediaQueries(theme: Theme) {
   /**
    * Breakpoint keys in order from smallest to largest
    */
-  const BREAKPOINT_KEYS: Array<ThemeBreakpoint> = [
+  const BREAKPOINT_KEYS: ThemeBreakpoint[] = [
     ThemeBreakpoint.XS,
     ThemeBreakpoint.SM,
     ThemeBreakpoint.MD,
@@ -54,7 +54,7 @@ export function createMediaQueries(theme: Theme) {
      * ```
      */
     down: (key: keyof Theme['breakpoints']) => {
-      const nextIndex = BREAKPOINT_KEYS.indexOf(key as ThemeBreakpoint) + 1;
+      const nextIndex = BREAKPOINT_KEYS.indexOf(key) + 1;
 
       // Handle the largest breakpoint
       if (nextIndex === BREAKPOINT_KEYS.length) {
@@ -82,7 +82,7 @@ export function createMediaQueries(theme: Theme) {
      */
     between: (start: keyof Theme['breakpoints'], end: keyof Theme['breakpoints']) => {
       const startValue = parseInt(theme.breakpoints[start].replace('px', ''), 10);
-      const endIndex = BREAKPOINT_KEYS.indexOf(end as ThemeBreakpoint) + 1;
+      const endIndex = BREAKPOINT_KEYS.indexOf(end) + 1;
 
       // Handle the largest breakpoint
       if (endIndex === BREAKPOINT_KEYS.length) {
@@ -108,7 +108,7 @@ export function createMediaQueries(theme: Theme) {
      * ```
      */
     only: (key: keyof Theme['breakpoints']) => {
-      const keyIndex = BREAKPOINT_KEYS.indexOf(key as ThemeBreakpoint);
+      const keyIndex = BREAKPOINT_KEYS.indexOf(key);
 
       // If it's the largest breakpoint, use up
       if (keyIndex === BREAKPOINT_KEYS.length - 1) {

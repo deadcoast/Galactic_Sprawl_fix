@@ -73,7 +73,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
   const [snapshots, setSnapshots] = useState<MemorySnapshot[]>([]);
   const [analysis, setAnalysis] = useState<MemoryTrendAnalysis | null>(null);
   const [sessionMarkers, setSessionMarkers] = useState<
-    Array<{ timestamp: number; name: string; metadata?: Record<string, unknown> }>
+    { timestamp: number; name: string; metadata?: Record<string, unknown> }[]
   >([]);
   const [updateInterval, setUpdateInterval] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -146,7 +146,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
     } else if (propSnapshots) {
       // Use data from props
       setSnapshots(propSnapshots);
-      setAnalysis(propAnalysis || null);
+      setAnalysis(propAnalysis ?? null);
       setSessionMarkers([]);
     }
   };
@@ -452,7 +452,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
    */
   const drawSessionMarkers = (
     ctx: CanvasRenderingContext2D,
-    markers: Array<{ timestamp: number; name: string; metadata?: Record<string, unknown> }>,
+    markers: { timestamp: number; name: string; metadata?: Record<string, unknown> }[],
     padding: { top: number; right: number; bottom: number; left: number },
     chartWidth: number,
     chartHeight: number,
@@ -673,7 +673,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
               <p>Memory is growing at a rate that indicates a probable leak.</p>
               {analysis.isAccelerating && (
                 <p>
-                  <strong>Warning:</strong> Growth rate is accelerating!
+                  <strong>warning:</strong> Growth rate is accelerating!
                 </p>
               )}
             </div>

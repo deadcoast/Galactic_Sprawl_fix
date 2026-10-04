@@ -7,31 +7,35 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../../../components/ui/errors/ErrorBoundary';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType
+} from '../../../services/logging/ErrorLoggingService';
 import { renderWithProviders, screen } from '../../utils/test-utils';
 
 // Mock error logging service
-vi.mock('../../../services/ErrorLoggingService', () => ({
-  ErrorType: {
-    RUNTIME: 'RUNTIME',
-    NETWORK: 'NETWORK',
-    RESOURCE: 'RESOURCE',
-  },
-  ErrorSeverity: {
-    LOW: 'LOW',
-    MEDIUM: 'MEDIUM',
-    HIGH: 'HIGH',
-    CRITICAL: 'CRITICAL',
-  },
-  errorLoggingService: {
-    logError: vi.fn(),
-    clearErrors: vi.fn(),
-    getErrors: vi.fn(),
-  },
-}));
-
-// Get the mocked service
-import { errorLoggingService } from '../../../services/ErrorLoggingService';
+vi.mock('../../../services/logging/ErrorLoggingService', () => {
+  const mockLogError = vi.fn();
+  return {
+    ErrorType: {
+      RUNTIME: 'RUNTIME',
+      NETWORK: 'NETWORK',
+      RESOURCE: 'RESOURCE',
+    },
+    ErrorSeverity: {
+      LOW: 'LOW',
+      MEDIUM: 'MEDIUM',
+      HIGH: 'HIGH',
+      CRITICAL: 'CRITICAL',
+    },
+    errorLoggingService: {
+      logError: mockLogError,
+      clearErrors: vi.fn(),
+      getErrors: vi.fn(),
+    },
+  };
+});
 
 // Component that throws an error
 const BuggyComponent = ({ shouldThrow = true }) => {
@@ -81,6 +85,10 @@ describe('ErrorBoundary Component', () => {
     const originalConsoleError = console.error;
     console.error = vi.fn();
 
+    // Get the mocked function from the service
+    const mockLogError = errorLoggingService.logError as ReturnType<typeof vi.fn>;
+    mockLogError.mockClear();
+
     // Render with component that will throw
     renderWithProviders(
       <ErrorBoundary
@@ -94,9 +102,9 @@ describe('ErrorBoundary Component', () => {
     );
 
     // Check that error was logged
-    expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
-    expect(errorLoggingService.logError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+    expect(mockLogError).toHaveBeenCalledTimes(1);
+    expect(mockLogError).toHaveBeenCalledWith(
+      expect.any(Error),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
       expect.objectContaining({
@@ -125,9 +133,9 @@ describe('ErrorBoundary Component', () => {
     // Check that onError was called
     expect(handleError).toHaveBeenCalledTimes(1);
     expect(handleError).toHaveBeenCalledWith(
-      expect.unknown(Error),
+      expect.any(Error),
       expect.objectContaining({
-        componentStack: expect.unknown(String),
+        componentStack: expect.any(String),
       })
     );
 

@@ -92,7 +92,7 @@ export interface EnvironmentalHazard {
   radius: number;
   type: string;
   severity: number; // 0-1, higher is more severe
-  effects: Array<{ type: string; value: number }>;
+  effects: { type: string; value: number }[];
 }
 
 /**
@@ -132,11 +132,11 @@ export class ThreatAssessmentManagerImpl
   implements ThreatAssessmentManager
 {
   // Maps observerId -> targetId -> assessment
-  private threatAssessments: Map<string, Map<string, ThreatAssessment>> = new Map();
+  private threatAssessments = new Map<string, Map<string, ThreatAssessment>>();
 
   // Additional data for threat calculation
-  private knownCombatUnits: Map<string, CombatUnit> = new Map();
-  private environmentalHazards: Map<string, EnvironmentalHazard> = new Map();
+  private knownCombatUnits = new Map<string, CombatUnit>();
+  private environmentalHazards = new Map<string, EnvironmentalHazard>();
 
   // Configuration values
   private readonly CRITICAL_THREAT_DISTANCE = 200;

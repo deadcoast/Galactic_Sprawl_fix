@@ -1,41 +1,46 @@
-import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { eventSystem } from "../../lib/events/UnifiedEventSystem";
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from "../../services/logging/ErrorLoggingService";
 import {
   ResourceState as StringResourceState,
   ResourceType as StringResourceType,
   toEnumResourceType,
-} from '../../types/resources/ResourceTypes';
-import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
-import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
-import { ResourceType } from './../../types/resources/ResourceTypes';
+} from "../../types/resources/ResourceTypes";
+import { ensureStringResourceType } from "../../utils/resources/ResourceTypeConverter";
+// Use type-only import to break circular dependency with ResourceSystem
+import type { ResourceSystem, ResourceSystemConfig } from "../ResourceSystem";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 /**
  * Threshold type enumeration
  */
 export enum ThresholdType {
-  ABSOLUTE = 'absolute',
-  PERCENTAGE = 'percentage',
-  RATE = 'rate',
+  ABSOLUTE = "absolute",
+  PERCENTAGE = "percentage",
+  RATE = "rate",
 }
 
 /**
  * Threshold comparison type
  */
 export enum ThresholdComparison {
-  LESS_THAN = 'less_than',
-  GREATER_THAN = 'greater_than',
-  EQUAL_TO = 'equal_to',
-  LESS_THAN_OR_EQUAL = 'less_than_or_equal',
-  GREATER_THAN_OR_EQUAL = 'greater_than_or_equal',
+  LESS_THAN = "less_than",
+  GREATER_THAN = "greater_than",
+  EQUAL_TO = "equal_to",
+  LESS_THAN_OR_EQUAL = "less_than_or_equal",
+  GREATER_THAN_OR_EQUAL = "greater_than_or_equal",
 }
 
 /**
  * Threshold action type
  */
 export enum ThresholdAction {
-  ALERT = 'alert',
-  AUTOMATE = 'automate',
-  TRIGGER_EVENT = 'trigger_event',
+  ALERT = "alert",
+  AUTOMATE = "automate",
+  TRIGGER_EVENT = "trigger_event",
 }
 
 /**
@@ -43,7 +48,7 @@ export enum ThresholdAction {
  */
 export interface ResourceThreshold {
   id: string;
-  resourceType: StringResourceType | ResourceType;
+  resourceType: StringResourceType;
   thresholdType: ThresholdType;
   comparison: ThresholdComparison;
   value: number;
@@ -62,9 +67,9 @@ export interface ResourceThreshold {
  * Monitors resource levels and triggers actions when thresholds are reached
  */
 export class ResourceThresholdSubsystem {
-  private thresholds: Map<string, ResourceThreshold> = new Map();
-  private resourceTypeThresholds: Map<StringResourceType, string[]> = new Map();
-  private entityThresholds: Map<string, string[]> = new Map();
+  private thresholds = new Map<string, ResourceThreshold>();
+  private resourceTypeThresholds = new Map<StringResourceType, string[]>();
+  private entityThresholds = new Map<string, string[]>();
   private parentSystem: ResourceSystem;
   private config: ResourceSystemConfig;
   private isInitialized = false;
@@ -84,6 +89,7 @@ export class ResourceThresholdSubsystem {
 
     try {
       // Initialize default thresholds if needed
+      await Promise.resolve();
       this.initializeDefaultThresholds();
 
       this.isInitialized = true;
@@ -91,10 +97,10 @@ export class ResourceThresholdSubsystem {
       errorLoggingService.logError(
         error instanceof Error
           ? error
-          : new Error('Failed to initialize ResourceThresholdSubsystem'),
+          : new Error("Failed to initialize ResourceThresholdSubsystem"),
         ErrorType.INITIALIZATION,
         ErrorSeverity.CRITICAL,
-        { componentName: 'ResourceThresholdSubsystem', action: 'initialize' }
+        { componentName: "ResourceThresholdSubsystem", action: "initialize" },
       );
       throw error;
     }
@@ -110,6 +116,7 @@ export class ResourceThresholdSubsystem {
 
     try {
       // Clear thresholds
+      await Promise.resolve();
       this.thresholds.clear();
       this.resourceTypeThresholds.clear();
       this.entityThresholds.clear();
@@ -117,10 +124,12 @@ export class ResourceThresholdSubsystem {
       this.isInitialized = false;
     } catch (error) {
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error('Failed to dispose ResourceThresholdSubsystem'),
+        error instanceof Error
+          ? error
+          : new Error("Failed to dispose ResourceThresholdSubsystem"),
         ErrorType.RUNTIME,
         ErrorSeverity.HIGH,
-        { componentName: 'ResourceThresholdSubsystem', action: 'dispose' }
+        { componentName: "ResourceThresholdSubsystem", action: "dispose" },
       );
       throw error;
     }
@@ -132,15 +141,15 @@ export class ResourceThresholdSubsystem {
   private initializeDefaultThresholds(): void {
     // Add default low energy threshold
     this.registerThreshold({
-      id: 'default-low-energy',
+      id: "default-low-energy",
       resourceType: ResourceType.ENERGY,
       thresholdType: ThresholdType.PERCENTAGE,
       comparison: ThresholdComparison.LESS_THAN,
       value: 0.2, // 20%
       action: ThresholdAction.ALERT,
       actionData: {
-        message: 'Low energy levels detected',
-        severity: 'warning',
+        message: "Low energy levels detected",
+        severity: "warning",
       },
       enabled: true,
       cooldownMs: 60000, // 1 minute cooldown
@@ -149,15 +158,15 @@ export class ResourceThresholdSubsystem {
 
     // Add default low minerals threshold
     this.registerThreshold({
-      id: 'default-low-minerals',
+      id: "default-low-minerals",
       resourceType: ResourceType.MINERALS,
       thresholdType: ThresholdType.PERCENTAGE,
       comparison: ThresholdComparison.LESS_THAN,
       value: 0.15, // 15%
       action: ThresholdAction.ALERT,
       actionData: {
-        message: 'Low mineral levels detected',
-        severity: 'warning',
+        message: "Low mineral levels detected",
+        severity: "warning",
       },
       enabled: true,
       cooldownMs: 60000, // 1 minute cooldown
@@ -171,10 +180,15 @@ export class ResourceThresholdSubsystem {
   public registerThreshold(threshold: ResourceThreshold): boolean {
     if (!threshold.id || !threshold.resourceType) {
       errorLoggingService.logError(
-        new Error(`Invalid threshold configuration: ${JSON.stringify(threshold)}`),
+        new Error(
+          `Invalid threshold configuration: ${JSON.stringify(threshold)}`,
+        ),
         ErrorType.CONFIGURATION,
         ErrorSeverity.MEDIUM,
-        { componentName: 'ResourceThresholdSubsystem', action: 'registerThreshold' }
+        {
+          componentName: "ResourceThresholdSubsystem",
+          action: "registerThreshold",
+        },
       );
       return false;
     }
@@ -245,7 +259,9 @@ export class ResourceThresholdSubsystem {
   /**
    * Get thresholds for a specific resource type
    */
-  public getThresholdsByResourceType(type: StringResourceType | ResourceType): ResourceThreshold[] {
+  public getThresholdsByResourceType(
+    type: StringResourceType,
+  ): ResourceThreshold[] {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
@@ -253,7 +269,7 @@ export class ResourceThresholdSubsystem {
     const resourceType = toEnumResourceType(stringType);
 
     const thresholdIds = this.resourceTypeThresholds.get(resourceType) ?? [];
-    return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
+    return thresholdIds.map((id) => this.thresholds.get(id)!).filter(Boolean);
   }
 
   /**
@@ -261,37 +277,43 @@ export class ResourceThresholdSubsystem {
    */
   public getThresholdsByEntity(entityId: string): ResourceThreshold[] {
     const thresholdIds = this.entityThresholds.get(entityId) ?? [];
-    return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
+    return thresholdIds.map((id) => this.thresholds.get(id)!).filter(Boolean);
   }
 
   /**
    * Update a threshold
    */
-  public updateThreshold(id: string, updates: Partial<ResourceThreshold>): boolean {
+  public updateThreshold(
+    id: string,
+    updates: Partial<ResourceThreshold>,
+  ): boolean {
     const threshold = this.thresholds.get(id);
     if (!threshold) {
       return false;
     }
 
     // Handle resource type change
-    if (updates.resourceType && updates.resourceType !== threshold.resourceType) {
+    if (
+      updates.resourceType &&
+      updates.resourceType !== threshold.resourceType
+    ) {
       // Remove from old resource type index
       this.removeFromArray(
         this.resourceTypeThresholds,
         ensureStringResourceType(threshold.resourceType),
-        id
+        id,
       );
 
       // Add to new resource type index
       this.addToArray(
         this.resourceTypeThresholds,
         ensureStringResourceType(updates.resourceType),
-        id
+        id,
       );
     }
 
     // Handle entity ID change
-    if ('entityId' in updates && updates.entityId !== threshold.entityId) {
+    if ("entityId" in updates && updates.entityId !== threshold.entityId) {
       // Remove from old entity index if it existed
       if (threshold.entityId) {
         this.removeFromArray(this.entityThresholds, threshold.entityId, id);
@@ -326,7 +348,10 @@ export class ResourceThresholdSubsystem {
   /**
    * Check if a threshold is triggered
    */
-  private isThresholdTriggered(threshold: ResourceThreshold, state: StringResourceState): boolean {
+  private isThresholdTriggered(
+    threshold: ResourceThreshold,
+    state: StringResourceState,
+  ): boolean {
     if (!threshold.enabled) {
       return false;
     }
@@ -381,9 +406,9 @@ export class ResourceThresholdSubsystem {
    * Check thresholds for a specific resource type
    */
   public checkThresholds(
-    type: StringResourceType | ResourceType,
+    type: StringResourceType,
     state: StringResourceState,
-    entityId?: string
+    entityId?: string,
   ): void {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
@@ -432,7 +457,10 @@ export class ResourceThresholdSubsystem {
   /**
    * Handle a threshold action
    */
-  private handleThresholdAction(threshold: ResourceThreshold, state: StringResourceState): void {
+  private handleThresholdAction(
+    threshold: ResourceThreshold,
+    state: StringResourceState,
+  ): void {
     switch (threshold.action) {
       case ThresholdAction.ALERT:
         this.handleAlertAction(threshold, state);
@@ -449,15 +477,19 @@ export class ResourceThresholdSubsystem {
   /**
    * Handle an alert action
    */
-  private handleAlertAction(threshold: ResourceThreshold, state: StringResourceState): void {
+  private handleAlertAction(
+    threshold: ResourceThreshold,
+    state: StringResourceState,
+  ): void {
     // Publish alert event
     eventSystem.publish({
-      type: 'RESOURCE_THRESHOLD_ALERT',
+      type: "RESOURCE_THRESHOLD_ALERT",
       threshold: { ...threshold },
       resourceState: { ...state },
       message:
-        threshold.actionData?.message || `Resource threshold reached for ${threshold.resourceType}`,
-      severity: threshold.actionData?.severity || 'info',
+        threshold.actionData?.message ??
+        `Resource threshold reached for ${threshold.resourceType}`,
+      severity: threshold.actionData?.severity ?? "info",
       timestamp: Date.now(),
     });
   }
@@ -465,13 +497,16 @@ export class ResourceThresholdSubsystem {
   /**
    * Handle an automate action
    */
-  private handleAutomateAction(threshold: ResourceThreshold, state: StringResourceState): void {
+  private handleAutomateAction(
+    threshold: ResourceThreshold,
+    state: StringResourceState,
+  ): void {
     // Publish automation event
     eventSystem.publish({
-      type: 'RESOURCE_THRESHOLD_AUTOMATE',
+      type: "RESOURCE_THRESHOLD_AUTOMATE",
       threshold: { ...threshold },
       resourceState: { ...state },
-      automationAction: threshold.actionData?.automationAction || 'default',
+      automationAction: threshold.actionData?.automationAction ?? "default",
       parameters: threshold.actionData?.parameters ?? {},
       timestamp: Date.now(),
     });
@@ -480,10 +515,15 @@ export class ResourceThresholdSubsystem {
   /**
    * Handle a trigger event action
    */
-  private handleTriggerEventAction(threshold: ResourceThreshold, state: StringResourceState): void {
+  private handleTriggerEventAction(
+    threshold: ResourceThreshold,
+    state: StringResourceState,
+  ): void {
     // Publish custom event
     eventSystem.publish({
-      type: (threshold.actionData?.eventType as string) || 'RESOURCE_THRESHOLD_TRIGGERED',
+      type:
+        (threshold.actionData?.eventType as string) ||
+        "RESOURCE_THRESHOLD_TRIGGERED",
       threshold: { ...threshold },
       resourceState: { ...state },
       data: threshold.actionData?.eventData ?? {},

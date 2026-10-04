@@ -1,25 +1,27 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  IconButton,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from '@mui/material';
+import
+  {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControl,
+    IconButton,
+    InputLabel,
+    List,
+    ListItem,
+    ListItemText,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
+  } from '@mui/material';
 import * as React from 'react';
 import { useState } from 'react';
+import { errorLoggingService } from '../../services/logging/ErrorLoggingService';
 import { Dataset } from '../../types/exploration/DataAnalysisTypes';
 
 interface DatasetManagerProps {
@@ -94,7 +96,7 @@ const DatasetManager: React.FC<DatasetManagerProps> = ({
                       e.stopPropagation();
                       const updatedName = `${dataset.name} (edited)`;
                       onUpdateDataset(dataset.id, { name: updatedName });
-                      console.log(`Placeholder edit for dataset: ${dataset.name}`);
+                      errorLoggingService.logInfo(`Placeholder edit for dataset: ${dataset.name}`);
                     }}
                     sx={{ mr: 1 }}
                   >

@@ -38,7 +38,7 @@ export function createTestVPRModule(
     // Create module using the module manager
     const module = moduleManager.createModule(moduleType, position);
 
-    if (!module || !module.id) {
+    if (!module?.id) {
       return {
         success: false,
         error: 'Failed to create module - module manager returned null ID',
@@ -103,7 +103,7 @@ export function checkVPRModuleRegistration(moduleId: string): void {
  * This helps understand what events are being triggered during normal operation
  */
 export function monitorVPREvents(): () => void {
-  const unsubscribers: Array<() => void> = [];
+  const unsubscribers: (() => void)[] = [];
 
   // Monitor module events that are relevant to VPR
   const eventsToMonitor: ModuleEventType[] = [

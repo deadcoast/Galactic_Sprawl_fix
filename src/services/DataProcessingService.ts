@@ -1,5 +1,9 @@
 import { WorkerMessageType } from '../workers/DataProcessingWorker';
-import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+import {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+} from './logging/ErrorLoggingService';
 
 /**
  * Service for interfacing with the DataProcessingWorker
@@ -148,7 +152,7 @@ export class DataProcessingService {
       operator: '==' | '!=' | '>' | '<' | '>=' | '<=' | 'contains' | 'startsWith' | 'endsWith';
       value: unknown;
     }[],
-    matchAll: boolean = true
+    matchAll = true
   ): Promise<T[]> {
     return this.sendToWorker<T[]>(WorkerMessageType.DATA_FILTERING, {
       data,

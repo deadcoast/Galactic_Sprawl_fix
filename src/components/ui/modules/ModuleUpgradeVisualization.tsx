@@ -93,11 +93,11 @@ export function ModuleUpgradeVisualization({
         stages[1].description = 'Upgrading extraction systems';
         stages[2].description = 'Calibrating resource filters';
         break;
-      case ResourceType.ENERGY:
+      case ResourceType.ENERGY.toString():
         stages[1].description = 'Upgrading power converters';
         stages[2].description = 'Stabilizing energy flow';
         break;
-      case ResourceType.RESEARCH:
+      case ResourceType.RESEARCH.toString():
         stages[1].description = 'Upgrading processing units';
         stages[2].description = 'Loading new research algorithms';
         break;
@@ -127,7 +127,7 @@ export function ModuleUpgradeVisualization({
       if (!event.data || typeof event.data !== 'object') return;
 
       // Check if data has progress property of type number
-      const data = event.data;
+      const {data} = event;
       if (!('progress' in data) || typeof data.progress !== 'number') return;
 
       // Now it's safe to use the progress value

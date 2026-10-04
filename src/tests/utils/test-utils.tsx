@@ -8,7 +8,12 @@ import { render, RenderOptions } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { ReactElement } from 'react';
 import { vi } from 'vitest';
-import { ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../../services/logging/ErrorLoggingService';
 
 /**
  * Mock for ErrorLoggingService

@@ -1,21 +1,27 @@
-import {
-  AlertTriangle,
-  Crown,
-  Database,
-  Info,
-  Map as MapIcon,
-  Rocket,
-  Settings,
-  Terminal,
-  X,
-} from 'lucide-react';
+import
+  {
+    AlertTriangle,
+    Crown,
+    Database,
+    Info,
+    Map as MapIcon,
+    Rocket,
+    Settings,
+    Terminal,
+    X,
+  } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GameActionType, useGameDispatch, useGameState } from '../../contexts/GameContext';
 import { ModuleActionType, useModuleDispatch, useModules } from '../../contexts/ModuleContext';
 import { useVPRSystem } from '../../hooks/ui/useVPRSystem';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
+import
+  {
+    errorLoggingService,
+    ErrorSeverity,
+    ErrorType,
+  } from '../../services/logging/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { Module, ModuleStatus } from '../../types/modules/ModuleTypes';
@@ -163,13 +169,13 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   type MiniMapStarStatus = 'locked' | 'unlocked' | 'colonized' | 'hostile';
 
   const { Component: MiniMapComponent, loading: miniMapLoading } = useLazyComponent<{
-    stars: Array<{ id: string; name: string; position: Position; status: MiniMapStarStatus }>;
+    stars: { id: string; name: string; position: Position; status: MiniMapStarStatus }[];
     viewport: { position: Position; zoom: number; width: number; height: number };
   }>(
     () =>
       import('./game/MiniMap').then(module => ({
         default: (props: {
-          stars: Array<{ id: string; name: string; position: Position; status: MiniMapStarStatus }>;
+          stars: { id: string; name: string; position: Position; status: MiniMapStarStatus }[];
           viewport: { position: Position; zoom: number; width: number; height: number };
         }) => <module.MiniMap {...props} />,
       })),
@@ -429,7 +435,12 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
       return null;
     }
 
-    const activeItems = menuItems[activeCategory as MenuCategory];
+    if (activeCategory === null) {
+      return null;
+    }
+
+    const activeItems = menuItems[activeCategory];
+
     if (!activeItems) {
       return null;
     }

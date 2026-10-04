@@ -4,7 +4,7 @@ import { FormationTransitionEffect } from '../../../effects/component_effects/Fo
 import { useAdaptiveAI } from '../../../hooks/factions/useAdaptiveAI';
 import { useFleetAI } from '../../../hooks/factions/useFleetAI';
 import { Position } from '../../../types/core/GameTypes';
-import { FactionId } from '../../../types/ships/FactionTypes';
+import { FactionId } from '../../../types/factions/FactionShipTypes';
 
 interface FactionFleetProps {
   fleetId: string;
@@ -233,7 +233,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
             <div
               className="h-full rounded-full bg-amber-500 transition-all duration-500"
               style={{
-                width: `${((fleetAI.formation.transitionSpeed || 1) / 2) * 100}%`,
+                width: `${((fleetAI.formation.transitionSpeed ?? 1) / 2) * 100}%`,
               }}
             />
           </div>
@@ -274,7 +274,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
         </button>
       </div>
 
-      {/* Warnings */}
+      {/* warnings */}
       {adaptiveAI.performance.survivalRate < 0.4 && (
         <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />

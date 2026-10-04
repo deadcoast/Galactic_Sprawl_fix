@@ -70,24 +70,22 @@ const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
 };
 
 // Define custom element types for Three.js components
-type ThreePointsProps = {
+interface ThreePointsProps {
   ref?: React.RefObject<THREE.Points>;
   [key: string]: unknown;
-};
+}
 
-type ThreeBufferGeometryProps = {
-  [key: string]: unknown;
-};
+type ThreeBufferGeometryProps = Record<string, unknown>;
 
-type ThreeBufferAttributeProps = {
+interface ThreeBufferAttributeProps {
   attach: string;
   count: number;
   array: Float32Array;
   itemSize: number;
   [key: string]: unknown;
-};
+}
 
-type ThreeShaderMaterialProps = {
+interface ThreeShaderMaterialProps {
   attach?: string;
   transparent?: boolean;
   depthWrite?: boolean;
@@ -96,7 +94,7 @@ type ThreeShaderMaterialProps = {
   vertexShader?: string;
   fragmentShader?: string;
   [key: string]: unknown;
-};
+}
 
 interface SmokeTrailProps {
   position: { x: number; y: number };

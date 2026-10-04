@@ -201,7 +201,7 @@ export function HabitableWorld({
       )
     ),
 
-    /* Anomaly Warnings */
+    /* Anomaly warnings */
     anomalies &&
       anomalies.length > 0 &&
       React.createElement(

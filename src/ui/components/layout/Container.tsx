@@ -175,7 +175,7 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
 
     // Compute container classes
     const containerClasses = useMemo(() => {
-      const classes = [
+      return [
         'gs-container',
         withBackground ? 'gs-container--with-background' : '',
         withBorder ? 'gs-container--with-border' : '',
@@ -186,8 +186,6 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
       ]
         .filter(Boolean)
         .join(' ');
-
-      return classes;
     }, [withBackground, withBorder, withShadow, centered, fullWidth, className]);
 
     // Compute container styles

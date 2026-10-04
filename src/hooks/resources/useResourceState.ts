@@ -11,20 +11,20 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import {
-  createResetRatesAction,
-  createUpdateRateAction,
-  useResourceRates,
-  useResourceRatesDispatch,
-} from '../../contexts/ResourceRatesContext';
+import
+  {
+    createResetRatesAction,
+    createUpdateRateAction,
+    useResourceRates,
+    useResourceRatesDispatch
+  } from '../../contexts/ResourceRatesContext';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import {
-  HookPerformanceConfig,
-  defaultPerformanceConfig,
-  measureComputationTime,
-  measureSelectorTime,
-  trackHookRender,
-} from '../../utils/performance/hookPerformanceMonitor';
+import
+  {
+    defaultPerformanceConfig, HookPerformanceConfig, measureComputationTime,
+    measureSelectorTime,
+    trackHookRender
+  } from '../../utils/performance/hookPerformanceMonitor';
 import { ResourceTypeInfo } from './../../types/resources/ResourceTypes';
 
 // Type for core resources tracked in ResourceRatesContext
@@ -110,7 +110,7 @@ export function useResourceState() {
   );
 
   // Memoized aggregate data - with performance tracking
-  const _netRates = measureComputationTime(
+  const netRates = measureComputationTime(
     'netRates',
     () =>
       useMemo(
@@ -125,7 +125,7 @@ export function useResourceState() {
     resourceStatePerformanceConfig
   );
 
-  const _totalProduction = measureComputationTime(
+  const totalProduction = measureComputationTime(
     'totalProduction',
     () =>
       useMemo(
@@ -135,7 +135,7 @@ export function useResourceState() {
     resourceStatePerformanceConfig
   );
 
-  const _totalConsumption = measureComputationTime(
+  const totalConsumption = measureComputationTime(
     'totalConsumption',
     () =>
       useMemo(

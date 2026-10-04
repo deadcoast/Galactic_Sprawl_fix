@@ -78,7 +78,7 @@ export const ResourceEventMonitor: React.FC = () => {
     },
     {
       trackLatest: true,
-      filter: (event: ModuleEvent) => RESOURCE_EVENT_TYPES.includes(event?.type as EventType),
+      filter: (event: ModuleEvent) => RESOURCE_EVENT_TYPES.includes(event?.type),
     }
   );
 

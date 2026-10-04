@@ -21,6 +21,8 @@ import * as React from 'react';
  */
 export type PerformanceTier = 'ultra' | 'high' | 'medium' | 'low' | 'minimal';
 
+const VALID_PERFORMANCE_TIERS: PerformanceTier[] = ['ultra', 'high', 'medium', 'low', 'minimal'];
+
 /**
  * Quality settings that can be adjusted
  */
@@ -222,13 +224,13 @@ export class D3AnimationQualityManager {
   };
 
   /** Current quality settings */
-  private currentSettings: QualitySettings;
+  private currentSettings!: QualitySettings;
 
   /** User preference overrides */
   private userOverrides: Partial<QualitySettings> = {};
 
   /** Current performance state */
-  private performanceState: PerformanceState = {
+  private readonly performanceState: PerformanceState = {
     currentFps: 0,
     fpsHistory: [],
     lastAdjustmentTime: 0,
@@ -243,18 +245,18 @@ export class D3AnimationQualityManager {
   private monitoringInterval: number | null = null;
 
   /** Animation callbacks by ID */
-  private qualityChangeCallbacks: Map<string, (settings: QualitySettings) => void> = new Map();
+  private readonly qualityChangeCallbacks = new Map<string, (settings: QualitySettings) => void>();
 
   /** Animation quality overrides by ID */
-  private animationQualityOverrides: Map<string, Partial<QualitySettings>> = new Map();
+  private readonly animationQualityOverrides = new Map<string, Partial<QualitySettings>>();
 
   /** Animation FPS history */
-  private animationFpsTracking: Map<string, number[]> = new Map();
+  private readonly animationFpsTracking = new Map<string, number[]>();
 
   /**
    * Create a new animation quality manager
    */
-  constructor(private config: QualityManagerConfig = {}) {
+  constructor(private readonly config: QualityManagerConfig = {}) {
     // Set up default configuration
     this.config = {
       enableAutoAdjustment: true,
@@ -284,7 +286,7 @@ export class D3AnimationQualityManager {
     }
 
     // Initialize the system
-    this.initialize();
+    void this.initialize();
   }
 
   /**
@@ -295,10 +297,8 @@ export class D3AnimationQualityManager {
     await this.detectDeviceCapabilities();
 
     // Set initial quality based on detected capabilities
-    if (!this.config.initialQualityTier) {
-      const detectedTier = this.detectOptimalQualityTier();
-      this.setQualityTier(detectedTier);
-    }
+    const detectedTier = this.detectOptimalQualityTier();
+    this.setQualityTier(detectedTier);
 
     // Start monitoring if auto-adjustment is enabled
     if (this.config.enableAutoAdjustment) {
@@ -312,6 +312,7 @@ export class D3AnimationQualityManager {
     this.performanceState.isInitialized = true;
 
     if (this.config.debugMode) {
+      // eslint-disable-next-line no-console
       console.warn('D3AnimationQualityManager initialized', {
         capabilities: this.performanceState.detectedCapabilities,
         qualityTier: this.performanceState.currentTier,
@@ -353,9 +354,9 @@ export class D3AnimationQualityManager {
       const canvas = document.createElement('canvas');
       capabilities.hasWebGL = !!(
         window.WebGLRenderingContext &&
-        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+        (canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl'))
       );
-    } catch (_e) {
+    } catch {
       capabilities.hasWebGL = false;
     }
 
@@ -380,7 +381,7 @@ export class D3AnimationQualityManager {
             this.adjustQualityIfNeeded();
           }
         });
-      } catch (_e) {
+      } catch {
         // Battery API not available
       }
     }
@@ -422,9 +423,8 @@ export class D3AnimationQualityManager {
 
     // Perform quick CPU benchmark
     const cpuBenchmarkStart = performance.now();
-    let sum = 0;
     for (let i = 0; i < 1000000; i++) {
-      sum += Math.sqrt(i);
+      Math.sqrt(i);
     }
     const cpuBenchmarkTime = performance.now() - cpuBenchmarkStart;
 
@@ -634,11 +634,8 @@ export class D3AnimationQualityManager {
             this.performanceState.fpsHistory.length
           : this.performanceState.currentFps;
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _sum = this.performanceState.fpsHistory.reduce((a, b) => a + b, 0); // Prefixed
-
       const currentTierIndex = this.getTierIndex(this.performanceState.currentTier);
-      const minAcceptableFps = this.config.minAcceptableFps || 30;
+      const minAcceptableFps = this.config.minAcceptableFps ?? 30;
 
       // Check if we need to adjust quality
       if (avgFps < minAcceptableFps && currentTierIndex > 0) {
@@ -647,6 +644,7 @@ export class D3AnimationQualityManager {
         this.setQualityTier(newTier);
 
         if (this.config.debugMode) {
+          // eslint-disable-next-line no-console
           console.warn(`Reducing quality to ${newTier} due to low FPS (${avgFps.toFixed(1)})`);
         }
       } else if (avgFps > minAcceptableFps * 1.5 && currentTierIndex < 4) {
@@ -662,6 +660,7 @@ export class D3AnimationQualityManager {
           this.setQualityTier(newTier);
 
           if (this.config.debugMode) {
+            // eslint-disable-next-line no-console
             console.warn(`Increasing quality to ${newTier} due to good FPS (${avgFps.toFixed(1)})`);
           }
         }
@@ -731,6 +730,7 @@ export class D3AnimationQualityManager {
 
         callback(animationSettings);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(`Error applying quality settings to animation ${animationId}:`, err);
       }
     });
@@ -842,6 +842,7 @@ export class D3AnimationQualityManager {
 
       localStorage.setItem('d3-animation-quality-settings', JSON.stringify(settingsToSave));
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Error saving animation quality settings:', err);
     }
   }
@@ -854,19 +855,40 @@ export class D3AnimationQualityManager {
       const savedSettings = localStorage.getItem('d3-animation-quality-settings');
 
       if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
+        const parsed: unknown = JSON.parse(savedSettings);
 
-        // Apply saved tier if it exists
-        if (parsed.qualityTier && typeof parsed.qualityTier === 'string') {
-          this.performanceState.currentTier = parsed.qualityTier as PerformanceTier;
+        // Type guard to ensure parsed data is an object
+        if (typeof parsed !== 'object' || parsed === null) {
+          // eslint-disable-next-line no-console
+          console.error('Loaded data is not a valid object:', parsed);
+          return;
+        }
+
+        // Cast to SavedSettings after basic validation
+        interface SavedSettings {
+          qualityTier?: PerformanceTier;
+          userOverrides?: Partial<QualitySettings>;
+        }
+
+        const settings = parsed as SavedSettings;
+
+        // Apply saved tier if it exists and is a valid tier
+        if (
+          settings.qualityTier &&
+          typeof settings.qualityTier === 'string' &&
+          VALID_PERFORMANCE_TIERS.includes(settings.qualityTier)
+        ) {
+          this.performanceState.currentTier = settings.qualityTier;
         }
 
         // Apply saved user overrides
-        if (parsed.userOverrides && typeof parsed.userOverrides === 'object') {
-          this.userOverrides = parsed.userOverrides;
+        if (settings.userOverrides && typeof settings.userOverrides === 'object') {
+          // Potentially add more specific validation for override values if needed
+          this.userOverrides = settings.userOverrides;
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Error loading animation quality settings:', err);
     }
   }
@@ -874,9 +896,9 @@ export class D3AnimationQualityManager {
   /**
    * Get current quality settings
    */
-  public getCurrentSettings(): QualitySettings {
+  public getCurrentSettings = (): QualitySettings => {
     return { ...this.currentSettings };
-  }
+  };
 
   /**
    * Get current performance state
@@ -971,7 +993,7 @@ export function createQualityAdaptiveTransition<
   let adjustedDuration = duration;
   if (duration !== undefined) {
     // Scale duration by animation step factor
-    // If animationStepFactor is 2, transitions will take twice as long but use half as munknown frames
+    // If animationStepFactor is 2, transitions will take twice as long but use half as many frames
     adjustedDuration = duration * settings.animationStepFactor;
   }
 
@@ -1047,12 +1069,13 @@ export function createQualityAdaptiveSimulation<NodeDatum extends d3.SimulationN
 
   // Set tick iterations based on quality
   if (typeof simulation.tick === 'function') {
-    const originalTick = simulation.tick;
-    simulation.tick = function () {
+    const originalTick = simulation.tick.bind(simulation);
+    simulation.tick = () => {
+      // Use arrow function
       for (let i = 0; i < iterations; i++) {
-        originalTick.call(this);
+        originalTick(); // Call originalTick with simulation context
       }
-      return this;
+      return simulation; // Explicitly return simulation for chaining
     };
   }
 

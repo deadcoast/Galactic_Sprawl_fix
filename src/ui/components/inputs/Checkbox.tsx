@@ -103,7 +103,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const internalRef = useRef<HTMLInputElement>(null);
 
     // Expose the internal ref imperatively to the parent component
-    useImperativeHandle(ref, () => internalRef.current as HTMLInputElement);
+    useImperativeHandle(ref, () => internalRef.current!);
 
     // Update indeterminate state when it changes
     useEffect(() => {
@@ -160,7 +160,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }, [className, size, variant, disabled, hasError, indeterminate, checked, labelPosition]);
 
     // Generate unique ID for the checkbox if not provided
-    const checkboxId = id || `checkbox-${Math.random().toString(36).substring(2, 9)}`;
+    const checkboxId = id ?? `checkbox-${Math.random().toString(36).substring(2, 9)}`;
 
     // Content to render
     const checkboxElement = (
@@ -208,7 +208,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         </div>
 
         {/* Helper text or error message */}
-        {(helperText || hasError) && (
+        {(helperText ?? hasError) && (
           <div
             className={`ui-checkbox-helper-text ${hasError ? 'ui-checkbox-error-text' : ''}`}
             id={hasError ? `${checkboxId}-error` : undefined}

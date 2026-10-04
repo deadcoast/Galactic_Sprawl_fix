@@ -16,7 +16,7 @@ interface MLPredictionConfig {
   // Number of iterations for training
   iterations: number;
   // Metrics to analyze and predict
-  metricsToPredict: Array<keyof PerformanceMetrics>;
+  metricsToPredict: (keyof PerformanceMetrics)[];
   // Window size for feature extraction
   windowSize: number;
 }
@@ -261,7 +261,7 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
 
     // Training loop
     for (let i = 0; i < iterations; i++) {
-      // Forward pass
+      // Forcombatd pass
       const predictions = normalizedFeatures.map(feature => predict(feature, weights, bias));
 
       // Compute gradients
@@ -339,14 +339,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
     for (let i = 0; i < 7; i++) {
       const values = featureArray.map(f => f[i]);
       mean.push(d3.mean(values) ?? 0);
-      std.push(d3.deviation(values) || 1);
+      std.push(d3.deviation(values) ?? 1);
     }
 
     return {
       mean,
       std,
       targetMean: d3.mean(targets) ?? 0,
-      targetStd: d3.deviation(targets) || 1,
+      targetStd: d3.deviation(targets) ?? 1,
     };
   };
 
@@ -537,8 +537,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
       const yScale = d3
         .scaleLinear()
         .domain([
-          (d3.min(allData, d => d.value) as number) * 0.9,
-          (d3.max(allData, d => d.value) as number) * 1.1,
+          (d3.min(allData, d => d.value)!) * 0.9,
+          (d3.max(allData, d => d.value)!) * 1.1,
         ])
         .range([chartHeight_i, 0]);
 
@@ -727,14 +727,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
             sans-serif;
         }
 
-        h2 {
+        .ml-performance-prediction h2 {
           color: #333;
           border-bottom: 2px solid #4285f4;
           padding-bottom: 10px;
           margin-bottom: 20px;
         }
 
-        h3 {
+        .ml-performance-prediction h3 {
           color: #4285f4;
           margin-top: 0;
           margin-bottom: 15px;
@@ -806,26 +806,26 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
           margin-bottom: 30px;
         }
 
-        .prediction-metrics h3 {
+        .ml-performance-prediction .prediction-metrics h3 {
           padding: 15px;
           margin: 0;
           background: #f5f5f5;
           border-bottom: 1px solid #ddd;
         }
 
-        table {
+        .ml-performance-prediction table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .ml-performance-prediction th,
+        .ml-performance-prediction td {
           padding: 12px 15px;
           text-align: left;
           border-bottom: 1px solid #eee;
         }
 
-        th {
+        .ml-performance-prediction th {
           background: #f9f9f9;
           font-weight: 500;
         }
@@ -836,8 +836,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
           border-top: 1px solid #eee;
         }
 
-        .prediction-summary h4,
-        .model-explanation h4 {
+        .ml-performance-prediction .prediction-summary h4,
+        .ml-performance-prediction .model-explanation h4 {
           margin-top: 0;
           color: #333;
         }

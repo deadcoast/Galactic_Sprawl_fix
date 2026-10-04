@@ -1,6 +1,10 @@
 import { eventSystem } from '../lib/events/UnifiedEventSystem';
 import { Singleton } from '../lib/patterns/Singleton';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from '../services/logging/ErrorLoggingService';
 import { ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceState, ResourceTransfer } from '../types/resources/ResourceTypes';
@@ -60,14 +64,14 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
   private threshold: ResourceThresholdSubsystem;
 
   // Resource state cache
-  private resourceCache: Map<
+  private resourceCache = new Map<
     ResourceType,
     {
       state: ResourceState;
       lastUpdated: number;
       expiresAt: number;
     }
-  > = new Map();
+  >();
 
   // Processing state
   private optimizationInterval: NodeJS.Timeout | null = null;
@@ -490,7 +494,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     targetId: string
   ): number {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type as ResourceType);
+    const stringType = toStringResourceType(type);
     return this.transfer.transferResource(stringType as ResourceType, amount, sourceId, targetId);
   }
 
@@ -504,7 +508,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     rate: number
   ): boolean {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type as ResourceType);
+    const stringType = toStringResourceType(type);
     return this.flow.registerResourceFlow(sourceId, targetId, stringType as ResourceType, rate);
   }
 
@@ -545,7 +549,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   public getTransfersByType(type: ResourceType): ResourceTransfer[] {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type as ResourceType);
+    const stringType = toStringResourceType(type);
     return this.transfer.getTransfersByType(stringType as ResourceType);
   }
 }

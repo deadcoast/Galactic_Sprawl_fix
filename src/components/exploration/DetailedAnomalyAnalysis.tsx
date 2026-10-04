@@ -1,20 +1,20 @@
 import {
-  AlertTriangle,
-  ArrowRight,
-  BarChart2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Compass,
-  Database,
-  Download,
-  FileText,
-  Layers,
-  MapIcon,
-  Microscope,
-  Share2,
-  Shield,
-  Zap,
+    AlertTriangle,
+    ArrowRight,
+    BarChart2,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Compass,
+    Database,
+    Download,
+    FileText,
+    Layers,
+    MapIcon,
+    Microscope,
+    Share2,
+    Shield,
+    Zap
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -176,9 +176,8 @@ export function DetailedAnomalyAnalysis({
           a.sectorName.toLowerCase().includes(query) ||
           a.type.toLowerCase().includes(query) ||
           a.severity.toLowerCase().includes(query) ||
-          (a.classification?.category && a.classification.category.toLowerCase().includes(query)) ||
-          (a.classification?.subcategory &&
-            a.classification.subcategory.toLowerCase().includes(query))
+          (a.classification?.category?.toLowerCase().includes(query) ?? false) ||
+          (a.classification?.subcategory?.toLowerCase().includes(query) ?? false)
       );
     }
 
@@ -212,12 +211,12 @@ export function DetailedAnomalyAnalysis({
 
   // Get the selected anomaly
   const selectedAnomaly = useMemo(() => {
-    return anomalies.find(a => a.id === selectedAnomalyId) || null;
+    return anomalies.find(a => a.id === selectedAnomalyId) ?? null;
   }, [anomalies, selectedAnomalyId]);
 
   // Get related anomalies
   const relatedAnomalies = useMemo(() => {
-    if (!selectedAnomaly || !selectedAnomaly.relatedAnomalies) return [];
+    if (!selectedAnomaly?.relatedAnomalies) return [];
     return anomalies.filter(a => selectedAnomaly.relatedAnomalies?.includes(a.id));
   }, [anomalies, selectedAnomaly]);
 
@@ -423,7 +422,7 @@ export function DetailedAnomalyAnalysis({
                 value={quality}
                 onChange={_e => {
                   // This would typically be handled by a parent component
-                  console.warn('Quality level change would be handled by parent component');
+                  // TODO: Implement quality level change handler
                 }}
                 className="mt-1 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-xs text-gray-300"
               >
@@ -747,14 +746,14 @@ export function DetailedAnomalyAnalysis({
                           <Microscope className="h-4 w-4 text-purple-400" />
                           <span className="text-sm font-medium text-white">Analysis</span>
                         </div>
-                        {expandedSections['analysis'] ? (
+                        {expandedSections.analysis ? (
                           <ChevronUp className="h-4 w-4 text-gray-400" />
                         ) : (
                           <ChevronDown className="h-4 w-4 text-gray-400" />
                         )}
                       </div>
 
-                      {expandedSections['analysis'] && (
+                      {expandedSections.analysis && (
                         <div className="border-t border-gray-700 p-3 pt-0">
                           {selectedAnomaly.investigated ? (
                             <div className="space-y-3">
@@ -891,14 +890,14 @@ export function DetailedAnomalyAnalysis({
                           <FileText className="h-4 w-4 text-green-400" />
                           <span className="text-sm font-medium text-white">Visual Data</span>
                         </div>
-                        {expandedSections['visuals'] ? (
+                        {expandedSections.visuals ? (
                           <ChevronUp className="h-4 w-4 text-gray-400" />
                         ) : (
                           <ChevronDown className="h-4 w-4 text-gray-400" />
                         )}
                       </div>
 
-                      {expandedSections['visuals'] && (
+                      {expandedSections.visuals && (
                         <div className="border-t border-gray-700 p-3 pt-0">
                           {selectedAnomaly.images && selectedAnomaly.images.length > 0 ? (
                             <div className="grid grid-cols-2 gap-2">
@@ -936,14 +935,14 @@ export function DetailedAnomalyAnalysis({
                           <ArrowRight className="h-4 w-4 text-yellow-400" />
                           <span className="text-sm font-medium text-white">Recommendations</span>
                         </div>
-                        {expandedSections['recommendations'] ? (
+                        {expandedSections.recommendations ? (
                           <ChevronUp className="h-4 w-4 text-gray-400" />
                         ) : (
                           <ChevronDown className="h-4 w-4 text-gray-400" />
                         )}
                       </div>
 
-                      {expandedSections['recommendations'] && (
+                      {expandedSections.recommendations && (
                         <div className="border-t border-gray-700 p-3 pt-0">
                           {selectedAnomaly.investigated ? (
                             <div className="space-y-2">
@@ -1035,14 +1034,14 @@ export function DetailedAnomalyAnalysis({
                               Related Anomalies
                             </span>
                           </div>
-                          {expandedSections['related'] ? (
+                          {expandedSections.related ? (
                             <ChevronUp className="h-4 w-4 text-gray-400" />
                           ) : (
                             <ChevronDown className="h-4 w-4 text-gray-400" />
                           )}
                         </div>
 
-                        {expandedSections['related'] && (
+                        {expandedSections.related && (
                           <div className="border-t border-gray-700 p-3 pt-0">
                             <div className="space-y-2">
                               {relatedAnomalies.map(anomaly => (
@@ -1303,7 +1302,7 @@ export function DetailedAnomalyAnalysis({
                                           (selectedAnomaly.analysisResults.materialProperties
                                             .radioactivity /
                                             5) *
-                                            100,
+                                          100,
                                           100
                                         )}%`,
                                       }}

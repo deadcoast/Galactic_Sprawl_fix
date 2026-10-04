@@ -1,10 +1,15 @@
-import { v4 as uuidv4 } from 'uuid';
-import { shipFactory } from '../../factories/ships/ShipFactory'; // Import factory
-import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
-import { shipMovementManager } from '../../lib/ai/shipMovement';
-import { moduleEventBus } from '../../lib/events/ModuleEventBus'; // Import the event bus
-import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { Position } from '../../types/core/GameTypes';
+import { v4 as uuidv4 } from "uuid";
+import { shipFactory } from "../../factories/ships/ShipFactory"; // Import factory
+import { shipBehaviorManager } from "../../lib/ai/shipBehavior";
+import { shipMovementManager } from "../../lib/ai/shipMovement";
+import { moduleEventBus } from "../../lib/events/ModuleEventBus"; // Import the event bus
+import {
+  errorLoggingService,
+  ErrorSeverity,
+  ErrorType,
+} from "../../services/logging/ErrorLoggingService";
+import { ModuleType } from "../../types/buildings/ModuleTypes";
+import { Position } from "../../types/core/GameTypes";
 import {
   BaseEvent,
   EventType,
@@ -14,22 +19,35 @@ import {
   MiningShipUnregisteredEventData,
   MiningTaskAssignedEventData,
   MiningTaskCompletedEventData,
-} from '../../types/events/EventTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
-import { ShipCargo } from '../../types/ships/CommonShipTypes'; // Import ShipCargo
-import { PlayerShipClass } from '../../types/ships/PlayerShipTypes'; // Import PlayerShipClass for factory
+} from "../../types/events/EventTypes";
+import { ResourceType } from "../../types/resources/ResourceTypes";
+import { PlayerShipClass } from "../../types/ships/PlayerShipTypes"; // Import PlayerShipClass for factory
 import {
   ShipCategory,
   MiningShip as UnifiedMiningShip, // Keep the alias for clarity within this file
   UnifiedShipStatus,
-} from '../../types/ships/UnifiedShipTypes';
-import { getAsteroidFieldManager } from '../ManagerRegistry'; // Import the registry function
+} from "../../types/ships/ShipTypes";
+// CIRCULAR DEPENDENCY MITIGATION:
+// ManagerRegistry imports MiningShipManager, creating a circular dependency.
+// We use lazy loading to defer the import until runtime.
+let _getAsteroidFieldManager:
+  | typeof import("../ManagerRegistry").getAsteroidFieldManager
+  | null = null;
+
+function getAsteroidFieldManagerLazy() {
+  if (!_getAsteroidFieldManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    _getAsteroidFieldManager =
+      require("../ManagerRegistry").getAsteroidFieldManager;
+  }
+  return _getAsteroidFieldManager!();
+}
 
 // Define the expected structure for event data passed to publish
 interface PublishEventData {
   type: EventType;
   moduleId: string;
-  moduleType: ModuleType | string; // Allow string for flexibility if needed
+  moduleType: ModuleType; // Use only ModuleType enum, remove string union
   timestamp: number;
   data: Record<string, unknown>; // Keep data flexible
 }
@@ -48,10 +66,10 @@ interface IAsteroidFieldManager {
 
 // Restore TaskStatus definition
 enum TaskStatus {
-  QUEUED = 'queued',
-  IN_PROGRESS = 'in-progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
+  QUEUED = "queued",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
 }
 
 // Restore MiningTask definition
@@ -66,11 +84,11 @@ interface MiningTask {
   endTime?: number;
 }
 
-// Temporary type alias for event casting during transition
+// Temporary interface instead of type for better type consistency
 // TODO: Remove this once EventTypes.ts is updated to use UnifiedShipStatus
-type OldShipStatus = 'idle' | 'mining' | 'returning' | 'maintenance';
+type OldShipStatus = "idle" | "mining" | "returning" | "maintenance";
 // TODO: Remove this once EventTypes.ts is updated to use UnifiedMiningShip
-type OldMiningShip = {
+interface OldMiningShip {
   id: string;
   name: string;
   type: string;
@@ -79,21 +97,21 @@ type OldMiningShip = {
   currentLoad: number;
   targetNode?: string;
   efficiency: number;
-};
+}
 
 // Keep the local ShipStatus enum but EXPORT it
 export enum ShipStatus {
-  IDLE = 'idle',
-  MINING = 'mining',
-  RETURNING = 'returning',
-  MAINTENANCE = 'maintenance',
+  IDLE = "idle",
+  MINING = "mining",
+  RETURNING = "returning",
+  MAINTENANCE = "maintenance",
 }
 
 // Keep the local MiningShip interface but EXPORT it
 export interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
+  type: "rockBreaker" | "voidDredger";
   status: ShipStatus;
   capacity: number;
   currentLoad: number;
@@ -104,10 +122,10 @@ export interface MiningShip {
 export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
   private static _instance: MiningShipManager | null = null;
 
-  // Use the imported UnifiedMiningShip type
-  private ships: Map<string, UnifiedMiningShip> = new Map();
-  private tasks: Map<string, MiningTask> = new Map();
-  private nodeAssignments: Map<string, string> = new Map();
+  // Use the imported UnifiedMiningShip type with generic constructors
+  private ships = new Map<string, UnifiedMiningShip>();
+  private tasks = new Map<string, MiningTask>();
+  private nodeAssignments = new Map<string, string>();
 
   // Use the local interface and definite assignment assertion
   private asteroidFieldManager!: IAsteroidFieldManager;
@@ -119,9 +137,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
 
   // Revert to the previous getInstance implementation
   public static getInstance(): MiningShipManager {
-    if (!MiningShipManager._instance) {
-      MiningShipManager._instance = new MiningShipManager();
-    }
+    MiningShipManager._instance ??= new MiningShipManager();
     return MiningShipManager._instance;
   }
 
@@ -133,20 +149,30 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     if (dependencies?.asteroidFieldManager) {
       this.asteroidFieldManager = dependencies.asteroidFieldManager;
     } else {
-      // Retrieve from ManagerRegistry
+      // Retrieve from ManagerRegistry using lazy loading to break circular dependency
       try {
         // Cast via unknown as suggested by linter
-        this.asteroidFieldManager = getAsteroidFieldManager() as unknown as IAsteroidFieldManager;
+        this.asteroidFieldManager =
+          getAsteroidFieldManagerLazy() as unknown as IAsteroidFieldManager;
         if (!this.asteroidFieldManager) {
-          throw new Error('AsteroidFieldManager instance not found in registry.');
+          throw new Error(
+            "AsteroidFieldManager instance not found in registry.",
+          );
         }
       } catch (error) {
-        console.error(
-          '[MiningShipManager] Failed to retrieve AsteroidFieldManager from registry:',
-          error
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.HIGH,
+          {
+            manager: "MiningShipManager",
+            method: "initialize",
+          },
         );
         // Handle the error appropriately - maybe throw, or use a safe default
-        throw new Error('AsteroidFieldManager dependency is required and could not be obtained.');
+        throw new Error(
+          "AsteroidFieldManager dependency is required and could not be obtained.",
+        );
       }
     }
 
@@ -176,24 +202,29 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     //     }
     //   }
     // });
-    console.log('MiningShipManager initialized');
+    errorLoggingService.logInfo("MiningShipManager initialized");
     await Promise.resolve();
   }
 
   // Placeholder for update logic (was onUpdate)
   public update(deltaTime: number): void {
-    this.ships.forEach(ship => {
+    this.ships.forEach((ship) => {
       // Use UnifiedShipStatus for comparison
       if (ship.status === UnifiedShipStatus.MINING && ship.targetNode) {
         const task = Array.from(this.tasks.values()).find(
-          t => t.shipId === ship.id && t.status === TaskStatus.IN_PROGRESS
+          (t) => t.shipId === ship.id && t.status === TaskStatus.IN_PROGRESS,
         );
 
         if (task) {
-          // Use efficiency from the ship object
-          const collectedAmount = (ship.efficiency ?? 1) * deltaTime;
-          // Use currentLoad from the ship object
-          ship.currentLoad = (ship.currentLoad ?? 0) + collectedAmount;
+          // Safe arithmetic operations with proper type guards
+          const efficiency =
+            typeof ship.efficiency === "number" ? ship.efficiency : 1;
+          const collectedAmount = efficiency * deltaTime;
+
+          // Safe arithmetic operations for currentLoad
+          const currentLoad =
+            typeof ship.currentLoad === "number" ? ship.currentLoad : 0;
+          ship.currentLoad = currentLoad + collectedAmount;
 
           const eventData: MiningResourceCollectedEventData = {
             shipId: ship.id,
@@ -203,24 +234,27 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
           this.publish({
             type: EventType.MINING_RESOURCE_COLLECTED,
             moduleId: ship.id,
-            moduleType: 'mining_ship' as ModuleType,
+            moduleType: "mining_ship" as ModuleType,
             timestamp: Date.now(),
             data: eventData as unknown as Record<string, unknown>,
           });
 
           // Extract capacity number explicitly
           let cargoCapacity = 0;
-          if (typeof ship.stats?.cargo === 'number') {
+          if (typeof ship.stats?.cargo === "number") {
             cargoCapacity = ship.stats.cargo;
           } else if (
-            typeof ship.stats?.cargo === 'object' &&
+            typeof ship.stats?.cargo === "object" &&
             ship.stats.cargo !== null &&
-            'capacity' in ship.stats.cargo
+            "capacity" in ship.stats.cargo
           ) {
-            cargoCapacity = (ship.stats.cargo as ShipCargo).capacity;
+            cargoCapacity = ship.stats.cargo.capacity;
           }
 
-          if ((ship.currentLoad ?? 0) >= cargoCapacity) {
+          // Safe comparison with proper type guards
+          const shipCurrentLoad =
+            typeof ship.currentLoad === "number" ? ship.currentLoad : 0;
+          if (shipCurrentLoad >= cargoCapacity) {
             this.recallShip(ship.id);
           }
         }
@@ -233,7 +267,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     this.ships.clear();
     this.tasks.clear();
     this.nodeAssignments.clear();
-    console.log('MiningShipManager disposed');
+    errorLoggingService.logInfo("MiningShipManager disposed");
     await Promise.resolve();
   }
 
@@ -242,20 +276,26 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     // Ensure the event conforms to BaseEvent/ModuleEvent structure
     const moduleEvent: BaseEvent = {
       ...event,
-      // Ensure moduleType is always a ModuleType enum if possible, or handle string cases
-      moduleType: event.moduleType as ModuleType, // Basic cast, might need more robust handling
+      // Ensure moduleType is always a ModuleType enum
+      moduleType: event.moduleType,
     };
     moduleEventBus.emit(moduleEvent);
   }
 
   // Add placeholder subscribe method (needed after removing inheritance)
-  private subscribe(eventType: EventType | '*', callback: (event: BaseEvent) => void): () => void {
+  private subscribe(
+    eventType: EventType | "*",
+    callback: (event: BaseEvent) => void,
+  ): () => void {
     // Subscribe using the global moduleEventBus
     return moduleEventBus.subscribe(eventType, callback);
   }
 
   // Update method signature to use UnifiedMiningShip and UnifiedShipStatus
-  private updateShipStatus(ship: UnifiedMiningShip, newStatus: UnifiedShipStatus): void {
+  private updateShipStatus(
+    ship: UnifiedMiningShip,
+    newStatus: UnifiedShipStatus,
+  ): void {
     const oldStatus = ship.status;
     if (oldStatus === newStatus) return;
 
@@ -269,14 +309,18 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     this.publish({
       type: EventType.MINING_SHIP_STATUS_CHANGED,
       moduleId: ship.id,
-      moduleType: 'mining_ship' as ModuleType,
+      moduleType: "mining_ship" as ModuleType,
       timestamp: Date.now(),
       data: eventData as unknown as Record<string, unknown>,
     });
   }
 
   // Refactor registerShip to use the factory
-  public registerShip(shipClass: PlayerShipClass, name: string, initialPosition: Position): void {
+  public registerShip(
+    shipClass: PlayerShipClass,
+    name: string,
+    initialPosition: Position,
+  ): void {
     const newShip = shipFactory.createShip(shipClass, {
       position: initialPosition,
       name: name,
@@ -284,8 +328,14 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     });
 
     if (newShip.category !== ShipCategory.MINING) {
-      console.error(
-        `[MiningShipManager] Factory created a non-mining ship (${newShip.category}) for class ${shipClass}`
+      errorLoggingService.logWarn(
+        `Factory created a non-mining ship (${newShip.category}) for class ${shipClass}`,
+        {
+          manager: "MiningShipManager",
+          method: "registerShip",
+          shipClass,
+          actualCategory: newShip.category,
+        },
       );
       return;
     }
@@ -305,25 +355,31 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     };
 
     let cargoCapacityForBehavior = 0;
-    if (typeof miningShip.stats?.cargo === 'number') {
+    if (typeof miningShip.stats?.cargo === "number") {
       cargoCapacityForBehavior = miningShip.stats.cargo;
     } else if (
-      typeof miningShip.stats?.cargo === 'object' &&
+      typeof miningShip.stats?.cargo === "object" &&
       miningShip.stats.cargo !== null &&
-      'capacity' in miningShip.stats.cargo
+      "capacity" in miningShip.stats.cargo
     ) {
-      cargoCapacityForBehavior = (miningShip.stats.cargo as ShipCargo).capacity;
+      cargoCapacityForBehavior = miningShip.stats.cargo.capacity;
     }
 
-    // Correct the object passed to registerShip
+    // Correct the object passed to registerShip with proper type handling
     shipBehaviorManager.registerShip({
       id: miningShip.id,
       position: miningShip.position,
       category: miningShip.category,
-      // Add back 'type', casting category as a temporary fix for the mismatch
-      type: miningShip.category as any, // TODO: Fix ShipType definition and provide correct ship class/model here
-      capabilities:
-        miningShip.capabilities ?? miningShip.stats?.capabilities ?? defaultMiningCapabilities,
+      // Use ResourceType enum instead of string literal
+      type: ResourceType.MINERALS,
+      capabilities: miningShip.capabilities
+        ? {
+            canMine: miningShip.capabilities.canMine ?? true,
+            canSalvage: miningShip.capabilities.canSalvage ?? false,
+            canScan: miningShip.capabilities.canScan ?? false,
+            canJump: miningShip.capabilities.canJump ?? false,
+          }
+        : defaultMiningCapabilities,
       stats: {
         health: miningShip.stats?.health ?? 100,
         shield: miningShip.stats?.shield ?? 100,
@@ -339,7 +395,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     this.publish({
       type: EventType.MINING_SHIP_REGISTERED,
       moduleId: miningShip.id,
-      moduleType: 'mining_ship' as ModuleType,
+      moduleType: "mining_ship" as ModuleType,
       timestamp: Date.now(),
       data: eventData as unknown as Record<string, unknown>,
     });
@@ -353,8 +409,8 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     shipBehaviorManager.unregisterShip(shipId);
 
     Array.from(this.tasks.values())
-      .filter(task => task.shipId === shipId)
-      .forEach(task => {
+      .filter((task) => task.shipId === shipId)
+      .forEach((task) => {
         this.tasks.delete(task.id);
         // Make sure to remove the assignment when a ship is unregistered
         if (this.nodeAssignments.get(task.nodeId) === shipId) {
@@ -366,7 +422,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
         this.publish({
           type: EventType.MINING_TASK_COMPLETED,
           moduleId: shipId,
-          moduleType: 'mining_ship' as ModuleType,
+          moduleType: "mining_ship" as ModuleType,
           timestamp: Date.now(),
           data: eventData as unknown as Record<string, unknown>,
         });
@@ -376,7 +432,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     this.publish({
       type: EventType.MINING_SHIP_UNREGISTERED,
       moduleId: shipId,
-      moduleType: 'mining_ship' as ModuleType,
+      moduleType: "mining_ship" as ModuleType,
       timestamp: Date.now(),
       data: eventData as unknown as Record<string, unknown>,
     });
@@ -384,58 +440,77 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
 
   private handleThresholdViolation(
     resourceIdString: string, // This is ResourceType as string
-    details: { type: 'below_minimum' | 'above_maximum'; current: number }
+    details: { type: "below_minimum" | "above_maximum"; current: number },
   ): void {
-    if (details.type === 'below_minimum') {
+    if (details.type === "below_minimum") {
       // Find idle ships using UnifiedShipStatus
-      const availableShip = Array.from(this.ships.values()).find(
-        ship => ship.status === UnifiedShipStatus.IDLE && (ship.currentLoad ?? 0) === 0
-      );
+      const availableShip = Array.from(this.ships.values()).find((ship) => {
+        const currentLoad =
+          typeof ship.currentLoad === "number" ? ship.currentLoad : 0;
+        return ship.status === UnifiedShipStatus.IDLE && currentLoad === 0;
+      });
 
       if (availableShip) {
         const resourceTypeEnum = this.stringToResourceType(resourceIdString);
         if (!resourceTypeEnum) {
-          console.error(
-            `[MiningShipManager] Invalid resource type string received: ${resourceIdString}`
+          errorLoggingService.logWarn(
+            `Invalid resource type string received: ${resourceIdString}`,
+            {
+              manager: "MiningShipManager",
+              method: "handleThresholdViolation",
+              resourceIdString,
+            },
           );
           return;
         }
 
-        const availableNodes = this.asteroidFieldManager.findAvailableNodesByType(resourceTypeEnum);
-        const targetNodeId = availableNodes.find(nodeId => !this.nodeAssignments.has(nodeId));
+        const availableNodes =
+          this.asteroidFieldManager.findAvailableNodesByType(resourceTypeEnum);
+        const targetNodeId = availableNodes.find(
+          (nodeId) => !this.nodeAssignments.has(nodeId),
+        );
 
         if (targetNodeId) {
-          console.log(
-            `[MiningShipManager] Dispatching ship ${availableShip.id} to node ${targetNodeId} for resource ${resourceIdString}`
+          errorLoggingService.logInfo(
+            `Dispatching ship ${availableShip.id} to node ${targetNodeId} for resource ${resourceIdString}`,
           );
           this.dispatchShipToResource(availableShip.id, targetNodeId);
         } else {
-          console.warn(
-            `[MiningShipManager] No unassigned mining nodes found for resource ${resourceIdString}.`
+          errorLoggingService.logWarn(
+            `No unassigned mining nodes found for resource ${resourceIdString}`,
+            {
+              manager: "MiningShipManager",
+              resourceIdString,
+            },
           );
         }
       } else {
-        console.warn(
-          `[MiningShipManager] No idle mining ship available for resource ${resourceIdString}`
+        errorLoggingService.logWarn(
+          `No idle mining ship available for resource ${resourceIdString}`,
+          {
+            manager: "MiningShipManager",
+            resourceIdString,
+          },
         );
       }
-    } else if (details.type === 'above_maximum') {
+    } else if (details.type === "above_maximum") {
       // Filter only by nodeId and resource type, remove unused shipId from filter
       const nodesToRecall = Array.from(this.nodeAssignments.entries()).filter(
         // Only destructure the needed nodeId
         ([nodeId]: [string, string]) =>
-          this.getResourceTypeFromNodeId(nodeId).toString() === resourceIdString
+          this.getResourceTypeFromNodeId(nodeId).toString() ===
+          resourceIdString,
       );
 
       if (nodesToRecall.length > 0) {
-        console.log(
-          `[MiningShipManager] Recalling ships for resource ${resourceIdString} due to above_maximum threshold.`
+        errorLoggingService.logInfo(
+          `Recalling ships for resource ${resourceIdString} due to above_maximum threshold`,
         );
         // Use only shipId in forEach, remove unused nodeId
         nodesToRecall.forEach(([, shipId]) => this.recallShip(shipId));
       } else {
-        console.log(
-          `[MiningShipManager] Received above_maximum for ${resourceIdString}, but no ships currently assigned to nodes of this type.`
+        errorLoggingService.logInfo(
+          `Received above_maximum for ${resourceIdString}, but no ships currently assigned to nodes of this type`,
         );
       }
     }
@@ -446,18 +521,26 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     if (Object.values(ResourceType).includes(upperStr as ResourceType)) {
       return upperStr as ResourceType;
     }
-    console.warn(
-      `[MiningShipManager] Could not convert string '${resourceStr}' to ResourceType enum.`
+    errorLoggingService.logWarn(
+      `Could not convert string '${resourceStr}' to ResourceType enum`,
+      {
+        manager: "MiningShipManager",
+        resourceStr,
+      },
     );
     return undefined;
   }
 
   private getResourceTypeFromNodeId(nodeId: string): ResourceType {
     // Example: "minerals-cluster-1" -> "MINERALS"
-    const resourceStr = nodeId.split('-')[0]?.toUpperCase();
+    const resourceStr = nodeId.split("-")[0]?.toUpperCase();
     if (!resourceStr) {
-      console.warn(
-        `[MiningShipManager] Could not determine resource type from nodeId: ${nodeId}. Defaulting to MINERALS.`
+      errorLoggingService.logWarn(
+        `Could not determine resource type from nodeId: ${nodeId}. Defaulting to MINERALS`,
+        {
+          manager: "MiningShipManager",
+          nodeId,
+        },
       );
       return ResourceType.MINERALS;
     }
@@ -470,17 +553,32 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     // Renamed resourceId to resourceNodeId for clarity
     const ship = this.ships.get(shipId);
     if (!ship) {
-      console.warn(`[MiningShipManager] Ship ${shipId} not found for dispatch`);
+      errorLoggingService.logWarn(`Ship ${shipId} not found for dispatch`, {
+        manager: "MiningShipManager",
+        shipId,
+      });
       return;
     }
     // Use UnifiedShipStatus
     if (ship.status !== UnifiedShipStatus.IDLE) {
-      console.warn(`[MiningShipManager] Ship ${shipId} is not IDLE, cannot dispatch.`);
+      errorLoggingService.logWarn(
+        `Ship ${shipId} is not IDLE, cannot dispatch`,
+        {
+          manager: "MiningShipManager",
+          shipId,
+          currentStatus: ship.status,
+        },
+      );
       return;
     }
     if (this.nodeAssignments.has(resourceNodeId)) {
-      console.warn(
-        `[MiningShipManager] Resource node ${resourceNodeId} already has ship ${this.nodeAssignments.get(resourceNodeId)} assigned.`
+      errorLoggingService.logWarn(
+        `Resource node ${resourceNodeId} already has ship ${this.nodeAssignments.get(resourceNodeId)} assigned`,
+        {
+          manager: "MiningShipManager",
+          resourceNodeId,
+          assignedShipId: this.nodeAssignments.get(resourceNodeId),
+        },
       );
       return;
     }
@@ -505,7 +603,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     this.publish({
       type: EventType.MINING_TASK_ASSIGNED,
       moduleId: shipId,
-      moduleType: 'mining_ship' as ModuleType,
+      moduleType: "mining_ship" as ModuleType,
       timestamp: Date.now(),
       data: eventData as unknown as Record<string, unknown>,
     });
@@ -514,7 +612,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
 
     shipBehaviorManager.assignTask({
       id: task.id,
-      type: 'mine',
+      type: "mine",
       target: {
         id: resourceNodeId,
         position: this.getResourcePosition(resourceNodeId), // Assuming this returns a valid Position
@@ -532,14 +630,20 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
       ship.status === UnifiedShipStatus.IDLE ||
       ship.status === UnifiedShipStatus.MAINTENANCE
     ) {
-      console.log(
-        `[MiningShipManager] Ship ${shipId} is ${ship?.status ?? 'not found'}, recall skipped.`
+      errorLoggingService.logInfo(
+        `Ship ${shipId} is ${ship?.status ?? "not found"}, recall skipped`,
+        {
+          manager: "MiningShipManager",
+          shipId,
+          status: ship?.status,
+        },
       );
       return;
     }
 
     const activeTask = Array.from(this.tasks.values()).find(
-      task => task.shipId === shipId && task.status === TaskStatus.IN_PROGRESS
+      (task) =>
+        task.shipId === shipId && task.status === TaskStatus.IN_PROGRESS,
     );
 
     if (activeTask) {
@@ -551,14 +655,19 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
       this.publish({
         type: EventType.MINING_TASK_COMPLETED,
         moduleId: shipId,
-        moduleType: 'mining_ship' as ModuleType,
+        moduleType: "mining_ship" as ModuleType,
         timestamp: Date.now(),
         data: eventData as unknown as Record<string, unknown>,
       });
     } else if (ship.status === UnifiedShipStatus.MINING) {
       // Only warn if it was supposed to be mining but had no task
-      console.warn(
-        `[MiningShipManager] No active mining task found for ship ${shipId} (status: ${ship.status}) during recall.`
+      errorLoggingService.logWarn(
+        `No active mining task found for ship ${shipId} (status: ${ship.status}) during recall`,
+        {
+          manager: "MiningShipManager",
+          shipId,
+          status: ship.status,
+        },
       );
     }
 
@@ -571,7 +680,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
     // Optionally, tell the ship to return to base/hangar
     // Assuming {x: 0, y: 0} is the base position
     shipMovementManager.moveToPosition(shipId, { x: 0, y: 0 });
-    console.log(`[MiningShipManager] Ship ${shipId} recalled.`);
+    errorLoggingService.logInfo(`Ship ${shipId} recalled`);
   }
 
   private getResourcePosition(resourceNodeId: string): Position {
@@ -581,11 +690,15 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
       if (pos) return pos;
     }
     // Fallback to pseudo-random generation if manager or method doesn't exist
-    console.warn(
-      `[MiningShipManager] Could not get position for node ${resourceNodeId} from AsteroidFieldManager. Using fallback.`
+    errorLoggingService.logWarn(
+      `Could not get position for node ${resourceNodeId} from AsteroidFieldManager. Using fallback`,
+      {
+        manager: "MiningShipManager",
+        resourceNodeId,
+      },
     );
-    const seedPart = resourceNodeId.split('-').pop() || '0';
-    const seed = parseInt(seedPart.replace(/[^0-9]/g, ''), 10) || 0;
+    const seedPart = resourceNodeId.split("-").pop() ?? "0";
+    const seed = parseInt(seedPart.replace(/[^0-9]/g, ""), 10) ?? 0;
     return {
       x: ((seed * 173 + 89) % 2000) - 1000,
       y: ((seed * 251 + 137) % 2000) - 1000,
@@ -602,7 +715,7 @@ export class MiningShipManager /* extends AbstractBaseManager<BaseEvent> */ {
 
   public getShipTask(shipId: string): MiningTask | undefined {
     return Array.from(this.tasks.values()).find(
-      t => t.shipId === shipId && t.status === TaskStatus.IN_PROGRESS
+      (t) => t.shipId === shipId && t.status === TaskStatus.IN_PROGRESS,
     );
   }
 }

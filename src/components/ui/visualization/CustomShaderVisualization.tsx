@@ -2,14 +2,15 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import {
-  DataVisualizationShaderConfig,
-  DataVisualizationShaderType,
-  ShaderUniform,
-  WebGLShaderManager,
-} from '../../../lib/optimization/WebGLShaderManager';
+import
+  {
+    DataVisualizationShaderConfig,
+    DataVisualizationShaderType,
+    ShaderUniform,
+    WebGLShaderManager,
+  } from '../../../lib/optimization/WebGLShaderManager';
 import { Position } from '../../../types/core/Position';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { EventType } from '../../../types/events/EventTypes';
 
 export interface CustomShaderDefinition {
   vertexShader?: string;
@@ -99,12 +100,24 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
   const shaderManagerRef = useRef<WebGLShaderManager | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Register with component registry
-  useComponentRegistration({
-    type: ResourceType.EXOTIC,
-    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED'],
-    updatePriority: 'high',
-  });
+  // Generate instance ID & register component
+  const componentInstanceId = useMemo(
+    () => `CustomShaderVisualization-${Date.now().toString(36)}`,
+    []
+  );
+
+  useComponentRegistration(
+    componentInstanceId,
+    'CustomShaderVisualization',
+    undefined,
+    {
+      eventSubscriptions: [
+        EventType.RESOURCE_UPDATED as unknown as EventType,
+        EventType.RESOURCE_FLOW_UPDATED as unknown as EventType,
+      ],
+      updatePriority: 'high',
+    }
+  );
 
   // Prepare data for WebGL rendering
   const { positions, dataValues, dataRange } = useMemo(() => {
@@ -154,7 +167,7 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
       console.warn('CustomShaderVisualization mounted');
     },
     onUnmount: () => {
-      console.warn('CustomShaderVisualization unmounted');
+      console.log('CustomShaderVisualization unmounted');
     },
   });
 

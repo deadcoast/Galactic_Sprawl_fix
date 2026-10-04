@@ -89,7 +89,7 @@ export function ModuleControls({
   const { module, currentStatus, isLoading, error } = useModuleStatus(moduleId);
 
   // Use provided module data if available, otherwise use from hook
-  const activeModule = moduleData || module;
+  const activeModule = moduleData ?? module;
 
   // Get size-based class
   const getSizeClass = () => {
@@ -214,7 +214,7 @@ export function ModuleControls({
   }
 
   // Determine button states
-  const isActive = activeModule?.isActive || false;
+  const isActive = activeModule?.isActive ?? false;
   const isUpgrading = currentStatus === 'upgrading';
   const isInMaintenance = currentStatus === 'maintenance';
   const currentPowerMode =

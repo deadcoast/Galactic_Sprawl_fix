@@ -55,9 +55,7 @@ export interface TransitionState<T> {
 /**
  * Typed interpolator function for smooth transitions between values
  */
-export interface TypedInterpolator<T> {
-  (t: number): T;
-}
+export type TypedInterpolator<T> = (t: number) => T;
 
 /**
  * Type-safe wrapper for d3.interpolate functions
@@ -123,7 +121,7 @@ export const typedInterpolators = {
    * @returns A typed interpolator function
    */
   object: <T extends Record<string, number>>(a: T, b: T): TypedInterpolator<T> => {
-    const keys = Object.keys(a) as Array<keyof T>;
+    const keys = Object.keys(a) as (keyof T)[];
     const interpolators = {} as Record<keyof T, (t: number) => number>;
 
     keys.forEach(key => {
@@ -133,7 +131,7 @@ export const typedInterpolators = {
     });
 
     return (t: number) => {
-      const result = { ...a } as T;
+      const result = { ...a };
       keys.forEach(key => {
         if (interpolators[key]) {
           result[key] = interpolators[key](t) as T[keyof T];

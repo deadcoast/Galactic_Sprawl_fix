@@ -21,10 +21,10 @@ export type CombatTactic = 'flank' | 'charge' | 'kite' | 'hold';
 
 // Resource Types
 // Using standardized ResourceType enum from StandardizedResourceTypes.ts
-export type ResourceAmount = {
+export interface ResourceAmount {
   type: ResourceType;
   amount: number;
-};
+}
 
 // Coordinate Types
 export interface Position {

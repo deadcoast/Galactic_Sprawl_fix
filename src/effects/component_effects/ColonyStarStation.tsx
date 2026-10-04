@@ -242,7 +242,7 @@ export function ColonyStarStation({
         ]
       ),
 
-      /* Warnings */
+      /* warnings */
       modules.some(m => m.status === 'damaged') &&
         React.createElement(
           'div',

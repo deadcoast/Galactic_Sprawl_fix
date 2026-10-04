@@ -1,8 +1,38 @@
-import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+// CIRCULAR DEPENDENCY MITIGATION:
+// ErrorLoggingService extends AbstractBaseManager, creating a circular dependency.
+// We use type-only import for ErrorType and lazy loading for errorLoggingService.
+import type { ErrorType as ErrorTypeEnum } from '../../services/logging/ErrorLoggingService';
+
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType, BaseEvent as LegacyBaseEvent } from '../../types/events/EventTypes';
 import { EventBus } from '../events/EventBus';
 import { BaseEvent, eventSystem } from '../events/UnifiedEventSystem';
 import { Singleton } from '../patterns/Singleton';
+
+// Lazy-loaded error logging to break circular dependency
+let _errorLoggingService: typeof import('../../services/logging/ErrorLoggingService').errorLoggingService | null = null;
+let _ErrorType: typeof import('../../services/logging/ErrorLoggingService').ErrorType | null = null;
+
+function getErrorLoggingService() {
+  if (!_errorLoggingService) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const module = require('../../services/logging/ErrorLoggingService');
+      _errorLoggingService = module.errorLoggingService;
+      _ErrorType = module.ErrorType;
+    } catch {
+      // Circular dependency not yet resolved — fall back to console
+    }
+  }
+  if (!_errorLoggingService || !_ErrorType) {
+    // Return a minimal stub so callers don't crash
+    return {
+      errorLoggingService: { logError: (...args: unknown[]) => console.error('[BaseManager fallback]', ...args) } as NonNullable<typeof _errorLoggingService>,
+      ErrorType: { RUNTIME: 'RUNTIME' } as unknown as NonNullable<typeof _ErrorType>,
+    };
+  }
+  return { errorLoggingService: _errorLoggingService, ErrorType: _ErrorType };
+}
 
 /**
  * Base interface for all manager classes
@@ -53,12 +83,10 @@ export enum ManagerStatus {
 /**
  * Manager metrics
  */
-export interface ManagerMetrics {
-  [key: string]: number;
-}
+export type ManagerMetrics = Record<string, number>;
 
 /**
- * Legacy Manager Metadata for backward compatibility
+ * Legacy Manager Metadata for backcombatd compatibility
  */
 export interface ManagerMetadata {
   id: string;
@@ -74,7 +102,7 @@ export interface ManagerMetadata {
 
 /**
  * Standard interface for all manager services in the application.
- * This interface is maintained for backward compatibility.
+ * This interface is maintained for backcombatd compatibility.
  */
 export interface BaseManager<TEvent extends LegacyBaseEvent = LegacyBaseEvent> {
   readonly id: string;
@@ -114,14 +142,14 @@ export abstract class AbstractBaseManager<T extends BaseEvent>
   protected constructor(name: string, id?: string) {
     super();
     this.managerName = name;
-    this.id = id || `${name}_${Date.now()}`;
+    this.id = id ?? `${name}_${Date.now()}`;
     this.metadata = {
       id: this.id,
       name: this.managerName,
       version: '1.0.0',
       isInitialized: false,
       dependencies: [],
-      status: ManagerStatus.STOPPED,
+      status: 'initializing',
     };
   }
 
@@ -251,7 +279,8 @@ export abstract class AbstractBaseManager<T extends BaseEvent>
   public handleError(error: Error, context?: Record<string, unknown>): void {
     this.lastError = error;
 
-    // Log the error
+    // Log the error using lazy-loaded service to avoid circular dependency
+    const { errorLoggingService, ErrorType } = getErrorLoggingService();
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
       manager: this.managerName,
       status: this.status,
@@ -330,31 +359,33 @@ export abstract class AbstractBaseManager<T extends BaseEvent>
    * Publish an event.
    * @param event The event object to publish
    */
-  protected publish<E extends T = T>(event: E): void {
-    // Use global eventSystem
-    // Add required base fields if eventSystem expects them or for consistency
-    const fullEvent: BaseEvent & E = {
+  protected publish(event: Partial<BaseEvent> & Record<string, unknown>): void {
+    // Default module type when not explicitly provided
+    const DEFAULT_MODULE_TYPE = 'resource-manager' as ModuleType;
+
+    const fullEvent: BaseEvent & Record<string, unknown> = {
+      type: (event as BaseEvent).type ?? ('UNKNOWN_EVENT' as EventType),
       moduleId: this.id,
-      moduleType: 'system' as any, // HACK: Need ModuleType import from buildings
+      moduleType: (event as BaseEvent).moduleType ?? DEFAULT_MODULE_TYPE,
       timestamp: Date.now(),
-      ...event,
-    };
+      ...(event as Record<string, unknown>),
+    } as BaseEvent & Record<string, unknown>;
+
     eventSystem.publish(fullEvent);
   }
 
   /**
-   * Legacy method for publishing events (for backward compatibility)
+   * Legacy method for publishing events (for backcombatd compatibility)
    */
   public publishEvent(event: LegacyBaseEvent): void {
     // Convert legacy event to new format
     this.publish({
       ...event,
-      // Ensure BaseEvent fields are present
-      type: event.type as EventType, // Assume string matches EventType enum value
-      moduleId: event.moduleId || this.id, // Use event moduleId or manager id
-      moduleType: 'system' as any, // HACK: Need ModuleType import from buildings
-      timestamp: event.timestamp || Date.now(),
-    } as T); // Cast to EventMap generic type
+      type: event.type,
+      moduleId: event.moduleId ?? this.id,
+      moduleType: (event as BaseEvent).moduleType ?? ('resource-manager' as ModuleType),
+      timestamp: event.timestamp ?? Date.now(),
+    });
   }
 
   /**

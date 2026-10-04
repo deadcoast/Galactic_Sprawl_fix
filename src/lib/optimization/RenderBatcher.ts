@@ -41,10 +41,10 @@ export interface RenderBatcherEvents {
  * Manages render batching for optimized drawing
  */
 export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
-  private batches: Map<string, RenderBatch> = new Map();
+  private batches = new Map<string, RenderBatch>();
   private sortedBatches: RenderBatch[] = [];
-  private needsSort: boolean = false;
-  private drawCalls: number = 0;
+  private needsSort = false;
+  private drawCalls = 0;
 
   constructor() {
     super();
@@ -54,7 +54,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
   /**
    * Create a new render batch
    */
-  public createBatch(type: string, zIndex: number = 0): string {
+  public createBatch(type: string, zIndex = 0): string {
     const id = `batch-${type}-${Date.now()}`;
     const batch: RenderBatch = {
       id,
@@ -136,7 +136,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
       const byShader = new Map<string, RenderItem[]>();
 
       batch.items.forEach(item => {
-        const key = `${item?.shader || 'default'}-${item?.texture || 'none'}`;
+        const key = `${item?.shader ?? 'default'}-${item?.texture ?? 'none'}`;
         if (!byShader.has(key)) {
           byShader.set(key, []);
         }

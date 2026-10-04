@@ -26,11 +26,11 @@ export interface PoolDistributionRule {
 export interface PoolAllocationResult {
   poolId: string;
   resourceType: ResourceType;
-  allocations: Array<{
+  allocations: {
     targetId: string;
     amount: number;
     percentage: number;
-  }>;
+  }[];
   timestamp: number;
 }
 

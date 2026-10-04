@@ -116,9 +116,9 @@ export class TypeSafeApiClient {
       Accept: 'application/json',
       ...(options?.defaultHeaders ?? {}),
     };
-    this.timeout = options?.timeout || 30000; // 30 seconds default
-    this.withCredentials = options?.withCredentials || false;
-    this.throwOnValidationError = options?.throwOnValidationError || true;
+    this.timeout = options?.timeout ?? 30000; // 30 seconds default
+    this.withCredentials = options?.withCredentials ?? false;
+    this.throwOnValidationError = options?.throwOnValidationError ?? true;
     this.onError = options?.onError;
   }
 
@@ -234,7 +234,7 @@ export class TypeSafeApiClient {
       }
 
       // Parse JSON response
-      const responseData = await response?.json();
+      const responseData = (await response?.json()) as ResponseType;
 
       // Validate response data
       const validationResult = responseSchema.safeParse(responseData);
@@ -257,7 +257,7 @@ export class TypeSafeApiClient {
 
         // Return data with validation metadata
         return {
-          data: responseData as ResponseType,
+          data: responseData,
           status: response?.status,
           headers: responseHeaders,
           validationResult: validationResult as z.SafeParseReturnType<unknown, ResponseType>,

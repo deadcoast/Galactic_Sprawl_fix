@@ -49,7 +49,7 @@ export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
     // Load module data
     useEffect(() => {
       const moduleData = moduleManager.getModule(moduleId);
-      setModule(moduleData || null);
+      setModule(moduleData ?? null);
     }, [moduleId]);
 
     // Handle status change
@@ -310,7 +310,7 @@ const ModuleStatusSummaryItem = React.memo<ModuleStatusSummaryItemProps>(
     // Load module data
     useEffect(() => {
       const moduleData = moduleManager.getModule(moduleId);
-      setModule(moduleData || null);
+      setModule(moduleData ?? null);
     }, [moduleId]);
 
     if (!module) {
@@ -437,7 +437,7 @@ const ModuleAlertItem = React.memo<ModuleAlertItemProps>(
     // Load module data
     useEffect(() => {
       const moduleData = moduleManager.getModule(moduleId);
-      setModule(moduleData || null);
+      setModule(moduleData ?? null);
     }, [moduleId]);
 
     if (!module) {

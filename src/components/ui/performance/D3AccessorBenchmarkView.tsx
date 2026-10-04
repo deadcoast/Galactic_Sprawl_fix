@@ -81,9 +81,9 @@ const D3AccessorBenchmarkView: React.FC = () => {
    */
   const runBenchmark = () => {
     if (selectedTest === 'quick') {
-      runCustomBenchmark();
+      void runCustomBenchmark();
     } else {
-      runComprehensiveBenchmarkSuite();
+      void runComprehensiveBenchmarkSuite();
     }
   };
 

@@ -47,9 +47,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check resource requirements
       ship.requirements.resourceCost.forEach(cost => {
         const requirements = manager.getBuildRequirements(ship.shipClass);
-        const available =
-          requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount ||
-          0;
+        const available = requirements.resourceCost.find(r => r.type === cost.type)?.amount ?? 0;
         if (available < cost.amount) {
           errors.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
         }
@@ -107,7 +105,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
     React.createElement(
       'div',
       { className: 'mb-4 flex space-x-2' },
-      ['all', 'war', 'recon', 'mining'].map(category =>
+      ['all', 'combat', 'recon', 'mining'].map(category =>
         React.createElement(
           'button',
           {
@@ -225,8 +223,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
               ship.requirements.resourceCost.map(cost => {
                 const requirements = manager.getBuildRequirements(ship.shipClass);
                 const available =
-                  requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)
-                    ?.amount ?? 0;
+                  requirements.resourceCost.find(r => r.type === cost.type)?.amount ?? 0;
                 return React.createElement(
                   'div',
                   {

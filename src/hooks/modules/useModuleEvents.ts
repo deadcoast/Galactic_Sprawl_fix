@@ -80,7 +80,7 @@ export function useModuleEvents(
     }
 
     // Subscribe to the global eventSystem
-    const unsubscribe = eventSystem.subscribe(eventType as string, (event: BaseEvent) => {
+    const unsubscribe = eventSystem.subscribe(eventType, (event: BaseEvent) => {
       // Use the type guard
       if (isModuleManagerEvent(event)) {
         handlerRef.current(event);
@@ -115,7 +115,7 @@ export function useMultipleModuleEvents(
 
     const unsubscribers = eventTypes.map(eventType =>
       // Subscribe to the global eventSystem
-      eventSystem.subscribe(eventType as string, (event: BaseEvent) => {
+      eventSystem.subscribe(eventType, (event: BaseEvent) => {
         // Use the type guard
         if (isModuleManagerEvent(event)) {
           handlerRef.current(event);

@@ -1,4 +1,24 @@
+/**
+ * @file ServiceRegistry.ts (lib/services)
+ *
+ * Service-focused registry with factory pattern for dependency injection.
+ *
+ * NOTE: Multiple ServiceRegistry implementations exist in this codebase:
+ * - lib/managers/ServiceRegistry.ts - Manager-focused, exports serviceRegistry singleton
+ * - lib/registry/ServiceRegistry.ts - Unified registry for both services and managers
+ * - lib/services/ServiceRegistry.ts - This file, service-focused with factory pattern
+ *
+ * Consider using the unified registry in lib/registry/ServiceRegistry.ts for new code
+ * as it supports both services and managers with proper dependency ordering.
+ *
+ * @see ../registry/ServiceRegistry.ts - Unified implementation
+ * @see ../managers/ServiceRegistry.ts - Manager-focused implementation
+ */
+
 import { BaseService, ServiceMetadata } from './BaseService';
+
+// Re-export unified registry for convenience
+export { serviceRegistry as unifiedServiceRegistry } from '../registry/ServiceRegistry';
 
 /**
  * Configuration for a service registration
@@ -49,10 +69,15 @@ interface ServiceRegistration {
  */
 export class ServiceRegistry {
   private static instance: ServiceRegistry;
-  private services: Map<string, ServiceRegistration> = new Map();
-  private initializing: Set<string> = new Set();
+  private services = new Map<string, ServiceRegistration>();
+  private initializing = new Set<string>();
+  private initializationPromises = new Map<string, Promise<void>>();
 
-  protected constructor() {}
+  protected constructor() {
+    if (ServiceRegistry.instance) {
+      throw new Error('Use ServiceRegistry.getInstance() instead of creating a new ServiceRegistry');
+    }
+  }
 
   /**
    * Get the singleton instance of the service registry
@@ -65,17 +90,14 @@ export class ServiceRegistry {
   }
 
   /**
-   * Register a new service with the registry
+   * Register a new service with the registry.
+   * Idempotent — re-registering the same name overwrites the previous registration.
    */
   public register(
     name: string,
     factory: ServiceFactory,
     config: Partial<ServiceConfig> = {}
   ): void {
-    if (this.services.has(name)) {
-      throw new Error(`Service ${name} is already registered`);
-    }
-
     const defaultConfig: ServiceConfig = {
       dependencies: [],
       lazyInit: false,
@@ -99,7 +121,7 @@ export class ServiceRegistry {
 
     for (const service of sortedServices) {
       if (!service.config.lazyInit) {
-        await this.initializeService(service.name);
+        await this.initializeService(service.name, []);
       }
     }
   }
@@ -114,7 +136,7 @@ export class ServiceRegistry {
     }
 
     if (!registration.initialized) {
-      await this.initializeService(name);
+      await this.initializeService(name, []);
     }
 
     return registration.instance as T;
@@ -137,20 +159,41 @@ export class ServiceRegistry {
    * Dispose of all services in reverse dependency order
    */
   public async dispose(): Promise<void> {
-    const sortedServices = this.sortServicesByDependencies().reverse();
+    // Clear initializing set first to prevent "circular dependency" false positives
+    // when React StrictMode re-mounts and re-initializes
+    this.initializing.clear();
+    this.initializationPromises.clear();
 
-    for (const service of sortedServices) {
+    let servicesToDispose: ServiceRegistration[] = [];
+
+    if (this.services.size > 0) {
+      try {
+        servicesToDispose = this.sortServicesByDependencies().reverse();
+      } catch {
+        // If dependency sorting fails (for example due to a cycle),
+        // dispose whatever has been registered in insertion order.
+        servicesToDispose = Array.from(this.services.values()).reverse();
+      }
+    }
+
+    for (const service of servicesToDispose) {
       if (service.instance) {
-        await service.instance.dispose();
+        try {
+          await service.instance.dispose();
+        } catch {
+          // Swallow disposal errors — the service is being torn down anyway
+        }
       }
     }
 
     this.services.clear();
   }
 
-  private async initializeService(name: string): Promise<void> {
-    if (this.initializing.has(name)) {
-      throw new Error(`Circular dependency detected while initializing ${name}`);
+  private async initializeService(name: string, dependencyChain: string[] = []): Promise<void> {
+    if (dependencyChain.includes(name)) {
+      throw new Error(
+        `Circular dependency detected while initializing ${name}: ${[...dependencyChain, name].join(' -> ')}`
+      );
     }
 
     const registration = this.services.get(name);
@@ -162,23 +205,45 @@ export class ServiceRegistry {
       return;
     }
 
-    this.initializing.add(name);
+    const existingPromise = this.initializationPromises.get(name);
+    if (existingPromise) {
+      await existingPromise;
+      return;
+    }
+
+    const initPromise = (async () => {
+      this.initializing.add(name);
+
+      try {
+        // Initialize dependencies first
+        const dependencies: Record<string, BaseService> = {};
+        const nextChain = [...dependencyChain, name];
+        for (const depName of registration.config.dependencies ?? []) {
+          await this.initializeService(depName, nextChain);
+          const depRegistration = this.services.get(depName);
+          if (!depRegistration?.instance) {
+            throw new Error(`Service ${depName} is not registered`);
+          }
+          dependencies[depName] = depRegistration.instance;
+        }
+
+        // Create and initialize the service
+        const instance = registration.factory(dependencies);
+        await instance.initialize(dependencies);
+
+        registration.instance = instance;
+        registration.initialized = true;
+      } finally {
+        this.initializing.delete(name);
+      }
+    })();
+
+    this.initializationPromises.set(name, initPromise);
 
     try {
-      // Initialize dependencies first
-      const dependencies: Record<string, BaseService> = {};
-      for (const depName of registration.config.dependencies ?? []) {
-        dependencies[depName] = await this.getService(depName);
-      }
-
-      // Create and initialize the service
-      const instance = registration.factory(dependencies);
-      await instance.initialize(dependencies);
-
-      registration.instance = instance;
-      registration.initialized = true;
+      await initPromise;
     } finally {
-      this.initializing.delete(name);
+      this.initializationPromises.delete(name);
     }
   }
 

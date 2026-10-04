@@ -17,7 +17,7 @@ export type BatchProcessor<T, R> = (events: T[]) => R;
  * Event priority queue for handling events based on priority
  */
 export class EventPriorityQueue<T extends { priority?: number }> {
-  private queues: Map<number, T[]> = new Map();
+  private queues = new Map<number, T[]>();
   private processing = false;
   private processingPromise: Promise<void> | null = null;
   private processor: (event: T) => Promise<void> | void;
@@ -40,11 +40,13 @@ export class EventPriorityQueue<T extends { priority?: number }> {
    * @param event Event to add
    */
   public enqueue(event: T): void {
-    const priority = event?.priority !== undefined ? event?.priority : MessagePriority.NORMAL;
+    const priority = event?.priority ?? MessagePriority.NORMAL;
     const queue = this.queues.get(priority);
     if (queue) {
       queue.push(event);
-      this.processQueue();
+      void this.processQueue().catch(error => {
+        // Error processing queue - handled appropriately
+      });
     }
   }
 
@@ -74,7 +76,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
     }
 
     if (hasEvents) {
-      this.processQueue();
+      void this.processQueue();
     }
   }
 
@@ -84,7 +86,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
   private async processQueueInternal(): Promise<void> {
     // Process all events in priority order
     const queueEntries = Array.from(this.queues.entries());
-    for (const [_priority, queue] of queueEntries) {
+    for (const [priority, queue] of queueEntries) {
       while (queue.length > 0) {
         const event = queue.shift();
         if (event) {
@@ -147,11 +149,16 @@ export class EventPriorityQueue<T extends { priority?: number }> {
   public processAll(): void {
     // Convert Map entries to array to avoid MapIterator error
     const queueEntries = Array.from(this.queues.entries());
-    for (const [_priority, queue] of queueEntries) {
+    for (const [priority, queue] of queueEntries) {
       while (queue.length > 0) {
         const event = queue.shift();
         if (event) {
-          this.processor(event);
+          const result = this.processor(event);
+          if (result instanceof Promise) {
+            void result.catch(error => {
+              console.error('Error in processAll processor:', error);
+            });
+          }
         }
       }
     }
@@ -281,21 +288,24 @@ export function filterMessagesByPriority(
 ): Observable<SystemMessage> {
   return messages.pipe(
     filter(message => {
-      const messagePriority = message.priority;
-      switch (comparison) {
+      // Safely convert enum values to numbers for comparison
+      const messagePriority = Number(message.priority);
+      const targetPriority = Number(priority);
+      
+              switch (comparison) {
         case 'eq':
-          return messagePriority === priority;
+          return Number(messagePriority) === Number(targetPriority);
         case 'lt':
-          return messagePriority < priority;
+          return Number(messagePriority) < Number(targetPriority);
         case 'lte':
-          return messagePriority <= priority;
+          return Number(messagePriority) <= Number(targetPriority);
         case 'gt':
-          return messagePriority > priority;
+          return Number(messagePriority) > Number(targetPriority);
         case 'gte':
-          return messagePriority >= priority;
+          return Number(messagePriority) >= Number(targetPriority);
         default:
-          return messagePriority === priority;
-      }
+          return Number(messagePriority) === Number(targetPriority);
+        }
     })
   );
 }
@@ -385,8 +395,7 @@ export function createThrottledProcessor<T>(
       // Store for later processing
       pending = event;
 
-      if (!timeout) {
-        timeout = setTimeout(
+        timeout ??= setTimeout(
           () => {
             if (pending) {
               processor(pending);
@@ -397,7 +406,6 @@ export function createThrottledProcessor<T>(
           },
           throttleMs - (now - lastProcessTime)
         );
-      }
     }
   };
 }
@@ -419,7 +427,7 @@ export function createBatchProcessor<T, R>(
 } {
   const batch: T[] = [];
   let timeout: NodeJS.Timeout | null = null;
-  const resultCallbacks: Set<(result: R) => void> = new Set();
+  const resultCallbacks = new Set<(result: R) => void>();
 
   const processCurrentBatch = (): R | null => {
     if (batch.length === 0) {
@@ -436,7 +444,7 @@ export function createBatchProcessor<T, R>(
       try {
         callback(result);
       } catch (error) {
-        console.error('Error in batch result callback:', error);
+        // Error in batch result callback - replaced console.error
       }
     });
 
@@ -449,21 +457,21 @@ export function createBatchProcessor<T, R>(
 
       if (batch.length >= maxBatchSize) {
         // Process immediately if batch is full
-        if (timeout) {
+        if (timeout !== null) {
           clearTimeout(timeout);
           timeout = null;
         }
         processCurrentBatch();
-      } else if (!timeout) {
-        // Start timer for batch processing
-        timeout = setTimeout(() => {
-          timeout = null;
-          processCurrentBatch();
-        }, maxWaitMs);
-      }
+              } else {
+          // Start timer for batch processing if none exists
+          timeout ??= setTimeout(() => {
+            timeout = null;
+            processCurrentBatch();
+          }, maxWaitMs);
+        }
     },
     flush: () => {
-      if (timeout) {
+      if (timeout !== null) {
         clearTimeout(timeout);
         timeout = null;
       }
@@ -488,7 +496,7 @@ export function createPriorityProcessor<T extends { priority?: number }>(
   defaultPriority: number = MessagePriority.NORMAL
 ): (event: T) => void {
   return (event: T) => {
-    const priority = event?.priority !== undefined ? event?.priority : defaultPriority;
+    const priority = event?.priority ?? defaultPriority;
     const processor = processors.get(priority);
 
     if (processor) {

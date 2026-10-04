@@ -44,64 +44,46 @@ export type { ResourceFlowDiagramProps } from './visualization/ResourceFlowDiagr
 // Examples -> Showcase (Removed as ./showcase does not exist)
 // export * from './showcase';
 
-/* 
-The following components are commented out until they're implemented:
-
-// Basic UI Elements
+// Basic UI Elements - Re-exported from ui design system
 export { Icon } from './Icon';
+export type { IconProps } from './Icon';
 export { Badge } from './Badge';
+export type { BadgeProps } from './Badge';
 export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
 export { Divider } from './Divider';
+export type { DividerProps } from './Divider';
 
-// Typography Components
-export { Heading } from './typography/Heading';
-export { Text } from './typography/Text'; 
-export { Label } from './typography/Label';
+// Typography Components - Re-exported from ui design system
+export { Heading, Text, Label } from './typography';
+export type { HeadingProps, TextProps, LabelProps } from './typography';
 
-// Input Components
-export { Input } from './inputs/Input';
-export { Checkbox } from './inputs/Checkbox';
-export { Radio } from './inputs/Radio';
-export { Select } from './inputs/Select';
-export { Slider } from './inputs/Slider';
-export { Switch } from './inputs/Switch';
+// Input Components - Re-exported from ui design system
+export { Input, Checkbox, Radio, Select, Slider, Switch } from './inputs';
+export type { InputProps, CheckboxProps, RadioProps, SelectProps, SliderProps, SwitchProps } from './inputs';
 
-// Layout Components
-export { Container } from './layout/Container';
-export { Grid } from './layout/Grid';
-export { Flex } from './layout/Flex';
-export { Stack } from './layout/Stack';
-export { Spacer } from './layout/Spacer';
+// Layout Components - Re-exported from ui design system
+export { Container, Grid, Flex, Stack, Spacer, ResponsiveLayout } from './layout';
+export type { ContainerProps, GridProps, FlexProps, StackProps, SpacerProps } from './layout';
 
-// Feedback Components
-export { Alert } from './feedback/Alert';
-export { Spinner } from './feedback/Spinner';
-export { Progress } from './feedback/Progress';
-export { Skeleton } from './feedback/Skeleton';
-export { Toast } from './feedback/Toast';
+// Feedback Components - Placeholder implementations
+export { Alert, Spinner, Progress, Skeleton, Toast } from './feedback';
+export type { AlertProps, SpinnerProps, ProgressProps, SkeletonProps, ToastProps } from './feedback';
 
-// Navigation Components
-export { Tabs } from './navigation/Tabs';
-export { Menu } from './navigation/Menu';
-export { Breadcrumb } from './navigation/Breadcrumb';
-export { Pagination } from './navigation/Pagination';
+// Navigation Components - Re-export existing Tabs + placeholders
+export { Tabs, Menu, Breadcrumb, Pagination } from './navigation';
+export type { BreadcrumbProps, BreadcrumbItem, PaginationProps, MenuProps } from './navigation';
 
 // Game-Specific Components
-export { TechTree } from './game/TechTree';
-export { AlertPanel } from './game/AlertPanel';
-export { CommandConsole } from './game/CommandConsole';
+export { TechTree, AlertPanel, CommandConsole } from './game';
+export type { AlertPanelProps, CommandConsoleProps } from './game';
 
-// Data Display Components
-export { DataTable } from './data/DataTable';
-export { StatusCard } from './data/StatusCard';
-export { Metric } from './data/Metric';
-export { Timeline } from './data/Timeline';
+// Data Display Components - Placeholder implementations
+export { DataTable, StatusCard, Metric, Timeline } from './data';
+export type { DataTableProps, Column, StatusCardProps, MetricProps, TimelineProps, TimelineItem } from './data';
 
-// Compound Components
-export type { ButtonProps } from './Button';
-export type { CardProps } from './Card';
+// Re-export types from resource components
 export type { ResourceDisplayProps } from './resource/ResourceDisplay';
-*/
 
 // Remove default exports for base components
 // export { default as Accordion } from './accordion/Accordion';

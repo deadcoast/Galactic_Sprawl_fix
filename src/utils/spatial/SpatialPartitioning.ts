@@ -209,10 +209,10 @@ export class QuadTree<T extends SpatialObject> {
     // If not found here and we're divided, check children
     if (this.divided) {
       return (
-        this.northwest?.remove(id) ||
-        this.northeast?.remove(id) ||
-        this.southwest?.remove(id) ||
-        this.southeast?.remove(id) ||
+        this.northwest?.remove(id) ??
+        this.northeast?.remove(id) ??
+        this.southwest?.remove(id) ??
+        this.southeast?.remove(id) ??
         null
       );
     }

@@ -241,7 +241,7 @@ function getResourceStatus(
   if (percentage <= thresholds.warning) {
     return {
       icon: AlertTriangle,
-      message: 'Warning',
+      message: 'warning',
       color: 'text-yellow-500',
     };
   }

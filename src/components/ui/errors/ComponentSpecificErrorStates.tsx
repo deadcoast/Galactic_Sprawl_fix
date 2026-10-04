@@ -7,12 +7,17 @@
 
 import * as React from 'react';
 import { useCallback, useState } from 'react';
-import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
-import {
-  ComponentErrorState,
-  DataFetchErrorState,
-  VisualizationErrorState,
-} from './ComponentErrorState';
+import
+  {
+    ErrorSeverity,
+    ErrorType
+  } from '../../../services/logging/ErrorLoggingService';
+import
+  {
+    ComponentErrorState,
+    DataFetchErrorState,
+    VisualizationErrorState,
+  } from './ComponentErrorState';
 import { ErrorBoundary } from './ErrorBoundary';
 
 // Error state for the Chart component
@@ -126,7 +131,7 @@ export const ModuleCardErrorState: React.FC<ModuleCardErrorProps> = ({
 // Example of a component that handles its own error states
 export interface ResourceGraphProps {
   /** Resource data to display */
-  data: Array<{ timestamp: number; value: number }>;
+  data: { timestamp: number; value: number }[];
 
   /** Whether data is loading */
   isLoading?: boolean;
@@ -245,7 +250,7 @@ export const ResourcePanel: React.FC<{
   resourceName: string;
 }> = ({ resourceId, resourceName }) => {
   // Simulated data and states
-  const [data, setData] = useState<Array<{ timestamp: number; value: number }>>([]);
+  const [data, setData] = useState<{ timestamp: number; value: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

@@ -111,7 +111,7 @@ export interface ComponentProfilingResult {
   /**
    * Render history
    */
-  renderHistory: Array<{
+  renderHistory: {
     /**
      * Render timestamp
      */
@@ -131,7 +131,7 @@ export interface ComponentProfilingResult {
      * Props that changed in this render
      */
     changedProps?: string[];
-  }>;
+  }[];
 
   /**
    * Reset metrics

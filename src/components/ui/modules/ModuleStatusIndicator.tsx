@@ -89,7 +89,7 @@ export function ModuleStatusIndicator({
   const { currentStatus, getStatusColor, isLoading, error } = useModuleStatus(moduleId);
 
   // Use override status if provided, otherwise use status from hook
-  const status = statusOverride || currentStatus;
+  const status = statusOverride ?? currentStatus;
 
   // Calculate size-based styling
   const getSizeClass = () => {

@@ -240,7 +240,7 @@ export function MothershipCore({
           {/* Animated Superstructure */}
           <div className="relative mb-8 flex h-96 w-full items-center justify-center">
             <MothershipSuperstructure
-              tier={tier as 1 | 2 | 3}
+              tier={tier}
               expansionLevel={expansionProgress}
               resourceFlow={{
                 energy: resourceLevels[ResourceType.ENERGY],

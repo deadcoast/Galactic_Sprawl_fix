@@ -1,25 +1,26 @@
 import React, {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useReducer,
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
 import { serviceRegistry } from '../lib/managers/ServiceRegistry';
 import { moduleManager } from '../managers/module/ModuleManager';
 import { moduleManagerWrapper } from '../managers/module/ModuleManagerWrapper';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/logging/ErrorLoggingService';
 import { ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
-  IModuleManager,
-  LegacyModuleAction,
-  Module,
-  moduleEventToEventType,
-  ModuleEventType,
-  ModuleStatus,
+    IModuleManager,
+    LegacyModuleAction,
+    Module,
+    moduleEventToEventType,
+    ModuleEventType,
+    ModuleStatus,
 } from '../types/modules/ModuleTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -32,6 +33,8 @@ export enum ModuleActionType {
   REMOVE_MODULE = 'module/removeModule',
   SELECT_MODULE = 'module/selectModule',
   SET_ACTIVE_MODULES = 'module/setActiveModules',
+  ACTIVATE_MODULE = 'module/activateModule',
+  DEACTIVATE_MODULE = 'module/deactivateModule',
   SET_CATEGORIES = 'module/setCategories',
   SET_LOADING = 'module/setLoading',
   SET_ERROR = 'module/setError',
@@ -124,6 +127,16 @@ export const createSetLoadingAction = (isLoading: boolean): ModuleAction => ({
 export const createSetErrorAction = (error: string | null): ModuleAction => ({
   type: ModuleActionType.SET_ERROR,
   payload: { error },
+});
+
+export const createActivateModuleAction = (moduleId: string): ModuleAction => ({
+  type: ModuleActionType.ACTIVATE_MODULE,
+  payload: { moduleId },
+});
+
+export const createDeactivateModuleAction = (moduleId: string): ModuleAction => ({
+  type: ModuleActionType.DEACTIVATE_MODULE,
+  payload: { moduleId },
 });
 
 // Reducer function
@@ -224,8 +237,54 @@ export const moduleReducer = (state: ModuleState, action: ModuleAction): ModuleS
     case ModuleActionType.SET_LOADING:
       return {
         ...state,
-        isLoading: action.payload.isLoading || false,
+        isLoading: action.payload.isLoading ?? false,
       };
+    case ModuleActionType.ACTIVATE_MODULE:
+      if (!action.payload.moduleId) {
+        return state;
+      }
+      
+      // Add to active modules if not already present and update module status
+      newActiveModuleIds = state.activeModuleIds.includes(action.payload.moduleId)
+        ? state.activeModuleIds
+        : [...state.activeModuleIds, action.payload.moduleId];
+      
+      return {
+        ...state,
+        activeModuleIds: newActiveModuleIds,
+        modules: state.modules[action.payload.moduleId] ? {
+          ...state.modules,
+          [action.payload.moduleId]: {
+            ...state.modules[action.payload.moduleId],
+            status: 'active',
+            isActive: true,
+          },
+        } : state.modules,
+        lastUpdated: Date.now(),
+      };
+      
+    case ModuleActionType.DEACTIVATE_MODULE:
+      if (!action.payload.moduleId) {
+        return state;
+      }
+      
+      // Remove from active modules and update module status
+      newActiveModuleIds = state.activeModuleIds.filter(id => id !== action.payload.moduleId);
+      
+      return {
+        ...state,
+        activeModuleIds: newActiveModuleIds,
+        modules: state.modules[action.payload.moduleId] ? {
+          ...state.modules,
+          [action.payload.moduleId]: {
+            ...state.modules[action.payload.moduleId],
+            status: 'inactive',
+            isActive: false,
+          },
+        } : state.modules,
+        lastUpdated: Date.now(),
+      };
+      
     case ModuleActionType.SET_ERROR:
       return {
         ...state,
@@ -255,11 +314,11 @@ export const selectModulesByStatus = (state: ModuleState, status: ModuleStatus) 
 };
 
 // Context type definition
-type ModuleContextType = {
+interface ModuleContextType {
   state: ModuleState;
   dispatch: React.Dispatch<ModuleAction>;
   manager?: IModuleManager; // Use the extended interface
-};
+}
 
 // Create context
 const ModuleContext = createContext<ModuleContextType | undefined>(undefined);
@@ -298,12 +357,19 @@ export function useDispatchLegacyAction(): (
 
   // Return the function that can be called by components
   return (moduleId: string, action: string, data?: unknown): void => {
-    console.warn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead');
+    errorLoggingService.logWarn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead', {
+      componentName: 'ModuleContext',
+      action: 'dispatchLegacyAction'
+    });
 
     // First check if the module exists
     const module = manager?.getModule?.(moduleId);
     if (!module) {
-      console.error(`[ModuleContext] Module not found: ${moduleId}`);
+      errorLoggingService.logError(`Module not found: ${moduleId}`, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+        componentName: 'ModuleContext',
+        moduleId,
+        action: 'dispatchLegacyAction'
+      });
       return;
     }
 
@@ -334,7 +400,11 @@ export function useDispatchLegacyAction(): (
           // Use dispatch for updates
           dispatch(createUpdateModuleAction(moduleId, data as Partial<Module>));
         } else {
-          console.error(`[ModuleContext] Invalid data for 'update' action on module ${moduleId}`);
+          errorLoggingService.logError(`Invalid data for 'update' action on module ${moduleId}`, ErrorType.RUNTIME, ErrorSeverity.LOW, {
+            componentName: 'ModuleContext',
+            moduleId,
+            action: 'dispatchLegacyAction'
+          });
         }
         break;
 
@@ -344,7 +414,11 @@ export function useDispatchLegacyAction(): (
         break;
 
       default:
-        console.error(`[ModuleContext] Unknown action '${action}' for module ${moduleId}`);
+        errorLoggingService.logError(`Unknown legacy action '${action}'`, ErrorType.RUNTIME, ErrorSeverity.LOW, {
+          componentName: 'ModuleContext',
+          moduleId,
+          action: 'dispatchLegacyAction'
+        });
     }
   };
 }
@@ -360,22 +434,32 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     // Get initial modules from manager if available
     if (manager) {
       try {
-        const modules = manager.getActiveModules() ?? [];
-        const moduleMap = modules.reduce((acc: Record<string, Module>, module: Module) => {
+        // Try to get all modules first, then active modules
+        const allModules = manager.getModules?.() ?? [];
+        const activeModules = manager.getActiveModules?.() ?? [];
+        
+        // Create module map from all modules
+        const moduleMap = allModules.reduce((acc: Record<string, Module>, module: Module) => {
           acc[module.id] = module;
           return acc;
         }, {});
 
+        // Get active module IDs from active modules
+        const activeModuleIds = activeModules.map(m => m.id);
+
         return {
           ...initialState,
           modules: moduleMap,
-          activeModuleIds: modules.map(m => m.id),
+          activeModuleIds,
           categories: manager.getModuleCategories?.() ?? [],
           buildings: manager.getBuildings?.() ?? [],
           ...(initialStateOverride ?? {}),
         };
       } catch (error) {
-        console.error('Error initializing module state from manager:', error);
+        errorLoggingService.logError(error instanceof Error ? error : new Error(String(error)), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+          componentName: 'ModuleContext',
+          action: 'initializeState'
+        });
       }
     }
 
@@ -399,6 +483,14 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
 
     // Module event handlers
     const handleModuleCreated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('module' in event) {
+        const module = event.module as Module;
+        dispatch(createAddModuleAction(module));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (event?.data && typeof event.data === 'object' && 'module' in event.data) {
         // Safely access module property with proper type checking
         const moduleData = event.data;
@@ -410,6 +502,15 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     };
 
     const handleModuleUpdated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && 'updates' in event) {
+        const moduleId = event.moduleId;
+        const updates = event.updates as Partial<Module>;
+        dispatch(createUpdateModuleAction(moduleId, updates));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (
         event?.data &&
         typeof event.data === 'object' &&
@@ -427,6 +528,14 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     };
 
     const handleModuleRemoved = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createRemoveModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
         // Safely access moduleId property with proper type checking
         const eventData = event.data;
@@ -437,7 +546,52 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
     };
 
+    const handleModuleActivated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createActivateModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
+      if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && eventData.moduleId) {
+          const moduleId = eventData.moduleId as string;
+          dispatch(createActivateModuleAction(moduleId));
+        }
+      }
+    };
+
+    const handleModuleDeactivated = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && event.moduleId) {
+        const moduleId = event.moduleId;
+        dispatch(createDeactivateModuleAction(moduleId));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
+      if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && eventData.moduleId) {
+          const moduleId = eventData.moduleId as string;
+          dispatch(createDeactivateModuleAction(moduleId));
+        }
+      }
+    };
+
     const handleStatusChanged = (event: BaseEvent) => {
+      // Check if the event has the data directly on the event object (test format)
+      if ('moduleId' in event && 'status' in event && event.moduleId && event.status) {
+        const moduleId = event.moduleId;
+        const status = event.status as ModuleStatus;
+        dispatch(createUpdateModuleAction(moduleId, { status }));
+        return;
+      }
+      
+      // Check if the event has the data in the data property (production format)
       if (
         event?.data &&
         typeof event.data === 'object' &&
@@ -454,30 +608,13 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
     };
 
-    // Set up subscriptions using type-safe wrapper
-    const unsubModuleCreated = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_CREATED,
-      handleModuleCreated
-    );
-
-    const unsubModuleUpdated = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_UPDATED,
-      handleModuleUpdated
-    );
-
-    const unsubModuleRemoved = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_REMOVED,
-      handleModuleRemoved
-    );
-
-    const unsubStatusChanged = subscribeToModuleEvent(
-      moduleEvents,
-      ModuleEventType.MODULE_STATUS_CHANGED,
-      handleStatusChanged
-    );
+    // Set up subscriptions directly using EventType enum values
+    const unsubModuleCreated = moduleEvents.subscribe(EventType.MODULE_CREATED, handleModuleCreated);
+    const unsubModuleUpdated = moduleEvents.subscribe(EventType.MODULE_UPDATED, handleModuleUpdated);
+    const unsubModuleRemoved = moduleEvents.subscribe(EventType.MODULE_REMOVED, handleModuleRemoved);
+    const unsubModuleActivated = moduleEvents.subscribe(EventType.MODULE_ACTIVATED, handleModuleActivated);
+    const unsubModuleDeactivated = moduleEvents.subscribe(EventType.MODULE_DEACTIVATED, handleModuleDeactivated);
+    const unsubStatusChanged = moduleEvents.subscribe(EventType.MODULE_STATUS_CHANGED, handleStatusChanged);
 
     // Clean up subscriptions
     return () => {
@@ -489,6 +626,12 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
       }
       if (unsubModuleRemoved) {
         unsubModuleRemoved();
+      }
+      if (unsubModuleActivated) {
+        unsubModuleActivated();
+      }
+      if (unsubModuleDeactivated) {
+        unsubModuleDeactivated();
       }
       if (unsubStatusChanged) {
         unsubStatusChanged();
@@ -605,7 +748,7 @@ export const useModuleActions = () => {
 
     activateModule: useCallback(
       (moduleId: string) => {
-        if (manager && manager.activateModule) {
+        if (manager?.activateModule) {
           manager.activateModule(moduleId);
         }
       },
@@ -614,7 +757,7 @@ export const useModuleActions = () => {
 
     deactivateModule: useCallback(
       (moduleId: string) => {
-        if (manager && manager.deactivateModule) {
+        if (manager?.deactivateModule) {
           manager.deactivateModule(moduleId);
         }
       },
@@ -645,7 +788,10 @@ export function canBuildModule(
   // Check if the player has enough resources
   const resourceManager = serviceRegistry.getService('ResourceManager');
   if (!resourceManager) {
-    console.error('Resource manager not found');
+    errorLoggingService.logError('Resource manager not found', ErrorType.RUNTIME, ErrorSeverity.HIGH, {
+      componentName: 'ModuleContext',
+      action: 'canBuildModule'
+    });
     return false;
   }
 
@@ -662,13 +808,17 @@ export function canBuildModule(
     currentMinerals = typedResourceManager.getResourceAmount(ResourceType.MINERALS) ?? 0;
     currentEnergy = typedResourceManager.getResourceAmount(ResourceType.ENERGY) ?? 0;
   } catch (error) {
-    console.error('Error getting resource amounts:', error);
+    errorLoggingService.logError(error instanceof Error ? error : new Error(String(error)), ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+      componentName: 'ModuleContext',
+      action: 'canBuildModule'
+    });
     return false;
   }
 
   if (currentMinerals < mineralCost || currentEnergy < energyCost) {
-    console.warn(
-      `Cannot build module: not enough resources. Needs ${mineralCost} minerals and ${energyCost} energy.`
+    errorLoggingService.logWarn(
+      `Cannot build module: not enough resources. Needs ${mineralCost} minerals and ${energyCost} energy.`,
+      { componentName: 'ModuleContext', action: 'canBuildModule' }
     );
     return false;
   }
@@ -683,14 +833,18 @@ export function buildModule(
   cost: { minerals?: number; energy?: number }
 ) {
   // Maybe use cost within the method
-  console.warn(`Building module of type ${moduleType} with cost:`, cost);
+  errorLoggingService.logInfo(`Building module of type ${moduleType}`, {
+    componentName: 'ModuleContext',
+    action: 'buildModule',
+    cost
+  });
 
   // Get the first colony building to attach the module to
   const buildings = moduleManagerWrapper.getBuildings();
   const targetBuilding = buildings.find(building => building.type === 'colony');
 
   if (!targetBuilding) {
-    console.error('No colony building found to attach module to');
+    errorLoggingService.logError('No colony building found to attach module to', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -708,7 +862,7 @@ export function buildModule(
   const availablePoints = attachmentPoints.filter(point => !usedPoints.includes(point.id));
 
   if (availablePoints.length === 0) {
-    console.error('No available attachment points on colony building');
+    errorLoggingService.logError('No available attachment points on colony building', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -730,7 +884,7 @@ export function buildModule(
   const newModule = moduleManagerWrapper.getModulesByType(moduleType).pop();
 
   if (!newModule) {
-    console.error('Failed to create new module');
+    errorLoggingService.logError('Failed to create new module', ErrorType.RUNTIME, ErrorSeverity.MEDIUM, { componentName: 'ModuleContext', action: 'buildModule' });
     return;
   }
 
@@ -755,11 +909,6 @@ export function buildModule(
 }
 
 // Placeholder for handling potential legacy actions if needed
-const handleLegacyAction = useCallback((_action: string, _data: unknown) => {
-  // TODO: Implement logic for handling legacy actions if necessary
-  // Currently, _dispatchLegacyAction is also unused.
-  // if (_dispatchLegacyAction) {
-  //   _dispatchLegacyAction(action, data);
-  // }
-  console.warn('Received legacy action:', _action, _data);
-}, []);
+const handleLegacyAction = (_action: string, _data: unknown) => {
+  errorLoggingService.logWarn(`Received legacy action: ${_action}`, { componentName: 'ModuleContext', action: 'handleLegacyAction', data: _data });
+};

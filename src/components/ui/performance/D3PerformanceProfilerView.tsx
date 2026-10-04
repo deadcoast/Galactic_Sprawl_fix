@@ -22,7 +22,7 @@ import {
   errorLoggingService,
   ErrorSeverity,
   ErrorType,
-} from '../../../services/ErrorLoggingService';
+} from '../../../services/logging/ErrorLoggingService';
 
 // Sample flow data for testing
 const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData => {
@@ -84,7 +84,7 @@ const D3PerformanceProfilerView: React.FC = () => {
   }, []);
 
   // Run profiling based on selected method
-  const runProfiling = async () => {
+  const runProfiling = () => {
     setIsProfileRunning(true);
     setProfileData(null);
 
@@ -486,19 +486,19 @@ const D3PerformanceProfilerView: React.FC = () => {
           overflow-x: auto;
         }
 
-        table {
+        .d3-performance-profiler table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th,
-        td {
+        .d3-performance-profiler th,
+        .d3-performance-profiler td {
           border: 1px solid #ddd;
           padding: 8px;
           text-align: left;
         }
 
-        th {
+        .d3-performance-profiler th {
           background-color: #f2f2f2;
         }
 

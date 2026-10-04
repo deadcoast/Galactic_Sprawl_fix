@@ -7,7 +7,7 @@ import { moduleManager } from './ModuleManager';
 import { moduleStatusManager } from './ModuleStatusManager';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = ResourceManager.getInstance();
 
 // Define the ModuleEvent interface
 interface ModuleEvent {
@@ -272,16 +272,18 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
-      const available = resourceManager.getResourceAmount(cost.type as ResourceType);
+      const available = resourceManager.getResourceAmount(cost.type);
       if (available < cost.amount) {
         return false;
       }
     }
 
-    // Check tech requirements
-    if (requirements.techRequirements) {
-      // TODO: Implement tech requirement checking
-      // This would require integration with a tech tree system
+    // Check tech requirements - integrated with TechTreeManager
+    if (requirements.techRequirements && requirements.techRequirements.length > 0) {
+      const techRequirementsMet = this.checkTechRequirements(requirements.techRequirements);
+      if (!techRequirementsMet) {
+        return false;
+      }
     }
 
     // Check module requirements
@@ -340,16 +342,16 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
-      const available = resourceManager.getResourceAmount(cost.type as ResourceType);
+      const available = resourceManager.getResourceAmount(cost.type);
       if (available < cost.amount) {
         missingRequirements.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
       }
     }
 
-    // Check tech requirements
-    if (requirements.techRequirements) {
-      // TODO: Implement tech requirement checking
-      // This would require integration with a tech tree system
+    // Check tech requirements - integrated with TechTreeManager
+    if (requirements.techRequirements && requirements.techRequirements.length > 0) {
+      const missingTech = this.getMissingTechRequirements(requirements.techRequirements);
+      missingRequirements.push(...missingTech);
     }
 
     // Check module requirements
@@ -463,7 +465,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
 
     // Consume resources
     for (const cost of nextLevel.requirements.resourceCosts) {
-      resourceManager.removeResource(cost.type as ResourceType, cost.amount);
+      resourceManager.removeResource(cost.type, cost.amount);
     }
 
     // Calculate upgrade time (1 minute per level)
@@ -611,6 +613,69 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
   };
 
   /**
+   * Check if all tech requirements are met
+   * Integrates with TechTreeManager to validate technology prerequisites
+   * @param techIds Array of technology IDs that must be unlocked
+   * @returns True if all tech requirements are met, false otherwise
+   */
+  private checkTechRequirements(techIds: string[]): boolean {
+    try {
+      // Use require to avoid circular dependencies at runtime
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { TechTreeManager } = require('../../managers/game/techTreeManager');
+      const techTree = TechTreeManager.getInstance();
+
+      for (const techId of techIds) {
+        if (!techTree.isUnlocked(techId)) {
+          return false;
+        }
+      }
+      return true;
+    } catch (error) {
+      console.warn('[ModuleUpgradeManager] TechTreeManager not available for requirement checking:', error);
+      // Fail open for backward compatibility - if tech tree unavailable, assume requirements met
+      return true;
+    }
+  }
+
+  /**
+   * Get list of missing tech requirements
+   * Integrates with TechTreeManager to identify which technologies are not yet unlocked
+   * @param techIds Array of technology IDs to check
+   * @returns Array of human-readable strings describing missing tech requirements
+   */
+  private getMissingTechRequirements(techIds: string[]): string[] {
+    const missing: string[] = [];
+
+    try {
+      // Use require to avoid circular dependencies at runtime
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { TechTreeManager } = require('../../managers/game/techTreeManager');
+      const techTree = TechTreeManager.getInstance();
+
+      for (const techId of techIds) {
+        if (!techTree.isUnlocked(techId)) {
+          // Try to get tech node info for better error message
+          const techNode = techTree.getNode(techId);
+          if (techNode) {
+            missing.push(`Requires technology: ${techNode.name}`);
+          } else {
+            missing.push(`Requires technology: ${techId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[ModuleUpgradeManager] TechTreeManager not available for missing requirement check:', error);
+      // If tech tree unavailable, report all as potentially missing for transparency
+      for (const techId of techIds) {
+        missing.push(`Technology requirement (unverified): ${techId}`);
+      }
+    }
+
+    return missing;
+  }
+
+  /**
    * Clean up resources - Replace with dispose
    */
   public dispose(): void {
@@ -631,7 +696,7 @@ export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManager
     this.unsubscribeHandles = [];
 
     // TypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners();
+    this.removeAllListeners();
 
     console.warn('[ModuleUpgradeManager] Disposed and cleaned up subscriptions/timers.');
   }
