@@ -15,14 +15,24 @@ import {
   ThreatAssessmentManagerImpl,
 } from './combat/ThreatAssessmentManager';
 import { effectLifecycleManager, EffectLifecycleManager } from './effects/EffectLifecycleManager';
+import { ParticleSystemManager } from './effects/ParticleSystemManager';
+import { ExplorationManager } from './exploration/ExplorationManager';
+import { ReconShipManagerImpl } from './exploration/ReconShipManager';
 import { FactionBehaviorManager } from './factions/FactionBehaviorManager';
+import { AssetManager } from './game/AssetManager';
 import { AsteroidFieldManager } from './game/AsteroidFieldManager';
 import { AutomationManager } from './game/AutomationManager';
+import { GameLoopManager } from './game/GameLoopManager';
+import { GameManager } from './game/GameManager';
 import { ResourceManager } from './game/ResourceManager';
 import { TechTreeManager } from './game/techTreeManager';
 import { MiningShipManager } from './mining/MiningShipManager';
+import { ModuleManager } from './module/ModuleManager';
+import { ModuleStatusManager } from './module/ModuleStatusManager';
+import { OfficerManager } from './module/OfficerManager';
 import { ResourceConversionManager } from './resource/ResourceConversionManager';
 import { ResourceFlowManager } from './resource/ResourceFlowManager';
+import { ShipManager } from './ships/ShipManager';
 
 // Singleton instances
 let combatManagerInstance: CombatManager | null = null;
@@ -38,6 +48,16 @@ let asteroidFieldManagerInstance: AsteroidFieldManager | null = null;
 let resourceFlowManagerInstance: ResourceFlowManager | null = null;
 let resourceConversionManagerInstance: ResourceConversionManager | null = null;
 let miningShipManagerInstance: MiningShipManager | null = null;
+let explorationManagerInstance: ExplorationManager | null = null;
+let reconShipManagerInstance: ReconShipManagerImpl | null = null;
+let officerManagerInstance: OfficerManager | null = null;
+let moduleManagerInstance: ModuleManager | null = null;
+let moduleStatusManagerInstance: ModuleStatusManager | null = null;
+let gameLoopManagerInstance: GameLoopManager | null = null;
+let gameManagerInstance: GameManager | null = null;
+let assetManagerInstance: AssetManager | null = null;
+let shipManagerInstance: ShipManager | null = null;
+let particleSystemManagerInstance: ParticleSystemManager | null = null;
 
 /**
  * Get the singleton instance of CombatManager
@@ -201,6 +221,117 @@ export function getEffectLifecycleManager(): EffectLifecycleManager {
 }
 
 /**
+ * Get the singleton instance of ExplorationManager
+ * @returns The ExplorationManager instance
+ */
+export function getExplorationManager(): ExplorationManager {
+  if (!explorationManagerInstance) {
+    explorationManagerInstance = new ExplorationManager();
+  }
+  return explorationManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of ReconShipManager
+ * @returns The ReconShipManager instance
+ */
+export function getReconShipManager(): ReconShipManagerImpl {
+  if (!reconShipManagerInstance) {
+    reconShipManagerInstance = new ReconShipManagerImpl();
+  }
+  return reconShipManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of OfficerManager
+ * @returns The OfficerManager instance
+ */
+export function getOfficerManager(): OfficerManager {
+  if (!officerManagerInstance) {
+    officerManagerInstance = OfficerManager.getInstance();
+  }
+  return officerManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of ModuleManager
+ * @returns The ModuleManager instance
+ */
+export function getModuleManager(): ModuleManager {
+  if (!moduleManagerInstance) {
+    moduleManagerInstance = new ModuleManager();
+  }
+  return moduleManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of ModuleStatusManager
+ * @returns The ModuleStatusManager instance
+ */
+export function getModuleStatusManager(): ModuleStatusManager {
+  if (!moduleStatusManagerInstance) {
+    moduleStatusManagerInstance = ModuleStatusManager.getInstance();
+  }
+  return moduleStatusManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of GameLoopManager
+ * @returns The GameLoopManager instance
+ */
+export function getGameLoopManager(): GameLoopManager {
+  if (!gameLoopManagerInstance) {
+    gameLoopManagerInstance = new GameLoopManager();
+  }
+  return gameLoopManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of GameManager
+ * @returns The GameManager instance
+ */
+export function getGameManager(): GameManager {
+  if (!gameManagerInstance) {
+    gameManagerInstance = new GameManager();
+  }
+  return gameManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of AssetManager
+ * @returns The AssetManager instance
+ */
+export function getAssetManager(): AssetManager {
+  if (!assetManagerInstance) {
+    assetManagerInstance = AssetManager.getInstance();
+  }
+  return assetManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of ShipManager
+ * @returns The ShipManager instance
+ */
+export function getShipManager(): ShipManager {
+  if (!shipManagerInstance) {
+    const resourceManager = getResourceManager();
+    shipManagerInstance = new ShipManager(resourceManager);
+  }
+  return shipManagerInstance!;
+}
+
+/**
+ * Get the singleton instance of ParticleSystemManager
+ * @returns The ParticleSystemManager instance
+ */
+export function getParticleSystemManager(): ParticleSystemManager {
+  if (!particleSystemManagerInstance) {
+    particleSystemManagerInstance = ParticleSystemManager.getInstance();
+  }
+  return particleSystemManagerInstance!;
+}
+
+/**
  * Reset all manager instances - primarily used for testing
  */
 export function resetManagers(): void {
@@ -216,8 +347,17 @@ export function resetManagers(): void {
   asteroidFieldManagerInstance = null;
   resourceFlowManagerInstance = null;
   resourceConversionManagerInstance = null;
-  // Reset mining ship manager instance
   miningShipManagerInstance = null;
+  explorationManagerInstance = null;
+  reconShipManagerInstance = null;
+  officerManagerInstance = null;
+  moduleManagerInstance = null;
+  moduleStatusManagerInstance = null;
+  gameLoopManagerInstance = null;
+  gameManagerInstance = null;
+  assetManagerInstance = null;
+  shipManagerInstance = null;
+  particleSystemManagerInstance = null;
   // Resetting the imported instance isn't straightforward from here.
   // The original file might need its own reset logic if required for testing.
 }
@@ -225,16 +365,26 @@ export function resetManagers(): void {
 // Export manager classes for type usage
 export { CombatManager, ResourceManager };
 export type {
+  AssetManager,
   AsteroidFieldManager,
   AutomationManager,
   CombatMechanicsSystem,
   EffectLifecycleManager,
+  ExplorationManager,
   FactionBehaviorManager,
+  GameLoopManager,
+  GameManager,
   GlobalAutomationManager,
   MiningShipManager,
+  ModuleManager,
+  ModuleStatusManager,
   ObjectDetectionSystem,
+  OfficerManager,
+  ParticleSystemManager,
   ResourceConversionManager,
   ResourceFlowManager,
+  ShipManager,
   TechTreeManager,
   ThreatAssessmentManager,
 };
+export type { ReconShipManagerImpl };

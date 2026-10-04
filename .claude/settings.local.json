@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npx vite build:*)",
+      "Bash(for dir in ai automation colony combat effects exploration factions game mining module resource ships weapons)",
+      "Bash(do echo '=== $dir ===')",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(done)",
+      "Bash(bash:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

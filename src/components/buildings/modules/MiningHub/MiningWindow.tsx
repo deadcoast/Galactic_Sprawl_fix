@@ -14,9 +14,10 @@ import {
   Target,
 } from 'lucide-react';
 import * as React from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
+import { useMiningShipManager } from '../../../../hooks/managers';
 import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { PlayerShipClass } from './../../../../types/ships/PlayerShipTypes';
@@ -253,6 +254,9 @@ const convertToResource = (resource: MiningResource): Resource => {
 };
 
 export function MiningWindow() {
+  // Get the MiningShipManager instance
+  const miningShipManager = useMiningShipManager();
+
   const [selectedNode, setSelectedNode] = useState<Resource | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [searchQuery, setSearchQuery] = useState('');
@@ -264,12 +268,45 @@ export function MiningWindow() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [contextMenuItems, setContextMenuItems] = useState<ContextMenuItem[]>([]);
+  const [managerShips, setManagerShips] = useState<MiningShip[]>([]);
   const { handleContextMenu, closeContextMenu, ContextMenuComponent } = useContextMenu({
     items: contextMenuItems,
   });
 
   // Search input field
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Fetch ships from manager on mount and periodically update
+  useEffect(() => {
+    const updateShips = () => {
+      const unifiedShips = miningShipManager.getAllShips();
+
+      // Convert UnifiedMiningShip to MiningShip format
+      const convertedShips: MiningShip[] = unifiedShips.map(ship => ({
+        id: ship.id,
+        name: ship.name,
+        type: ship.shipClass === PlayerShipClass.ROCK_BREAKER
+          ? PlayerShipClass.ROCK_BREAKER
+          : PlayerShipClass.VOID_DREDGER,
+        status: (ship.status as 'idle' | 'mining' | 'returning') || 'idle',
+        capacity: typeof ship.stats?.cargo === 'number'
+          ? ship.stats.cargo
+          : ship.stats?.cargo?.capacity || 1000,
+        currentLoad: ship.currentLoad || 0,
+        targetNode: ship.targetNode,
+        efficiency: ship.efficiency || 1.0,
+      }));
+
+      setManagerShips(convertedShips);
+    };
+
+    updateShips();
+
+    // Update ships every 1 second to reflect manager changes
+    const interval = setInterval(updateShips, 1000);
+
+    return () => clearInterval(interval);
+  }, [miningShipManager]);
 
   // Memoize filtered and sorted resources
   const filteredResources = useMemo(() => {
@@ -693,7 +730,7 @@ export function MiningWindow() {
               setSelectedNode(converted);
             },
             techBonuses: techBonuses,
-            ships: mockShips,
+            ships: managerShips.length > 0 ? managerShips : mockShips,
             quality: 'high',
           }),
           React.createElement(ResourceTransfer, { transfers: mockTransfers })
@@ -746,7 +783,9 @@ export function MiningWindow() {
                       techBonuses: techBonuses,
                       onClick: () => setSelectedNode(resource as Resource),
                       assignedShip:
-                        mockShips.find(ship => ship.targetNode === resource.id)?.id ?? '',
+                        (managerShips.length > 0 ? managerShips : mockShips).find(
+                          ship => ship.targetNode === resource.id
+                        )?.id ?? '',
                     })
                   ),
                 })
@@ -777,7 +816,7 @@ export function MiningWindow() {
         React.createElement(
           'div',
           { className: 'grid grid-cols-2 gap-4' },
-          mockShips.map(ship => {
+          (managerShips.length > 0 ? managerShips : mockShips).map(ship => {
             const assignedResource = mockResources.find(r => r.id === ship.targetNode);
 
             return React.createElement(
